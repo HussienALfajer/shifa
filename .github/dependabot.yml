@@ -1,0 +1,15 @@
+# Keeps the SHA-pinned GitHub Actions current. npm packages are updated by hand per slice,
+# because pnpm's 24-hour minimum release age and the lockfile review stay in our control.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
