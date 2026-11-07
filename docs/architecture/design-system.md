@@ -36,6 +36,8 @@ Chosen by the owner on 2026-11-08 from ten explored directions. It is Shifa's ow
 
 Concept: the white of jasmine on Damascene courtyard walls, the deep green of its leaves and a touch of gold from carved doors. Calm, warm and trustworthy; suitable for every specialty.
 
+The Shifa logo uses the same colours; its files and usage rules are in [brand/logo.md](../brand/logo.md).
+
 ### Primitive colours
 
 | Token | Hex | Name (UI/brand) | Role |
