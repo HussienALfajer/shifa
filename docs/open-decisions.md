@@ -1,0 +1,29 @@
+# Open decisions
+
+Status: Living document · Last updated: 2026-11-08 · Owner: product owner
+
+Questions that block or shape work and that the owner (or an outside expert) must answer. Claude must not guess an answer to an open decision; it asks the owner and records the answer here, then in an ADR or domain doc. When a decision is closed, keep the row, set Status to `Closed (date)` and link where the answer now lives.
+
+| ID | Decision | Why it matters | Blocks | Owner / who answers | Recommendation so far | Status |
+|---|---|---|---|---|---|---|
+| OD-01 | Hosting location vs Syria Law No. 12/2024 Art. 15 | Storing personal data abroad may need authorization | ADR-0022, production launch | Owner + Syrian lawyer | Portable deployment; pilot in a Turkish or EU data centre only with legal clearance; be ready for an in-Syria primary | Open |
+| OD-02 | Ministry of Health approval and NAITS accreditation | De facto requirement (Moadna precedent, Aug 2026) | Public launch | Owner | Start the file in parallel with the closed pilot | Open |
+| OD-03 | Legal entity and accounts outside Syria (Azure TTS, Apple, cloud, licences, payments) | Several vendors cannot contract with Syria | Voice packs, hosting, licences | Owner | Use the existing entity that holds the Google Play account; confirm which vendors accept it | Open |
+| OD-04 | Licences for clinical content: Oxford (OUI), QuickDASH (IWH), KOOS/HOOS and ODI (Mapi), EQ-5D (EuroQol), NDI, AO/OTA | Commercial use requires paid licences or written permission | Licensed PROMs and AO picker (Phase C) | Owner | Contact all licensors now; ask for low-income-country terms and sanctions position; get written confirmation for SPADI, FAAM, ASES, KOOS JR/HOOS JR, IKDC | Open |
+| OD-05 | Offline sync engine: PowerSync vs custom outbox | PowerSync Flutter/drift integration and self-hosted edition still beta | ADR-0014, offline reception | Spike in Phase 0 | Decide from the spike with real network cuts | Open |
+| OD-06 | Anthropic plan and tooling configuration (HIPAA-style setup or not) | Affects cloud sessions and managed code review | Phase 0 tooling | Owner (+ counsel) | Keep all real patient data out of development; then the standard setup is likely enough | Open |
+| OD-07 | Business model and pricing | Owner deferred it | Commercial launch | Owner | Per-doctor subscription, free patient app, no booking commission; include licence costs | Deferred |
+| OD-08 | Local billing conventions: doctor commission norms, installments and deposits, who collects cash | Shapes billing defaults | Phase A billing details | Field interviews (5–10 clinics) | Make all of them configurable with safe defaults | Open |
+| OD-09 | Currency rules: legality of USD/TRY pricing per region, who sets rates and how often, rate source | Idlib has an SYP-only directive; Azaz uses TRY | Phase A billing | Owner + field interviews | Support all three with an SYP display mode | Open |
+| OD-10 | Drug catalogue source and brand names (Syrian national list; Turkish brands in Azaz) | Prescriptions depend on it | Phase A prescriptions | Owner + pharmacist advisor | Curated catalogue from the national list plus clinic-added drugs | Open |
+| OD-11 | Voice calling: TTS vendor and voice, name-calling default, Turkish wording | Quality and privacy | Phase A voice packs | Listening test with receptionists | Azure ar-SY voice, number-only default, native review of Turkish | Open |
+| OD-12 | WhatsApp risk thresholds; official Cloud API for +90 numbers via a Turkish entity | Unofficial gateway can get numbers banned | Messaging rollout | Pilot with 2–3 clinics + legal advice | Start at ~30 messages/hour per number, measure for 4–6 weeks | Open |
+| OD-13 | Medical-record retention period | Legal and storage impact | Data lifecycle | Owner + lawyer | Configurable, default 10 years after last visit | Open |
+| OD-14 | What clinics release to the patient app by default | Privacy vs usefulness | Phase A patient app | Owner | Signed prescriptions and summaries by default; the rest per clinic | Open |
+| OD-15 | Public doctor reviews | Regulatory and reputational risk | Later release | Owner | Deferred; later optional per clinic | Deferred |
+| OD-16 | Turkish UI language for Azaz | Usability in Azaz | Later release | Owner | Arabic first; Turkish as a later language pack | Deferred |
+| OD-17 | Clinical content sign-off by Syrian dental and orthopedic advisors | Safety of templates, drugs, classifications | Phases B and C | Owner recruits advisors | One dentist and one orthopedist review every clinical template before release | Open |
+| OD-18 | Imaging edge box hardware, upload bandwidth, per-tenant Orthanc operations | CBCT files take minutes to hours to upload | Phase D | Pilot at one clinic with real devices | Edge box + UPS for clinics with X-ray devices | Open |
+| OD-19 | Figma plan | Code Connect for React and Flutter needs the Organization plan | Design system workflow | Owner | Decide before the design system build | Open |
+| OD-20 | Default digit style (Western vs Arabic-Indic) | UI and print consistency | Design system, i18n | Owner + receptionist feedback | Setting per clinic; pick a default after field feedback | Open |
+| OD-21 | Licence for the public repository | Without a licence all rights are reserved; a permissive licence lets others reuse the code | Before outside contributors or reuse | Owner | Keep "all rights reserved" (no licence file) unless the owner wants open source | Open |
