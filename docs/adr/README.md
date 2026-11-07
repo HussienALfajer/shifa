@@ -62,5 +62,6 @@ What we will do, stated precisely.
 | [0022](0022-deployment-portable-hosting.md) | Docker Compose + Kamal on portable hosting; location pending legal opinion | Proposed (OD-01) |
 | [0023](0023-no-real-patient-data-in-dev.md) | No real patient data in development or AI-agent environments | Accepted |
 | [0024](0024-licensed-clinical-content-gating.md) | Licensed clinical content gated per tenant until licences are signed | Accepted |
-| [0025](0025-development-methodology-claude-code.md) | Development methodology: Claude Code, harness-first, risk tiers | Accepted |
+| [0025](0025-development-methodology-claude-code.md) | Development methodology: Claude Code, harness-first, risk tiers | Accepted (bypass rule superseded by 0027) |
 | [0026](0026-public-repository.md) | Public GitHub repository; private notes stay local | Accepted |
+| [0027](0027-owner-chooses-permission-mode.md) | The owner chooses the Claude Code permission mode; `bypassPermissions` allowed | Accepted |

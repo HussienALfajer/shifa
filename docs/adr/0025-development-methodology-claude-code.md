@@ -1,6 +1,6 @@
 # ADR-0025: Development methodology — Claude Code, harness-first, with risk tiers for review
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted; the `bypassPermissions` safety rule is superseded by [ADR-0027](0027-owner-chooses-permission-mode.md) · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 Shifa will be built almost entirely with Claude Code (Opus 5.5). Anthropic's guidance: give Claude checks that pass or fail, keep CLAUDE.md short, put unbreakable rules in hooks/CI, spec first, independent review, small PRs [RN-18 §4]. The owner's three earlier Claude-built projects show what worked (spec interviews, layered slices, reviewer/checker agents, one `verify`, rules as tests) and what wasted time (verification tooling arriving late, instruction bloat, an ever-growing TASKS.md, giant PRs, mocked E2E, shell edits bypassing hooks, `bypassPermissions`, auto-merge without human review, huge contexts) [RN-20 §7] [RN-21 §7] [RN-22 §7].

@@ -102,7 +102,7 @@ Rules:
 ## 10. Claude Code configuration (built in Phase 0.2)
 
 - **Plan (OD-06, closed 2026-11-08):** the owner's standard Anthropic plan, no HIPAA-style configuration; this holds only while no real patient data enters development ([ADR-0023](../adr/README.md)).
-- **Settings** (`.claude/settings.json`, built in slice 0.2-03): model `claude-opus-5-5`; `effortLevel` medium; deny rules for `.env*`, keys, secrets and data dumps; ask before merging a PR, applying migrations or deploying; `bypassPermissions` disabled. Claude Code ignores `defaultMode: auto` in project settings, so each developer sets `"permissions": { "defaultMode": "auto" }` in their own `~/.claude/settings.json`. Read deny rules do not cover shell commands, so the Bash guard hook also refuses reading secrets through the shell.
+- **Settings** (`.claude/settings.json`, built in slice 0.2-03): model `claude-opus-5-5`; `effortLevel` medium; deny rules for `.env*`, keys, secrets and data dumps; ask before merging a PR, applying migrations or deploying. The permission mode is the developer's choice in their own settings or the app ([ADR-0027](../adr/0027-owner-chooses-permission-mode.md)): `auto` is recommended, `bypassPermissions` is allowed; Claude itself never starts a session that skips permissions. Claude Code ignores `defaultMode` in project settings, so it lives in `~/.claude/settings.json`. Read deny rules do not cover shell commands, so the Bash guard hook also refuses reading secrets through the shell.
 - **Hooks:**
   - after edits: formatter (Biome/Prettier, `dart format`);
   - before edits: block generated files, applied migrations, locked tests during implementation, env files;
@@ -140,6 +140,6 @@ Rules:
 | Late discovery (523 issues in a final audit) | vertex-digital | Per-phase audits, backlog for non-blocking findings |
 | Mock-only end-to-end tests hiding the biggest rework | vertex-hub | Real-backend smoke tests on critical paths |
 | Shell edits bypassing the format hook | vertex-hub | Bash guard on source folders |
-| Permissions widened over time for speed | earlier projects | Deny rules and hooks stay on; no `bypassPermissions` |
+| Permissions widened over time for speed | earlier projects | Hooks and deny rules stay on in every permission mode, including `bypassPermissions` (ADR-0027) |
 | Auto-merge with no human review | fox-drop | Tiered merge rights |
 | Heavy generated Dart client from unnamed schemas | fox-drop | Named Zod schemas, precise nullability, lighter generator (ADR-0013) |
