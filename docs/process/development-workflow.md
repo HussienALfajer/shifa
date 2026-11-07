@@ -102,7 +102,7 @@ Rules:
 ## 10. Claude Code configuration (built in Phase 0.2)
 
 - **Plan (OD-06, closed 2026-11-08):** the owner's standard Anthropic plan, no HIPAA-style configuration; this holds only while no real patient data enters development ([ADR-0023](../adr/README.md)).
-- **Settings:** model `claude-opus-5-5`; default effort per §7; permission mode `auto` with deny rules; `bypassPermissions` is never used. Deny: `.env*`, secrets, data dumps, production config. Ask: push to `main`, applying migrations, deploy.
+- **Settings** (`.claude/settings.json`, built in slice 0.2-03): model `claude-opus-5-5`; `effortLevel` medium; deny rules for `.env*`, keys, secrets and data dumps; ask before merging a PR, applying migrations or deploying; `bypassPermissions` disabled. Claude Code ignores `defaultMode: auto` in project settings, so each developer sets `"permissions": { "defaultMode": "auto" }` in their own `~/.claude/settings.json`. Read deny rules do not cover shell commands, so the Bash guard hook also refuses reading secrets through the shell.
 - **Hooks:**
   - after edits: formatter (Biome/Prettier, `dart format`);
   - before edits: block generated files, applied migrations, locked tests during implementation, env files;
@@ -112,7 +112,8 @@ Rules:
 - **Agents:** `reviewer` (Opus, high, fresh context, healthcare checklist: patient data in logs, tenant scoping, audit of reads, consent, money and rounding, laterality); `checker` (Haiku, runs checks only); `security-reviewer` (T0).
 - **Skills:** `/spec`, `/slice-plan`, `/build-slice`, `/db-migration` (expand → migrate → contract; refuses destructive changes), `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`, `/audit-phase`, `/release` (user-invoked only).
 - **Plugins and MCP:** TypeScript LSP; official Flutter plugin and Dart MCP server (rules copied into the Flutter app's CLAUDE.md); Figma MCP; browser automation for `/verify`.
-- **Environment:** WSL2 (the sandbox does not run on native Windows); sandbox on with a network allowlist.
+- **Environment:** WSL2 (the sandbox does not run on native Windows); sandbox on with a network allowlist. Until the move to WSL2 (slice 0.2-09) commands run unsandboxed on Windows; the hooks and deny rules still apply.
+- **Hook policy** lives in `.claude/hooks/lib/policy.mjs` with unit tests in `scripts/test/claude-hooks.test.mjs`; guards fail closed when they cannot read the tool event.
 
 ## 11. Documentation rules
 
