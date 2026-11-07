@@ -30,6 +30,71 @@ Pipeline: Style Dictionary v5 builds
 
 Clinical and status colours are locked tokens: odontogram statuses, perio thresholds, laterality chips, alert severities and queue statuses have one meaning everywhere.
 
+## Platform colour palette — "Damascene Jasmine" (ياسمين الشام)
+
+Chosen by the owner on 2026-11-08 from ten explored directions. It is Shifa's own palette: the default for every surface (clinic web, admin, display, booking pages, patient app) and the fallback when a clinic sets no brand colour.
+
+Concept: the white of jasmine on Damascene courtyard walls, the deep green of its leaves and a touch of gold from carved doors. Calm, warm and trustworthy; suitable for every specialty.
+
+### Primitive colours
+
+| Token | Hex | Name (UI/brand) | Role |
+|---|---|---|---|
+| `color.jasmine.green.600` | `#1F6F5C` | أخضر الورق — Leaf green | Primary |
+| `color.jasmine.green.800` | `#134A3D` | أخضر الليل — Night green | Primary deep |
+| `color.jasmine.green.100` | `#E2F0EA` | نعناع — Mint | Primary soft |
+| `color.jasmine.gold.500` | `#C8A24A` | ذهب الأبواب — Door gold | Accent |
+| `color.jasmine.gold.100` | `#F7EDD3` | قشّ — Straw | Accent soft |
+| `color.jasmine.cream.50` | `#FBF8F1` | ياسمين — Jasmine | App background |
+| `color.jasmine.cream.200` | `#F4EFE3` | — | Raised / secondary surface |
+| `color.jasmine.cream.300` | `#E6DFCF` | — | Borders and dividers |
+| `color.jasmine.ink.900` | `#1D2A26` | حبر زيتي — Olive ink | Main text |
+| `color.jasmine.ink.500` | `#5B6A63` | — | Muted text |
+| `color.white` | `#FFFFFF` | — | Cards, on-primary text |
+
+### Semantic mapping (light mode)
+
+| Semantic token | Value |
+|---|---|
+| `color.bg.app` | `cream.50` `#FBF8F1` |
+| `color.bg.surface` | `white` `#FFFFFF` |
+| `color.bg.surface-raised` | `cream.200` `#F4EFE3` |
+| `color.border.default` | `cream.300` `#E6DFCF` |
+| `color.text.default` | `ink.900` `#1D2A26` |
+| `color.text.muted` | `ink.500` `#5B6A63` |
+| `color.brand.primary` | `green.600` `#1F6F5C` |
+| `color.brand.primary-hover` / `-pressed` | `green.800` `#134A3D` |
+| `color.brand.on-primary` | `white` `#FFFFFF` |
+| `color.brand.primary-soft` | `green.100` `#E2F0EA` (selected rows, current-number card, chips) |
+| `color.brand.accent` | `gold.500` `#C8A24A` (logo mark, highlighted numbers, active-nav indicator) |
+| `color.brand.accent-soft` | `gold.100` `#F7EDD3` (avatars, soft highlights) |
+| `color.nav.bg` / `color.nav.text` | `green.800` `#134A3D` / `#E8F2EE` (clinic sidebar) |
+| `color.border.focus` | `green.600` `#1F6F5C` |
+
+Approximate usage weight: about 70 % jasmine and white surfaces, 20 % green (actions, navigation, current state), under 10 % gold.
+
+### Contrast (WCAG 2.2)
+
+| Pair | Ratio | Result |
+|---|---|---|
+| Text `#1D2A26` on background `#FBF8F1` | 14.0 : 1 | AAA |
+| White on primary `#1F6F5C` | 6.0 : 1 | AA |
+| Primary `#1F6F5C` on background `#FBF8F1` | 5.7 : 1 | AA |
+| Primary `#1F6F5C` on mint `#E2F0EA` | 5.1 : 1 | AA |
+| Nav text `#E8F2EE` on night green `#134A3D` | 8.9 : 1 | AAA |
+| Muted `#5B6A63` on surfaces (white → `#F4EFE3`) | 5.7–5.0 : 1 | AA |
+| Text `#1D2A26` on gold `#C8A24A` | 6.2 : 1 | AA |
+| Gold `#C8A24A` on white | 2.4 : 1 | Fails — never use gold for text on light surfaces |
+| Gold `#C8A24A` on night green `#134A3D` | 4.2 : 1 | Large text and marks only |
+
+Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is never body text. The muted text was darkened from the exploration value `#6B7A73` to `#5B6A63` so it passes AA on every surface.
+
+### Boundaries
+
+- The palette covers brand and neutral colours only. Clinical and status colours (alert severities, queue statuses, odontogram statuses, laterality, pain types) stay locked tokens with their own definitions and are never taken from this palette; red is reserved for clinical alerts.
+- A clinic brand colour replaces `color.brand.*` for that clinic only; neutrals and clinical tokens stay as defined here.
+- Dark mode (for evening clinics and the waiting-room display) is not defined yet; it will be derived from this palette in Phase 0.4.
+
 ## Clinic theming
 
 - The clinic picks a brand colour and uploads a logo; the server computes the brand palette (tints, on-colours), checks WCAG contrast against surfaces, and serves it to web and Flutter.
