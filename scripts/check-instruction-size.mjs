@@ -7,14 +7,17 @@ import { join, relative, sep } from 'node:path';
 
 const root = join(import.meta.dirname, '..');
 const KB = 1024;
-const SKIP = new Set(['node_modules', '.git', '.turbo', 'dist', 'coverage', '.verify', 'docs']);
+const SKIP = new Set(['node_modules', '.git', '.turbo', 'dist', 'coverage', '.verify']);
+// Top-level docs/ holds documentation, not instructions; nested docs/ folders are still checked.
+const SKIP_TOP = new Set(['docs']);
 
 /** @returns {number | undefined} budget in bytes, or undefined if the file has none */
 function budgetFor(rel) {
   const parts = rel.split(sep);
   const name = parts.at(-1);
   if (rel === 'CLAUDE.md') return 8 * KB;
-  if (name === 'CLAUDE.md' && (parts[0] === 'apps' || parts[0] === 'packages')) return 4 * KB;
+  // Every other CLAUDE.md (packages, tooling, .claude/CLAUDE.md) gets the per-package budget.
+  if (name === 'CLAUDE.md' || name === 'CLAUDE.local.md') return 4 * KB;
   if (parts[0] === '.claude' && parts[1] === 'rules' && name?.endsWith('.md')) return 3 * KB;
   if (parts[0] === '.claude' && parts[1] === 'skills' && name === 'SKILL.md') return 4 * KB;
   return undefined;
@@ -23,6 +26,7 @@ function budgetFor(rel) {
 function* walk(dir) {
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (SKIP.has(entry.name)) continue;
+    if (dir === root && SKIP_TOP.has(entry.name)) continue;
     const full = join(dir, entry.name);
     if (entry.isDirectory()) yield* walk(full);
     else yield full;

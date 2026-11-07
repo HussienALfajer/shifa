@@ -18,9 +18,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
+    "@eslint/js": "10.0.1",
     "@shifa/eslint-config": "workspace:*",
     "@shifa/tsconfig": "workspace:*",
     "eslint": "10.14.0",
+    "globals": "17.14.0",
     "turbo": "2.11.10",
     "typescript": "6.0.3"
   }

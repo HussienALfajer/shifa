@@ -4,15 +4,15 @@
   "tasks": {
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "inputs": ["src/**", "test/**", "tsconfig*.json", "package.json"]
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "lint": {
       "dependsOn": ["^typecheck"],
-      "inputs": ["src/**", "test/**", "eslint.config.*", "tsconfig*.json", "package.json"]
+      "inputs": ["$TURBO_DEFAULT$"]
     },
     "test": {
       "dependsOn": ["^typecheck"],
-      "inputs": ["src/**", "test/**", "vitest.config.*", "package.json"]
+      "inputs": ["$TURBO_DEFAULT$"]
     }
   }
 }

@@ -6,7 +6,7 @@
 // Only one verify may run at a time (lock file), so parallel runs never fight over test databases.
 
 import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 const mode = process.argv[2] ?? 'fast';
@@ -21,6 +21,35 @@ const logDir = join(stateDir, 'logs');
 const lockFile = join(stateDir, 'lock');
 mkdirSync(logDir, { recursive: true });
 
+/**
+ * Creates the lock atomically ('wx'). A lock left by a dead process, or an empty/garbage lock
+ * older than a few seconds (a run killed while writing it), is removed and the create retried once.
+ */
+function acquireLock() {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    try {
+      writeFileSync(lockFile, String(process.pid), { flag: 'wx' });
+      return;
+    } catch (err) {
+      if (err?.code !== 'EEXIST') throw err;
+    }
+    const pid = Number(readFileSync(lockFile, 'utf8').trim());
+    const validPid = Number.isInteger(pid) && pid > 0;
+    if (validPid && isAlive(pid)) {
+      process.stderr.write(`verify: another run is in progress (pid ${pid}); wait for it\n`);
+      process.exit(3);
+    }
+    const ageMs = Date.now() - statSync(lockFile).mtimeMs;
+    if (!validPid && ageMs < 5000) {
+      process.stderr.write('verify: another run is starting; try again in a few seconds\n');
+      process.exit(3);
+    }
+    rmSync(lockFile, { force: true });
+  }
+  process.stderr.write('verify: could not acquire the lock\n');
+  process.exit(3);
+}
+
 function isAlive(pid) {
   try {
     process.kill(pid, 0);
@@ -30,16 +59,7 @@ function isAlive(pid) {
   }
 }
 
-if (existsSync(lockFile)) {
-  const pid = Number(readFileSync(lockFile, 'utf8'));
-  if (Number.isInteger(pid) && isAlive(pid)) {
-    process.stderr.write(
-      `verify: another run is in progress (pid ${pid}); wait for it to finish\n`,
-    );
-    process.exit(3);
-  }
-}
-writeFileSync(lockFile, String(process.pid));
+acquireLock();
 const releaseLock = () => rmSync(lockFile, { force: true });
 process.on('exit', releaseLock);
 for (const signal of ['SIGINT', 'SIGTERM']) {
@@ -53,9 +73,10 @@ const steps = [
   {
     name: 'format',
     cmd: 'pnpm',
-    args: ['exec', 'biome', mode === 'full' ? 'ci' : 'format', '.'],
+    args: ['exec', 'biome', mode === 'full' ? 'ci' : 'check', '.'],
   },
   { name: 'instructions', cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
+  { name: 'lint-root', cmd: 'pnpm', args: ['exec', 'eslint', '--max-warnings=0', '.'] },
   {
     name: 'typecheck+lint+test',
     cmd: 'pnpm',
@@ -67,7 +88,8 @@ const steps = [
       'lint',
       'test',
       '--output-logs=errors-only',
-      ...affected,
+      // full never trusts the cache, so CI and pre-PR runs re-execute every task
+      ...(mode === 'full' ? ['--force'] : affected),
     ],
   },
 ];
