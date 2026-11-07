@@ -154,7 +154,7 @@ const BASH_RULES = [
   },
   {
     re: /(--dangerously-skip-permissions|--permission-mode[\s=]+bypassPermissions)/,
-    why: 'Bypassing permissions is never allowed in this project.',
+    why: 'Claude never starts a session that skips permissions; the owner chooses the permission mode (ADR-0027).',
   },
 ];
 
