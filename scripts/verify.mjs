@@ -77,6 +77,7 @@ const steps = [
   },
   { name: 'instructions', cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
   { name: 'lint-root', cmd: 'pnpm', args: ['exec', 'eslint', '--max-warnings=0', '.'] },
+  { name: 'scripts-test', cmd: 'node', args: ['--test', 'scripts/test/*.test.mjs'] },
   {
     name: 'typecheck+lint+test',
     cmd: 'pnpm',
