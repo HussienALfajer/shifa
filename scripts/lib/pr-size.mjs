@@ -8,18 +8,42 @@ export const FAIL_LINES = 2000;
 const ALWAYS_GENERATED = [/(^|\/)pnpm-lock\.yaml$/, /(^|\/)pubspec\.lock$/];
 
 /**
- * @param {string} numstat output of `git diff --numstat`
- * @param {Set<string>} generated paths marked linguist-generated
+ * Parses `git diff -z --numstat -M`. Records are `added\tdeleted\tpath\0`, or for a rename
+ * `added\tdeleted\t\0old\0new\0`; the new path is used. Binary files report "-" counts.
+ * @param {string} raw
+ * @returns {{ added: number | null, deleted: number | null, path: string }[]}
  */
-export function measure(numstat, generated) {
+export function parseNumstatZ(raw) {
+  const tokens = raw.split('\0');
+  const entries = [];
+  for (let i = 0; i < tokens.length; i += 1) {
+    const head = tokens[i];
+    if (!head) continue;
+    const [added, deleted, path] = head.split('\t');
+    let finalPath = path ?? '';
+    if (finalPath === '') {
+      // rename: the next two tokens are old and new path
+      finalPath = tokens[i + 2] ?? '';
+      i += 2;
+    }
+    entries.push({
+      added: added === '-' ? null : Number(added),
+      deleted: deleted === '-' ? null : Number(deleted),
+      path: finalPath,
+    });
+  }
+  return entries;
+}
+
+/**
+ * @param {{ added: number | null, deleted: number | null, path: string }[]} entries
+ * @param {Set<string>} generated paths marked linguist-generated (read from the base branch)
+ */
+export function measure(entries, generated) {
   let counted = 0;
   let excluded = 0;
-  for (const line of numstat.split('\n')) {
-    if (!line.trim()) continue;
-    const [added, deleted, ...rest] = line.split('\t');
-    const path = rest.join('\t');
-    // Binary files report "-" for both counts.
-    if (added === '-' || deleted === '-') {
+  for (const { added, deleted, path } of entries) {
+    if (added === null || deleted === null) {
       excluded += 1;
       continue;
     }
@@ -27,7 +51,7 @@ export function measure(numstat, generated) {
       excluded += 1;
       continue;
     }
-    counted += Number(added) + Number(deleted);
+    counted += added + deleted;
   }
   return { counted, excluded };
 }

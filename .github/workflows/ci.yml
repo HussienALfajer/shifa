@@ -12,7 +12,8 @@ permissions: {}
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  # Never cancel runs on main: every merged commit must get a completed verify and secret scan.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   verify:
@@ -35,7 +36,7 @@ jobs:
       - run: node scripts/verify.mjs full
       - name: Show verify logs
         if: failure()
-        run: tail -n 200 .verify/logs/*.log
+        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
 
   audit:
     name: dependency audit
@@ -60,17 +61,39 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: read
-      pull-requests: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
+      # gitleaks is run directly (checksum-verified) because gitleaks-action v3 scans at most
+      # 30 commits of a pull request.
+      - name: Install gitleaks 8.30.1
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITLEAKS_VERSION: 8.30.1
-          GITLEAKS_ENABLE_COMMENTS: "false"
+          GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+        run: |
+          curl -fsSL -o gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo "${GITLEAKS_SHA256}  gitleaks.tar.gz" | sha256sum --check --strict
+          mkdir -p "${RUNNER_TEMP}/gitleaks"
+          tar -xzf gitleaks.tar.gz -C "${RUNNER_TEMP}/gitleaks" gitleaks
+          rm gitleaks.tar.gz
+      - name: Scan new commits
+        env:
+          EVENT: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_AFTER: ${{ github.sha }}
+        run: |
+          if [ "$EVENT" = pull_request ]; then
+            range="${PR_BASE}..${PR_HEAD}"
+          elif [ -n "$PUSH_BEFORE" ] && [ "$PUSH_BEFORE" != 0000000000000000000000000000000000000000 ]; then
+            range="${PUSH_BEFORE}..${PUSH_AFTER}"
+          else
+            range="$PUSH_AFTER"   # first push: whole history reachable from it
+          fi
+          echo "Scanning ${range}"
+          "${RUNNER_TEMP}/gitleaks/gitleaks" git --no-banner --redact --exit-code 1 --log-opts="${range}" .
 
   workflows:
     name: workflow lint (zizmor)
