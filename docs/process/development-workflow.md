@@ -101,6 +101,7 @@ Rules:
 
 ## 10. Claude Code configuration (built in Phase 0.2)
 
+- **Plan (OD-06, closed 2026-11-08):** the owner's standard Anthropic plan, no HIPAA-style configuration; this holds only while no real patient data enters development ([ADR-0023](../adr/README.md)).
 - **Settings:** model `claude-opus-5-5`; default effort per §7; permission mode `auto` with deny rules; `bypassPermissions` is never used. Deny: `.env*`, secrets, data dumps, production config. Ask: push to `main`, applying migrations, deploy.
 - **Hooks:**
   - after edits: formatter (Biome/Prettier, `dart format`);

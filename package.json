@@ -1,0 +1,27 @@
+{
+  "name": "shifa",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@12.4.1",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "verify": "node scripts/verify.mjs fast",
+    "verify:full": "node scripts/verify.mjs full",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
+    "check:instructions": "node scripts/check-instruction-size.mjs"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.6",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "eslint": "10.14.0",
+    "turbo": "2.11.10",
+    "typescript": "6.0.3"
+  }
+}
