@@ -6,7 +6,7 @@ Multi-tenant clinic management platform and patient app for private clinics in S
 - **Patient app (Flutter, Android first):** booking or taking a queue number, live queue position, family profiles, records released by the clinic.
 - **Platform:** one model for solo doctors, multi-doctor clinics and multi-branch groups, with per-clinic features and settings managed by a super admin.
 
-**Status:** documentation phase — no code yet. See [docs/roadmap.md](docs/roadmap.md).
+**Status:** Phase 0.2, foundation tooling — no product features yet. See [docs/roadmap.md](docs/roadmap.md).
 
 ## Documentation
 
