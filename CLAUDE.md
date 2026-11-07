@@ -27,10 +27,11 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `main` changes only through a reviewed PR with green CI.
 
 ## Enforced by hooks (`.claude/hooks/`)
-- Edits are refused for secrets and dumps, generated files, `pnpm-lock.yaml`, `docs/research/archive/`, accepted ADRs (write a superseding ADR), committed migrations (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
-- Shell writes into `apps/`, `packages/`, `tooling/`, `scripts/`, `.claude/` are refused: use Edit/Write so the formatter hook runs.
+- Edits are refused for secrets and dumps, generated files, `pnpm-lock.yaml`, `docs/research/archive/`, accepted ADRs on `main` (only the `Status:` line may change; write a superseding ADR), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
+- Shell writes into `apps/`, `packages/`, `tooling/`, `scripts/`, `.claude/` are refused: use Edit/Write so the formatter hook runs. The guard reads command text, so it cannot see `cd apps && echo > x` or `cp`/`node -e` writes: do not use them.
 - Reading `.env`/keys, `--no-verify`, force pushes and pushes to `main` are refused.
-- On stop, uncommitted code changes must pass `verify` (fast).
+- On stop, uncommitted code changes must pass `verify` (fast), unless `.claude/state/red-phase` exists (red phase of `/build-slice`).
+- Hooks need `node` on the PATH of Git Bash.
 
 ## Gotchas
 - Windows for now (Git Bash); the sandbox only runs under WSL2 (slice 0.2-09).

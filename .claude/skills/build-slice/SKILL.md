@@ -8,8 +8,8 @@ disable-model-invocation: true
 Build the slice: $ARGUMENTS
 
 1. Read the slice file and its spec. Check `git status` and create or switch to the slice branch named in the file. Restate the goal and tier to the owner in one line.
-2. Write the failing tests listed in the plan first and run them to see them fail for the right reason. Then list their paths in `.claude/state/locked-tests.txt` (one per line): the edit hook stops you from weakening them. If a locked test is wrong, stop and ask the owner.
-3. Implement one layer at a time (contracts → db → API → web → Flutter → end-to-end). After each layer:
+2. Create `.claude/state/red-phase` (the Stop hook skips `verify` while it exists). Write the failing tests listed in the plan first and run them to see them fail for the right reason. Then list their paths in `.claude/state/locked-tests.txt` (one per line): the edit hook stops you from weakening them. If a locked test is wrong, stop and ask the owner.
+3. Delete `.claude/state/red-phase`, then implement one layer at a time (contracts → db → API → web → Flutter → end-to-end). After each layer:
    - run `pnpm verify` and fix until green;
    - commit at the green checkpoint (conventional commit, slice ID in the scope);
    - update the "Stopped at" line in the slice file.
