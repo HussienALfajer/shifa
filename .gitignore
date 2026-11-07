@@ -24,6 +24,7 @@ coverage/
 # Claude Code local files
 .claude/settings.local.json
 .claude/worktrees/
+.claude/state/
 CLAUDE.local.md
 
 # OS and editors
