@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { FAIL_LINES, judge, measure, parseNumstatZ, WARN_LINES } from '../lib/pr-size.mjs';
+import { judge, measure, parseNumstatZ, WARN_LINES } from '../lib/pr-size.mjs';
 
 describe('parseNumstatZ', () => {
   it('reads plain, binary and renamed records', () => {
@@ -48,21 +48,16 @@ describe('measure', () => {
 
 describe('judge', () => {
   it('passes at the budget', () => {
-    assert.equal(judge(WARN_LINES, false).level, 'ok');
+    assert.equal(judge(WARN_LINES).level, 'ok');
   });
 
-  it('warns above the budget and at the hard limit', () => {
-    assert.equal(judge(WARN_LINES + 1, false).level, 'warn');
-    assert.equal(judge(FAIL_LINES, false).level, 'warn');
+  it('warns above the budget', () => {
+    assert.equal(judge(WARN_LINES + 1).level, 'warn');
   });
 
-  it('fails above the hard limit without the override', () => {
-    assert.equal(judge(FAIL_LINES + 1, false).level, 'fail');
-  });
-
-  it('only warns above the hard limit with the owner override', () => {
-    const verdict = judge(FAIL_LINES + 1, true);
+  it('never fails, however large the PR (owner decision 2026-11-09: no hard limit)', () => {
+    const verdict = judge(100_000);
     assert.equal(verdict.level, 'warn');
-    assert.match(verdict.message, /override/);
+    assert.match(verdict.message, /100000 hand-written lines/);
   });
 });
