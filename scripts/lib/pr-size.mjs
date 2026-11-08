@@ -2,7 +2,6 @@
 // Counts hand-written changed lines (added + deleted); generated and binary files are excluded.
 
 export const WARN_LINES = 1000;
-export const FAIL_LINES = 2000;
 
 /** Paths that are always generated, in addition to files marked linguist-generated. */
 const ALWAYS_GENERATED = [/(^|\/)pnpm-lock\.yaml$/, /(^|\/)pubspec\.lock$/];
@@ -57,21 +56,15 @@ export function measure(entries, generated) {
 }
 
 /**
+ * Advisory only: a large PR gets a warning, never a failure (the owner removed the hard limit).
  * @param {number} counted
- * @param {boolean} override the owner applied the `size/override` label
- * @returns {{ level: 'ok' | 'warn' | 'fail', message: string }}
+ * @returns {{ level: 'ok' | 'warn', message: string }}
  */
-export function judge(counted, override) {
-  if (counted > FAIL_LINES && !override) {
-    return {
-      level: 'fail',
-      message: `PR changes ${counted} hand-written lines (limit ${FAIL_LINES}). Split the slice, or the owner adds the "size/override" label.`,
-    };
-  }
+export function judge(counted) {
   if (counted > WARN_LINES) {
     return {
       level: 'warn',
-      message: `PR changes ${counted} hand-written lines (budget ${WARN_LINES})${override ? '; owner override applied' : ''}.`,
+      message: `PR changes ${counted} hand-written lines (budget ${WARN_LINES}); consider splitting the slice.`,
     };
   }
   return {

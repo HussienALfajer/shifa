@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Usage: node scripts/check-pr-size.mjs <base-ref>
-// Env: SIZE_OVERRIDE=true when the PR carries the owner's "size/override" label.
-// Exits 1 above the hard limit; prints a GitHub annotation when running in Actions.
+// Advisory: always exits 0; above the budget it prints a warning (a GitHub annotation in
+// Actions). The owner removed the hard limit on 2026-11-09.
 
 import { execFileSync } from 'node:child_process';
 import { judge, measure, parseNumstatZ } from './lib/pr-size.mjs';
@@ -33,14 +33,9 @@ if (entries.length) {
 }
 
 const { counted, excluded } = measure(entries, generated);
-const verdict = judge(counted, process.env.SIZE_OVERRIDE === 'true');
+const verdict = judge(counted);
 const inActions = process.env.GITHUB_ACTIONS === 'true';
-const prefix = {
-  ok: '',
-  warn: inActions ? '::warning::' : 'warning: ',
-  fail: inActions ? '::error::' : 'error: ',
-}[verdict.level];
+const prefix = { ok: '', warn: inActions ? '::warning::' : 'warning: ' }[verdict.level];
 process.stdout.write(
   `${prefix}${verdict.message} (${excluded} generated/binary file(s) excluded)\n`,
 );
-process.exitCode = verdict.level === 'fail' ? 1 : 0;

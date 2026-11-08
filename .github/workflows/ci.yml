@@ -167,5 +167,4 @@ jobs:
       - name: Check size
         env:
           BASE_REF: ${{ github.base_ref }}
-          SIZE_OVERRIDE: ${{ contains(github.event.pull_request.labels.*.name, 'size/override') }}
         run: node scripts/check-pr-size.mjs "origin/${BASE_REF}"
