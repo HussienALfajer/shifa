@@ -54,7 +54,7 @@ describe('module-boundaries rule', () => {
         ok('modules/a/a.ts', "import { Module } from '@nestjs/common';\nexport { Module };"),
         ok('app.module.ts', "import { H } from './modules/health/index.ts';\nexport { H };"),
         ok('platform/x.ts', "import { E } from './errors.ts';\nexport { E };"),
-        // Non-literal dynamic import cannot be resolved; left to the architecture test.
+        // A computed import() cannot be resolved here; the architecture test refuses it.
         ok('modules/a/a.ts', 'export const load = (p) => import(p);'),
       ],
       invalid: [
@@ -84,6 +84,20 @@ describe('module-boundaries rule', () => {
         bad(
           'modules/a/a.ts',
           "import b = require('../b/b.service.ts');\nexport { b };",
+          'deepImport',
+        ),
+        bad('modules/a/a.ts', "export * as ns from '../b/b.service.ts';", 'deepImport'),
+        bad('modules/a/a.ts', 'export const m = await import(`../b/b.service.ts`);', 'deepImport'),
+        bad('modules/a/a.ts', "export type T = typeof import('../b/b.service.ts');", 'deepImport'),
+        // Backslash separators (tsc resolves them on Windows) and absolute paths.
+        bad(
+          'modules/a/a.ts',
+          "import type { B } from '..\\\\b\\\\b.service.ts';\nexport type { B };",
+          'deepImport',
+        ),
+        bad(
+          'modules/a/a.ts',
+          `import { B } from '${file('modules/b/b.service.ts').replaceAll('\\', '/')}';\nexport { B };`,
           'deepImport',
         ),
         // platform/ and access/ never import a module, not even its index.ts.
@@ -146,7 +160,9 @@ describe('real package configs', () => {
   });
 
   it('leave other packages alone', async () => {
-    const code = "import { X } from '../modules/b/b.ts';\nexport { X };\n";
-    assert.equal(await realErrors('packages/db', 'src/index.ts', code), 0);
+    const cwd = join(root, 'packages', 'db');
+    const config = await new ESLint({ cwd }).calculateConfigForFile(join(cwd, 'src', 'index.ts'));
+    assert.ok(config.rules, 'packages/db must have a lint config');
+    assert.equal(config.rules[RULE_ID], undefined);
   });
 });

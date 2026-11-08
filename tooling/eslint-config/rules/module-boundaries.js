@@ -1,17 +1,20 @@
 // ADR-0003 module boundaries for a package with src/modules/<context>/ (the API).
 // The pure check is shared with apps/api/test/architecture/module-imports.test.ts, which runs
 // it on the real tree and cannot be silenced by a disable comment.
-import { dirname, relative, resolve } from 'node:path';
+import { dirname, isAbsolute, relative, resolve } from 'node:path';
 
 const INDEX = /^index(?:\.[cm]?[jt]sx?)?$/;
 const LAYERS = new Set(['platform', 'access']);
 
-/** Absolute path a relative or `@/` specifier points at; null for packages. */
-function targetPath(srcRoot, file, specifier) {
+/**
+ * Absolute path a relative, absolute or `@/` specifier points at; null for packages.
+ * Backslashes count as separators: tsc resolves `..\\b\\x.ts` on Windows.
+ */
+function targetPath(srcRoot, file, raw) {
+  const specifier = raw.replaceAll('\\', '/');
   if (specifier.startsWith('@/')) return resolve(srcRoot, specifier.slice(2));
-  if (specifier === '.' || specifier === '..' || /^\.\.?\//.test(specifier)) {
-    return resolve(dirname(file), specifier);
-  }
+  if (/^\.\.?(?:\/|$)/.test(specifier)) return resolve(dirname(file), specifier);
+  if (isAbsolute(specifier) || /^[a-zA-Z]:\//.test(specifier)) return resolve(specifier);
   return null;
 }
 
@@ -66,12 +69,20 @@ export const moduleBoundariesRule = {
   create(context) {
     const { srcRoot } = context.options[0];
     const file = context.filename;
-    /** @param {any} literal a string Literal node, or anything else (ignored) */
-    function check(literal) {
-      if (literal?.type !== 'Literal' || typeof literal.value !== 'string') return;
-      const messageId = boundaryViolation(srcRoot, file, literal.value);
-      if (messageId)
-        context.report({ node: literal, messageId, data: { specifier: literal.value } });
+    /** The string of a Literal or an expression-free template literal, else null. */
+    function text(node) {
+      if (node?.type === 'Literal' && typeof node.value === 'string') return node.value;
+      if (node?.type === 'TemplateLiteral' && node.expressions.length === 0) {
+        return node.quasis[0]?.value.cooked ?? null;
+      }
+      return null;
+    }
+    /** @param {any} node the specifier node of an import form */
+    function check(node) {
+      const specifier = text(node);
+      if (specifier === null) return;
+      const messageId = boundaryViolation(srcRoot, file, specifier);
+      if (messageId) context.report({ node, messageId, data: { specifier } });
     }
     return {
       ImportDeclaration: (node) => check(node.source),
