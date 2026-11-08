@@ -7,7 +7,31 @@ import type { RawDb } from '../../test-harness/index.ts';
 export type Catalog = Pick<RawDb, 'execute'>;
 
 const CLASSIFICATION_FILE = 'packages/db/src/schema/classification.ts';
-const TENANT_FILTER = /\btenant_id = current_tenant_id\(\)/;
+const TENANT_TERM = '(tenant_id = current_tenant_id())';
+
+/** Index of the parenthesis closing the one at `open`, or -1. */
+function closingParen(expr: string, open: number): number {
+  let depth = 0;
+  let quoted = false;
+  for (let i = open; i < expr.length; i++) {
+    const ch = expr[i];
+    if (ch === "'") quoted = !quoted;
+    if (quoted) continue;
+    if (ch === '(') depth++;
+    if (ch === ')' && --depth === 0) return i;
+  }
+  return -1;
+}
+
+/**
+ * True when the expression (as pg_get_expr prints it) is exactly the tenant filter, or a
+ * top-level AND whose first term is the tenant filter. Anything ORed with it is refused.
+ */
+function isTenantFilter(expr: string | null): boolean {
+  if (expr === null) return false;
+  if (expr === TENANT_TERM) return true;
+  return expr.startsWith(`(${TENANT_TERM} AND `) && closingParen(expr, 0) === expr.length - 1;
+}
 const COMMANDS = { r: 'SELECT', a: 'INSERT', w: 'UPDATE', d: 'DELETE' } as const;
 type Command = keyof typeof COMMANDS;
 
@@ -35,7 +59,18 @@ interface IndexRow {
   table: string;
   index: string;
   primary: boolean;
+  /** Number of key columns, and whether the single key column is a uuid. */
+  keys: number;
+  lead_uuid: boolean;
   lead: string | null;
+}
+
+interface ForeignKeyRow {
+  table: string;
+  name: string;
+  ref_table: string;
+  lead: string | null;
+  ref_lead: string | null;
 }
 
 async function relations(db: Catalog): Promise<RelationRow[]> {
@@ -73,6 +108,9 @@ async function policies(db: Catalog): Promise<PolicyRow[]> {
 async function indexes(db: Catalog): Promise<IndexRow[]> {
   const { rows } = await db.execute<IndexRow>(sql`
     select t.relname as table, i.relname as index, x.indisprimary as primary,
+           x.indnkeyatts::int as keys,
+           coalesce((select a.atttypid = 'uuid'::regtype from pg_attribute a
+                      where a.attrelid = t.oid and a.attnum = x.indkey[0]), false) as lead_uuid,
            (select a.attname from pg_attribute a
              where a.attrelid = t.oid and a.attnum = x.indkey[0]) as lead
       from pg_index x
@@ -84,10 +122,41 @@ async function indexes(db: Catalog): Promise<IndexRow[]> {
   return rows;
 }
 
+async function foreignKeys(db: Catalog): Promise<ForeignKeyRow[]> {
+  const { rows } = await db.execute<ForeignKeyRow>(sql`
+    select t.relname as table, k.conname as name, r.relname as ref_table,
+           (select a.attname from pg_attribute a
+             where a.attrelid = k.conrelid and a.attnum = k.conkey[1]) as lead,
+           (select a.attname from pg_attribute a
+             where a.attrelid = k.confrelid and a.attnum = k.confkey[1]) as ref_lead
+      from pg_constraint k
+      join pg_class t on t.oid = k.conrelid
+      join pg_class r on r.oid = k.confrelid
+      join pg_namespace n on n.oid = t.relnamespace
+     where k.contype = 'f' and n.nspname = 'public'
+     order by t.relname, k.conname`);
+  return rows;
+}
+
+/** Tables, views and the like outside `public` and Drizzle's migration history. */
+async function relationsOutsidePublic(db: Catalog): Promise<string[]> {
+  const { rows } = await db.execute<{ name: string; schema: string }>(sql`
+    select n.nspname as schema, c.relname as name
+      from pg_class c join pg_namespace n on n.oid = c.relnamespace
+     where c.relkind in ('r', 'p', 'f', 'v', 'm')
+       and n.nspname not in ('public', 'drizzle', 'information_schema')
+       and n.nspname not like 'pg\_%'
+     order by 1, 2`);
+  return rows.map(
+    (r) =>
+      `${r.schema}.${r.name}: relation in schema ${r.schema}; RLS is only checked in public, so keep tables there`,
+  );
+}
+
 /** A permissive policy must filter on tenant_id = current_tenant_id() wherever it applies. */
 function policyIsTenantScoped(p: PolicyRow): boolean {
-  const usingOk = p.qual !== null && TENANT_FILTER.test(p.qual);
-  const checkOk = p.check !== null && TENANT_FILTER.test(p.check);
+  const usingOk = isTenantFilter(p.qual);
+  const checkOk = isTenantFilter(p.check);
   switch (p.cmd) {
     case 'r':
     case 'd':
@@ -104,6 +173,8 @@ function tenantTableViolations(
   rel: RelationRow,
   tablePolicies: PolicyRow[],
   tableIndexes: IndexRow[],
+  tableForeignKeys: ForeignKeyRow[],
+  classification: TableClassification,
 ): string[] {
   const t = rel.name;
   const out: string[] = [];
@@ -125,8 +196,22 @@ function tenantTableViolations(
     }
   }
   for (const ix of tableIndexes) {
-    if (!ix.primary && ix.lead !== 'tenant_id') {
+    // A surrogate uuid primary key may stand alone; any other key would reveal other tenants'
+    // values through unique violations.
+    const surrogateKey = ix.primary && ix.keys === 1 && ix.lead_uuid;
+    if (!surrogateKey && ix.lead !== 'tenant_id') {
       out.push(`${t}: index ${ix.index} does not lead with tenant_id (ADR-0004)`);
+    }
+  }
+  for (const fk of tableForeignKeys) {
+    const target = Object.hasOwn(classification, fk.ref_table)
+      ? classification[fk.ref_table]
+      : undefined;
+    if (target && target.kind !== 'tenant') continue; // global and system rows hold no tenant data
+    if (fk.lead !== 'tenant_id' || fk.ref_lead !== 'tenant_id') {
+      out.push(
+        `${t}: foreign key ${fk.name} to ${fk.ref_table} must lead with tenant_id on both sides (FK checks ignore RLS)`,
+      );
     }
   }
   return out;
@@ -141,8 +226,9 @@ export async function checkRlsPresence(
   db: Catalog,
   classification: TableClassification,
 ): Promise<string[]> {
-  const [rels, pols, idxs] = [await relations(db), await policies(db), await indexes(db)];
-  const out: string[] = [];
+  const rels = await relations(db);
+  const [pols, idxs, fks] = [await policies(db), await indexes(db), await foreignKeys(db)];
+  const out: string[] = await relationsOutsidePublic(db);
   const tableNames = new Set<string>();
   for (const rel of rels) {
     if (rel.kind === 'v') {
@@ -169,6 +255,8 @@ export async function checkRlsPresence(
           rel,
           pols.filter((p) => p.table === rel.name),
           idxs.filter((i) => i.table === rel.name),
+          fks.filter((k) => k.table === rel.name),
+          classification,
         ),
       );
     } else if (rel.has_tenant_id) {

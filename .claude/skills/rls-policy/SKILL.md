@@ -22,7 +22,7 @@ Make the table tenant-safe: $ARGUMENTS
      USING (tenant_id = current_tenant_id())
      WITH CHECK (tenant_id = current_tenant_id());
    ```
-   One `FOR ALL` policy is the default. Per-command policies are allowed only if SELECT, INSERT, UPDATE and DELETE are all covered and each filters on `tenant_id = current_tenant_id()`; extra conditions are ANDed, never ORed. Views over tenant tables use `WITH (security_invoker = true)`; no materialized views over tenant data. Never grant to `PUBLIC`.
+   One `FOR ALL` policy is the default. Per-command policies are allowed only if SELECT, INSERT, UPDATE and DELETE are all covered and each filters on `tenant_id = current_tenant_id()`. Extra conditions are ANDed after the tenant filter (`tenant_id = current_tenant_id() AND ...`), never ORed: no "admin sees all" `OR current_tenant_id() IS NULL`. Foreign keys to tenant tables are composite and lead with `tenant_id` on both sides (`foreign key (tenant_id, patient_id) references patients (tenant_id, id)`, with a unique index on `(tenant_id, id)`); a primary key is a single `uuid` or leads with `tenant_id`. Tables live in `public` only. Views over tenant tables use `WITH (security_invoker = true)`; no materialized views over tenant data. Never grant to `PUBLIC`.
 3. Add the isolation case `packages/db/test/isolation/cases/<table>.ts` and list it in `cases/index.ts`:
 
    ```ts
@@ -34,5 +34,5 @@ Make the table tenant-safe: $ARGUMENTS
      },
    });
    ```
-   `seed` writes at least one row through `tx` (it runs as `shifa_app`, and once with a foreign tenant that must be refused). `paths` lists every read the application does on the table, each returning rows that include `tenant_id`/`tenantId`. Synthetic data only.
+   `seed` writes at least one row through `tx`, into this table only and without `RETURNING` (it runs as `shifa_app`, and with a foreign tenant inside tenant A and without a tenant context, where it must be refused for this table). Parent rows a seed needs come from a case for the parent table, not from this seed; if that is not possible yet, stop and ask. `paths` lists every read the application does on the table, each returning rows that include `tenant_id`/`tenantId` and at least one of tenant A's rows. Synthetic data only.
 4. Run `pnpm verify`. The presence test (`test/architecture/rls-presence.test.ts`) and the isolation suite (`test/isolation/isolation.test.ts`) fail with the table name until steps 1 to 3 are done; do not weaken them.

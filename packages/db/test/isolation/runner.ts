@@ -38,15 +38,36 @@ function tenantOf(row: TenantRow): unknown {
 const sqlState = (err: unknown): string | undefined =>
   typeof err === 'object' && err !== null && 'code' in err ? String(err.code) : undefined;
 
-/** Runs `fn` inside tenant `tenantId`; returns the error it threw, or undefined. */
-async function attempt(db: ShifaDb, tenantId: string, fn: (tx: Tx) => Promise<unknown>) {
+/** Where a check runs: inside tenant A, or with no tenant context (withPlatformAdmin). */
+interface Scope {
+  readonly where: string;
+  run<T>(fn: (tx: Tx) => Promise<T>): Promise<T>;
+}
+
+function scopes(db: ShifaDb): { tenantA: Scope; noTenant: Scope } {
+  return {
+    tenantA: {
+      where: 'inside tenant A',
+      run: (fn) => db.withTenant({ tenantId: TENANT_A, userId: USER }, fn),
+    },
+    noTenant: {
+      where: 'without a tenant context',
+      run: (fn) => db.withPlatformAdmin('cross-tenant isolation suite', fn),
+    },
+  };
+}
+
+/** Runs `fn` in `scope`; returns the error it threw, or undefined. */
+async function attempt(scope: Scope, fn: (tx: Tx) => Promise<unknown>): Promise<unknown> {
   try {
-    await db.withTenant({ tenantId, userId: USER }, fn);
+    await scope.run(fn);
     return undefined;
   } catch (err) {
     return err;
   }
 }
+
+const describeError = (err: unknown): string => `SQLSTATE ${sqlState(err) ?? 'none'}`;
 
 /** B's rows as B sees them: physical row ids, which change on any UPDATE. */
 async function rowsOfB(db: ShifaDb, t: ReturnType<typeof sql.identifier>): Promise<string[]> {
@@ -58,63 +79,121 @@ async function rowsOfB(db: ShifaDb, t: ReturnType<typeof sql.identifier>): Promi
   return rows.map((r) => r.id);
 }
 
-/** A forged write must be refused by RLS (SQLSTATE 42501), not succeed or fail otherwise. */
-function refusedByRls(err: unknown, what: string, table: string): string[] {
-  if (err === undefined) return [`${table}: ${what} inside tenant A was accepted`];
-  const code = sqlState(err);
-  if (code !== '42501') {
-    return [`${table}: ${what} failed with SQLSTATE ${code ?? 'none'} instead of an RLS refusal`];
+/**
+ * A forged write must be refused by this table's RLS policy (SQLSTATE 42501, the message naming
+ * the table): a refusal from another table, or another error, proves nothing about this one.
+ */
+function refusedByRls(err: unknown, what: string, table: string, scope: Scope): string[] {
+  if (err === undefined) return [`${table}: ${what} ${scope.where} was accepted`];
+  if (sqlState(err) !== '42501') {
+    return [
+      `${table}: ${what} ${scope.where} failed with ${describeError(err)}, not an RLS refusal`,
+    ];
+  }
+  const message = err instanceof Error ? err.message : '';
+  const refusedBy = /for table "([^"]+)"/.exec(message)?.[1];
+  if (refusedBy !== table) {
+    return [
+      `${table}: ${what} ${scope.where} was refused for table "${refusedBy ?? 'unknown'}"; seed must write only to ${table}`,
+    ];
   }
   return [];
+}
+
+type Path = IsolationCase['paths'][string];
+
+/** Inside A every path returns some of A's rows and none of B's. */
+async function readsInTenantA(scope: Scope, table: string, paths: [string, Path][]) {
+  const out: string[] = [];
+  for (const [name, path] of paths) {
+    const rows = await scope.run(path);
+    if (rows.some((r) => tenantOf(r) === undefined)) {
+      out.push(`${table}: read path "${name}" returns rows without tenant_id; select it`);
+      continue;
+    }
+    if (rows.length === 0) {
+      out.push(`${table}: read path "${name}" returned no rows of tenant A; it proves nothing`);
+      continue;
+    }
+    const foreign = rows.filter((r) => tenantOf(r) !== TENANT_A).length;
+    if (foreign > 0) {
+      out.push(`${table}: read path "${name}" returned ${String(foreign)} row(s) of tenant B`);
+    }
+  }
+  return out;
+}
+
+/** With no tenant context, FORCE RLS shows no tenant rows at all (src/admin.ts). */
+async function readsWithoutTenant(scope: Scope, table: string, paths: [string, Path][]) {
+  const out: string[] = [];
+  for (const [name, path] of paths) {
+    const rows = await scope.run(path);
+    if (rows.length > 0) {
+      out.push(
+        `${table}: ${scope.where}, read path "${name}" returned ${String(rows.length)} row(s)`,
+      );
+    }
+  }
+  return out;
 }
 
 export async function runIsolationCase(db: ShifaDb, c: IsolationCase): Promise<string[]> {
   const t = sql.identifier(c.table);
   const out: string[] = [];
   // TRUNCATE ignores RLS; the owner only clears, it never writes tenant rows.
-  await ownerDb().execute(sql`truncate ${t}`);
-  for (const tenantId of [TENANT_A, TENANT_B]) {
-    await db.withTenant({ tenantId, userId: USER }, (tx) => c.seed(tx, tenantId));
-  }
+  const reseed = async () => {
+    await ownerDb().execute(sql`truncate ${t}`);
+    for (const tenantId of [TENANT_A, TENANT_B]) {
+      await db.withTenant({ tenantId, userId: USER }, (tx) => c.seed(tx, tenantId));
+    }
+  };
+  await reseed();
   const seededB = await rowsOfB(db, t);
   if (seededB.length === 0) return [`${c.table}: seed wrote no rows for tenant B`];
 
-  for (const [name, path] of Object.entries(c.paths)) {
-    const rows = await db.withTenant({ tenantId: TENANT_A, userId: USER }, path);
-    if (rows.some((r) => tenantOf(r) === undefined)) {
-      out.push(`${c.table}: read path "${name}" returns rows without tenant_id; select it`);
-      continue;
-    }
-    const foreign = rows.filter((r) => tenantOf(r) !== TENANT_A).length;
-    if (foreign > 0) {
-      out.push(`${c.table}: read path "${name}" returned ${String(foreign)} row(s) of tenant B`);
-    }
-  }
+  const { tenantA, noTenant } = scopes(db);
+  // The runner's own unfiltered read: a case's paths may filter by tenant and hide a leak.
+  const paths: [string, Path][] = [
+    ['unfiltered select', async (tx) => (await tx.execute(sql`select tenant_id from ${t}`)).rows],
+    ...Object.entries(c.paths),
+  ];
+  out.push(...(await readsInTenantA(tenantA, c.table, paths)));
+  out.push(...(await readsWithoutTenant(noTenant, c.table, paths)));
 
-  out.push(
-    ...refusedByRls(
-      await attempt(db, TENANT_A, (tx) => c.seed(tx, TENANT_B)),
-      "insert with tenant B's tenant_id",
-      c.table,
-    ),
-  );
-  const moved = await attempt(db, TENANT_A, (tx) =>
+  const forged = "insert with tenant B's tenant_id";
+  for (const scope of [tenantA, noTenant]) {
+    out.push(
+      ...refusedByRls(await attempt(scope, (tx) => c.seed(tx, TENANT_B)), forged, c.table, scope),
+    );
+  }
+  const moved = await attempt(tenantA, (tx) =>
     tx.execute(sql`update ${t} set tenant_id = ${TENANT_B}`),
   );
-  out.push(...refusedByRls(moved, 'update moving rows to tenant B', c.table));
+  out.push(...refusedByRls(moved, 'update moving rows to tenant B', c.table, tenantA));
 
+  // A constant SET reads no column, so only the UPDATE policy decides which rows it reaches.
   const beforeB = await rowsOfB(db, t);
-  await db.withTenant({ tenantId: TENANT_A, userId: USER }, (tx) =>
-    tx.execute(sql`update ${t} set tenant_id = tenant_id`),
+  const updated = await attempt(tenantA, (tx) =>
+    tx.execute(sql`update ${t} set tenant_id = ${TENANT_A}`),
   );
-  const afterUpdate = await rowsOfB(db, t);
-  if (afterUpdate.join() !== beforeB.join()) {
+  if (updated !== undefined) {
+    out.push(
+      `${c.table}: update without WHERE inside tenant A failed with ${describeError(updated)}`,
+    );
+  }
+  if ((await rowsOfB(db, t)).join() !== beforeB.join()) {
     out.push(`${c.table}: update without WHERE inside tenant A changed tenant B's rows`);
   }
-  await db.withTenant({ tenantId: TENANT_A, userId: USER }, (tx) =>
-    tx.execute(sql`delete from ${t}`),
-  );
-  if ((await rowsOfB(db, t)).length !== afterUpdate.length) {
+  // A leaky UPDATE may have moved B's rows away; start the DELETE check from fresh data.
+  await reseed();
+  const beforeDelete = await rowsOfB(db, t);
+  const deleted = await attempt(tenantA, (tx) => tx.execute(sql`delete from ${t}`));
+  if (deleted !== undefined) {
+    out.push(
+      `${c.table}: delete without WHERE inside tenant A failed with ${describeError(deleted)}`,
+    );
+  }
+  if ((await rowsOfB(db, t)).join() !== beforeDelete.join()) {
     out.push(`${c.table}: delete without WHERE inside tenant A removed tenant B's rows`);
   }
   await ownerDb().execute(sql`truncate ${t}`);

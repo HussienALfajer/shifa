@@ -9,14 +9,17 @@ export interface IsolationCase {
   /** Table name in `public`, as listed in src/schema/classification.ts. */
   readonly table: string;
   /**
-   * Inserts at least one row for `tenantId` through `tx`. The runner calls it inside
-   * withTenant() as shifa_app (so WITH CHECK is exercised), and once with a foreign tenant to
-   * prove the insert is refused.
+   * Inserts at least one row for `tenantId` through `tx`, into `table` only and without
+   * RETURNING (a parent row's or the SELECT policy's refusal would hide this table's WITH
+   * CHECK). The runner calls it as shifa_app inside withTenant(), then with a foreign tenant
+   * inside tenant A and without a tenant context; both must be refused for this table.
    */
   seed(tx: Tx, tenantId: string): Promise<void>;
   /**
    * Every read path the application uses on this table, by name. Each returns rows that
-   * include `tenant_id` (raw SQL) or `tenantId` (Drizzle select).
+   * include `tenant_id` (raw SQL) or `tenantId` (Drizzle select), and must return some of
+   * tenant A's seeded rows (an empty result proves nothing). The runner adds its own
+   * unfiltered select, and runs every path without a tenant context too (zero rows expected).
    */
   readonly paths: Readonly<Record<string, (tx: Tx) => Promise<readonly TenantRow[]>>>;
 }
