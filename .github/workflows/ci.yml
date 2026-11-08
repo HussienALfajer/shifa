@@ -131,7 +131,9 @@ jobs:
             range="$PUSH_AFTER"   # first push: whole history reachable from it
           fi
           echo "Scanning ${range}"
-          "${RUNNER_TEMP}/gitleaks/gitleaks" git --no-banner --redact --exit-code 1 --log-opts="${range}" .
+          # --verbose names commit, file, line and rule of each finding; --redact hides the value.
+          # Reviewed false positives go in .gitleaksignore (fingerprints), never a wider allowlist.
+          "${RUNNER_TEMP}/gitleaks/gitleaks" git --no-banner --redact --verbose --exit-code 1 --log-opts="${range}" .
 
   workflows:
     name: workflow lint (zizmor)
