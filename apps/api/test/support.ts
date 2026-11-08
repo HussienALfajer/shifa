@@ -34,11 +34,15 @@ export function testContract(method: HttpMethod, path: string): Contract {
           .object(Object.fromEntries(names.map((name) => [name, z.string()])))
           .meta({ id: `${operationId.charAt(0).toUpperCase()}${operationId.slice(1)}Params` })
       : undefined;
+  // Methods that carry a body accept any body, so handlers may read @Body().
+  const body =
+    method === 'POST' || method === 'PUT' || method === 'PATCH' ? TestAnything : undefined;
+  const request = { ...(params ? { params } : {}), ...(body ? { body } : {}) };
   return defineContract({
     operationId,
     method,
     path,
-    ...(params ? { request: { params } } : {}),
+    ...(params || body ? { request } : {}),
     // Nest's default success status: 201 for POST, 200 otherwise.
     responses: { [method === 'POST' ? 201 : 200]: TestAnything },
   });

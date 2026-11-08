@@ -27,7 +27,9 @@ function contractProblems(route: RouteHandler, contract: Contract): string[] {
     problems.push(at(`one path per handler (has ${route.paths.join(', ')})`));
   } else if (contract.method !== route.method || contract.path !== path) {
     problems.push(
-      at(`contract says ${contract.method} ${contract.path}, route is ${route.method} ${path}`),
+      at(
+        `contract says ${contract.method} ${contract.path}, route is ${route.method ?? '(none)'} ${path}`,
+      ),
     );
   }
   if (!CAMEL_CASE.test(contract.operationId)) {
@@ -56,6 +58,42 @@ function contractProblems(route: RouteHandler, contract: Contract): string[] {
     problems.push(
       at(`params schema keys [${keys.join(', ')}] differ from path [${declared.join(', ')}]`),
     );
+  }
+  const query = contract.request?.query;
+  if (query && objectKeys(query) === undefined) {
+    problems.push(at('request query must be a z.object'));
+  }
+  return [...problems, ...routeShapeProblems(route, contract).map(at)];
+}
+
+/** Parameter decorators that read input the contract validates, by the part they need. */
+const NEEDS_PART: Readonly<Record<string, (typeof PARTS)[number]>> = {
+  BODY: 'body',
+  QUERY: 'query',
+  PARAM: 'params',
+};
+/** Parameter decorators that read nothing a client can shape beyond headers. */
+const HARMLESS = new Set(['HEADERS', 'IP', 'HOST']);
+
+/**
+ * Route features the contract cannot see: input read without a schema (`@Req()`, `@RawBody()`,
+ * own decorators, `@Body()` without `request.body`), versioning, path-only routes and path
+ * syntax that the document cannot express.
+ */
+function routeShapeProblems(route: RouteHandler, contract: Contract): string[] {
+  const problems: string[] = [];
+  for (const kind of route.args) {
+    const part = NEEDS_PART[kind];
+    if (part) {
+      if (!contract.request?.[part]) problems.push(`@${kind} used without request.${part}`);
+    } else if (!HARMLESS.has(kind)) {
+      problems.push(`${kind} parameter bypasses the contract; read input with @Body/@Query/@Param`);
+    }
+  }
+  if (route.versioned) problems.push('@Version() is not supported by contracts yet');
+  if (route.method === undefined) problems.push('no HTTP method decorator');
+  if (/[{}*?()]/.test(contract.path)) {
+    problems.push('optional segments, wildcards and regex paths are not supported');
   }
   return problems;
 }

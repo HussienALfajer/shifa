@@ -15,5 +15,7 @@ Named Zod 4 schemas, route contracts, the error envelope and the error-code cata
 - Enums are string enums (`z.enum([...])`), never numbers. Add values; never rename or reuse one.
 - Query and path values arrive as strings: use `z.coerce.number()` / `z.stringbool()`.
 - Path `:name` parameters must match the keys of the `params` object; `path` uses Nest style (`/patients/:id`).
+- Request schemas are documented in input shape (a `.default()` field is optional for callers), responses in output shape and open (no `additionalProperties: false`), so clients accept fields added later. A schema whose two shapes differ (default, transform) cannot serve both: split it into `<Name>Input` and `<Name>`; the generator stops otherwise. Two schemas never share an id.
+- Query and params are `z.object`s. Records and catchalls are allowed; their keys show as `*` in 400 details.
 - Responses list every success status the handler answers (POST defaults to 201 unless `@HttpCode`); 400/401/403 with `ErrorEnvelope` are added to the document automatically.
 - Error codes come from `ErrorCode` only. A `validation_failed` error lists `details: [{ path, code }]`, never the submitted value.

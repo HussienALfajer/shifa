@@ -2,7 +2,6 @@
   "components": {
     "schemas": {
       "ErrorBody": {
-        "additionalProperties": false,
         "properties": {
           "code": {
             "$ref": "#/components/schemas/ErrorCode"
@@ -46,7 +45,6 @@
         "type": "string"
       },
       "ErrorEnvelope": {
-        "additionalProperties": false,
         "properties": {
           "error": {
             "$ref": "#/components/schemas/ErrorBody"
@@ -58,7 +56,6 @@
         "type": "object"
       },
       "HealthStatus": {
-        "additionalProperties": false,
         "properties": {
           "status": {
             "const": "ok",
@@ -71,7 +68,6 @@
         "type": "object"
       },
       "ValidationIssue": {
-        "additionalProperties": false,
         "properties": {
           "code": {
             "$ref": "#/components/schemas/ValidationIssueCode"

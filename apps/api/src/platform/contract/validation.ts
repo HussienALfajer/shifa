@@ -18,6 +18,7 @@ import type { FastifyRequest } from 'fastify';
 import type { Observable } from 'rxjs';
 import type { z } from 'zod';
 import { CONTRACT_METADATA } from './decorator.ts';
+import { declaredPath } from './schema-walk.ts';
 
 /** A request that does not match its contract; the filter answers 400 `validation_failed`. */
 export class RequestValidationError extends BadRequestException {
@@ -33,10 +34,13 @@ function issueCode(code: string): ValidationIssue['code'] {
   return parsed.success ? parsed.data : 'custom';
 }
 
-/** Path and code of each issue; Zod's messages are dropped because some quote the input. */
-function toIssues(part: string, error: z.ZodError): ValidationIssue[] {
+/**
+ * Path and code of each issue. Zod's messages are dropped because some quote the input, and
+ * path segments the schema does not declare (record or catchall keys) become `*`.
+ */
+function toIssues(part: string, schema: z.ZodType, error: z.ZodError): ValidationIssue[] {
   return error.issues.map((issue) => ({
-    path: [part, ...issue.path.map(String)].join('.'),
+    path: [part, ...declaredPath(schema, issue.path)].join('.'),
     code: issueCode(issue.code),
   }));
 }
@@ -59,7 +63,7 @@ export class ContractValidationInterceptor implements NestInterceptor {
       if (!schema) continue;
       const result = schema.safeParse(req[part]);
       if (result.success) req[part] = result.data;
-      else issues.push(...toIssues(part, result.error));
+      else issues.push(...toIssues(part, schema, result.error));
     }
     if (issues.length > 0) {
       req.log.info({ route: req.routeOptions.url, issues }, 'request validation failed');

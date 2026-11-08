@@ -16,7 +16,7 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - Tests: `test/access/probe.ts` holds test keys, grants and a header-driven `AuthPort` (`buildTestApp({ auth, grants })`). `test/architecture/route-matrix.expected.ts` is the reviewed route × role matrix.
 
 ## Contracts (ADR-0013)
-- `src/platform/contract/`: `@Contract(c)`; `ContractCheck` at bootstrap (no contract, method/path/success-status mismatch, unnamed schema, undeclared path parameter, duplicate operationId → no start); global `ContractValidationInterceptor` (after the guard) validates params, query, body with Zod and replaces them with the parsed values; failures → 400 `validation_failed` with `details: [{ path, code }]`, logged with route template and issue codes only.
+- `src/platform/contract/`: `@Contract(c)`; `ContractCheck` at bootstrap (no contract, method/path/success-status mismatch, unnamed schema, undeclared path parameter, `@Body`/`@Query` without its schema, `@Req`/`@RawBody`/own param decorators, `@Version`, duplicate operationId → no start); global `ContractValidationInterceptor` (after the guard) validates params, query, body and replaces them with the parsed values; failures → 400 `validation_failed` with `details: [{ path, code }]` (undeclared keys as `*`), logged with route template and issue codes only.
 - `openapi.ts` builds the OpenAPI 3.1 document (`z.toJSONSchema`, components by id, `x-public` / `x-permission`); `scripts/generate-openapi.ts` writes `packages/contracts/generated/openapi.json` through the `openapi` drift check (bundled by `tsdown.openapi.config.ts`). No Swagger UI.
 - Test-only routes use `testContract(method, path)` from `test/support.ts`.
 

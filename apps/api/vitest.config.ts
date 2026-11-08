@@ -16,6 +16,7 @@ const unit = [
   'test/contract/contract-check.test.ts',
   'test/contract/validation.test.ts',
   'test/contract/openapi.test.ts',
+  'test/contract/hardening.test.ts',
 ];
 
 export default defineConfig({
