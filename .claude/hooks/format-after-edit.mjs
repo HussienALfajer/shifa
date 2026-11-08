@@ -34,11 +34,12 @@ if (BIOME.has(ext)) {
     encoding: 'utf8',
   });
 } else if (ext === '.dart') {
-  // dart is a .bat shim on Windows and needs a shell; pass one quoted command line.
-  result = spawnSync(`dart format "${filePath.replaceAll('"', '')}"`, {
+  // The pinned SDK (FVM), never a global dart; scripts/dart.mjs resolves it.
+  const dartScript = join(root, 'scripts', 'dart.mjs');
+  if (!existsSync(dartScript)) process.exit(0);
+  result = spawnSync(process.execPath, [dartScript, 'dart', 'format', filePath], {
     cwd: root,
     encoding: 'utf8',
-    shell: true,
   });
 } else {
   process.exit(0);

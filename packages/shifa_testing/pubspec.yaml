@@ -1,0 +1,13 @@
+name: shifa_testing
+description: Test helpers shared by Shifa Dart packages (fixed clock).
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dev_dependencies:
+  test: ^1.33.0
+  very_good_analysis: ^11.0.0

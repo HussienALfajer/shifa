@@ -29,6 +29,9 @@ const GENERATED = [
   /^packages\/api_client_dart\/lib\//i,
   /(^|\/)pnpm-lock\.yaml$/i,
   /(^|\/)pubspec\.lock$/i,
+  /\.g\.dart$/i,
+  /\.freezed\.dart$/i,
+  /\.mocks\.dart$/i,
 ];
 
 /** True when an Edit only rewrites the ADR's `Status:` line (e.g. "Superseded by ADR-0030"). */

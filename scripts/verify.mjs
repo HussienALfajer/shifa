@@ -78,6 +78,13 @@ const steps = [
   { name: 'instructions', cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
   { name: 'lint-root', cmd: 'pnpm', args: ['exec', 'eslint', '--max-warnings=0', '.'] },
   { name: 'scripts-test', cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
+  { name: 'file-length', cmd: 'node', args: ['scripts/check-file-length.mjs'] },
+  // Resolves the pub workspace from pubspec.lock without changing it (fast when up to date).
+  {
+    name: 'pub-get',
+    cmd: 'node',
+    args: ['scripts/dart.mjs', 'flutter', 'pub', 'get', '--enforce-lockfile'],
+  },
   {
     name: 'typecheck+lint+test',
     cmd: 'pnpm',

@@ -191,6 +191,8 @@ importers:
         specifier: 6.0.3
         version: 6.0.3
 
+  packages/shifa_testing: {}
+
   packages/testing:
     devDependencies:
       '@shifa/eslint-config':

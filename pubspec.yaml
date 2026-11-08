@@ -1,0 +1,10 @@
+# Pub workspace for every Dart and Flutter package (ADR-0002). Flutter is pinned in .fvmrc.
+# Run Dart tools through scripts/dart.mjs (or `fvm dart` / `fvm flutter`), never a global SDK.
+name: shifa_workspace
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+workspace:
+  - packages/shifa_testing

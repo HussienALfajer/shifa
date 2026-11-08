@@ -12,3 +12,9 @@
 *.ttf binary
 *.dcm binary
 *.riv binary
+
+# Generated Dart (also refused by the edit hook)
+*.g.dart linguist-generated
+*.freezed.dart linguist-generated
+*.mocks.dart linguist-generated
+pubspec.lock linguist-generated

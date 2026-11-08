@@ -1,6 +1,8 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "stream",
+  "globalDependencies": [".fvmrc", "pubspec.yaml", "pubspec.lock", "analysis_options.yaml"],
+  "globalPassThroughEnv": ["SHIFA_FLUTTER_ROOT", "PUB_CACHE", "LOCALAPPDATA", "APPDATA"],
   "tasks": {
     "typecheck": {
       "dependsOn": ["^typecheck"],
