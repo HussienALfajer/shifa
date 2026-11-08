@@ -19,5 +19,8 @@
 *.mocks.dart linguist-generated
 pubspec.lock linguist-generated
 
+# Generated artefacts of drift checks: OpenAPI, clients (also refused by the edit hook)
+**/generated/** linguist-generated
+
 # drizzle-kit snapshots (also refused by the edit hook)
 **/migrations/*/snapshot.json linguist-generated
