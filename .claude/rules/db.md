@@ -13,4 +13,4 @@ paths:
 - Roles live in `packages/db/sql/roles.sql` (cluster-level, idempotent), not in migrations.
 - Unique and foreign-key checks ignore RLS: include `tenant_id` in them so they cannot reveal other tenants' rows.
 - No real patient data in seeds, fixtures or migrations (`docs/compliance/data-handling.md`).
-- Every new table gets an RLS test as `shifa_app` through `testDb()` (pattern: `packages/db/test/with-tenant.test.ts`).
+- Every table in `public` is listed in `packages/db/src/schema/classification.ts` (tenant, global or system); every tenant table has an isolation case in `packages/db/test/isolation/cases/`. Use `/rls-policy`; the RLS presence test and isolation suite enforce both.

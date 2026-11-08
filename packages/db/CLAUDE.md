@@ -27,7 +27,9 @@ const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) =>
 - `testDb()` is shared within a file; once something closes it (an app under test at shutdown), the next call opens a new one.
 - Outside Vitest (scripts such as the API boot check), `@shifa/db/harness` starts the container: `startHarnessContainer()` under `acquireDbTestLock()`. Lint allows it in tests and `scripts/` only.
 - The guard refuses any host, port or database the harness did not create and never reads `DATABASE_URL`. A second run waits up to 5 minutes for `.verify/db-test.lock`.
-- Test-only tables (like `rls_probe`) are created in the test with `create table if not exists`, never in migrations.
+- Test-only tables (like `rls_probe`) are created in the test with `create table if not exists`, never in migrations, and never listed in the classification.
+- `test/architecture/rls-presence.test.ts` checks the catalog of a pristine clone (`shifa_test_9997`): every `public` table classified, tenant tables with `tenant_id`, ENABLE + FORCE RLS, policies on `current_tenant_id()`, indexes led by `tenant_id`, views `security_invoker`.
+- `test/isolation/isolation.test.ts` runs every case in `test/isolation/cases/` as `shifa_app` (reads and forged writes from tenant A against tenant B) and fails for a tenant table without a case. New tables: `/rls-policy`.
 
 ## Pins
 `drizzle-orm` / `drizzle-kit` 1.0.0-rc.5 (exact; upgrade with a changelog entry), `pg`, `testcontainers` exact. Images by digest in `test-harness/image.ts` (CI pulls the same).

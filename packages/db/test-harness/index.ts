@@ -33,11 +33,19 @@ export async function ensureWorkerDatabase(
   const name = `shifa_test_${poolId}`;
   if (created.has(name)) return name;
   await withPool(urlFor(info(), 'superuser', 'postgres'), async (pool) => {
-    const { rowCount } = await pool.query('SELECT 1 FROM pg_database WHERE datname = $1', [name]);
-    if (!rowCount) {
-      await pool.query(`CREATE DATABASE ${name} TEMPLATE shifa_template OWNER shifa_owner`);
-      // A clone does not inherit the template's database ACL; repeat the baseline's revoke.
-      await pool.query(`REVOKE TEMPORARY ON DATABASE ${name} FROM PUBLIC`);
+    // Several files may share a fixed clone (e.g. the pristine one for catalog checks) and
+    // run in different workers: serialize check-and-create per database name. The pool has
+    // one connection, so lock and unlock run in the same session.
+    await pool.query('SELECT pg_advisory_lock(hashtext($1))', [name]);
+    try {
+      const { rowCount } = await pool.query('SELECT 1 FROM pg_database WHERE datname = $1', [name]);
+      if (!rowCount) {
+        await pool.query(`CREATE DATABASE ${name} TEMPLATE shifa_template OWNER shifa_owner`);
+        // A clone does not inherit the template's database ACL; repeat the baseline's revoke.
+        await pool.query(`REVOKE TEMPORARY ON DATABASE ${name} FROM PUBLIC`);
+      }
+    } finally {
+      await pool.query('SELECT pg_advisory_unlock(hashtext($1))', [name]);
     }
   });
   created.add(name);
