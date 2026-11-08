@@ -6,7 +6,13 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!**/*.md", "!docs/brand/**", "!pnpm-lock.yaml"]
+    "includes": [
+      "**",
+      "!**/*.md",
+      "!docs/brand/**",
+      "!pnpm-lock.yaml",
+      "!**/migrations/*/snapshot.json"
+    ]
   },
   "formatter": {
     "enabled": true,

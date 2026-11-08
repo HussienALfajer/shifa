@@ -1,0 +1,5 @@
+# Reviewed gitleaks false positives: <commit>:<file>:<rule>:<line>. Add an entry only for a
+# synthetic value, with a comment saying what it is; real secrets are rotated, never ignored.
+
+# 0.2-05: synthetic query-parameter marker in a test ("synthetic-secret-0963"), renamed afterwards.
+673070213368bb82a5f4058b9494bf3c2123e4e3:packages/db/test/query-errors.test.ts:generic-api-key:10

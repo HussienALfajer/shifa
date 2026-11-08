@@ -1,0 +1,33 @@
+{
+  "name": "@shifa/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./test-harness/index.ts",
+    "./vitest.db.config": "./vitest.db.config.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "db:generate": "drizzle-kit generate"
+  },
+  "dependencies": {
+    "drizzle-orm": "1.0.0-rc.5",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@testcontainers/postgresql": "12.2.1",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "drizzle-kit": "1.0.0-rc.5",
+    "eslint": "10.14.0",
+    "testcontainers": "12.2.1",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

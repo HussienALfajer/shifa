@@ -32,6 +32,9 @@ const GENERATED = [
   /\.g\.dart$/i,
   /\.freezed\.dart$/i,
   /\.mocks\.dart$/i,
+  // drizzle-kit output: per-migration snapshots (1.0 layout) and the pre-1.0 meta/ journal.
+  /(^|\/)migrations\/[^/]+\/snapshot\.json$/i,
+  /(^|\/)migrations\/meta\/[^/]+\.json$/i,
 ];
 
 /** True when an Edit only rewrites the ADR's `Status:` line (e.g. "Superseded by ADR-0030"). */

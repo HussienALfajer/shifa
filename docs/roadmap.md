@@ -11,7 +11,7 @@ Rough estimate for a team of 4–5 developers working with Claude Code: pilot af
 | Phase | Content | Exit criteria | Status |
 |---|---|---|---|
 | 0.1 Re-documentation | Archive research, write product, domain, ADR, compliance and process docs | Owner reviewed the docs | Done 2026-11-08; owner reviewed and approved 2026-11-08 |
-| 0.2 Foundation (harness) | Repo, tooling, quality gates, Claude Code setup, CI — no features | Checklist below all green | In progress (0.2-01 to 0.2-03 done; 0.2-04 in review) |
+| 0.2 Foundation (harness) | Repo, tooling, quality gates, Claude Code setup, CI — no features | Checklist below all green | In progress (0.2-01 to 0.2-05 done) |
 | 0.3 Spikes | Prove risky technology choices with throwaway code | Each spike has a written result and an ADR update | Not started |
 | 0.4 Design system foundations | Tokens pipeline, base components, Flutter theme from the same tokens | Storybook with core components, visual and a11y tests in CI | Not started |
 | A Core platform | Super admin, tenancy, patients, scheduling and queue, voice calling, billing in three currencies, general clinical template, prescriptions, reports, messaging, patient app, public booking pages, offline reception | 10 pilot clinics run a full day without paper; phase audit passed | Not started |
@@ -31,12 +31,12 @@ Nothing in Phase A starts before every item is done.
 - [x] Monorepo skeleton (pnpm + Turborepo + Flutter via FVM) per [architecture overview](architecture/overview.md). pnpm + Turborepo done in 0.2-01; Flutter 3.47.9 via FVM and the pub workspace in 0.2-04.
 - [x] Strict TypeScript, type-aware ESLint (incl. no-floating-promises), Biome for formatting (chosen 2026-11-08), `very_good_analysis` for Dart, file-length limits. TypeScript side done in 0.2-01 (TypeScript 6.0 until typescript-eslint supports 7); Dart (`very_good_analysis`, 400-line Dart limit) in 0.2-04.
 - [x] `verify` command in two modes: fast (affected packages, cached) and full (PR/CI); short summary output, full logs on disk — 0.2-01 (extended per toolchain as slices land).
-- [ ] Test guard (one test run at a time), per-worker test databases (Testcontainers), fixed clock helpers.
+- [x] Test guard (one test run at a time), per-worker test databases (Testcontainers), fixed clock helpers. Clock helpers in 0.2-01 (`packages/testing`); DB harness, guard and `packages/db` (`withTenant`, roles, baseline migration) in 0.2-05.
 - [ ] Architecture tests: module boundaries, route permission matrix, RLS policy present on every tenant table, cross-tenant isolation suite run as the app's non-owner role.
 - [ ] Drift checks: OpenAPI vs code, generated TS/Dart clients, migrations, design tokens, translations.
 - [ ] Synthetic multi-clinic data generator ([data handling](compliance/data-handling.md)).
 - [ ] CI: pinned actions, secret scanning, dependency audit, 24-hour minimum package age, boot check of built apps, PR size budget, instruction-size budget. All but the boot check done in 0.2-02; the boot check lands with the first app (0.2-06 API skeleton).
-- [ ] Claude Code setup: root and per-package CLAUDE.md, `.claude/rules`, settings and permissions, hooks, reviewer/checker/security agents, skills (see [development-workflow](process/development-workflow.md)). Root CLAUDE.md, settings, deny rules, hooks, agents, process skills and the patient-data rule done in 0.2-03; per-package CLAUDE.md files, path rules and the domain skills (`/db-migration`, `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`) land with the slices that create those packages (0.2-04 to 0.2-07); `/release` with the first deployment.
+- [ ] Claude Code setup: root and per-package CLAUDE.md, `.claude/rules`, settings and permissions, hooks, reviewer/checker/security agents, skills (see [development-workflow](process/development-workflow.md)). Root CLAUDE.md, settings, deny rules, hooks, agents, process skills and the patient-data rule done in 0.2-03; per-package CLAUDE.md files, path rules and the domain skills (`/db-migration`, `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`) land with the slices that create those packages (0.2-04 to 0.2-07; `packages/db/CLAUDE.md`, `.claude/rules/db.md` and `/db-migration` done in 0.2-05); `/release` with the first deployment.
 - [ ] Observability skeleton (OpenTelemetry, GlitchTip), backup scripts (pgBackRest) and a restore drill.
 
 ## Phase 0.2 slices
@@ -46,8 +46,8 @@ Nothing in Phase A starts before every item is done.
 | 0.2-01 | Repository settings, TypeScript monorepo skeleton, Biome + ESLint, `verify`, instruction budgets | T1 | Done (#1) |
 | 0.2-02 | CI: pinned actions, gitleaks, dependency audit, workflow lint, PR size budget, required checks on `main` | T0 | Done (#2) |
 | 0.2-03 | Claude Code setup: root CLAUDE.md, settings and deny rules, hooks, agents, process skills, patient-data rule | T0 | Done (#3, #4) |
-| 0.2-04 | Flutter via FVM, pub workspace, `very_good_analysis`, Dart in `verify` | T1 | In review |
-| 0.2-05 | Database test harness: Postgres via Testcontainers, per-worker databases, test guard, `packages/db` with Drizzle | T0 | Planned |
+| 0.2-04 | Flutter via FVM, pub workspace, `very_good_analysis`, Dart in `verify` | T1 | Done (#7) |
+| 0.2-05 | Database test harness: Postgres via Testcontainers, per-worker databases, test guard, `packages/db` with Drizzle and `withTenant` ([slice](slices/0.2-05-db-test-harness.md)) | T0 | Done |
 | 0.2-06 | API skeleton with CI boot check; architecture tests: module boundaries, route permission matrix, RLS presence, cross-tenant isolation suite (non-owner role) | T0 | Planned |
 | 0.2-07 | Contract and drift checks: OpenAPI, generated TS/Dart clients, migrations, tokens, translations | T1 | Planned |
 | 0.2-08 | Synthetic multi-clinic data generator | T1 | Planned |

@@ -7,10 +7,97 @@ import tseslint from 'typescript-eslint';
 /** Hand-written files above this length must be split. */
 export const MAX_LINES = 400;
 
+const DB_MESSAGE = 'Use @shifa/db (withTenant) instead of a raw database connection (ADR-0005).';
+const DRIVERS = [
+  'pg',
+  'pg-pool',
+  'pg-native',
+  'postgres',
+  '@neondatabase/serverless',
+  '@electric-sql/pglite',
+];
+const DRIZZLE_DRIVERS = [
+  'node-postgres',
+  'postgres-js',
+  'pg-proxy',
+  'pglite',
+  'neon-serverless',
+  'neon-http',
+  'vercel-postgres',
+  'xata-http',
+  'aws-data-api',
+];
+const TEST_FILES = ['test/**', 'tests/**', 'e2e/**', '**/*.test.*', '**/*.spec.*'];
+
+// For no-restricted-syntax: the same modules loaded with import() or require(). esquery regexes
+// cannot contain "/", so / stands for it.
+const S = String.raw`/`;
+const RAW_DB_MODULE = new RegExp(
+  [
+    `^(${DRIVERS.join('|').replaceAll('/', S)})(${S}|$)`,
+    `^drizzle-orm${S}(${DRIZZLE_DRIVERS.join('|')}|pg-core${S})`,
+  ].join('|'),
+).source;
+
 /**
- * @param {{ tsconfigRootDir: string }} options
+ * ADR-0005: database access goes through `withTenant()` in @shifa/db. Raw drivers and Drizzle
+ * session/transaction classes are blocked outside `allowRawDb`; schema builders stay allowed.
+ * `@shifa/db/testing` (raw owner/app handles) is allowed in test files only.
+ * @param {string[]} allowRawDb globs (relative to the package) that may use them
+ * @param {boolean} allowTesting whether this block is for test files
  */
-export function createConfig({ tsconfigRootDir }) {
+function dbImportRestrictions(allowRawDb, allowTesting) {
+  const message = DB_MESSAGE;
+  return {
+    files: allowTesting ? TEST_FILES : ['**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+    ignores: allowRawDb,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            ...DRIVERS.map((name) => ({ name, message })),
+            {
+              name: 'drizzle-orm/pg-core',
+              importNames: ['PgDatabase', 'PgAsyncDatabase', 'PgSession', 'PgTransaction'],
+              message,
+            },
+            ...(allowTesting
+              ? []
+              : [{ name: '@shifa/db/testing', message: '@shifa/db/testing is for tests only.' }]),
+          ],
+          patterns: [
+            { group: DRIVERS.map((d) => `${d}/*`), message },
+            {
+              group: DRIZZLE_DRIVERS.flatMap((d) => [`drizzle-orm/${d}`, `drizzle-orm/${d}/*`]),
+              message,
+            },
+            { group: ['drizzle-orm/pg-core/*'], message },
+          ],
+        },
+      ],
+      'no-restricted-syntax': [
+        'error',
+        { selector: `ImportExpression[source.value=/${RAW_DB_MODULE}/]`, message },
+        {
+          selector: `CallExpression[callee.name='require'][arguments.0.value=/${RAW_DB_MODULE}/]`,
+          message,
+        },
+        {
+          // createRequire(import.meta.url)('pg')
+          selector: `CallExpression[callee.type='CallExpression'][arguments.0.value=/${RAW_DB_MODULE}/]`,
+          message,
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * @param {{ tsconfigRootDir: string, allowRawDb?: string[] }} options
+ *   allowRawDb: only @shifa/db passes this (its src/ and test-harness/).
+ */
+export function createConfig({ tsconfigRootDir, allowRawDb = [] }) {
   return defineConfig(
     { ignores: ['dist/**', 'coverage/**', '**/*.generated.*', '**/generated/**'] },
     js.configs.recommended,
@@ -31,6 +118,8 @@ export function createConfig({ tsconfigRootDir }) {
         eqeqeq: ['error', 'always'],
       },
     },
+    dbImportRestrictions(allowRawDb, false),
+    dbImportRestrictions(allowRawDb, true),
     {
       files: ['**/*.js', '**/*.mjs'],
       extends: [tseslint.configs.disableTypeChecked],

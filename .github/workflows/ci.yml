@@ -57,6 +57,17 @@ jobs:
           echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
           "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
           "${RUNNER_TEMP}/flutter/bin/flutter" --version
+      # DB tests (packages/db) start PostgreSQL and Ryuk through Testcontainers. Pull both by the
+      # digests pinned in packages/db/test-harness/image.ts, so the pull is outside test timeouts.
+      - name: Pull database test images
+        run: |
+          images="$(grep -oE "'(postgres|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
+            packages/db/test-harness/image.ts | tr -d "'")"
+          if [ "$(echo "$images" | wc -w)" -ne 2 ]; then
+            echo "::error::expected 2 digest-pinned images in packages/db/test-harness/image.ts"
+            exit 1
+          fi
+          for image in $images; do docker pull --quiet "$image"; done
       - run: node scripts/verify.mjs full
       # verify must never re-resolve Dart dependencies; a changed lockfile means it did.
       - name: pubspec.lock unchanged
@@ -120,7 +131,9 @@ jobs:
             range="$PUSH_AFTER"   # first push: whole history reachable from it
           fi
           echo "Scanning ${range}"
-          "${RUNNER_TEMP}/gitleaks/gitleaks" git --no-banner --redact --exit-code 1 --log-opts="${range}" .
+          # --verbose names commit, file, line and rule of each finding; --redact hides the value.
+          # Reviewed false positives go in .gitleaksignore (fingerprints), never a wider allowlist.
+          "${RUNNER_TEMP}/gitleaks/gitleaks" git --no-banner --redact --verbose --exit-code 1 --log-opts="${range}" .
 
   workflows:
     name: workflow lint (zizmor)

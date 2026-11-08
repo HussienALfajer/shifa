@@ -14,7 +14,18 @@
     },
     "test": {
       "dependsOn": ["^typecheck"],
-      "inputs": ["$TURBO_DEFAULT$"]
+      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/lib/lock.mjs"],
+      "passThroughEnv": [
+        "DOCKER_HOST",
+        "DOCKER_CONTEXT",
+        "DOCKER_CONFIG",
+        "DOCKER_CERT_PATH",
+        "DOCKER_TLS_VERIFY",
+        "TESTCONTAINERS_*",
+        "RYUK_CONTAINER_IMAGE",
+        "HOME",
+        "USERPROFILE"
+      ]
     }
   }
 }
