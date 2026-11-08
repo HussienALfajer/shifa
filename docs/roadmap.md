@@ -49,7 +49,7 @@ Nothing in Phase A starts before every item is done.
 | 0.2-04 | Flutter via FVM, pub workspace, `very_good_analysis`, Dart in `verify` | T1 | Done (#7) |
 | 0.2-05 | Database test harness: Postgres via Testcontainers, per-worker databases, test guard, `packages/db` with Drizzle and `withTenant` ([slice](slices/0.2-05-db-test-harness.md)) | T0 | Done |
 | 0.2-06a | API skeleton (NestJS + Fastify), health, sanitised error logging, CI boot check of the built app ([slice](slices/0.2-06a-api-skeleton.md)) | T0 | Done (#10) |
-| 0.2-06b | RLS presence check and cross-tenant isolation suite as `shifa_app`; `/rls-policy` ([slice](slices/0.2-06b-rls-isolation-suite.md)); independent of 0.2-06a | T0 | In review |
+| 0.2-06b | RLS presence check and cross-tenant isolation suite as `shifa_app`; `/rls-policy` ([slice](slices/0.2-06b-rls-isolation-suite.md)); independent of 0.2-06a | T0 | In review (#14) |
 | 0.2-06c | Fail-closed route permissions, route permission matrix test; `/add-endpoint` ([slice](slices/0.2-06c-api-access-and-boundaries.md)); after 0.2-06a | T0 | Done (#12) |
 | 0.2-06d | API module boundaries: lint rule + compiler-API architecture test ([slice](slices/0.2-06d-module-boundaries.md)); parallel with 0.2-06c | T1 | In review |
 | 0.2-07 | Contract and drift checks: OpenAPI, generated TS/Dart clients, migrations, tokens, translations | T1 | Planned |
