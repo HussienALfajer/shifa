@@ -97,13 +97,12 @@ Rules:
 
 - **Start:** read [roadmap](../roadmap.md) and the slice file; check `git status` and the branch; restate the goal and the tier.
 - **During:** commit at green checkpoints; keep the slice file's "stopped at" line current.
-- **End:** update the slice file and roadmap; report to the owner **in Arabic**: what changed, evidence, risks, what is left, and the next session's first message, model and effort.
+- **End:** update the slice file and roadmap; open the PR at once and report to the owner **in Arabic** in the format of `CLAUDE.md` ("Finishing a task", "Reporting"): needs from you (with the branch cleanup line), changed, verified, found, next step (first message, model and effort).
 
 ## 10. Claude Code configuration (built in Phase 0.2)
 
 - **Plan (OD-06, closed 2026-11-08):** the owner's standard Anthropic plan, no HIPAA-style configuration; this holds only while no real patient data enters development ([ADR-0023](../adr/README.md)).
-- **Settings** (`.claude/settings.json`, built in slice 0.2-03): model `claude-opus-5-5`; `effortLevel` medium; deny rules for `.env*`, keys, secrets and data dumps; ask before merging a PR, applying migrations or deploying. The permission mode is the developer's choice in their own settings or the app ([ADR-0027](../adr/0027-owner-chooses-permission-mode.md)): `auto` is recommended, `bypassPermissions` is allowed; Claude itself never starts a session that skips permissions. Claude Code ignores `defaultMode` in project settings, so it lives in `~/.claude/settings.json`. Read deny rules do not cover shell commands, so the Bash guard hook also refuses reading secrets through the shell.
-- **Hooks:**
+- **Settings** (`.claude/settings.json`, built in slice 0.2-03): model `claude-opus-5-5`; `effortLevel` medium; no deny or ask rules, every built-in tool allowed, secret files included ([ADR-0028](../adr/0028-allow-all-permissions-and-auto-merge.md)). The permission mode is the developer's choice in their own settings or the app ([ADR-0027](../adr/0027-owner-chooses-permission-mode.md)): `auto` is recommended, `bypassPermissions` is allowed; Claude itself never starts a session that skips permissions. Claude Code ignores `defaultMode` in project settings, so it lives in `~/.claude/settings.json`.- **Hooks:**
   - after edits: formatter (Biome/Prettier, `dart format`);
   - before edits: block generated files, applied migrations, locked tests during implementation, env files;
   - Bash guard: block shell writes into source folders (shell edits bypassed formatting in past projects) [RN-21];

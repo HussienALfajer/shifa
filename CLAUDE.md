@@ -26,6 +26,24 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - Requirements are cited by ID (`SCH-07`, `DEN-12`); keep IDs stable. Research is cited as `[RN-xx §section]`.
 - `main` changes only through a reviewed PR with green CI.
 
+## Finishing a task: open the PR at once
+When a task's work is done (a spec, a slice, a fix, a docs change), finish it in the same turn; never ask whether to commit, push, open the PR or enable auto-merge and Auto-fix (ADR-0028). Stop and report at the first step that fails.
+1. **Branch:** not `main`; name it by type (`feat/`, `fix/`, `chore/`, `docs/`, or the slice ID).
+2. **Docs:** update `docs/roadmap.md`, the slice file and every doc the change made stale.
+3. **Secrets:** `git status` and `git diff --stat` show no `.env`, key, dump or stray file.
+4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks).
+5. **Review:** for a slice, the `reviewer` agent (+ `security-reviewer` for T0) has run and its blocking findings are fixed.
+6. **Commit and PR:** Conventional Commit; `gh pr create --base main` with `## Summary` and `## Test plan`; then enable auto-merge (squash) and Auto-fix. If CI fails, fix the cause on the branch and push.
+7. **Report** in Arabic in the format below.
+
+## Reporting
+End every substantial task with these sections, in this order:
+1. **Needs from you**: blocking decisions, a slice's acceptance steps, or "nothing". When the task opened or merged a PR, end with the cleanup line in a code block, to run after the merge (squash merges need `-D`): `cd D:\shifa; git switch main; git pull --ff-only; git fetch --prune; git branch -D <branch>`
+2. **Changed**: what was built or modified, with the PR link.
+3. **Verified**: checks run and their results (the `verify` summary, CI).
+4. **Found**: issues, risks or follow-ups noticed.
+5. **Next step**, always last: the next task (from `docs/roadmap.md` or what this task uncovered), why it comes next and what it needs from the owner; whether it needs a new session (`/clear`) and plan mode; the model and effort to set (`docs/process/development-workflow.md` §7); and the exact first message to send, in its own code block.
+
 ## Enforced by hooks (`.claude/hooks/`)
 - Secret files (`.env*`, keys, dumps) are allowed (ADR-0028); never commit them.
 - Edits are refused for generated files, `pnpm-lock.yaml`, `docs/research/archive/`, accepted ADRs on `main` (only the `Status:` line may change; write a superseding ADR), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
