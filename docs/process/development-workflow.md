@@ -18,7 +18,7 @@ How Shifa is built: almost all code is written by Claude Code (Opus 5.5) under t
 
 ## 2. Risk tiers
 
-Every slice and every PR carries a tier. The tier decides effort level, review depth and who may merge.
+Every slice and every PR carries a tier. The tier decides effort level and review depth. Since ADR-0028 every PR gets auto-merge and auto-fix; the Merge column below is the owner's review expectation, not a merge lock.
 
 | Tier | Areas | Effort | Review gate | Merge |
 |---|---|---|---|---|

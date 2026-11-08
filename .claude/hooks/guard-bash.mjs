@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PreToolUse (Bash|PowerShell): refuses shell writes into source folders, reading secrets,
+// PreToolUse (Bash|PowerShell): refuses shell writes into source folders,
 // skipping git hooks, force pushes, pushes to main and permission bypasses.
 // Fails closed: any unexpected error blocks the call.
 import { block, readEvent } from './lib/io.mjs';

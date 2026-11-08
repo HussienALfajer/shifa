@@ -4,7 +4,6 @@ import {
   checkBash,
   checkEdit,
   codeChanges,
-  isSecretPath,
   isStatusLineEdit,
   stripPayload,
   toRepoPath,
@@ -34,28 +33,9 @@ describe('toRepoPath', () => {
   });
 });
 
-describe('isSecretPath', () => {
-  for (const p of [
-    '.env',
-    '.env.local',
-    'apps/api/.env.production',
-    'certs/server.pem',
-    'tls/x.KEY',
-    'secrets/db.txt',
-    'ops/dumps/2026.sql',
-    'data-exports/patients.csv',
-    'backup.sql.gz',
-  ]) {
-    it(`flags ${p}`, () => assert.equal(isSecretPath(p), true));
-  }
-  for (const p of [
-    '.env.example',
-    'apps/api/.env.example',
-    'src/environment.ts',
-    'keys.ts',
-    'docs/secrets-policy.md',
-  ]) {
-    it(`allows ${p}`, () => assert.equal(isSecretPath(p), false));
+describe('secret files (ADR-0028: allowed)', () => {
+  for (const p of ['.env', '.env.local', 'apps/api/.env.production', 'certs/server.pem']) {
+    it(`allows editing ${p}`, () => assert.equal(checkEdit(p, branchOnly), null));
   }
 });
 
@@ -80,8 +60,7 @@ describe('checkEdit', () => {
     assert.equal(checkEdit('packages/db/migrations/0002_add.sql', branchOnly), null);
   });
 
-  it('blocks secrets, generated files and the lockfile', () => {
-    assert.match(checkEdit('.env', branchOnly), /secrets/);
+  it('blocks generated files and the lockfile', () => {
     assert.match(checkEdit('packages/api-client-ts/src/index.ts', merged), /generated/);
     assert.match(checkEdit('packages/x/src/generated/types.ts', branchOnly), /generated/);
     assert.match(checkEdit('packages/x/src/api.generated.ts', branchOnly), /generated/);
@@ -147,13 +126,6 @@ describe('checkBash', () => {
     '"x" | Out-File apps\\web\\x.ts',
     '"x" > apps\\web\\x.ts',
     'sc apps/web/x.ts 1',
-    // secrets
-    'cat .env',
-    'cat apps/api/.env.local',
-    'Get-Content .env',
-    'grep DATABASE_URL .env',
-    'Select-String -Pattern X -Path .env.local',
-    'head -n 3 certs/server.pem',
     // git and permissions
     'git commit --no-verify -m x',
     'git push --force origin feature',
@@ -175,6 +147,10 @@ describe('checkBash', () => {
     'node scripts/verify.mjs full > /dev/null 2>&1',
     'echo done > /tmp/out.txt',
     'cat .env.example',
+    // secrets are readable (ADR-0028)
+    'cat .env',
+    'Get-Content apps/api/.env.local',
+    'head -n 3 certs/server.pem',
     'cat packages/testing/src/clock.ts',
     'git log --oneline main',
     "grep -rn 'mainly' docs",

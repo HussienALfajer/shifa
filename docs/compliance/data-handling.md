@@ -13,7 +13,7 @@ Purpose: define how personal and health data is handled across development, AI-a
 | Production | Real data | Clinics by role; platform staff only via audited support access |
 
 - Synthetic data generator (`packages/testing`): multiple tenants, branches and doctors; Syrian Arabic names and naming patterns; +963 and +90 phones; three currencies; dental charts, fractures, PROM answers; synthetic or public test DICOM.
-- Claude Code: deny rules on `.env*`, secrets, dumps and data-export paths; hooks block writes to them, including via shell; sandbox enabled under WSL2; no production credentials on development machines.
+- Claude Code: may read and edit `.env*`, secrets, dumps and data-export paths (ADR-0028); `.gitignore` and the CI secret scan keep them out of git; sandbox enabled under WSL2; no production credentials on development machines.
 - Logs, traces and error reports never contain personal or clinical data; a test fails if listed sensitive fields reach a logger.
 
 ## 2. Production access
