@@ -17,6 +17,8 @@ export interface CreateDbOptions {
   max?: number;
   /** Called when an idle pooled connection fails (e.g. the server restarted). */
   onIdleError?: (err: Error) => void;
+  /** Give up opening a connection after this long (default 5000 ms) instead of the OS TCP timeout. */
+  connectTimeoutMs?: number;
 }
 
 /**
@@ -25,7 +27,12 @@ export interface CreateDbOptions {
  * withPlatformAdmin(), and each `tx` handle stops working when its callback ends.
  */
 export function createDb(url: string, options: CreateDbOptions = {}): ShifaDb {
-  const pool = new Pool({ connectionString: url, max: options.max ?? 10 });
+  const pool = new Pool({
+    connectionString: url,
+    max: options.max ?? 10,
+    // A black-holed database must fail requests and probes quickly, not pile them up.
+    connectionTimeoutMillis: options.connectTimeoutMs ?? 5000,
+  });
   // Without a listener an idle-connection error would crash the process; the next query on
   // a fresh connection reports any lasting problem.
   pool.on('error', options.onIdleError ?? (() => undefined));

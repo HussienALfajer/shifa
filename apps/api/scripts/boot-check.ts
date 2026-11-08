@@ -134,17 +134,22 @@ async function checkAppRole(url: string): Promise<string> {
 
 async function checkOwnerRefused(url: string): Promise<string> {
   const app = startApi(url, await freePort());
-  const { code } = await withTimeout(app.exited, READY_TIMEOUT_MS, 'owner URL: API kept running');
-  if (code === 0 || code === null) {
+  try {
+    const { code } = await withTimeout(app.exited, READY_TIMEOUT_MS, 'owner URL: API kept running');
+    if (code === 0 || code === null) {
+      throw new BootCheckError(`owner URL: expected a non-zero exit, got ${String(code)}`);
+    }
+    if (!app.output().includes('database check failed at startup')) {
+      throw new BootCheckError('owner URL: exited, but not through the startup database check');
+    }
+    say(`owner URL refused (exit ${String(code)})`);
+    return app.output();
+  } catch (err) {
+    // A still-running child would hold the pipes open and hang this script.
     app.child.kill('SIGKILL');
-    throw new BootCheckError(`owner URL: expected a non-zero exit, got ${String(code)}`);
-  }
-  if (!app.output().includes('database check failed at startup')) {
     process.stdout.write(app.output());
-    throw new BootCheckError('owner URL: exited, but not through the startup database check');
+    throw err;
   }
-  say(`owner URL refused (exit ${String(code)})`);
-  return app.output();
 }
 
 async function main(): Promise<void> {

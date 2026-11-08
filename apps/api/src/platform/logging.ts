@@ -5,6 +5,7 @@ import type { IncomingMessage } from 'node:http';
 import type { LoggerService } from '@nestjs/common';
 import { type DestinationStream, type Logger, pino } from 'pino';
 import type { LogLevel } from '../config/env.ts';
+import { describeError } from './errors.ts';
 
 export type { Logger } from 'pino';
 
@@ -56,8 +57,9 @@ export function createLogger({
       // Fastify's request log: method and path only (no headers, query, body or address).
       req: (req: RequestLike) => ({ method: req.method, path: pathOf(req.url) }),
       res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode }),
-      // `err` is already sanitised by describeError(); pino's default would re-add fields.
-      err: (err: unknown) => err,
+      // Callers pass describeError() output; a raw error logged by mistake (or by a library)
+      // is sanitised here, so a pg error's `detail` never reaches the log either way.
+      err: (err: unknown) => (err instanceof Error ? describeError(err) : err),
     },
   };
   return destination ? pino(options, destination) : pino(options);
@@ -68,14 +70,18 @@ export function createLogger({
  * last argument; anything between (an error's stack) is dropped, since a stack's first line
  * repeats the error message, which may hold a value.
  */
+const CONTEXT = /^[A-Za-z0-9_.-]{1,64}$/;
+
 export class NestPinoLogger implements LoggerService {
   constructor(private readonly logger: Logger) {}
 
   #write(level: 'info' | 'error' | 'warn' | 'debug' | 'trace' | 'fatal', args: unknown[]) {
     const [message, ...rest] = args;
-    const context = rest.at(-1);
+    const last = rest.at(-1);
+    // A context is a short class name; a lone stack trace passed as last argument is not.
+    const context = typeof last === 'string' && CONTEXT.test(last) ? last : undefined;
     this.logger[level](
-      typeof context === 'string' ? { context } : {},
+      context === undefined ? {} : { context },
       typeof message === 'string' ? message : 'non-text log message',
     );
   }

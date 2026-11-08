@@ -45,7 +45,13 @@ function distance(a: string, b: string): number {
  * silently fall back to a default. Unrelated variables of the host (API_TIMEOUT_MS) are ignored.
  */
 function isNearMiss(key: string): boolean {
-  return !KNOWN_KEYS.has(key) && [...KNOWN_KEYS].some((known) => distance(key, known) <= 2);
+  // Same first three letters as well, so a host's APP_PORT is not mistaken for API_PORT.
+  return (
+    !KNOWN_KEYS.has(key) &&
+    [...KNOWN_KEYS].some(
+      (known) => key.slice(0, 3) === known.slice(0, 3) && distance(key, known) <= 2,
+    )
+  );
 }
 
 const schema = z.object({
