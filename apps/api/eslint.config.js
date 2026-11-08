@@ -1,7 +1,7 @@
 import { createConfig } from '@shifa/eslint-config';
 
 export default [
-  ...createConfig({ tsconfigRootDir: import.meta.dirname }),
+  ...createConfig({ tsconfigRootDir: import.meta.dirname, moduleBoundaries: { root: 'src' } }),
   {
     // Nest modules are decorated classes with no members (or only static register()).
     rules: {

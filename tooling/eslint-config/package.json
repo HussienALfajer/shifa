@@ -4,7 +4,11 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./rules/module-boundaries": {
+      "types": "./rules/module-boundaries.d.ts",
+      "default": "./rules/module-boundaries.js"
+    }
   },
   "peerDependencies": {
     "eslint": "^10.0.0",
