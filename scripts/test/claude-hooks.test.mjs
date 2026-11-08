@@ -67,6 +67,14 @@ describe('checkEdit', () => {
     assert.match(checkEdit('pnpm-lock.yaml', merged), /generated/);
   });
 
+  it('blocks generated Dart files but not hand-written ones', () => {
+    assert.match(checkEdit('apps/patient_app/lib/foo.g.dart', branchOnly), /generated/);
+    assert.match(checkEdit('apps/patient_app/lib/foo.freezed.dart', branchOnly), /generated/);
+    assert.match(checkEdit('apps/patient_app/test/foo.mocks.dart', branchOnly), /generated/);
+    assert.match(checkEdit('pubspec.lock', branchOnly), /generated/);
+    assert.equal(checkEdit('packages/shifa_testing/lib/src/fixed_clock.dart', merged), null);
+  });
+
   it('blocks the research archive in any casing', () => {
     assert.match(checkEdit('docs/research/archive/x/y.md', branchOnly), /read-only/);
     assert.match(checkEdit('Docs/Research/archive/x.md', branchOnly), /read-only/);

@@ -1,0 +1,17 @@
+# Strict analysis for every Dart package in the pub workspace (ADR-0012).
+include: package:very_good_analysis/analysis_options.yaml
+
+analyzer:
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
+    - "**/*.mocks.dart"
+    - "**/generated/**"
+  errors:
+    unawaited_futures: error
+    discarded_futures: error
+
+linter:
+  rules:
+    discarded_futures: true
+    unawaited_futures: true

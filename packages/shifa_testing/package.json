@@ -1,0 +1,11 @@
+{
+  "name": "@shifa/dart-testing",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turborepo task wrapper for the Dart package shifa_testing (see pubspec.yaml).",
+  "scripts": {
+    "typecheck": "node ../../scripts/dart.mjs dart analyze --fatal-infos",
+    "lint": "node ../../scripts/dart.mjs dart format --output=none --set-exit-if-changed lib test",
+    "test": "node ../../scripts/dart.mjs dart test"
+  }
+}

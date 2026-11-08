@@ -18,7 +18,7 @@ build/
 coverage/
 .next/
 .dart_tool/
-.fvm/flutter_sdk
+.fvm/
 *.log
 
 # Claude Code local files
