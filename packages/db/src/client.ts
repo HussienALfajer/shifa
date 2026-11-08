@@ -8,7 +8,7 @@ export interface ShifaDb {
   withTenant<T>(ctx: TenantContext, fn: (tx: Tx) => Promise<T>): Promise<T>;
   /** Cross-tenant platform work; requires a reason (audited once the audit slice lands). */
   withPlatformAdmin<T>(reason: string, fn: (tx: Tx) => Promise<T>): Promise<T>;
-  /** Ends the pool; call once at shutdown. */
+  /** Ends the pool at shutdown; later calls return the same promise. */
   close(): Promise<void>;
 }
 
@@ -29,9 +29,11 @@ export function createDb(url: string, options: CreateDbOptions = {}): ShifaDb {
   // Without a listener an idle-connection error would crash the process; the next query on
   // a fresh connection reports any lasting problem.
   pool.on('error', options.onIdleError ?? (() => undefined));
+  // pg throws on a second end(); a shutdown signal can race a manual close, so close once.
+  let closing: Promise<void> | undefined;
   return {
     withTenant: (ctx, fn) => runWithTenant(pool, ctx, fn),
     withPlatformAdmin: (reason, fn) => runAsPlatformAdmin(pool, reason, fn),
-    close: () => pool.end(),
+    close: () => (closing ??= pool.end()),
   };
 }
