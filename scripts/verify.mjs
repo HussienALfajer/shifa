@@ -87,6 +87,8 @@ const steps = [
   },
   {
     name: 'typecheck+lint+test',
+    // `dart test` re-resolves the workspace and would rewrite pubspec.lock if pub-get failed.
+    requires: 'pub-get',
     cmd: 'pnpm',
     args: [
       'exec',
@@ -105,6 +107,13 @@ const steps = [
 const results = [];
 for (const step of steps) {
   const logPath = join(logDir, `${step.name.replaceAll('+', '-')}.log`);
+  const prerequisite = results.find((r) => r.name === step.requires);
+  if (prerequisite && prerequisite.code !== 0) {
+    const output = `skipped: ${step.requires} failed\n`;
+    writeFileSync(logPath, output);
+    results.push({ ...step, code: 1, output, logPath, seconds: '0.0' });
+    continue;
+  }
   const started = performance.now();
   const { code, output } = await run(step.cmd, step.args, logPath);
   const seconds = ((performance.now() - started) / 1000).toFixed(1);

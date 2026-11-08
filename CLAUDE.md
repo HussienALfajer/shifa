@@ -10,7 +10,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 
 ## Commands
 - `pnpm install` — Node 24, pnpm 12 (pinned); refuses packages younger than 24 hours.
-- Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
+- Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm 4.3.2` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
 - `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
 - `pnpm format` — Biome formats; ESLint (type-aware, `tooling/eslint-config`) lints. Files over 400 lines fail lint.

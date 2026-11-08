@@ -44,6 +44,9 @@ export function countCodeLines(source) {
     }
     if (line === '' || line.startsWith('//')) continue;
     count += 1;
+    // A block comment opened after code and not closed on this line continues below.
+    const open = line.lastIndexOf('/*');
+    if (open > 0 && line.indexOf('*/', open + 2) === -1) inBlock = true;
   }
   return count;
 }
