@@ -19,13 +19,8 @@ export function toRepoPath(filePath, projectDir) {
   return rel.replace(/^\.\//, '');
 }
 
-const SECRET_FILE = [
-  /(^|\/)\.env(\.(?!example$)[^/]*)?$/i, // .env, .env.local — but not .env.example
-  /\.(pem|key|p12|pfx)$/i,
-  /(^|\/)secrets\//i,
-  /(^|\/)(dumps|data-exports)\//i,
-  /\.(dump|sql\.gz|bak)$/i,
-];
+// Secret files (.env, keys, secrets/, dumps) are not guarded: the owner allows Claude to read
+// and edit them (ADR-0028). `.gitignore` and the CI secret scan still keep them out of git.
 
 const GENERATED = [
   /(^|\/)generated\//i,
@@ -35,10 +30,6 @@ const GENERATED = [
   /(^|\/)pnpm-lock\.yaml$/i,
   /(^|\/)pubspec\.lock$/i,
 ];
-
-export function isSecretPath(repoPath) {
-  return SECRET_FILE.some((re) => re.test(repoPath));
-}
 
 /** True when an Edit only rewrites the ADR's `Status:` line (e.g. "Superseded by ADR-0030"). */
 export function isStatusLineEdit(oldString, newString) {
@@ -65,9 +56,6 @@ export function checkEdit(
   repoPath,
   { onMain, acceptedOnMain = false, statusLineOnly = false, lockedTests },
 ) {
-  if (isSecretPath(repoPath)) {
-    return `${repoPath} may hold secrets or data dumps; Claude never writes these files (data-handling policy).`;
-  }
   if (GENERATED.some((re) => re.test(repoPath))) {
     return `${repoPath} is generated; change its source and re-run the generator instead.`;
   }
@@ -110,8 +98,6 @@ const PATH_INTO_SRC = String.raw`["']?(?:[^\s"'|;&<>]*?[\\/])?(?:${DIRS})[\\/]`;
 const SRC = String.raw`(?:^|[\s"'=(])${PATH_INTO_SRC}`;
 const SRC_AFTER_OP = String.raw`\s*${PATH_INTO_SRC}`;
 
-const READERS = String.raw`cat|less|more|head|tail|type|bat|source|Get-Content|gc|xxd|od|strings|base64|grep|rg|awk|sed|sort|cp|copy|Copy-Item|Select-String|sls|findstr`;
-
 const BASH_RULES = [
   {
     re: new RegExp(String.raw`(?:^|[^0-9&>])>{1,2}${SRC_AFTER_OP}`),
@@ -131,17 +117,6 @@ const BASH_RULES = [
       'i',
     ),
     why: 'PowerShell writes into a source folder bypass the edit hooks; use the Edit or Write tool.',
-  },
-  {
-    re: new RegExp(
-      String.raw`\b(${READERS})\b[^|;&]*(?:^|[\s"'/\\])\.env(?!\.example)(\.[\w.-]+)?(?:\s|$|["'])`,
-      'i',
-    ),
-    why: 'Reading .env files is denied; Claude never handles real credentials.',
-  },
-  {
-    re: new RegExp(String.raw`\b(${READERS})\b[^|;&]*\.(pem|key|p12|pfx)\b`, 'i'),
-    why: 'Reading private keys is denied.',
   },
   { re: /\s--no-verify\b/, why: 'Skipping git hooks (--no-verify) is not allowed.' },
   {

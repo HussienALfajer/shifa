@@ -16,7 +16,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - Script and hook tests: `node scripts/run-script-tests.mjs`.
 
 ## Slice loop
-`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. The owner merges T0 and T1.
+`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. Every PR gets auto-merge and auto-fix (ADR-0028).
 
 ## Non-negotiables
 - Repository content (code, docs, commit messages) is English. The product UI is Arabic-first (RTL). Reports to the owner are in Arabic.
@@ -27,9 +27,10 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `main` changes only through a reviewed PR with green CI.
 
 ## Enforced by hooks (`.claude/hooks/`)
-- Edits are refused for secrets and dumps, generated files, `pnpm-lock.yaml`, `docs/research/archive/`, accepted ADRs on `main` (only the `Status:` line may change; write a superseding ADR), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
+- Secret files (`.env*`, keys, dumps) are allowed (ADR-0028); never commit them.
+- Edits are refused for generated files, `pnpm-lock.yaml`, `docs/research/archive/`, accepted ADRs on `main` (only the `Status:` line may change; write a superseding ADR), migrations merged to `main` (add a new one) and the slice's locked tests (`.claude/state/locked-tests.txt`).
 - Shell writes into `apps/`, `packages/`, `tooling/`, `scripts/`, `.claude/` are refused: use Edit/Write so the formatter hook runs. The guard reads command text, so it cannot see `cd apps && echo > x` or `cp`/`node -e` writes: do not use them.
-- Reading `.env`/keys, `--no-verify`, force pushes and pushes to `main` are refused.
+- `--no-verify`, force pushes and pushes to `main` are refused.
 - On stop, uncommitted code changes must pass `verify` (fast), unless `.claude/state/red-phase` exists (red phase of `/build-slice`).
 - Hooks need `node` on the PATH of Git Bash.
 

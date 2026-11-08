@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// PreToolUse (Edit|Write|MultiEdit|NotebookEdit): refuses edits to secrets, generated files,
+// PreToolUse (Edit|Write|MultiEdit|NotebookEdit): refuses edits to generated files,
 // read-only evidence, accepted ADRs, merged migrations and the slice's locked tests.
 // Fails closed: any unexpected error blocks the call.
 import { existsSync, readFileSync } from 'node:fs';
