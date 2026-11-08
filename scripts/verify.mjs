@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // One entry point for every check. Usage: node scripts/verify.mjs [fast|full]
 //   fast — packages affected since main (cached); used after each layer and by hooks.
-//   full — everything, no affected filter; used before a PR and in CI.
+//   full — everything, no affected filter, plus build and the API boot check; before a PR and in CI.
 // Prints a short summary; full output of each step is written to .verify/logs/<step>.log.
 // Only one verify may run at a time (lock file), so parallel runs never fight over test databases.
 
@@ -76,7 +76,22 @@ const steps = [
       ...(mode === 'full' ? ['--force'] : affected),
     ],
   },
-];
+  // Full only: build every app and boot the built API against a real database
+  // (apps/api/scripts/boot-check.ts; needs Docker like the DB tests).
+  {
+    name: 'build',
+    full: true,
+    cmd: 'pnpm',
+    args: ['exec', 'turbo', 'run', 'build', '--output-logs=errors-only', '--force'],
+  },
+  {
+    name: 'boot',
+    full: true,
+    requires: 'build',
+    cmd: 'pnpm',
+    args: ['--filter', '@shifa/api', 'run', 'boot-check'],
+  },
+].filter((step) => mode === 'full' || !step.full);
 
 const results = [];
 for (const step of steps) {

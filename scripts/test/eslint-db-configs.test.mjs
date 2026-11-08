@@ -25,6 +25,7 @@ describe('real package configs', () => {
       "import { drizzle } from 'drizzle-orm/pglite';\nexport const d = drizzle;\n",
       "import pgNative from 'pg-native';\nexport const n: unknown = pgNative;\n",
       "import { ownerDb } from '@shifa/db/testing';\nexport const o = ownerDb;\n",
+      "import { startHarnessContainer } from '@shifa/db/harness';\nexport const s = startHarnessContainer;\n",
     ];
     for (const code of cases) {
       assert.ok((await dbErrors('testing', 'src/clock.ts', code)) >= 1, code);
@@ -42,6 +43,10 @@ describe('real package configs', () => {
   it('allow @shifa/db/testing in test files only', async () => {
     const code = "import { ownerDb } from '@shifa/db/testing';\nexport const o = ownerDb;\n";
     assert.equal(await dbErrors('testing', 'test/clock.test.ts', code), 0);
+    const harness =
+      "import { startHarnessContainer } from '@shifa/db/harness';\nexport const s = startHarnessContainer;\n";
+    assert.equal(await dbErrors('testing', 'test/clock.test.ts', harness), 0);
+    assert.equal(await dbErrors('testing', 'scripts/check.ts', harness), 0);
     assert.equal(
       await dbErrors(
         'testing',

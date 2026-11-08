@@ -6,6 +6,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./testing": "./test-harness/index.ts",
+    "./harness": "./test-harness/container.ts",
     "./vitest.db.config": "./vitest.db.config.ts"
   },
   "scripts": {

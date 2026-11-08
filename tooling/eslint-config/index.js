@@ -27,7 +27,10 @@ const DRIZZLE_DRIVERS = [
   'xata-http',
   'aws-data-api',
 ];
-const TEST_FILES = ['test/**', 'tests/**', 'e2e/**', '**/*.test.*', '**/*.spec.*'];
+// Test tooling: test files and package scripts (e.g. apps/api/scripts/boot-check.ts).
+const TEST_FILES = ['test/**', 'tests/**', 'e2e/**', '**/*.test.*', '**/*.spec.*', 'scripts/**'];
+/** Harness entry points: raw handles and the test container, never for production code. */
+const TEST_ONLY = ['@shifa/db/testing', '@shifa/db/harness'];
 
 // For no-restricted-syntax: the same modules loaded with import() or require(). esquery regexes
 // cannot contain "/", so / stands for it.
@@ -42,7 +45,8 @@ const RAW_DB_MODULE = new RegExp(
 /**
  * ADR-0005: database access goes through `withTenant()` in @shifa/db. Raw drivers and Drizzle
  * session/transaction classes are blocked outside `allowRawDb`; schema builders stay allowed.
- * `@shifa/db/testing` (raw owner/app handles) is allowed in test files only.
+ * `@shifa/db/testing` (raw owner/app handles) and `@shifa/db/harness` (the test container) are
+ * allowed in test files and package scripts only.
  * @param {string[]} allowRawDb globs (relative to the package) that may use them
  * @param {boolean} allowTesting whether this block is for test files
  */
@@ -64,7 +68,7 @@ function dbImportRestrictions(allowRawDb, allowTesting) {
             },
             ...(allowTesting
               ? []
-              : [{ name: '@shifa/db/testing', message: '@shifa/db/testing is for tests only.' }]),
+              : TEST_ONLY.map((name) => ({ name, message: `${name} is for tests only.` }))),
           ],
           patterns: [
             { group: DRIVERS.map((d) => `${d}/*`), message },
