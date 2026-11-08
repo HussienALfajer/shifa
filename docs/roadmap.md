@@ -35,8 +35,8 @@ Nothing in Phase A starts before every item is done.
 - [ ] Architecture tests: module boundaries, route permission matrix, RLS policy present on every tenant table, cross-tenant isolation suite run as the app's non-owner role.
 - [ ] Drift checks: OpenAPI vs code, generated TS/Dart clients, migrations, design tokens, translations.
 - [ ] Synthetic multi-clinic data generator ([data handling](compliance/data-handling.md)).
-- [ ] CI: pinned actions, secret scanning, dependency audit, 24-hour minimum package age, boot check of built apps, PR size budget, instruction-size budget. All but the boot check done in 0.2-02; the boot check lands with the first app (0.2-06 API skeleton).
-- [ ] Claude Code setup: root and per-package CLAUDE.md, `.claude/rules`, settings and permissions, hooks, reviewer/checker/security agents, skills (see [development-workflow](process/development-workflow.md)). Root CLAUDE.md, settings, deny rules, hooks, agents, process skills and the patient-data rule done in 0.2-03; per-package CLAUDE.md files, path rules and the domain skills (`/db-migration`, `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`) land with the slices that create those packages (0.2-04 to 0.2-07; `packages/db/CLAUDE.md`, `.claude/rules/db.md` and `/db-migration` done in 0.2-05); `/release` with the first deployment.
+- [x] CI: pinned actions, secret scanning, dependency audit, 24-hour minimum package age, boot check of built apps, PR size budget, instruction-size budget. All but the boot check done in 0.2-02; the API boot check (`verify:full` build + boot steps) in 0.2-06a; later apps add theirs when they land.
+- [ ] Claude Code setup: root and per-package CLAUDE.md, `.claude/rules`, settings and permissions, hooks, reviewer/checker/security agents, skills (see [development-workflow](process/development-workflow.md)). Root CLAUDE.md, settings, deny rules, hooks, agents, process skills and the patient-data rule done in 0.2-03; per-package CLAUDE.md files, path rules and the domain skills (`/db-migration`, `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`) land with the slices that create those packages (0.2-04 to 0.2-07; `packages/db/CLAUDE.md`, `.claude/rules/db.md` and `/db-migration` done in 0.2-05; `apps/api/CLAUDE.md` and `.claude/rules/api.md` in 0.2-06a); `/release` with the first deployment.
 - [ ] Observability skeleton (OpenTelemetry, GlitchTip), backup scripts (pgBackRest) and a restore drill.
 
 ## Phase 0.2 slices
@@ -48,7 +48,7 @@ Nothing in Phase A starts before every item is done.
 | 0.2-03 | Claude Code setup: root CLAUDE.md, settings and deny rules, hooks, agents, process skills, patient-data rule | T0 | Done (#3, #4) |
 | 0.2-04 | Flutter via FVM, pub workspace, `very_good_analysis`, Dart in `verify` | T1 | Done (#7) |
 | 0.2-05 | Database test harness: Postgres via Testcontainers, per-worker databases, test guard, `packages/db` with Drizzle and `withTenant` ([slice](slices/0.2-05-db-test-harness.md)) | T0 | Done |
-| 0.2-06a | API skeleton (NestJS + Fastify), health, sanitised error logging, CI boot check of the built app ([slice](slices/0.2-06a-api-skeleton.md)) | T0 | Planned |
+| 0.2-06a | API skeleton (NestJS + Fastify), health, sanitised error logging, CI boot check of the built app ([slice](slices/0.2-06a-api-skeleton.md)) | T0 | In review |
 | 0.2-06b | RLS presence check and cross-tenant isolation suite as `shifa_app`; `/rls-policy` ([slice](slices/0.2-06b-rls-isolation-suite.md)); independent of 0.2-06a | T0 | Planned |
 | 0.2-06c | Fail-closed route permissions, route permission matrix test, module boundaries; `/add-endpoint` ([slice](slices/0.2-06c-api-access-and-boundaries.md)); after 0.2-06a | T0 | Planned |
 | 0.2-07 | Contract and drift checks: OpenAPI, generated TS/Dart clients, migrations, tokens, translations | T1 | Planned |
