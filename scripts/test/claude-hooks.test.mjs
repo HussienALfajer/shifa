@@ -91,6 +91,20 @@ describe('checkEdit', () => {
   it('protects merged migrations but not ones still on the slice branch', () => {
     assert.match(checkEdit('packages/db/migrations/0001_init.sql', merged), /migration/);
     assert.equal(checkEdit('packages/db/migrations/0001_init.sql', branchOnly), null);
+    const baseline = 'packages/db/migrations/20261108120000_baseline/migration.sql';
+    assert.match(checkEdit(baseline, merged), /merged migration/);
+    assert.equal(checkEdit(baseline, branchOnly), null);
+  });
+
+  it('blocks drizzle-kit snapshots and journals as generated', () => {
+    const snapshot = 'packages/db/migrations/20261108120000_baseline/snapshot.json';
+    assert.match(checkEdit(snapshot, branchOnly), /generated/);
+    assert.match(checkEdit('packages/db/migrations/meta/_journal.json', branchOnly), /generated/);
+    assert.match(
+      checkEdit('packages/db/migrations/meta/0000_snapshot.json', branchOnly),
+      /generated/,
+    );
+    assert.equal(checkEdit('packages/db/package.json', branchOnly), null);
   });
 
   it('blocks locked tests only', () => {

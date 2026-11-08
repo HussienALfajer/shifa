@@ -6,8 +6,9 @@
 // Only one verify may run at a time (lock file), so parallel runs never fight over test databases.
 
 import { spawn } from 'node:child_process';
-import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { acquireLock, LockBusyError } from './lib/lock.mjs';
 
 const mode = process.argv[2] ?? 'fast';
 if (mode !== 'fast' && mode !== 'full') {
@@ -21,46 +22,19 @@ const logDir = join(stateDir, 'logs');
 const lockFile = join(stateDir, 'lock');
 mkdirSync(logDir, { recursive: true });
 
-/**
- * Creates the lock atomically ('wx'). A lock left by a dead process, or an empty/garbage lock
- * older than a few seconds (a run killed while writing it), is removed and the create retried once.
- */
-function acquireLock() {
-  for (let attempt = 0; attempt < 2; attempt += 1) {
-    try {
-      writeFileSync(lockFile, String(process.pid), { flag: 'wx' });
-      return;
-    } catch (err) {
-      if (err?.code !== 'EEXIST') throw err;
-    }
-    const pid = Number(readFileSync(lockFile, 'utf8').trim());
-    const validPid = Number.isInteger(pid) && pid > 0;
-    if (validPid && isAlive(pid)) {
-      process.stderr.write(`verify: another run is in progress (pid ${pid}); wait for it\n`);
-      process.exit(3);
-    }
-    const ageMs = Date.now() - statSync(lockFile).mtimeMs;
-    if (!validPid && ageMs < 5000) {
-      process.stderr.write('verify: another run is starting; try again in a few seconds\n');
-      process.exit(3);
-    }
-    rmSync(lockFile, { force: true });
-  }
-  process.stderr.write('verify: could not acquire the lock\n');
+// verify never waits: a second run fails at once (exit 3) and the caller retries later.
+let releaseLock;
+try {
+  releaseLock = await acquireLock(lockFile);
+} catch (err) {
+  if (!(err instanceof LockBusyError)) throw err;
+  process.stderr.write(
+    err.pid
+      ? `verify: another run is in progress (pid ${err.pid}); wait for it\n`
+      : 'verify: another run is starting; try again in a few seconds\n',
+  );
   process.exit(3);
 }
-
-function isAlive(pid) {
-  try {
-    process.kill(pid, 0);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-acquireLock();
-const releaseLock = () => rmSync(lockFile, { force: true });
 process.on('exit', releaseLock);
 for (const signal of ['SIGINT', 'SIGTERM']) {
   process.on(signal, () => process.exit(130));

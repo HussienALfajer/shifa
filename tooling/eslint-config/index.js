@@ -8,9 +8,48 @@ import tseslint from 'typescript-eslint';
 export const MAX_LINES = 400;
 
 /**
- * @param {{ tsconfigRootDir: string }} options
+ * ADR-0005: database access goes through `withTenant()` in @shifa/db. Raw pools, drivers and
+ * Drizzle session/transaction classes are blocked everywhere else; schema builders stay allowed.
+ * @param {string[]} allowRawDb globs (relative to the package) that may use them
  */
-export function createConfig({ tsconfigRootDir }) {
+function dbImportRestrictions(allowRawDb) {
+  const message = 'Use @shifa/db (withTenant) instead of a raw database connection (ADR-0005).';
+  return {
+    files: ['**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+    ignores: allowRawDb,
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          paths: [
+            { name: 'pg', message },
+            { name: 'pg-pool', message },
+            { name: 'postgres', message },
+            {
+              name: 'drizzle-orm/pg-core',
+              importNames: ['PgDatabase', 'PgAsyncDatabase', 'PgSession', 'PgTransaction'],
+              message,
+            },
+          ],
+          patterns: [
+            {
+              group: ['pg/*', 'drizzle-orm/node-postgres', 'drizzle-orm/node-postgres/*'],
+              message,
+            },
+            { group: ['drizzle-orm/postgres-js', 'drizzle-orm/postgres-js/*'], message },
+            { group: ['drizzle-orm/pg-core/*'], message },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+/**
+ * @param {{ tsconfigRootDir: string, allowRawDb?: string[] }} options
+ *   allowRawDb: only @shifa/db passes this (its src/ and test-harness/).
+ */
+export function createConfig({ tsconfigRootDir, allowRawDb = [] }) {
   return defineConfig(
     { ignores: ['dist/**', 'coverage/**', '**/*.generated.*', '**/generated/**'] },
     js.configs.recommended,
@@ -31,6 +70,7 @@ export function createConfig({ tsconfigRootDir }) {
         eqeqeq: ['error', 'always'],
       },
     },
+    dbImportRestrictions(allowRawDb),
     {
       files: ['**/*.js', '**/*.mjs'],
       extends: [tseslint.configs.disableTypeChecked],

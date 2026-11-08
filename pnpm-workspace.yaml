@@ -3,5 +3,12 @@ packages:
   - packages/*
   - tooling/*
 
+# Install scripts are denied unless listed true. These three are optional native speed-ups of
+# testcontainers' Docker client (ssh2) and gRPC (protobufjs); the pure-JS fallbacks are used.
+allowBuilds:
+  cpu-features: false
+  protobufjs: false
+  ssh2: false
+
 # Supply-chain guard: never install a version published less than 24 hours ago.
 minimumReleaseAge: 1440

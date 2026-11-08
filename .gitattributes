@@ -18,3 +18,6 @@
 *.freezed.dart linguist-generated
 *.mocks.dart linguist-generated
 pubspec.lock linguist-generated
+
+# drizzle-kit snapshots (also refused by the edit hook)
+**/migrations/*/snapshot.json linguist-generated
