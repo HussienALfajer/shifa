@@ -2,22 +2,28 @@
 import { Controller, Get, Post } from '@nestjs/common';
 import { afterEach, describe, expect, it } from 'vitest';
 import { Public, RequirePermission } from '../../src/access/decorators.ts';
-import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
+import { Contract } from '../../src/platform/contract/index.ts';
+import { buildTestApp, offlineDb, type TestApp, testContract } from '../support.ts';
 import { TEST_READ } from './probe.ts';
+
+// Every handler has a contract, so only the access check can refuse these apps.
 
 @Controller('__unannotated')
 class UnannotatedController {
   @Public()
+  @Contract(testContract('GET', '/__unannotated/fine'))
   @Get('fine')
   fine(): string {
     return 'ok';
   }
 
+  @Contract(testContract('GET', '/__unannotated/missing'))
   @Get('missing')
   forgotten(): string {
     return 'never';
   }
 
+  @Contract(testContract('POST', '/__unannotated/also-missing'))
   @Post('also-missing')
   alsoForgotten(): string {
     return 'never';
@@ -33,6 +39,7 @@ class UnannotatedController {
 class BothController {
   @Public()
   @RequirePermission(TEST_READ)
+  @Contract(testContract('GET', '/__both/confused'))
   @Get('confused')
   confused(): string {
     return 'never';

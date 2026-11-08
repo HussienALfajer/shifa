@@ -56,7 +56,7 @@ Every slice and every PR carries a tier. The tier decides effort level and revie
 
 ## 6. Pull requests
 
-- Size budget: about 1,000 hand-written lines (generated files excluded); CI warns above it and fails above 2,000 unless the owner adds the `size/override` label (`scripts/check-pr-size.mjs`; lockfiles, binaries and `linguist-generated` files are not counted). Split specs by sub-feature, not only by backend/frontend [RN-20].
+- Size budget: about 1,000 hand-written lines (generated files excluded); CI warns above it but never fails: the owner removed the 2,000-line hard limit on 2026-11-09 (`scripts/check-pr-size.mjs`; lockfiles, binaries and `linguist-generated` files are not counted). Split specs by sub-feature, not only by backend/frontend [RN-20].
 - Squash-merge one slice per PR; conventional commit title; branches deleted after merge; worktrees pruned weekly.
 - No deploy-only or bookkeeping PRs: deployment logs and status live outside feature PRs.
 

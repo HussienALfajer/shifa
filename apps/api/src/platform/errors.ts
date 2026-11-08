@@ -2,36 +2,26 @@
 // error records for the log. PostgreSQL messages and `detail` can echo values (patient data),
 // so a database error is logged as SQLSTATE, constraint, table and column only.
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
+import { type ErrorEnvelope, envelopeFor, VALIDATION_FAILED_MESSAGE } from '@shifa/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { RequestValidationError } from './contract/validation.ts';
 import type { Logger } from './logging.ts';
 
-/** The response body of every error (moves to packages/contracts in 0.2-07). */
-export interface ErrorEnvelope {
-  error: { code: string; message: string };
-}
+// The envelope, the code catalogue and the fixed messages live in @shifa/contracts.
+export { type ErrorEnvelope, envelopeFor };
 
-const KNOWN: Record<number, [code: string, message: string]> = {
-  400: ['bad_request', 'Bad request'],
-  401: ['unauthorized', 'Unauthorized'],
-  403: ['forbidden', 'Forbidden'],
-  404: ['not_found', 'Not found'],
-  405: ['method_not_allowed', 'Method not allowed'],
-  406: ['not_acceptable', 'Not acceptable'],
-  408: ['request_timeout', 'Request timeout'],
-  409: ['conflict', 'Conflict'],
-  413: ['payload_too_large', 'Payload too large'],
-  414: ['uri_too_long', 'URI too long'],
-  415: ['unsupported_media_type', 'Unsupported media type'],
-  422: ['unprocessable_entity', 'Unprocessable entity'],
-  429: ['too_many_requests', 'Too many requests'],
-  500: ['internal_error', 'Internal server error'],
-  503: ['service_unavailable', 'Service unavailable'],
-};
-
-/** Client-facing envelope; messages are fixed per status and never echo request input. */
-export function envelopeFor(status: number): ErrorEnvelope {
-  const [code, message] = KNOWN[status] ?? (status < 500 ? KNOWN[400] : KNOWN[500]) ?? [];
-  return { error: { code: code ?? 'internal_error', message: message ?? 'Internal error' } };
+/** The answer for `exception`: its status's envelope, with field details for validation. */
+function bodyFor(exception: unknown, status: number): ErrorEnvelope {
+  if (exception instanceof RequestValidationError) {
+    return {
+      error: {
+        code: 'validation_failed',
+        message: VALIDATION_FAILED_MESSAGE,
+        details: [...exception.issues],
+      },
+    };
+  }
+  return envelopeFor(status);
 }
 
 const SQLSTATE = /^[0-9A-Z]{5}$/;
@@ -105,6 +95,6 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       log.warn({ err: describeError(exception.cause) }, 'request failed');
     }
     if (reply.sent) return;
-    void reply.status(status).send(envelopeFor(status));
+    void reply.status(status).send(bodyFor(exception, status));
   }
 }

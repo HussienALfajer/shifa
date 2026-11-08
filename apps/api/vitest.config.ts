@@ -13,6 +13,10 @@ const unit = [
   'test/access/principal.test.ts',
   'test/access/test-support.test.ts',
   'test/architecture/module-imports.test.ts',
+  'test/contract/contract-check.test.ts',
+  'test/contract/validation.test.ts',
+  'test/contract/openapi.test.ts',
+  'test/contract/hardening.test.ts',
 ];
 
 export default defineConfig({
