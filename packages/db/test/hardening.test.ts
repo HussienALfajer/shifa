@@ -1,4 +1,5 @@
 // Security-review hardening (0.2-05): each case was reproduced as an exploit before the fix.
+import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { sql } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
@@ -72,6 +73,32 @@ describe('privileges of shifa_app', () => {
       sql`select count(*)::int as n from pg_roles where rolname = 'hardening_mid'`,
     );
     expect(rows[0]?.n).toBe(0);
+  });
+
+  it('createDb() refuses a login role that can SET ROLE to the owner (0.2-06a M2)', async () => {
+    // Exploit reproduced first: such a role passed, then SET LOCAL ROLE shifa_owner switched
+    // FORCE RLS off and read another tenant's rows. Cluster-level, so name it per worker.
+    const name = `hardening_member_${process.env['VITEST_POOL_ID'] ?? '0'}`;
+    const password = randomBytes(16).toString('hex');
+    await superuserDb().execute(
+      sql.raw(`create role ${name} login noinherit password '${password}'`),
+    );
+    try {
+      await superuserDb().execute(sql.raw(`grant shifa_owner to ${name}`));
+      const url = new URL(harnessUrl('app'));
+      url.username = name;
+      url.password = password;
+      const db = createDb(url.toString(), { max: 1 });
+      try {
+        await expect(
+          db.withPlatformAdmin('membership check', (tx) => tx.execute(sql`select 1`)),
+        ).rejects.toThrow(/application role/);
+      } finally {
+        await db.close();
+      }
+    } finally {
+      await superuserDb().execute(sql.raw(`drop role ${name}`));
+    }
   });
 
   it('createDb() refuses a role that bypasses RLS', async () => {

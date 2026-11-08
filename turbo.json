@@ -8,6 +8,11 @@
       "dependsOn": ["^typecheck"],
       "inputs": ["$TURBO_DEFAULT$"]
     },
+    "build": {
+      "dependsOn": ["^typecheck"],
+      "inputs": ["$TURBO_DEFAULT$"],
+      "outputs": ["dist/**"]
+    },
     "lint": {
       "dependsOn": ["^typecheck"],
       "inputs": ["$TURBO_DEFAULT$"]

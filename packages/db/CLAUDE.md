@@ -24,6 +24,8 @@ const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) =>
 - One container per run; each Vitest worker gets `shifa_test_<pool id>` cloned from the migrated `shifa_template`; tables are truncated before each file.
 - From `@shifa/db/testing` (lint allows it in test files only): `testDb()` (app role, use for behaviour), `ownerDb()` (create test-only tables, read catalogs), `rawAppDb()` (negative tests only), `superuserDb()` (role tests, inside a rolled-back transaction), `resetTestDb()`.
 - Another package adds DB tests with `dbTestProject()` from `@shifa/db/vitest.db.config` in its Vitest `projects`.
+- `testDb()` is shared within a file; once something closes it (an app under test at shutdown), the next call opens a new one.
+- Outside Vitest (scripts such as the API boot check), `@shifa/db/harness` starts the container: `startHarnessContainer()` under `acquireDbTestLock()`. Lint allows it in tests and `scripts/` only.
 - The guard refuses any host, port or database the harness did not create and never reads `DATABASE_URL`. A second run waits up to 5 minutes for `.verify/db-test.lock`.
 - Test-only tables (like `rls_probe`) are created in the test with `create table if not exists`, never in migrations.
 

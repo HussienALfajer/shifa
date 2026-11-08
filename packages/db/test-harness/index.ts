@@ -85,13 +85,26 @@ export function harnessUrl(role: HarnessRole, database = workerDatabaseName()): 
   return urlFor(info(), role, database);
 }
 
-/** The application view: `createDb()` as `shifa_app` on this worker's database. */
+/**
+ * The application view: `createDb()` as `shifa_app` on this worker's database. Without options
+ * the handle is shared within a file until someone closes it (an app under test owns and
+ * closes its handle at shutdown); the next call then opens a new one.
+ */
 export function testDb(options?: CreateDbOptions): ShifaDb {
   if (!options && defaultDb) return defaultDb;
   const db = createDb(urlFor(info(), 'app', workerDatabaseName()), options);
   closers.push(() => db.close());
-  if (!options) defaultDb = db;
-  return db;
+  if (options) return db;
+  const shared: ShifaDb = {
+    withTenant: (ctx, fn) => db.withTenant(ctx, fn),
+    withPlatformAdmin: (reason, fn) => db.withPlatformAdmin(reason, fn),
+    close: () => {
+      if (defaultDb === shared) defaultDb = undefined;
+      return db.close();
+    },
+  };
+  defaultDb = shared;
+  return shared;
 }
 
 /** Truncates every table outside the migration history (`drizzle` schema). */

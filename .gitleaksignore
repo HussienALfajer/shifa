@@ -3,3 +3,7 @@
 
 # 0.2-05: synthetic query-parameter marker in a test ("synthetic-secret-0963"), renamed afterwards.
 673070213368bb82a5f4058b9494bf3c2123e4e3:packages/db/test/query-errors.test.ts:generic-api-key:10
+
+# 0.2-06a: synthetic database password in a config test ("synthetic-pw-4417"); proves config
+# errors never echo a password.
+9b81620a0bcd068370c1353a2a4d07413a5644f3:apps/api/test/config.test.ts:generic-api-key:4

@@ -29,6 +29,21 @@ const DRIZZLE_DRIVERS = [
 ];
 const TEST_FILES = ['test/**', 'tests/**', 'e2e/**', '**/*.test.*', '**/*.spec.*'];
 
+/**
+ * Harness entry points never allowed in production code. Package scripts (e.g. the API boot
+ * check) may start the test container but get no raw owner/app handles.
+ */
+const BLOCKED_TEST_MODULES = {
+  production: ['@shifa/db/testing', '@shifa/db/harness'],
+  scripts: ['@shifa/db/testing'],
+  tests: [],
+};
+const SCOPE_FILES = {
+  production: ['**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+  scripts: ['scripts/**'],
+  tests: TEST_FILES,
+};
+
 // For no-restricted-syntax: the same modules loaded with import() or require(). esquery regexes
 // cannot contain "/", so / stands for it.
 const S = String.raw`/`;
@@ -42,14 +57,15 @@ const RAW_DB_MODULE = new RegExp(
 /**
  * ADR-0005: database access goes through `withTenant()` in @shifa/db. Raw drivers and Drizzle
  * session/transaction classes are blocked outside `allowRawDb`; schema builders stay allowed.
- * `@shifa/db/testing` (raw owner/app handles) is allowed in test files only.
+ * `@shifa/db/testing` (raw owner/app handles) is allowed in test files only; `@shifa/db/harness`
+ * (the test container) in test files and package scripts.
  * @param {string[]} allowRawDb globs (relative to the package) that may use them
- * @param {boolean} allowTesting whether this block is for test files
+ * @param {'production' | 'scripts' | 'tests'} scope which files this block covers
  */
-function dbImportRestrictions(allowRawDb, allowTesting) {
+function dbImportRestrictions(allowRawDb, scope) {
   const message = DB_MESSAGE;
   return {
-    files: allowTesting ? TEST_FILES : ['**/*.{ts,tsx,mts,cts,js,mjs,cjs}'],
+    files: SCOPE_FILES[scope],
     ignores: allowRawDb,
     rules: {
       'no-restricted-imports': [
@@ -62,9 +78,10 @@ function dbImportRestrictions(allowRawDb, allowTesting) {
               importNames: ['PgDatabase', 'PgAsyncDatabase', 'PgSession', 'PgTransaction'],
               message,
             },
-            ...(allowTesting
-              ? []
-              : [{ name: '@shifa/db/testing', message: '@shifa/db/testing is for tests only.' }]),
+            ...BLOCKED_TEST_MODULES[scope].map((name) => ({
+              name,
+              message: `${name} is for tests only.`,
+            })),
           ],
           patterns: [
             { group: DRIVERS.map((d) => `${d}/*`), message },
@@ -88,6 +105,17 @@ function dbImportRestrictions(allowRawDb, allowTesting) {
           selector: `CallExpression[callee.type='CallExpression'][arguments.0.value=/${RAW_DB_MODULE}/]`,
           message,
         },
+        // import('@shifa/db/testing') and require() of it, where a static import is refused.
+        ...BLOCKED_TEST_MODULES[scope].flatMap((name) => [
+          {
+            selector: `ImportExpression[source.value='${name}']`,
+            message: `${name} is for tests only.`,
+          },
+          {
+            selector: `CallExpression[arguments.0.value='${name}']`,
+            message: `${name} is for tests only.`,
+          },
+        ]),
       ],
     },
   };
@@ -118,8 +146,10 @@ export function createConfig({ tsconfigRootDir, allowRawDb = [] }) {
         eqeqeq: ['error', 'always'],
       },
     },
-    dbImportRestrictions(allowRawDb, false),
-    dbImportRestrictions(allowRawDb, true),
+    // Later blocks win for files they share (a test under scripts/ is a test).
+    dbImportRestrictions(allowRawDb, 'production'),
+    dbImportRestrictions(allowRawDb, 'scripts'),
+    dbImportRestrictions(allowRawDb, 'tests'),
     {
       files: ['**/*.js', '**/*.mjs'],
       extends: [tseslint.configs.disableTypeChecked],
