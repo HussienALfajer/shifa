@@ -5,6 +5,7 @@ import type { ShifaDb } from '@shifa/db';
 import { testDb } from '@shifa/db/testing';
 import { sql } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
+import { Public } from '../src/access/index.ts';
 import { SHIFA_DB } from '../src/platform/database.module.ts';
 import { buildTestApp, type TestApp } from './support.ts';
 
@@ -16,6 +17,7 @@ class FailingController {
   constructor(@Inject(SHIFA_DB) private readonly db: ShifaDb) {}
 
   /** Shaped like pg's DatabaseError for a unique violation whose detail echoes the value. */
+  @Public()
   @Get('unique')
   unique(): never {
     throw Object.assign(
@@ -33,6 +35,7 @@ class FailingController {
   }
 
   /** A real 22P02 from PostgreSQL: its message echoes the value that failed to cast. */
+  @Public()
   @Get('cast')
   async cast(): Promise<unknown> {
     return this.db.withPlatformAdmin('errors test', (tx) =>
@@ -40,6 +43,7 @@ class FailingController {
     );
   }
 
+  @Public()
   @Post('echo')
   echo(@Body() body: unknown): unknown {
     return body;

@@ -2,6 +2,7 @@
 // parameters) bypassed the filter and logged/echoed the full URL with its query string.
 import { Controller, Get, Param } from '@nestjs/common';
 import { afterEach, describe, expect, it } from 'vitest';
+import { Public } from '../src/access/index.ts';
 import { createLogger } from '../src/platform/logging.ts';
 import { buildTestApp, captureLogs, offlineDb, type TestApp } from './support.ts';
 
@@ -9,6 +10,7 @@ const MARKER = 'synthetic-value-9043';
 
 @Controller('test-items')
 class ItemsController {
+  @Public()
   @Get(':id')
   one(@Param('id') id: string): { length: number } {
     return { length: id.length };

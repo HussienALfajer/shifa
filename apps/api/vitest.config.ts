@@ -8,6 +8,9 @@ const unit = [
   'test/logging.test.ts',
   'test/logging-sanitise.test.ts',
   'test/framework-errors.test.ts',
+  'test/access/access-check.test.ts',
+  'test/access/guard.test.ts',
+  'test/access/principal.test.ts',
 ];
 
 export default defineConfig({
