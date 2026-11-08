@@ -48,7 +48,9 @@ Nothing in Phase A starts before every item is done.
 | 0.2-03 | Claude Code setup: root CLAUDE.md, settings and deny rules, hooks, agents, process skills, patient-data rule | T0 | Done (#3, #4) |
 | 0.2-04 | Flutter via FVM, pub workspace, `very_good_analysis`, Dart in `verify` | T1 | Done (#7) |
 | 0.2-05 | Database test harness: Postgres via Testcontainers, per-worker databases, test guard, `packages/db` with Drizzle and `withTenant` ([slice](slices/0.2-05-db-test-harness.md)) | T0 | Done |
-| 0.2-06 | API skeleton with CI boot check; architecture tests: module boundaries, route permission matrix, RLS presence, cross-tenant isolation suite (non-owner role) | T0 | Planned |
+| 0.2-06a | API skeleton (NestJS + Fastify), health, sanitised error logging, CI boot check of the built app ([slice](slices/0.2-06a-api-skeleton.md)) | T0 | Planned |
+| 0.2-06b | RLS presence check and cross-tenant isolation suite as `shifa_app`; `/rls-policy` ([slice](slices/0.2-06b-rls-isolation-suite.md)); independent of 0.2-06a | T0 | Planned |
+| 0.2-06c | Fail-closed route permissions, route permission matrix test, module boundaries; `/add-endpoint` ([slice](slices/0.2-06c-api-access-and-boundaries.md)); after 0.2-06a | T0 | Planned |
 | 0.2-07 | Contract and drift checks: OpenAPI, generated TS/Dart clients, migrations, tokens, translations | T1 | Planned |
 | 0.2-08 | Synthetic multi-clinic data generator | T1 | Planned |
 | 0.2-09 | WSL2 move (owner installs Ubuntu), observability skeleton, pgBackRest scripts and restore drill | T0 | Planned |
