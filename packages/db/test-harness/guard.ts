@@ -45,6 +45,7 @@ export function assertTestTarget(url: string, container: ContainerAddress): void
   }
 }
 
+const HELD = Symbol.for('shifa.db.testLock');
 const DEFAULT_LOCK = join(import.meta.dirname, '..', '..', '..', '.verify', 'db-test.lock');
 
 /**
@@ -60,9 +61,35 @@ export async function acquireDbTestLock({
   waitMs?: number;
   pollMs?: number;
 } = {}): Promise<() => void> {
+  // Several DB projects in one Vitest process each run globalSetup: share this process's hold
+  // instead of waiting for ourselves. Kept on globalThis because each project may load its own
+  // copy of this module.
+  const registry = ((globalThis as Record<symbol, unknown>)[HELD] ??= new Map()) as Map<
+    string,
+    { count: number; release: () => void }
+  >;
+  const releaseShared = (held: { count: number; release: () => void }) => {
+    let done = false;
+    return () => {
+      if (done) return;
+      done = true;
+      held.count -= 1;
+      if (held.count === 0) {
+        registry.delete(file);
+        held.release();
+      }
+    };
+  };
+  const existing = registry.get(file);
+  if (existing) {
+    existing.count += 1;
+    return releaseShared(existing);
+  }
   mkdirSync(dirname(file), { recursive: true });
   try {
-    return await acquireLock(file, { waitMs, pollMs });
+    const held = { count: 1, release: await acquireLock(file, { waitMs, pollMs }) };
+    registry.set(file, held);
+    return releaseShared(held);
   } catch (err) {
     if (!(err instanceof LockBusyError)) throw err;
     const holder = err.pid === null ? 'a starting process' : `pid ${String(err.pid)}`;

@@ -2,7 +2,7 @@ import { defineConfig } from 'vitest/config';
 import { dbTestProject } from './vitest.db.config.ts';
 
 // Unit tests of the harness itself need no Docker; everything else runs against PostgreSQL.
-const unit = ['test/guard.test.ts', 'test/docker.test.ts'];
+const unit = ['test/guard.test.ts', 'test/docker.test.ts', 'test/lock-reentry.test.ts'];
 
 export default defineConfig({
   test: {

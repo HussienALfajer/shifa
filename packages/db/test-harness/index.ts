@@ -5,7 +5,7 @@ import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { inject } from 'vitest';
 import { type CreateDbOptions, createDb, type ShifaDb } from '../src/client.ts';
-import { type SingleStatementExecute, withoutQueryParams } from '../src/tenant.ts';
+import { type SingleStatementExecute, withoutQueryParams } from '../src/transaction.ts';
 import { applyRoles, type HarnessRole, urlFor, withPool } from './context.ts';
 
 export { UnsafeDatabaseError } from './guard.ts';
@@ -36,6 +36,8 @@ export async function ensureWorkerDatabase(
     const { rowCount } = await pool.query('SELECT 1 FROM pg_database WHERE datname = $1', [name]);
     if (!rowCount) {
       await pool.query(`CREATE DATABASE ${name} TEMPLATE shifa_template OWNER shifa_owner`);
+      // A clone does not inherit the template's database ACL; repeat the baseline's revoke.
+      await pool.query(`REVOKE TEMPORARY ON DATABASE ${name} FROM PUBLIC`);
     }
   });
   created.add(name);
@@ -55,7 +57,7 @@ function rawDb(role: HarnessRole, database: string): RawDb {
     db = new Proxy(inner, {
       get: (target, prop, receiver): unknown =>
         prop === 'execute'
-          ? (query: SQLWrapper | string) => withoutQueryParams(async () => target.execute(query))
+          ? (query: SQLWrapper) => withoutQueryParams(async () => target.execute(query))
           : Reflect.get(target, prop, receiver),
     }) as unknown as RawDb;
     raw.set(key, db);
@@ -71,6 +73,16 @@ export function ownerDb(database = workerDatabaseName()): RawDb {
 /** Raw `shifa_app` connection outside withTenant(), for negative tests only. */
 export function rawAppDb(database = workerDatabaseName()): RawDb {
   return rawDb('app', database);
+}
+
+/** Container superuser on the maintenance database: cluster-level tests (roles) only. */
+export function superuserDb(): RawDb {
+  return rawDb('superuser', 'postgres');
+}
+
+/** Guarded URL of a harness role on this worker's database, e.g. to test createDb() refusals. */
+export function harnessUrl(role: HarnessRole, database = workerDatabaseName()): string {
+  return urlFor(info(), role, database);
 }
 
 /** The application view: `createDb()` as `shifa_app` on this worker's database. */

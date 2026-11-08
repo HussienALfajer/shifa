@@ -1,37 +1,6 @@
-import { DrizzleQueryError, type SQLWrapper, sql } from 'drizzle-orm';
-import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
-import type { QueryResult, QueryResultRow } from 'pg';
-
-type DrizzleTx = Parameters<Parameters<NodePgDatabase['transaction']>[0]>[0];
-
-/**
- * Raw SQL runs one statement per call, so the result is a single QueryResult. (Drizzle's own
- * untyped `execute` also allows multi-statement strings and returns a union with an array.)
- */
-export interface SingleStatementExecute {
-  execute<TRow extends QueryResultRow = Record<string, unknown>>(
-    query: SQLWrapper | string,
-  ): Promise<QueryResult<TRow>>;
-}
-
-/** A Drizzle transaction handle; the only way application code reaches the database. */
-export type Tx = Omit<DrizzleTx, 'execute'> & SingleStatementExecute;
-
-/** Same object; only the static type of `execute` is narrowed (see SingleStatementExecute). */
-export const asTx = (tx: DrizzleTx): Tx => tx as unknown as Tx;
-
-/**
- * Drizzle's DrizzleQueryError puts the query parameters (patient data) into its message, which
- * ends up in logs. Rethrow the driver's error instead: SQLSTATE code and message, no values.
- */
-export async function withoutQueryParams<T>(work: () => Promise<T>): Promise<T> {
-  try {
-    return await work();
-  } catch (err) {
-    if (err instanceof DrizzleQueryError && err.cause instanceof Error) throw err.cause;
-    throw err;
-  }
-}
+import { sql } from 'drizzle-orm';
+import type { Pool } from 'pg';
+import { runScoped, type Tx } from './transaction.ts';
 
 export interface TenantContext {
   tenantId: string;
@@ -59,21 +28,15 @@ function assertUuid(field: string, value: unknown): asserts value is string {
  * ROLLBACK and never leak to the next user of the pooled connection. A throw rolls back.
  */
 export async function runWithTenant<T>(
-  db: NodePgDatabase,
+  pool: Pool,
   ctx: TenantContext,
   fn: (tx: Tx) => Promise<T>,
 ): Promise<T> {
   assertUuid('tenantId', ctx.tenantId);
   if (ctx.branchId !== undefined) assertUuid('branchId', ctx.branchId);
   assertUuid('userId', ctx.userId);
-  const { tenantId, userId } = ctx;
-  const branchId = ctx.branchId ?? '';
-  return withoutQueryParams(() =>
-    db.transaction(async (tx) => {
-      await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true),
-                                  set_config('app.branch_id', ${branchId}, true),
-                                  set_config('app.user_id', ${userId}, true)`);
-      return fn(asTx(tx));
-    }),
-  );
+  const setup = sql`select set_config('app.tenant_id', ${ctx.tenantId}, true),
+                           set_config('app.branch_id', ${ctx.branchId ?? ''}, true),
+                           set_config('app.user_id', ${ctx.userId}, true)`;
+  return runScoped(pool, setup, fn);
 }

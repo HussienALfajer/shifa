@@ -21,11 +21,12 @@ $$;
 ALTER ROLE shifa_owner NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION;
 ALTER ROLE shifa_app LOGIN NOSUPERUSER NOBYPASSRLS NOCREATEDB NOCREATEROLE NOREPLICATION NOINHERIT;
 
--- shifa_app must never gain the owner's rights through membership.
+-- shifa_app must not be a member of any role: through membership (even indirect) it could
+-- SET ROLE to the owner and switch RLS off. Fail loudly instead of repairing silently.
 DO $$
 BEGIN
-  IF pg_has_role('shifa_app', 'shifa_owner', 'MEMBER') THEN
-    REVOKE shifa_owner FROM shifa_app;
+  IF EXISTS (SELECT FROM pg_auth_members WHERE member = 'shifa_app'::regrole) THEN
+    RAISE EXCEPTION 'shifa_app is a member of another role; revoke it (RLS bypass via SET ROLE)';
   END IF;
 END
 $$;

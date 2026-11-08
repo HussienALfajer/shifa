@@ -1,7 +1,7 @@
-import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { runAsPlatformAdmin } from './admin.ts';
-import { runWithTenant, type TenantContext, type Tx } from './tenant.ts';
+import { runWithTenant, type TenantContext } from './tenant.ts';
+import type { Tx } from './transaction.ts';
 
 export interface ShifaDb {
   /** Tenant-scoped work: one transaction with `app.tenant_id` etc. set (ADR-0005). */
@@ -20,18 +20,18 @@ export interface CreateDbOptions {
 }
 
 /**
- * Opens a pool as the application role. The pool and the raw Drizzle instance stay private:
- * every query goes through withTenant() or withPlatformAdmin().
+ * Opens a pool as the application role (each new connection is checked: not superuser, no
+ * BYPASSRLS, owns no table). The pool stays private: every query goes through withTenant() or
+ * withPlatformAdmin(), and each `tx` handle stops working when its callback ends.
  */
 export function createDb(url: string, options: CreateDbOptions = {}): ShifaDb {
   const pool = new Pool({ connectionString: url, max: options.max ?? 10 });
   // Without a listener an idle-connection error would crash the process; the next query on
   // a fresh connection reports any lasting problem.
   pool.on('error', options.onIdleError ?? (() => undefined));
-  const db = drizzle({ client: pool });
   return {
-    withTenant: (ctx, fn) => runWithTenant(db, ctx, fn),
-    withPlatformAdmin: (reason, fn) => runAsPlatformAdmin(db, reason, fn),
+    withTenant: (ctx, fn) => runWithTenant(pool, ctx, fn),
+    withPlatformAdmin: (reason, fn) => runAsPlatformAdmin(pool, reason, fn),
     close: () => pool.end(),
   };
 }

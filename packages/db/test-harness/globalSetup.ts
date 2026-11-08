@@ -47,8 +47,11 @@ export default async function setup(project: TestProject): Promise<() => Promise
     await migrate(urlFor(info, 'owner', 'shifa_template'));
     project.provide('shifaDb', info);
   } catch (err) {
-    await container?.stop();
-    release();
+    try {
+      await container?.stop();
+    } finally {
+      release();
+    }
     throw err;
   }
   const started = container;

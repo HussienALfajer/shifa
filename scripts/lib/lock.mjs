@@ -22,9 +22,10 @@ function isAlive(pid) {
   try {
     process.kill(pid, 0);
     return true;
-  } catch (err) {
-    // EPERM: the process exists but belongs to another user.
-    return err?.code === 'EPERM';
+  } catch {
+    // Includes EPERM (a reused pid of another user's process): treated as dead, as verify
+    // always did, so a stale lock never blocks every later run.
+    return false;
   }
 }
 

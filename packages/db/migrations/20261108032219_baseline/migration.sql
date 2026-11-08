@@ -15,6 +15,17 @@ ALTER DEFAULT PRIVILEGES FOR ROLE shifa_owner IN SCHEMA public
 ALTER DEFAULT PRIVILEGES FOR ROLE shifa_owner IN SCHEMA public
   GRANT USAGE ON SEQUENCES TO shifa_app;
 --> statement-breakpoint
+-- Functions are not executable by PUBLIC by default (a future SECURITY DEFINER helper must be
+-- granted on purpose).
+ALTER DEFAULT PRIVILEGES FOR ROLE shifa_owner REVOKE EXECUTE ON FUNCTIONS FROM PUBLIC;
+--> statement-breakpoint
+-- Temporary tables have no RLS and outlive a pooled transaction: nobody may create them.
+DO $$
+BEGIN
+  EXECUTE format('REVOKE TEMPORARY ON DATABASE %I FROM PUBLIC', current_database());
+END
+$$;
+--> statement-breakpoint
 -- The tenant of the current transaction, set by withTenant() with set_config(..., true).
 -- NULL when unset: a transaction-local setting reads back as '' after it ends, so '' is NULL too,
 -- and `tenant_id = NULL` matches no row.
