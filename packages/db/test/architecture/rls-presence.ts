@@ -145,7 +145,7 @@ async function relationsOutsidePublic(db: Catalog): Promise<string[]> {
       from pg_class c join pg_namespace n on n.oid = c.relnamespace
      where c.relkind in ('r', 'p', 'f', 'v', 'm')
        and n.nspname not in ('public', 'drizzle', 'information_schema')
-       and n.nspname not like 'pg\_%'
+       and not starts_with(n.nspname, 'pg_')
      order by 1, 2`);
   return rows.map(
     (r) =>
