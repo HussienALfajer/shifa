@@ -1,8 +1,10 @@
 // Shared ESLint flat config for every TypeScript package.
 // Type-aware rules catch what formatting and tsc cannot (unawaited promises, unsafe any).
+import { join } from 'node:path';
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
+import { shifaPlugin } from './rules/module-boundaries.js';
 
 /** Hand-written files above this length must be split. */
 export const MAX_LINES = 400;
@@ -122,10 +124,30 @@ function dbImportRestrictions(allowRawDb, scope) {
 }
 
 /**
- * @param {{ tsconfigRootDir: string, allowRawDb?: string[] }} options
- *   allowRawDb: only @shifa/db passes this (its src/ and test-harness/).
+ * ADR-0003: modules under `<root>/modules/` import each other only through index.ts, and
+ * `<root>/platform/` and `<root>/access/` never import a module.
+ * @param {string} tsconfigRootDir
+ * @param {{ root: string } | undefined} options
  */
-export function createConfig({ tsconfigRootDir, allowRawDb = [] }) {
+function moduleBoundaries(tsconfigRootDir, options) {
+  if (!options) return [];
+  return [
+    {
+      files: [`${options.root}/**/*.{ts,tsx,mts,cts,js,mjs,cjs}`],
+      plugins: { shifa: shifaPlugin },
+      rules: {
+        'shifa/module-boundaries': ['error', { srcRoot: join(tsconfigRootDir, options.root) }],
+      },
+    },
+  ];
+}
+
+/**
+ * @param {{ tsconfigRootDir: string, allowRawDb?: string[], moduleBoundaries?: { root: string } }} options
+ *   allowRawDb: only @shifa/db passes this (its src/ and test-harness/).
+ *   moduleBoundaries: only @shifa/api passes this (`{ root: 'src' }`).
+ */
+export function createConfig({ tsconfigRootDir, allowRawDb = [], moduleBoundaries: boundaries }) {
   return defineConfig(
     { ignores: ['dist/**', 'coverage/**', '**/*.generated.*', '**/generated/**'] },
     js.configs.recommended,
@@ -150,6 +172,7 @@ export function createConfig({ tsconfigRootDir, allowRawDb = [] }) {
     dbImportRestrictions(allowRawDb, 'production'),
     dbImportRestrictions(allowRawDb, 'scripts'),
     dbImportRestrictions(allowRawDb, 'tests'),
+    ...moduleBoundaries(tsconfigRootDir, boundaries),
     {
       files: ['**/*.js', '**/*.mjs'],
       extends: [tseslint.configs.disableTypeChecked],

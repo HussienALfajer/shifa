@@ -15,5 +15,5 @@ Add the endpoint: $ARGUMENTS
 4. Add the route's row to `apps/api/test/architecture/route-matrix.expected.ts`: the expected status class (200/401/403) for anonymous and every role. The matrix test fails on a route without a row, a row without a route, or a changed status, so this row is what reviewers read. Statuses come from `PRODUCTION_GRANTS` plus the test grants, so a grant change in `roles.ts` changes the matrix too.
 5. Contract: until 0.2-07 lands `packages/contracts`, describe the request and response in a Zod schema next to the controller with a `TODO(0.2-07)` marker; afterwards, add it to `packages/contracts`.
 6. If the handler reads or writes tenant data: go through `withTenant()` with the tenant the guard checked (the principal's active tenant), never one from the path, query or body, and add a cross-tenant isolation case (tenant A cannot read or change tenant B's rows through this route). Use `/rls-policy` for any new tenant table once 0.2-06b has landed.
-7. Module boundary: import other modules only through their `index.ts` (the boundary check arrives with 0.2-06d).
+7. Module boundary: import other modules only through their `index.ts`; lint (`shifa/module-boundaries`) and `test/architecture/module-imports.test.ts` fail otherwise.
 8. Run `pnpm verify` and record the route and its matrix row in the slice file.

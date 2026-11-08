@@ -7,7 +7,7 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - `src/app.ts` adapter (body limit 1 MB, request timeout 30 s, `trustProxy` off, request ids, routing errors → envelope), global filter, hooks. Tests use the same `createAdapter()` + `configureApp()`.
 - `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info). Errors name the key, never the value.
 - `src/platform/` database module (`SHIFA_DB` token, pool closed at shutdown), logging, errors.
-- `src/modules/<context>/` one folder per bounded context; others import only its `index.ts` (enforced in 0.2-06d).
+- `src/modules/<context>/` one folder per bounded context; others import only its `index.ts`. `src/platform/` and `src/access/` never import a module. Enforced by lint (`shifa/module-boundaries`, `tooling/eslint-config/rules/`) and by `test/architecture/module-imports.test.ts`, which also fails on any comment silencing the rule.
 
 ## Access (fail-closed)
 - `src/access/`: permission keys (empty until Phase A), PLT-42 roles with empty grants, `Principal` + `hasPermission()` (same tenant; tenant-wide or exact-branch role; `platform_admin` never counts for tenant work), `@Public()` / `@RequirePermission(key)`, `AUTH_PORT` (production `NoAuthAdapter` authenticates nobody → every protected route 401).
