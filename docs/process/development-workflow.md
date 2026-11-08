@@ -52,7 +52,7 @@ Every slice and every PR carries a tier. The tier decides effort level and revie
 - One test run at a time (test guard); per-worker test databases; fixed clocks in tests.
 - End-to-end: typed, per-feature mocks for UI tests are allowed, but every critical path (booking, queue, payment, signing a note) also has a smoke test against the real backend [RN-21].
 - Clinical calculations (CAL, RUST, EDD, currency conversion and rounding) have table-driven unit tests with worked examples from the domain docs.
-- Generated code (API clients, token outputs) is checked for drift, never edited by hand.
+- Generated code (API clients, token outputs) is checked for drift, never edited by hand. `node scripts/check-drift.mjs` (the `drift` step of `verify`) re-runs every generator registered in `scripts/drift.config.mjs` and names each stale, missing or extra file; `--fix` regenerates fixable outputs. Migrations are checked the same way (schema vs latest snapshot, folder names and order) but never regenerated.
 
 ## 6. Pull requests
 

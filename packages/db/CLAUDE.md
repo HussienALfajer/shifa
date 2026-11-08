@@ -1,6 +1,6 @@
 # @shifa/db
 
-Drizzle client, migrations, database roles and `withTenant()` (ADR-0004, ADR-0005). Rules for schema work: `.claude/rules/db.md`; new migrations: `/db-migration`.
+Drizzle client, migrations, database roles and `withTenant()` (ADR-0004, ADR-0005). Rules for schema work: `.claude/rules/db.md`; new migrations: `/db-migration`. The `drift` step of `verify` (`node scripts/check-drift.mjs`) fails when the schema has no matching migration or a folder is misnamed, incomplete or older than `main`'s newest; `--fix` never applies to migrations.
 
 ## Querying
 Every tenant query runs inside `withTenant()`; the pool and raw Drizzle instance are never exported, and ESLint blocks `pg` / `drizzle-orm/node-postgres` outside `src/` and `test-harness/`.

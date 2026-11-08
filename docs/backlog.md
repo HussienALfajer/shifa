@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-08 · Owner: product owner
+Status: Living · Last updated: 2026-11-09 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -31,3 +31,6 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Sequences** (0.2-06b security review B6): a shared sequence or serial column shows other tenants' volume; prefer uuid keys and per-tenant counters (SCH-16 queue numbers), and list sequences in the presence check.
 - **Pin `current_tenant_id()`** (0.2-06b security review B8): assert its body, volatility, `SECURITY INVOKER` and settings match the baseline, since every policy depends on it.
 - **Runtime-created objects and large objects** (0.2-06b security review B9, B10): partitions created by jobs never reach the CI catalog; check `pg_largeobject_metadata` ownership, or revoke large-object use from `shifa_app`.
+- **Newest main for the migration order rule** (0.2-07a review 4): `check-drift` reads `main` before `origin/main`; a stale local `main` can hide a rebase that slipped an older migration under a merged one. Compare against the newer of the two refs. In CI (shallow checkout, no `main`) the rule is skipped; fetching `main` in the `verify` job would enable it there.
+- **Schema drift test against the real schema** (0.2-07a review 5): `drift-migrations.test.mjs` replaces `src/schema/index.ts` with a new table; once Phase A adds tables that becomes drop + create. Append a column to the real schema instead (locked test in 0.2-07a).
+- **`--full --fix` for Dart outputs** (0.2-07a review 5): `--fix` skips `full` checks unless `--full` is passed; 0.2-07c documents `--full --fix` for the Dart client.
