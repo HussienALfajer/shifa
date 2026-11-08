@@ -15,9 +15,14 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - `AccessCheck` runs at bootstrap and lists every handler with no or both annotations; the app does not start.
 - Tests: `test/access/probe.ts` holds test keys, grants and a header-driven `AuthPort` (`buildTestApp({ auth, grants })`). `test/architecture/route-matrix.expected.ts` is the reviewed route × role matrix.
 
+## Contracts (ADR-0013)
+- `src/platform/contract/`: `@Contract(c)`; `ContractCheck` at bootstrap (no contract, method/path/success-status mismatch, unnamed schema, undeclared path parameter, duplicate operationId → no start); global `ContractValidationInterceptor` (after the guard) validates params, query, body with Zod and replaces them with the parsed values; failures → 400 `validation_failed` with `details: [{ path, code }]`, logged with route template and issue codes only.
+- `openapi.ts` builds the OpenAPI 3.1 document (`z.toJSONSchema`, components by id, `x-public` / `x-permission`); `scripts/generate-openapi.ts` writes `packages/contracts/generated/openapi.json` through the `openapi` drift check (bundled by `tsdown.openapi.config.ts`). No Swagger UI.
+- Test-only routes use `testContract(method, path)` from `test/support.ts`.
+
 ## Logging and errors
 - Log through pino (`request.log` in a request, else the app logger). Request lines carry the route template (`/patients/:id`), never the URL. Never log bodies, query strings, headers or patient data; log record IDs.
-- Throw Nest `HttpException`s; the global filter answers `{ error: { code, message } }` with a fixed message per status. Anything else becomes 500 `internal_error`.
+- Throw Nest `HttpException`s; the global filter answers `{ error: { code, message } }` with a fixed message per status (catalogue in `@shifa/contracts`). Anything else becomes 500 `internal_error`.
 - Log errors with `describeError(err)`: database errors keep `sqlstate`, `constraint`, `table`, `column` only.
 
 ## Commands

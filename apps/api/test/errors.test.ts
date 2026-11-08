@@ -1,16 +1,28 @@
 // The global filter answers with a minimal envelope and logs database errors as SQLSTATE,
 // constraint, table and column only: PostgreSQL messages and `detail` can echo patient data.
-import { Body, Controller, Get, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Inject, Param, Post } from '@nestjs/common';
+import { defineContract, ErrorEnvelope, STATUS_ERRORS } from '@shifa/contracts';
 import type { ShifaDb } from '@shifa/db';
 import { testDb } from '@shifa/db/testing';
 import { sql } from 'drizzle-orm';
 import { afterEach, describe, expect, it } from 'vitest';
+import { z } from 'zod';
 import { Public } from '../src/access/index.ts';
+import { Contract } from '../src/platform/contract/index.ts';
 import { SHIFA_DB } from '../src/platform/database.module.ts';
-import { buildTestApp, type TestApp } from './support.ts';
+import { buildTestApp, type TestApp, testContract } from './support.ts';
 
 // Recognisable synthetic values standing in for patient data.
 const MARKER = 'synthetic-value-5521';
+
+const TestStatusParams = z
+  .object({ status: z.coerce.number().int() })
+  .meta({ id: 'TestStatusParams' });
+
+const throwStatus = defineContract({
+  ...testContract('GET', '/test-errors/status/:status'),
+  request: { params: TestStatusParams },
+});
 
 @Controller('test-errors')
 class FailingController {
@@ -18,6 +30,7 @@ class FailingController {
 
   /** Shaped like pg's DatabaseError for a unique violation whose detail echoes the value. */
   @Public()
+  @Contract(testContract('GET', '/test-errors/unique'))
   @Get('unique')
   unique(): never {
     throw Object.assign(
@@ -36,6 +49,7 @@ class FailingController {
 
   /** A real 22P02 from PostgreSQL: its message echoes the value that failed to cast. */
   @Public()
+  @Contract(testContract('GET', '/test-errors/cast'))
   @Get('cast')
   async cast(): Promise<unknown> {
     return this.db.withPlatformAdmin('errors test', (tx) =>
@@ -44,9 +58,18 @@ class FailingController {
   }
 
   @Public()
+  @Contract(testContract('POST', '/test-errors/echo'))
   @Post('echo')
   echo(@Body() body: unknown): unknown {
     return body;
+  }
+
+  /** Throws an HttpException with the status from the path. */
+  @Public()
+  @Contract(throwStatus)
+  @Get('status/:status')
+  status(@Param() params: z.output<typeof TestStatusParams>): never {
+    throw new HttpException(MARKER, params.status);
   }
 }
 
@@ -129,5 +152,32 @@ describe('HTTP errors', () => {
     expect(res.json()).toEqual({ error: { code: 'bad_request', message: 'Bad request' } });
     expect(res.body).not.toContain(MARKER);
     expect(logs.text()).not.toContain(MARKER);
+  });
+});
+
+describe('error envelope contract', () => {
+  it('every known status answers its catalogued code, parsing with ErrorEnvelope', async () => {
+    const { app: nest } = await app();
+    const statuses = Object.keys(STATUS_ERRORS).map(Number);
+    expect(statuses).toContain(400);
+    expect(statuses).toContain(500);
+    for (const status of statuses) {
+      const res = await nest.inject({
+        method: 'GET',
+        url: `/test-errors/status/${String(status)}`,
+      });
+      expect(res.statusCode).toBe(status);
+      const body = ErrorEnvelope.parse(res.json());
+      expect(body.error).toEqual(STATUS_ERRORS[status]);
+      expect(res.body).not.toContain(MARKER);
+    }
+  });
+
+  it('an uncatalogued status falls back to bad_request (4xx) or internal_error (5xx)', async () => {
+    const { app: nest } = await app();
+    const client = await nest.inject({ method: 'GET', url: '/test-errors/status/418' });
+    expect(ErrorEnvelope.parse(client.json()).error.code).toBe('bad_request');
+    const server = await nest.inject({ method: 'GET', url: '/test-errors/status/502' });
+    expect(ErrorEnvelope.parse(server.json()).error.code).toBe('internal_error');
   });
 });

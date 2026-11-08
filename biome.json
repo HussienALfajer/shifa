@@ -11,7 +11,8 @@
       "!**/*.md",
       "!docs/brand/**",
       "!pnpm-lock.yaml",
-      "!**/migrations/*/snapshot.json"
+      "!**/migrations/*/snapshot.json",
+      "!**/generated/**"
     ]
   },
   "formatter": {

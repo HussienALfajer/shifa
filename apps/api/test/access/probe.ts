@@ -8,6 +8,8 @@ import { Public, RequirePermission } from '../../src/access/decorators.ts';
 import type { PermissionKey } from '../../src/access/permissions.ts';
 import type { Principal, RoleAssignment } from '../../src/access/principal.ts';
 import { ROLES, type Role, type RoleGrants } from '../../src/access/roles.ts';
+import { Contract } from '../../src/platform/contract/index.ts';
+import { testContract } from '../support.ts';
 
 /** Test keys exist only in this file; production has no permission keys yet. */
 // Double cast: keeps compiling once PERMISSIONS lists real keys.
@@ -62,18 +64,21 @@ export const ALL_ROLES: readonly Role[] = ROLES;
 @Controller('__probe')
 export class ProbeController {
   @Public()
+  @Contract(testContract('GET', '/__probe/public'))
   @Get('public')
   open(): { ok: true } {
     return { ok: true };
   }
 
   @RequirePermission(TEST_READ)
+  @Contract(testContract('GET', '/__probe/read'))
   @Get('read')
   read(): { ok: true } {
     return { ok: true };
   }
 
   @RequirePermission(TEST_SENSITIVE)
+  @Contract(testContract('GET', '/__probe/sensitive'))
   @Get('sensitive')
   sensitive(): { ok: true } {
     return { ok: true };
