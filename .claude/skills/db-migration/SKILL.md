@@ -15,6 +15,6 @@ Create the migration: $ARGUMENTS
    - grants anything to `shifa_app` beyond what default privileges give, or changes ownership;
    - locks a large table for long (`ALTER TABLE ... SET NOT NULL`, non-concurrent index on existing data): note it in the slice file.
    Add `--> statement-breakpoint` between statements of custom migrations.
-5. Add or extend tests that run as `shifa_app` via `testDb()`: tenant A cannot see or write tenant B's rows in the new table.
+5. A new table in `public`: follow `/rls-policy` (classification entry in `src/schema/classification.ts`, policies, isolation case in `test/isolation/cases/`). The RLS presence test and the isolation suite fail until it is done.
 6. Run `pnpm verify`. The harness applies all migrations to a fresh template, so a broken migration fails there.
 7. Record in the slice file: the migration name, whether it is expand, migrate or contract, and the rollback note.
