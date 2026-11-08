@@ -1,0 +1,67 @@
+// Fail-closed at start: a handler without an access annotation, or with both, stops the app.
+import { Controller, Get, Post } from '@nestjs/common';
+import { afterEach, describe, expect, it } from 'vitest';
+import { Public, RequirePermission } from '../../src/access/decorators.ts';
+import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
+import { TEST_READ } from './probe.ts';
+
+@Controller('__unannotated')
+class UnannotatedController {
+  @Public()
+  @Get('fine')
+  fine(): string {
+    return 'ok';
+  }
+
+  @Get('missing')
+  forgotten(): string {
+    return 'never';
+  }
+
+  @Post('also-missing')
+  alsoForgotten(): string {
+    return 'never';
+  }
+
+  /** Not a route handler: needs no annotation. */
+  helper(): string {
+    return 'helper';
+  }
+}
+
+@Controller('__both')
+class BothController {
+  @Public()
+  @RequirePermission(TEST_READ)
+  @Get('confused')
+  confused(): string {
+    return 'never';
+  }
+}
+
+let current: TestApp | undefined;
+
+afterEach(async () => {
+  await current?.app.close();
+  current = undefined;
+});
+
+describe('access check at start', () => {
+  it('refuses to start and names every unannotated handler', async () => {
+    const start = buildTestApp({ db: offlineDb(), controllers: [UnannotatedController] });
+    await expect(start).rejects.toThrow(/UnannotatedController\.forgotten/);
+    await expect(start).rejects.toThrow(/UnannotatedController\.alsoForgotten/);
+    await expect(start).rejects.not.toThrow(/UnannotatedController\.(fine|helper)/);
+  });
+
+  it('refuses to start when a handler has both @Public and @RequirePermission', async () => {
+    const start = buildTestApp({ db: offlineDb(), controllers: [BothController] });
+    await expect(start).rejects.toThrow(/BothController\.confused/);
+  });
+
+  it('starts when every handler is annotated', async () => {
+    current = await buildTestApp({ db: offlineDb() });
+    const res = await current.app.inject({ method: 'GET', url: '/health/live' });
+    expect(res.statusCode).toBe(200);
+  });
+});

@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { afterEach, describe, expect, it } from 'vitest';
+import { Public } from '../src/access/index.ts';
 import { createLogger } from '../src/platform/logging.ts';
 import { buildTestApp, captureLogs, offlineDb, type TestApp } from './support.ts';
 
@@ -11,6 +12,7 @@ const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 
 @Controller('test-logging')
 class EchoController {
+  @Public()
   @Post()
   echo(@Body() body: unknown): unknown {
     return body;
