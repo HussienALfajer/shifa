@@ -16,5 +16,5 @@ Create the migration: $ARGUMENTS
    - locks a large table for long (`ALTER TABLE ... SET NOT NULL`, non-concurrent index on existing data): note it in the slice file.
    Add `--> statement-breakpoint` between statements of custom migrations.
 5. A new table in `public`: follow `/rls-policy` (classification entry in `src/schema/classification.ts`, policies, isolation case in `test/isolation/cases/`). The RLS presence test and the isolation suite fail until it is done.
-6. Run `pnpm verify`. The harness applies all migrations to a fresh template, so a broken migration fails there.
+6. Run `pnpm verify`. The harness applies all migrations to a fresh template, so a broken migration fails there; the `drift` step fails when the schema and the latest snapshot disagree or a folder is misnamed or older than `main`'s newest (after a rebase, regenerate it). `check-drift --fix` never applies to migrations.
 7. Record in the slice file: the migration name, whether it is expand, migrate or contract, and the rollback note.

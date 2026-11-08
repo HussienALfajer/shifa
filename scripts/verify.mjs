@@ -53,6 +53,12 @@ const steps = [
   { name: 'lint-root', cmd: 'pnpm', args: ['exec', 'eslint', '--max-warnings=0', '.'] },
   { name: 'scripts-test', cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
   { name: 'file-length', cmd: 'node', args: ['scripts/check-file-length.mjs'] },
+  // Generated files and migrations match their sources (scripts/drift.config.mjs).
+  {
+    name: 'drift',
+    cmd: 'node',
+    args: ['scripts/check-drift.mjs', ...(mode === 'full' ? ['--full'] : [])],
+  },
   // Resolves the pub workspace from pubspec.lock without changing it (fast when up to date).
   {
     name: 'pub-get',
