@@ -11,6 +11,7 @@ const unit = [
   'test/access/access-check.test.ts',
   'test/access/guard.test.ts',
   'test/access/principal.test.ts',
+  'test/access/test-support.test.ts',
 ];
 
 export default defineConfig({

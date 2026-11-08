@@ -7,7 +7,7 @@ import { Test } from '@nestjs/testing';
 import type { ShifaDb } from '@shifa/db';
 import { ROLE_GRANTS } from '../src/access/access.module.ts';
 import { AUTH_PORT, type AuthPort } from '../src/access/auth.port.ts';
-import type { RoleGrants } from '../src/access/roles.ts';
+import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../src/access/roles.ts';
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
 import { createLogger } from '../src/platform/logging.ts';
@@ -66,7 +66,7 @@ export function offlineDb(): ShifaDb & { calls: number } {
 export interface TestApp {
   app: NestFastifyApplication;
   logs: CapturedLogs;
-  /** Every route Fastify registered, as `METHOD /url` (HEAD twins of GET left out). */
+  /** Every route Fastify registered, as `METHOD /url` (automatic HEAD twins of GET left out). */
   routes: string[];
 }
 
@@ -80,7 +80,7 @@ export async function buildTestApp({
   controllers?: Type[];
   /** Replaces the production NoAuthAdapter. */
   auth?: AuthPort;
-  /** Replaces the production (empty) role grants. */
+  /** Added to the production role grants (never replaces them), so the matrix sees both. */
   grants?: RoleGrants;
 }): Promise<TestApp> {
   const logs = captureLogs();
@@ -90,19 +90,36 @@ export async function buildTestApp({
     controllers,
   });
   if (auth) builder = builder.overrideProvider(AUTH_PORT).useValue(auth);
-  if (grants) builder = builder.overrideProvider(ROLE_GRANTS).useValue(grants);
+  if (grants) {
+    builder = builder
+      .overrideProvider(ROLE_GRANTS)
+      .useValue(mergeGrants(PRODUCTION_GRANTS, grants));
+  }
   const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestFastifyApplication>(createAdapter(logger));
-  const routes: string[] = [];
+  const registered: { method: string; url: string }[] = [];
   app
     .getHttpAdapter()
     .getInstance()
     .addHook('onRoute', (route) => {
       const methods = Array.isArray(route.method) ? route.method : [route.method];
-      for (const method of methods) {
-        if (method !== 'HEAD') routes.push(`${method} ${route.url}`);
-      }
+      for (const method of methods) registered.push({ method, url: route.url });
     });
   await configureApp(app, logger);
-  return { app, logs, routes };
+  return { app, logs, routes: routeList(registered) };
+}
+
+/** Production grants plus `extra`, per role. */
+export function mergeGrants(production: RoleGrants, extra: RoleGrants): RoleGrants {
+  return Object.fromEntries(
+    ROLES.map((role) => [role, [...new Set([...production[role], ...extra[role]])]]),
+  ) as unknown as RoleGrants;
+}
+
+/** `METHOD /url` per route, leaving out only the HEAD twins Fastify adds to GET routes. */
+export function routeList(registered: readonly { method: string; url: string }[]): string[] {
+  const gets = new Set(registered.filter((r) => r.method === 'GET').map((r) => r.url));
+  return registered
+    .filter((r) => !(r.method === 'HEAD' && gets.has(r.url)))
+    .map((r) => `${r.method} ${r.url}`);
 }

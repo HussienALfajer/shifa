@@ -7,7 +7,13 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - `src/app.ts` adapter (body limit 1 MB, request timeout 30 s, `trustProxy` off, request ids, routing errors → envelope), global filter, hooks. Tests use the same `createAdapter()` + `configureApp()`.
 - `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info). Errors name the key, never the value.
 - `src/platform/` database module (`SHIFA_DB` token, pool closed at shutdown), logging, errors.
-- `src/modules/<context>/` one folder per bounded context; others import only its `index.ts` (enforced in 0.2-06c).
+- `src/modules/<context>/` one folder per bounded context; others import only its `index.ts` (enforced in 0.2-06d).
+
+## Access (fail-closed)
+- `src/access/`: permission keys (empty until Phase A), PLT-42 roles with empty grants, `Principal` + `hasPermission()` (same tenant; tenant-wide or exact-branch role; `platform_admin` never counts for tenant work), `@Public()` / `@RequirePermission(key)`, `AUTH_PORT` (production `NoAuthAdapter` authenticates nobody → every protected route 401).
+- Global `AccessGuard`: no annotation → 500; anonymous → 401 `unauthorized`; missing key → 403 `forbidden`. Denials are logged with route template and handler only.
+- `AccessCheck` runs at bootstrap and lists every handler with no or both annotations; the app does not start.
+- Tests: `test/access/probe.ts` holds test keys, grants and a header-driven `AuthPort` (`buildTestApp({ auth, grants })`). `test/architecture/route-matrix.expected.ts` is the reviewed route × role matrix.
 
 ## Logging and errors
 - Log through pino (`request.log` in a request, else the app logger). Request lines carry the route template (`/patients/:id`), never the URL. Never log bodies, query strings, headers or patient data; log record IDs.

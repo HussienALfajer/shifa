@@ -42,6 +42,8 @@ export function hasPermission(
       assignment.role !== 'platform_admin' &&
       assignment.tenantId === tenantId &&
       (assignment.branchId === null || assignment.branchId === branchId) &&
+      // hasOwn: an unknown role from an adapter grants nothing instead of throwing.
+      Object.hasOwn(grants, assignment.role) &&
       grants[assignment.role].includes(key),
   );
 }

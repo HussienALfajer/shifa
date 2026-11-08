@@ -2,7 +2,7 @@
 // @RequirePermission. Runs on application bootstrap (inside configureApp's app.init()), so the
 // production server, the boot check and every test app refuse to start otherwise.
 import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
-import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
+import { PATH_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import { PERMISSION_METADATA, PUBLIC_METADATA } from './decorators.ts';
 
@@ -31,15 +31,18 @@ export class AccessCheck implements OnApplicationBootstrap {
   problems(): string[] {
     const problems: string[] = [];
     for (const wrapper of this.discovery.getControllers()) {
-      const instance = wrapper.instance as object | undefined;
-      if (!instance) continue;
-      const prototype = Object.getPrototypeOf(instance) as Record<string, unknown>;
+      // Read the class, not the instance: a controller without an instance must not slip past.
+      const metatype = wrapper.metatype as { prototype?: unknown } | null | undefined;
+      const prototype = metatype?.prototype as Record<string, unknown> | undefined;
+      if (!prototype) {
+        problems.push(`  ${String(wrapper.name)}: controller class not found`);
+        continue;
+      }
       for (const name of this.scanner.getAllMethodNames(prototype)) {
         const handler = prototype[name];
         if (typeof handler !== 'function') continue;
-        const isRoute =
-          this.reflector.get<unknown>(PATH_METADATA, handler) !== undefined &&
-          this.reflector.get<unknown>(METHOD_METADATA, handler) !== undefined;
+        // Nest routes on path metadata alone (no method → all methods), so check the same way.
+        const isRoute = this.reflector.get<unknown>(PATH_METADATA, handler) !== undefined;
         if (!isRoute) continue;
         const isPublic = this.reflector.get<unknown>(PUBLIC_METADATA, handler) === true;
         const hasKey = this.reflector.get<unknown>(PERMISSION_METADATA, handler) !== undefined;

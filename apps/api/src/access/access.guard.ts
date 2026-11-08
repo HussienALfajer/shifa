@@ -50,7 +50,8 @@ export class AccessGuard implements CanActivate {
 
     const principal = await this.auth.authenticate(request as FastifyRequest);
     if (principal === null) {
-      request.log.warn({ status: 401, handler, route }, 'access denied');
+      // info, not warn: anonymous probes are routine and must not flood the warning stream.
+      request.log.info({ status: 401, handler, route }, 'access denied');
       throw new UnauthorizedException();
     }
     const scope = { tenantId: principal.tenantId, branchId: principal.branchId };

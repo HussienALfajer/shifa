@@ -10,8 +10,9 @@ import type { Principal, RoleAssignment } from '../../src/access/principal.ts';
 import { ROLES, type Role, type RoleGrants } from '../../src/access/roles.ts';
 
 /** Test keys exist only in this file; production has no permission keys yet. */
-export const TEST_READ = 'test.read' as PermissionKey;
-export const TEST_SENSITIVE = 'test.sensitive' as PermissionKey;
+// Double cast: keeps compiling once PERMISSIONS lists real keys.
+export const TEST_READ = 'test.read' as unknown as PermissionKey;
+export const TEST_SENSITIVE = 'test.sensitive' as unknown as PermissionKey;
 
 export const TEST_GRANTS: RoleGrants = {
   owner: [TEST_READ, TEST_SENSITIVE],
