@@ -56,18 +56,22 @@ class ScopedConnection {
 
 const verified = new WeakSet<PoolClient>();
 
-/** FORCE RLS does not bind superusers, BYPASSRLS roles or table owners: refuse them. */
+/**
+ * FORCE RLS does not bind superusers, BYPASSRLS roles or table owners: refuse them, and any
+ * role that is a member of another role (SET ROLE could reach the owner or a superuser).
+ */
 async function assertApplicationRole(client: PoolClient): Promise<void> {
   if (verified.has(client)) return;
   const { rows } = await client.query<{ unsafe: boolean }>(
     `SELECT r.rolsuper OR r.rolbypassrls
-            OR EXISTS (SELECT 1 FROM pg_class c WHERE c.relowner = r.oid) AS unsafe
+            OR EXISTS (SELECT 1 FROM pg_class c WHERE c.relowner = r.oid)
+            OR EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS unsafe
        FROM pg_roles r WHERE r.rolname = current_user`,
   );
   if (rows[0]?.unsafe !== false) {
     throw new Error(
       'createDb() must connect as the application role (shifa_app): this role is superuser, ' +
-        'bypasses RLS or owns tables',
+        'bypasses RLS, owns tables or is a member of another role',
     );
   }
   verified.add(client);

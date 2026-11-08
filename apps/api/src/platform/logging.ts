@@ -33,13 +33,35 @@ const REDACT_PATHS = [
 
 interface RequestLike {
   method?: string;
-  url?: string;
   routeOptions?: { url?: string };
 }
 
-/** Path without the query string: query parameters can carry patient data. */
-function pathOf(url: string | undefined): string | undefined {
-  return url?.split('?', 1)[0];
+/**
+ * The route template (`/patients/:id`), never the concrete URL: path parameters and query
+ * strings can carry patient data. Unmatched and malformed URLs are not logged at all.
+ */
+function routeOf(req: RequestLike): string {
+  return req.routeOptions?.url ?? '[unmatched]';
+}
+
+type LogArgs = [unknown, ...unknown[]];
+
+/**
+ * pino turns `log.error(err)` into `msg: err.message`, past every serializer. Rewrite it as
+ * `log.error({ err }, msg)` so the error goes through the `err` serializer like any other.
+ */
+function errorFirst(
+  this: Logger,
+  args: LogArgs,
+  method: (this: Logger, ...args: LogArgs) => void,
+): void {
+  const [first, ...rest] = args;
+  if (first instanceof Error) {
+    const message = typeof rest[0] === 'string' ? rest[0] : 'error';
+    method.apply(this, [{ err: first }, message]);
+    return;
+  }
+  method.apply(this, args);
 }
 
 export function createLogger({
@@ -53,9 +75,10 @@ export function createLogger({
     level,
     base: null, // no pid or hostname in every line
     redact: { paths: REDACT_PATHS, censor: '[redacted]' },
+    hooks: { logMethod: errorFirst },
     serializers: {
-      // Fastify's request log: method and path only (no headers, query, body or address).
-      req: (req: RequestLike) => ({ method: req.method, path: pathOf(req.url) }),
+      // Fastify's request log: method and route only (no headers, values, body or address).
+      req: (req: RequestLike) => ({ method: req.method, route: routeOf(req) }),
       res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode }),
       // Callers pass describeError() output; a raw error logged by mistake (or by a library)
       // is sanitised here, so a pg error's `detail` never reaches the log either way.

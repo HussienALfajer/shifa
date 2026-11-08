@@ -7,6 +7,7 @@ const unit = [
   'test/config-host-env.test.ts',
   'test/logging.test.ts',
   'test/logging-sanitise.test.ts',
+  'test/framework-errors.test.ts',
 ];
 
 export default defineConfig({

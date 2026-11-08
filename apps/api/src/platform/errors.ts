@@ -20,6 +20,7 @@ const KNOWN: Record<number, [code: string, message: string]> = {
   408: ['request_timeout', 'Request timeout'],
   409: ['conflict', 'Conflict'],
   413: ['payload_too_large', 'Payload too large'],
+  414: ['uri_too_long', 'URI too long'],
   415: ['unsupported_media_type', 'Unsupported media type'],
   422: ['unprocessable_entity', 'Unprocessable entity'],
   429: ['too_many_requests', 'Too many requests'],

@@ -60,6 +60,20 @@ describe('real package configs', () => {
     assert.equal(await dbErrors('apps/api', 'scripts/boot-check.ts', harness), 0);
     assert.equal(await dbErrors('apps/api', 'scripts/boot-check.ts', code), 1);
     assert.ok((await dbErrors('apps/api', 'src/main.ts', harness)) >= 1);
+    // Dynamic loading is refused where the static import is (0.2-06a security review L5).
+    for (const name of ['@shifa/db/testing', '@shifa/db/harness']) {
+      const dynamic = `export const m: unknown = await import('${name}');\n`;
+      assert.equal(await dbErrors('apps/api', 'src/main.ts', dynamic), 1, name);
+      assert.equal(await dbErrors('apps/api', 'test/support.ts', dynamic), 0, name);
+    }
+    assert.equal(
+      await dbErrors(
+        'apps/api',
+        'scripts/boot-check.ts',
+        "export const m: unknown = await import('@shifa/db/testing');\n",
+      ),
+      1,
+    );
     assert.equal(
       await dbErrors(
         'testing',

@@ -4,8 +4,9 @@ import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
 import type { ShifaDb } from '@shifa/db';
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { AppModule } from './app.module.ts';
-import { GlobalExceptionFilter } from './platform/errors.ts';
+import { envelopeFor, GlobalExceptionFilter } from './platform/errors.ts';
 import {
   type Logger,
   NestPinoLogger,
@@ -15,6 +16,7 @@ import {
 
 /** 1 MB: no endpoint in Release 1 takes more in JSON (uploads go to object storage). */
 export const BODY_LIMIT_BYTES = 1024 * 1024;
+export const REQUEST_TIMEOUT_MS = 30_000;
 
 export function createAdapter(logger: Logger): FastifyAdapter {
   return new FastifyAdapter({
@@ -24,6 +26,14 @@ export function createAdapter(logger: Logger): FastifyAdapter {
     trustProxy: false,
     requestIdHeader: false,
     genReqId: requestIdFor,
+    // Fastify's default 0 means no limit: a client trickling a body could hold a socket forever.
+    requestTimeout: REQUEST_TIMEOUT_MS,
+    // Routing errors (bad URL encoding, overlong parameters) happen before Nest's filter runs;
+    // Fastify's default would echo and log the whole URL, query string included.
+    frameworkErrors: (error: FastifyError, _request: FastifyRequest, reply: FastifyReply) => {
+      const status = error.statusCode === 414 ? 414 : 400;
+      void reply.code(status).send(envelopeFor(status));
+    },
   });
 }
 
@@ -50,7 +60,8 @@ export async function createApp({
   const app = await NestFactory.create<NestFastifyApplication>(
     AppModule.register({ db }),
     createAdapter(logger),
-    { bufferLogs: true },
+    // From the first line on, so errors while Nest builds providers also go through pino.
+    { logger: new NestPinoLogger(logger) },
   );
   await configureApp(app, logger);
   return app;

@@ -105,6 +105,17 @@ function dbImportRestrictions(allowRawDb, scope) {
           selector: `CallExpression[callee.type='CallExpression'][arguments.0.value=/${RAW_DB_MODULE}/]`,
           message,
         },
+        // import('@shifa/db/testing') and require() of it, where a static import is refused.
+        ...BLOCKED_TEST_MODULES[scope].flatMap((name) => [
+          {
+            selector: `ImportExpression[source.value='${name}']`,
+            message: `${name} is for tests only.`,
+          },
+          {
+            selector: `CallExpression[arguments.0.value='${name}']`,
+            message: `${name} is for tests only.`,
+          },
+        ]),
       ],
     },
   };
