@@ -7,4 +7,5 @@ environment:
   sdk: ^3.13.0
 
 workspace:
+  - packages/api_client_dart
   - packages/shifa_testing
