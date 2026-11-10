@@ -1,6 +1,6 @@
 # Open decisions
 
-Status: Living document · Last updated: 2026-11-09 · Owner: product owner
+Status: Living document · Last updated: 2026-11-11 · Owner: product owner
 
 Questions that block or shape work and that the owner (or an outside expert) must answer. Claude must not guess an answer to an open decision; it asks the owner and records the answer here, then in an ADR or domain doc. When a decision is closed, keep the row, set Status to `Closed (date)` and link where the answer now lives.
 
@@ -28,3 +28,4 @@ Questions that block or shape work and that the owner (or an outside expert) mus
 | OD-20 | Default digit style (Western vs Arabic-Indic) | UI and print consistency | Design system, i18n | Owner + receptionist feedback | Setting per clinic; pick a default after field feedback | Open |
 | OD-21 | Licence for the public repository | Without a licence all rights are reserved; a permissive licence lets others reuse the code | Before outside contributors or reuse | Owner | Keep "all rights reserved" (no licence file) unless the owner wants open source | Open |
 | OD-22 | Detail in 400 validation errors | Clients need to know which field failed; values must never be echoed (patient data) | 0.2-07b | Owner | Field path and issue code per invalid field | Closed (2026-11-09): `error.code = validation_failed` with `details: [{ path, code }]` (path like `body.phone`, Zod issue code), never the submitted value; see `packages/contracts/src/errors.ts` and [0.2-07b](slices/0.2-07b-contracts-and-openapi.md) |
+| OD-23 | Synthetic phone numbers | Realistic numbers on real operator prefixes may belong to real people; a test message could reach them | 0.2-08 | Owner | Realistic prefixes with a subscriber marker, plus a send allowlist outside production | Closed (2026-11-11): realistic +963/+90 operator prefixes, subscriber digits start with `00`, `isSyntheticPhone` in `@shifa/testing`; non-production sending only to an allowlist (MSG-32); see [0.2-08 spec](specs/foundation/0.2-08-synthetic-data-generator.md) |

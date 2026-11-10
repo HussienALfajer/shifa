@@ -18,7 +18,7 @@ Map of the documentation. Each kind of information has exactly one home; link to
 | Architecture decisions | [adr/README.md](adr/README.md) |
 | Requirements per domain | [domain/](#domain-documents) below |
 | Legal, licensing, data handling, platform access | [compliance/](#compliance) below |
-| Feature specs (written per feature with `/spec`) | `specs/` (created with the first spec) |
+| Feature specs (written per feature with `/spec`) | `specs/` (by area, e.g. `specs/foundation/`) |
 | Slice plans and hand-over | [slices/README.md](slices/README.md) |
 | Research evidence (read-only) | [research/README.md](research/README.md) |
 

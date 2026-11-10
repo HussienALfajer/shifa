@@ -1,6 +1,6 @@
 # Data handling policy
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-11 · Owner: product owner
 Sources: [RN-04 §6–§7], [RN-18 §4.11], [RN-16 §14], [RN-03 §2], [RN-01]
 
 Purpose: define how personal and health data is handled across development, AI-agent tooling, staging and production, and which defaults still need an owner decision. Decisions: [ADR-0023](../adr/0023-no-real-patient-data-in-dev.md), [ADR-0004](../adr/0004-postgresql-pooled-tenancy-rls.md), [ADR-0006](../adr/0006-one-organisation-model.md). Legal context: [Syrian data law](syria-data-law.md).
@@ -12,7 +12,7 @@ Purpose: define how personal and health data is handled across development, AI-a
 | Staging | Synthetic, or de-identified via a reviewed pipeline | Owner and named staff |
 | Production | Real data | Clinics by role; platform staff only via audited support access |
 
-- Synthetic data generator (`packages/testing`): multiple tenants, branches and doctors; Syrian Arabic names and naming patterns; +963 and +90 phones; three currencies; dental charts, fractures, PROM answers; synthetic or public test DICOM.
+- Synthetic data generator (`packages/testing`): multiple tenants, branches and doctors; Syrian Arabic names and naming patterns; +963 and +90 phones; three currencies; dental charts, fractures, PROM answers; synthetic or public test DICOM. Built in stages: the core (tenancy, people, phones, money) in 0.2-08 ([spec](../specs/foundation/0.2-08-synthetic-data-generator.md)); clinical data with Phases B–D. Synthetic phones can belong to real people, so non-production sending is allowlisted (MSG-32, OD-23).
 - Claude Code: may read and edit `.env*`, secrets, dumps and data-export paths (ADR-0028); `.gitignore` and the CI secret scan keep them out of git; sandbox enabled under WSL2; no production credentials on development machines.
 - Logs, traces and error reports never contain personal or clinical data; a test fails if listed sensitive fields reach a logger.
 
