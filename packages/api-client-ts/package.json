@@ -1,0 +1,30 @@
+{
+  "name": "@shifa/api-client-ts",
+  "version": "0.0.0",
+  "private": true,
+  "description": "TypeScript API client generated from packages/contracts/generated/openapi.json (ADR-0013).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "generate": "node ../../scripts/check-drift.mjs --fix",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "@shifa/contracts": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "ajv": "8.20.0",
+    "eslint": "10.14.0",
+    "openapi-typescript": "7.13.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

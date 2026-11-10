@@ -22,11 +22,11 @@ export function toRepoPath(filePath, projectDir) {
 // Secret files (.env, keys, secrets/, dumps) are not guarded: the owner allows Claude to read
 // and edit them (ADR-0028). `.gitignore` and the CI secret scan still keep them out of git.
 
+// The API clients keep their generated code under src/generated/ and lib/src/generated/
+// (covered by the first rule); their package files, client.ts and tests are hand-written.
 const GENERATED = [
   /(^|\/)generated\//i,
   /\.generated\.[a-z]+$/i,
-  /^packages\/api-client-ts\//i,
-  /^packages\/api_client_dart\/lib\//i,
   /(^|\/)pnpm-lock\.yaml$/i,
   /(^|\/)pubspec\.lock$/i,
   /\.g\.dart$/i,

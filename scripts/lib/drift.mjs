@@ -11,6 +11,8 @@
 //   full      — true: run only in full mode (slow toolchains)
 //   fixable   — false: --fix never rewrites these outputs (default true)
 //   hint      — one line printed under a drifted check
+//   budget    — { files, lines }: ceilings for the generated outputs. Exceeding one is drift
+//               reported as one problem (never fixed), so an inflated output is not a 10k-line diff.
 import {
   existsSync,
   mkdirSync,
@@ -54,6 +56,37 @@ export function compareOutputs(root, outDir, outputs) {
   return { stale, missing, extra };
 }
 
+const countLines = (text) =>
+  text.length === 0 ? 0 : text.split('\n').length - (text.endsWith('\n') ? 1 : 0);
+
+/** Files and lines under the given repo-relative outputs of `base`. */
+export function measureOutputs(base, outputs) {
+  let files = 0;
+  let lines = 0;
+  for (const rel of outputs) {
+    for (const path of listFiles(base, rel)) {
+      files += 1;
+      lines += countLines(normalised(join(base, path)));
+    }
+  }
+  return { files, lines };
+}
+
+function budgetProblems(check, outDir) {
+  if (!check.budget) return [];
+  const size = measureOutputs(outDir, check.outputs);
+  const problems = [];
+  for (const unit of ['files', 'lines']) {
+    const max = check.budget[unit];
+    if (max !== undefined && size[unit] > max) {
+      problems.push(
+        `size budget exceeded: ${size[unit]} ${unit} (max ${max}); an unnamed schema or a generator change inflated the output`,
+      );
+    }
+  }
+  return problems;
+}
+
 function applyFix(root, outDir, { stale, missing, extra }) {
   for (const path of [...stale, ...missing]) {
     mkdirSync(dirname(join(root, path)), { recursive: true });
@@ -81,7 +114,7 @@ async function runOne(check, { root, full, fix, logDir }) {
 
 async function generateAndCompare(check, { root, fix, outDir, base }) {
   const returned = await check.generate(outDir, { root });
-  const problems = returned?.problems ?? [];
+  const problems = [...(returned?.problems ?? []), ...budgetProblems(check, outDir)];
   const diff = problems.length ? base : compareOutputs(root, outDir, check.outputs);
   // The hint explains file drift; returned problems carry their own wording.
   const result = { ...base, ...diff, problems, hint: problems.length ? undefined : check.hint };

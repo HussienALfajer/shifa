@@ -1,0 +1,139 @@
+{
+  "valid": [
+    { "name": "health ok", "schema": "HealthStatus", "body": { "status": "ok" } },
+    {
+      "name": "health ok with a field added later",
+      "schema": "HealthStatus",
+      "extraFields": true,
+      "body": { "status": "ok", "uptimeSeconds": 12 }
+    },
+    {
+      "name": "error bad_request",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "bad_request", "message": "Bad request" } }
+    },
+    {
+      "name": "error validation_failed with details",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "validation_failed",
+          "message": "Validation failed",
+          "details": [
+            { "path": "body.phone", "code": "invalid_format" },
+            { "path": "query.limit", "code": "too_big" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "error validation_failed with no details",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "validation_failed", "message": "Validation failed" } }
+    },
+    {
+      "name": "error unauthorized",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "unauthorized", "message": "Unauthorized" } }
+    },
+    {
+      "name": "error forbidden",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "forbidden", "message": "Forbidden" } }
+    },
+    {
+      "name": "error not_found",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "not_found", "message": "Not found" } }
+    },
+    {
+      "name": "error method_not_allowed",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "method_not_allowed", "message": "Method not allowed" } }
+    },
+    {
+      "name": "error not_acceptable",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "not_acceptable", "message": "Not acceptable" } }
+    },
+    {
+      "name": "error request_timeout",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "request_timeout", "message": "Request timeout" } }
+    },
+    {
+      "name": "error conflict",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "conflict", "message": "Conflict" } }
+    },
+    {
+      "name": "error payload_too_large",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "payload_too_large", "message": "Payload too large" } }
+    },
+    {
+      "name": "error uri_too_long",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "uri_too_long", "message": "URI too long" } }
+    },
+    {
+      "name": "error unsupported_media_type",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "unsupported_media_type", "message": "Unsupported media type" } }
+    },
+    {
+      "name": "error unprocessable_entity",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "unprocessable_entity", "message": "Unprocessable entity" } }
+    },
+    {
+      "name": "error too_many_requests",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "too_many_requests", "message": "Too many requests" } }
+    },
+    {
+      "name": "error internal_error",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "internal_error", "message": "Internal error" } }
+    },
+    {
+      "name": "error service_unavailable",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "service_unavailable", "message": "Service unavailable" } }
+    }
+  ],
+  "invalid": [
+    { "name": "health with no status", "schema": "HealthStatus", "body": {} },
+    {
+      "name": "unknown error code",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "im_a_teapot", "message": "Teapot" } }
+    },
+    {
+      "name": "error with no message",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "not_found" } }
+    },
+    {
+      "name": "error with a null message",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "not_found", "message": null } }
+    },
+    {
+      "name": "unknown validation issue code",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "validation_failed",
+          "message": "Validation failed",
+          "details": [{ "path": "body.phone", "code": "too_pretty" }]
+        }
+      }
+    },
+    {
+      "name": "envelope with no error",
+      "schema": "ErrorEnvelope",
+      "body": { "message": "Not found" }
+    }
+  ]
+}
