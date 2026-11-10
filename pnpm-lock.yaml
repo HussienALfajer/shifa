@@ -360,6 +360,34 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(yaml@2.9.1))
 
+  packages/i18n:
+    dependencies:
+      '@formatjs/icu-messageformat-parser':
+        specifier: 3.5.23
+        version: 3.5.23
+    devDependencies:
+      '@shifa/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@shifa/eslint-config':
+        specifier: workspace:*
+        version: link:../../tooling/eslint-config
+      '@shifa/tsconfig':
+        specifier: workspace:*
+        version: link:../../tooling/tsconfig
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
+      eslint:
+        specifier: 10.14.0
+        version: 10.14.0(supports-color@10.2.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@types/node@24.19.2)(vite@8.3.6(@types/node@24.19.2)(yaml@2.9.1))
+
   packages/shifa_testing: {}
 
   packages/testing:
@@ -565,6 +593,12 @@ packages:
 
   '@fastify/proxy-addr@5.1.2':
     resolution: {integrity: sha512-uqB4QsgVoro0XDC+DIftIMGXHdBPn+lK6Ek3xXAIxPMCJfqxnbtyEoMCm2KPUVOuIosd7Cyw9HawEqMFM/UA+g==}
+
+  '@formatjs/icu-messageformat-parser@3.5.23':
+    resolution: {integrity: sha512-iB1fYfhtSGd8uH9A8b1m01Ujcv6QtQnJasefP3jPApmz72L/zNipzf3BdoinTMd1xuviVChjUJWL60iTwjUQ+w==}
+
+  '@formatjs/icu-skeleton-parser@2.1.13':
+    resolution: {integrity: sha512-IdAJ9NrHn7AF0zqncD9UpxQozTYyJtbwwrZnJMEKVxTcOOXtVkUb2XYTpNOGTAv58NCsk0rjRB9G+i2SvBmGAQ==}
 
   '@grpc/grpc-js@1.14.7':
     resolution: {integrity: sha512-W4W/fcBMGRVtG6dW2c7cw2mnpS3hvbBd+oQXjh2iYFTZDk1JJmcNqkM5KSaPubQpamlUUurrlb7G1s9NJeERmQ==}
@@ -2860,6 +2894,12 @@ snapshots:
     dependencies:
       '@fastify/forwarded': 3.1.2
       ipaddr.js: 2.5.0
+
+  '@formatjs/icu-messageformat-parser@3.5.23':
+    dependencies:
+      '@formatjs/icu-skeleton-parser': 2.1.13
+
+  '@formatjs/icu-skeleton-parser@2.1.13': {}
 
   '@grpc/grpc-js@1.14.7':
     dependencies:

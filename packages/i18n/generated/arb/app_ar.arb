@@ -1,0 +1,112 @@
+{
+  "@@locale": "ar",
+  "commonAppName": "شفاء",
+  "@commonAppName": {
+    "description": "common.appName"
+  },
+  "commonBack": "رجوع",
+  "@commonBack": {
+    "description": "common.back"
+  },
+  "commonCancel": "إلغاء",
+  "@commonCancel": {
+    "description": "common.cancel"
+  },
+  "commonClose": "إغلاق",
+  "@commonClose": {
+    "description": "common.close"
+  },
+  "commonLoading": "جارٍ التحميل…",
+  "@commonLoading": {
+    "description": "common.loading"
+  },
+  "commonNoResults": "لا توجد نتائج.",
+  "@commonNoResults": {
+    "description": "common.noResults"
+  },
+  "commonResultsCount": "{count, plural, zero {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {{count} نتائج} many {{count} نتيجةً} other {{count} نتيجة}}",
+  "@commonResultsCount": {
+    "description": "common.resultsCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonRetry": "إعادة المحاولة",
+  "@commonRetry": {
+    "description": "common.retry"
+  },
+  "commonSave": "حفظ",
+  "@commonSave": {
+    "description": "common.save"
+  },
+  "commonSearch": "بحث",
+  "@commonSearch": {
+    "description": "common.search"
+  },
+  "errorsBadRequest": "تعذّر تنفيذ الطلب. تحقّق من البيانات وحاول مرة أخرى.",
+  "@errorsBadRequest": {
+    "description": "errors.bad_request"
+  },
+  "errorsConflict": "تغيّرت البيانات في أثناء ذلك. حدّث الصفحة وحاول مرة أخرى.",
+  "@errorsConflict": {
+    "description": "errors.conflict"
+  },
+  "errorsForbidden": "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
+  "@errorsForbidden": {
+    "description": "errors.forbidden"
+  },
+  "errorsInternalError": "حدث خطأ غير متوقع. حاول مرة أخرى لاحقًا.",
+  "@errorsInternalError": {
+    "description": "errors.internal_error"
+  },
+  "errorsMethodNotAllowed": "هذا الإجراء غير مدعوم.",
+  "@errorsMethodNotAllowed": {
+    "description": "errors.method_not_allowed"
+  },
+  "errorsNotAcceptable": "تعذّر تقديم الاستجابة بالصيغة المطلوبة.",
+  "@errorsNotAcceptable": {
+    "description": "errors.not_acceptable"
+  },
+  "errorsNotFound": "العنصر المطلوب غير موجود.",
+  "@errorsNotFound": {
+    "description": "errors.not_found"
+  },
+  "errorsPayloadTooLarge": "حجم البيانات المرسلة أكبر من المسموح.",
+  "@errorsPayloadTooLarge": {
+    "description": "errors.payload_too_large"
+  },
+  "errorsRequestTimeout": "استغرق الطلب وقتًا طويلًا. حاول مرة أخرى.",
+  "@errorsRequestTimeout": {
+    "description": "errors.request_timeout"
+  },
+  "errorsServiceUnavailable": "الخدمة غير متاحة الآن. حاول مرة أخرى بعد قليل.",
+  "@errorsServiceUnavailable": {
+    "description": "errors.service_unavailable"
+  },
+  "errorsTooManyRequests": "طلبات كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.",
+  "@errorsTooManyRequests": {
+    "description": "errors.too_many_requests"
+  },
+  "errorsUnauthorized": "انتهت الجلسة أو لم تسجّل الدخول. سجّل الدخول للمتابعة.",
+  "@errorsUnauthorized": {
+    "description": "errors.unauthorized"
+  },
+  "errorsUnprocessableEntity": "تعذّرت معالجة الطلب. تحقّق من البيانات.",
+  "@errorsUnprocessableEntity": {
+    "description": "errors.unprocessable_entity"
+  },
+  "errorsUnsupportedMediaType": "نوع الملف أو البيانات غير مدعوم.",
+  "@errorsUnsupportedMediaType": {
+    "description": "errors.unsupported_media_type"
+  },
+  "errorsUriTooLong": "الرابط أطول من المسموح.",
+  "@errorsUriTooLong": {
+    "description": "errors.uri_too_long"
+  },
+  "errorsValidationFailed": "بعض الحقول غير صحيحة. صحّحها وحاول مرة أخرى.",
+  "@errorsValidationFailed": {
+    "description": "errors.validation_failed"
+  }
+}
