@@ -1,6 +1,6 @@
 # Messaging and Phone Verification
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-11 · Owner: product owner
 Sources: RN-10, RN-03, RN-06, RN-16, RN-17
 
 Purpose: defines how Shifa reaches patients and staff, and how patients prove they own a phone number, under the owner's decisions:
@@ -45,6 +45,7 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
 - MSG-10 Clinic sessions are sharded across containers, starting at about 20–50 per container (an estimate, to be validated by load test).
 - MSG-11 All sending goes through one internal interface, `sendWhatsApp(clinicId, patientId, templateKey, vars)`. WAHA can then be swapped for Baileys, Evolution, or the official Cloud API for +90 numbers through a Turkish entity, without changing business logic (OD-12).
 - MSG-12 Inbound messages are matched by phone number. Senders shown as `@lid` are resolved to phone numbers before any matching.
+- MSG-32 Outside production, the sending interface (MSG-11) delivers only to numbers on an explicit per-environment allowlist and drops every other message with a log line that carries no phone number. Synthetic test data uses realistic +963/+90 numbers that may belong to real people (OD-23, [0.2-08 spec](../specs/foundation/0.2-08-synthetic-data-generator.md)).
 
 ## 4. Responsible-use controls (ban-risk reduction)
 
