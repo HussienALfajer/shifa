@@ -13,6 +13,8 @@ export const LOCALES_DIR = join(import.meta.dirname, 'locales');
 
 /** Keys are identifiers: they become ARB names and TypeScript literal types. */
 export const KEY_PATTERN = /^[a-z][a-zA-Z0-9_]*$/;
+/** Namespaces prefix ARB names and name TypeScript types: lower camelCase. */
+export const NAMESPACE_PATTERN = /^[a-z][a-zA-Z0-9]*$/;
 
 /** One finding of a check: the file (`<locale>/<namespace>.json`), the key and what is wrong. */
 export interface Problem {
@@ -34,16 +36,30 @@ export function loadSources(dir: string = LOCALES_DIR): Sources {
   const sources: Sources = {};
   for (const locale of readdirSync(dir).sort()) {
     if (!statSync(join(dir, locale)).isDirectory()) continue;
+    if (!isCanonicalLocale(locale)) {
+      throw new Error(`${locale}/: locale folder must be a canonical BCP 47 tag (ar, tr, ar-SY)`);
+    }
     const namespaces: Record<string, Messages> = {};
     for (const file of readdirSync(join(dir, locale)).sort()) {
       if (!file.endsWith('.json')) continue;
       const raw: unknown = JSON.parse(readFileSync(join(dir, locale, file), 'utf8'));
       const namespace = file.slice(0, -'.json'.length);
+      if (!NAMESPACE_PATTERN.test(namespace)) {
+        throw new Error(`${locale}/${file}: namespace must match ${NAMESPACE_PATTERN.source}`);
+      }
       namespaces[namespace] = toMessages(raw, fileOf(locale, namespace));
     }
     sources[locale] = namespaces;
   }
   return sources;
+}
+
+function isCanonicalLocale(locale: string): boolean {
+  try {
+    return Intl.getCanonicalLocales(locale)[0] === locale;
+  } catch {
+    return false;
+  }
 }
 
 function toMessages(raw: unknown, file: string): Messages {

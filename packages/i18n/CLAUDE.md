@@ -11,6 +11,8 @@ The one translation source for the web apps (i18next with ICU) and the Flutter p
 - Never hard-code user-facing text in an app: add a key here and use it. Synthetic copy only; the owner reviews Arabic wording in the PR.
 - Keys are identifiers (`^[a-z][a-zA-Z0-9_]*$`): camelCase in `common`, the exact `ErrorCode` in `errors`. Never rename a key a client uses; add one.
 - Messages are ICU MessageFormat. Plurals list every CLDR category of the locale (Arabic: `zero one two few many other`); exact matches (`=0`) do not replace them. Write `{count}` in plural branches, never `#` (gen-l10n does not support it).
+- Only what both consumers render alike: named arguments (`^[a-z][a-zA-Z0-9]*$`), cardinal `plural` (options: the categories plus `=0 =1 =2`) and `select`. No `number`/`date`/`time` arguments or `selectordinal` (the app formats values), no ASCII `'` (ICU quoting differs; write `’`). Tags are plain text (`ignoreTag`); the web's i18next-icu setup must parse the same way.
+- Namespaces are lower camelCase file names; locale folders are canonical BCP 47 tags.
 - No digits, dates or numbers baked into text: pass them as arguments; digit style is OD-20 and decided at render time.
 - Every `ar` value contains an Arabic letter; a Latin-only value (brand name) goes on `LATIN_ALLOWED` in `src/checks.ts`.
 - An `ErrorCode` added in `@shifa/contracts` needs its `errors.<code>` message in the same PR (the test fails otherwise).
