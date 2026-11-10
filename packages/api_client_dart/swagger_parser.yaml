@@ -19,4 +19,5 @@ swagger_parser:
   unknown_enum_value: false
   mark_files_as_generated: true
   original_http_response: false
-  include_if_null: false
+  # Annotates required nullable fields `includeIfNull: true`; build.yaml drops every other null.
+  include_if_null: true

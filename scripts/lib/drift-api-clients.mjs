@@ -74,7 +74,13 @@ export function apiClientDartCheck({
   return {
     name: 'api-client-dart',
     full: true,
-    inputs: [openapi, `${pkgDir}/swagger_parser.yaml`, `${pkgDir}/pubspec.yaml`, 'pubspec.lock'],
+    inputs: [
+      openapi,
+      `${pkgDir}/swagger_parser.yaml`,
+      `${pkgDir}/build.yaml`,
+      `${pkgDir}/pubspec.yaml`,
+      'pubspec.lock',
+    ],
     outputs: [generated],
     budget,
     hint: 'openapi.json changed: run `node scripts/check-drift.mjs --full --fix` and commit the Dart client',
@@ -86,7 +92,9 @@ export function apiClientDartCheck({
         join(work, 'pubspec.yaml'),
         pubspec.replace(/^resolution: workspace\r?\n/m, ''),
       );
-      cpSync(join(root, pkgDir, 'swagger_parser.yaml'), join(work, 'swagger_parser.yaml'));
+      for (const file of ['swagger_parser.yaml', 'build.yaml']) {
+        cpSync(join(root, pkgDir, file), join(work, file));
+      }
       cpSync(join(root, 'pubspec.lock'), join(work, 'pubspec.lock'));
 
       const dart = (step, ...args) =>

@@ -16,7 +16,7 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
 
 Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'code': instance.code,
-  'details': instance.details,
+  'details': ?instance.details,
   'message': instance.message,
 };
 

@@ -17,6 +17,7 @@ class ErrorBody {
       _$ErrorBodyFromJson(json);
 
   final ErrorCode code;
+  @JsonKey(includeIfNull: false)
   final List<ValidationIssue>? details;
   final String message;
 
