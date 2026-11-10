@@ -54,8 +54,8 @@ Nothing in Phase A starts before every item is done.
 | 0.2-06d | API module boundaries: lint rule + compiler-API architecture test ([slice](slices/0.2-06d-module-boundaries.md)); parallel with 0.2-06c | T1 | Done (#13) |
 | 0.2-07a | Drift-check runner (`check-drift`, in `verify`) and migration drift ([slice](slices/0.2-07a-drift-runner-and-migrations.md)) | T1 | Done (#16) |
 | 0.2-07b | `packages/contracts` (named Zod schemas, error catalogue), `@Contract` validation and start-up check, committed OpenAPI 3.1 ([slice](slices/0.2-07b-contracts-and-openapi.md)); after 0.2-07a | T1 | Done (#17) |
-| 0.2-07c | Generated TS (`openapi-typescript`) and Dart (`swagger_parser`) clients, fixtures, size budget ([slice](slices/0.2-07c-generated-clients.md)); after 0.2-07b | T1 | In review |
-| 0.2-07d | `packages/i18n` shared translation source, ARB generation, ICU/plural/error-code checks ([slice](slices/0.2-07d-i18n-source-and-checks.md)); after 0.2-07b, parallel with 0.2-07c | T1 | Planned |
+| 0.2-07c | Generated TS (`openapi-typescript`) and Dart (`swagger_parser`) clients, fixtures, size budget ([slice](slices/0.2-07c-generated-clients.md)); after 0.2-07b | T1 | Done |
+| 0.2-07d | `packages/i18n` shared translation source, ARB generation, ICU/plural/error-code checks ([slice](slices/0.2-07d-i18n-source-and-checks.md)); after 0.2-07b and 0.2-07c | T1 | Planned |
 | 0.2-08 | Synthetic multi-clinic data generator | T1 | Planned |
 | 0.2-09 | WSL2 move (owner installs Ubuntu), observability skeleton, pgBackRest scripts and restore drill | T0 | Planned |
 
