@@ -1,0 +1,30 @@
+{
+  "name": "@shifa/i18n",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The one translation source (ICU MessageFormat) for the web apps and the Flutter patient app.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./locales/*": "./src/locales/*",
+    "./arb/*": "./generated/arb/*"
+  },
+  "scripts": {
+    "generate": "node ../../scripts/check-drift.mjs --fix",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@formatjs/icu-messageformat-parser": "3.5.23"
+  },
+  "devDependencies": {
+    "@shifa/contracts": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
