@@ -1,0 +1,23 @@
+# swagger_parser settings for the generated client (slice 0.2-07c). Never run it by hand into
+# lib/: `node scripts/check-drift.mjs --full --fix` generates in a temp copy and syncs the output.
+swagger_parser:
+  schema_path: ../contracts/generated/openapi.json
+  output_directory: lib/src/generated
+  name: shifa_api
+  language: dart
+  json_serializer: json_serializable
+  root_client: true
+  root_client_name: ShifaApi
+  export_file: true
+  put_clients_in_folder: true
+  client_postfix: Client
+  # Operations without a tag (health today) go to CoreClient.
+  fallback_client: core
+  # Enum values keep their wire names in query strings.
+  enums_to_json: true
+  # Exhaustive enums (slice 0.2-07c): an unknown value fails decoding instead of mapping to a fallback.
+  unknown_enum_value: false
+  mark_files_as_generated: true
+  original_http_response: false
+  # Annotates required nullable fields `includeIfNull: true`; build.yaml drops every other null.
+  include_if_null: true

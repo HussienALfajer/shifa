@@ -7,7 +7,8 @@ Named Zod 4 schemas, route contracts, the error envelope and the error-code cata
 - `src/errors.ts` `ErrorCode`, `ErrorEnvelope` (`{ error: { code, message, details? } }`), `ValidationIssue`, `STATUS_ERRORS`, `envelopeFor()`.
 - `src/<context>.ts` schemas and contracts per bounded context (`health.ts` today); export from `src/index.ts`.
 - `src/lint.ts` the unnamed-schema lint, used by `test/named-schemas.test.ts` and the API generator.
-- `generated/openapi.json` is generated: never edit it (a hook refuses). After any route or schema change run `node scripts/check-drift.mjs --fix` and commit it.
+- `generated/openapi.json` is generated: never edit it (a hook refuses). After any route or schema change run `node scripts/check-drift.mjs --full --fix` and commit it with the regenerated clients (`packages/api-client-ts`, `packages/api_client_dart`).
+- `fixtures/responses.json` holds example response bodies (valid and invalid) that both clients' tests check against the document; add a case when a response schema is added. Synthetic values only.
 
 ## Schema rules
 - Every exported schema and every schema a contract uses directly carries `.meta({ id: 'PascalCase' })`, unique across the package. Nested objects and enums are their own named schemas too: the document may hold objects and enums only as components. The lint test and the start-up check fail otherwise.

@@ -61,7 +61,15 @@ describe('checkEdit', () => {
   });
 
   it('blocks generated files and the lockfile', () => {
-    assert.match(checkEdit('packages/api-client-ts/src/index.ts', merged), /generated/);
+    assert.match(checkEdit('packages/api-client-ts/src/generated/schema.ts', merged), /generated/);
+    assert.match(
+      checkEdit('packages/api_client_dart/lib/src/generated/models/error_code.dart', branchOnly),
+      /generated/,
+    );
+    assert.match(
+      checkEdit('packages/api_client_dart/lib/src/generated/rest_client.g.dart', merged),
+      /generated/,
+    );
     assert.match(checkEdit('packages/x/src/generated/types.ts', branchOnly), /generated/);
     assert.match(checkEdit('packages/x/src/api.generated.ts', branchOnly), /generated/);
     assert.match(checkEdit('pnpm-lock.yaml', merged), /generated/);
@@ -73,6 +81,13 @@ describe('checkEdit', () => {
     assert.match(checkEdit('apps/patient_app/test/foo.mocks.dart', branchOnly), /generated/);
     assert.match(checkEdit('pubspec.lock', branchOnly), /generated/);
     assert.equal(checkEdit('packages/shifa_testing/lib/src/fixed_clock.dart', merged), null);
+  });
+
+  it('allows the hand-written parts of the generated API clients', () => {
+    assert.equal(checkEdit('packages/api-client-ts/src/client.ts', merged), null);
+    assert.equal(checkEdit('packages/api-client-ts/test/fixtures.test.ts', branchOnly), null);
+    assert.equal(checkEdit('packages/api_client_dart/lib/api_client_dart.dart', merged), null);
+    assert.equal(checkEdit('packages/api_client_dart/test/fixtures_test.dart', branchOnly), null);
   });
 
   it('blocks the research archive in any casing', () => {

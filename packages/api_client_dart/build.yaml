@@ -1,0 +1,9 @@
+# build_runner options for the generated client. An absent optional field is omitted from JSON,
+# never sent as null (Zod `.optional()` rejects null). Required nullable fields still send null:
+# swagger_parser (`include_if_null: true`) marks them `includeIfNull: true`.
+targets:
+  $default:
+    builders:
+      json_serializable:
+        options:
+          include_if_null: false

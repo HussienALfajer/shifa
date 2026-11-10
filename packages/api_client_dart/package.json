@@ -1,0 +1,15 @@
+{
+  "name": "@shifa/api-client-dart",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turborepo task wrapper for the Dart package api_client_dart (see pubspec.yaml).",
+  "scripts": {
+    "generate": "node ../../scripts/check-drift.mjs --full --fix",
+    "typecheck": "node ../../scripts/dart.mjs dart analyze --fatal-infos",
+    "lint": "node ../../scripts/dart.mjs dart format --output=none --set-exit-if-changed lib/api_client_dart.dart test",
+    "test": "node ../../scripts/dart.mjs dart test"
+  },
+  "devDependencies": {
+    "@shifa/contracts": "workspace:*"
+  }
+}

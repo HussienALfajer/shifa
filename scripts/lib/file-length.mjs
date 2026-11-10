@@ -7,8 +7,8 @@ const GENERATED_DART = [
   /\.g\.dart$/,
   /\.freezed\.dart$/,
   /\.mocks\.dart$/,
+  // Covers the API client's lib/src/generated/; its barrel and tests are hand-written.
   /(^|\/)generated\//,
-  /^packages\/api_client_dart\//,
 ];
 
 /** @param {string} path repository-relative, forward slashes */

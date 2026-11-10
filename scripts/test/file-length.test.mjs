@@ -29,9 +29,15 @@ describe('isGeneratedDart', () => {
     assert.equal(isGeneratedDart('packages/x/lib/a.g.dart'), true);
     assert.equal(isGeneratedDart('apps/patient_app/lib/m.freezed.dart'), true);
     assert.equal(isGeneratedDart('apps/patient_app/test/m.mocks.dart'), true);
-    assert.equal(isGeneratedDart('packages/api_client_dart/lib/api.dart'), true);
+    assert.equal(
+      isGeneratedDart('packages/api_client_dart/lib/src/generated/models/error_body.dart'),
+      true,
+    );
     assert.equal(isGeneratedDart('packages/x/lib/generated/l10n.dart'), true);
     assert.equal(isGeneratedDart('packages/x/lib/clock.dart'), false);
+    // The client's barrel and tests are hand-written and keep the limit.
+    assert.equal(isGeneratedDart('packages/api_client_dart/lib/api_client_dart.dart'), false);
+    assert.equal(isGeneratedDart('packages/api_client_dart/test/fixtures_test.dart'), false);
   });
 });
 
