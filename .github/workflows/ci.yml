@@ -57,14 +57,15 @@ jobs:
           echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
           "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
           "${RUNNER_TEMP}/flutter/bin/flutter" --version
-      # DB tests (packages/db) start PostgreSQL and Ryuk through Testcontainers. Pull both by the
-      # digests pinned in packages/db/test-harness/image.ts, so the pull is outside test timeouts.
+      # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
+      # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
+      # test timeouts.
       - name: Pull database test images
         run: |
-          images="$(grep -oE "'(postgres|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
+          images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
             packages/db/test-harness/image.ts | tr -d "'")"
-          if [ "$(echo "$images" | wc -w)" -ne 2 ]; then
-            echo "::error::expected 2 digest-pinned images in packages/db/test-harness/image.ts"
+          if [ "$(echo "$images" | wc -w)" -ne 3 ]; then
+            echo "::error::expected 3 digest-pinned images in packages/db/test-harness/image.ts"
             exit 1
           fi
           for image in $images; do docker pull --quiet "$image"; done

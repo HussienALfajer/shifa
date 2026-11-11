@@ -1,5 +1,6 @@
-// Vitest globalSetup: one PostgreSQL container per run, roles + migrations applied once into
-// `shifa_template`; workers clone it (setup.ts). Ryuk removes the container if the run crashes.
+// Vitest globalSetup: one PostgreSQL + PgBouncer pair per run, roles + migrations applied once
+// into `shifa_template`; workers clone it (setup.ts). Ryuk removes the containers if the run
+// crashes.
 import type { TestProject } from 'vitest/node';
 import { type HarnessContainer, startHarnessContainer } from './container.ts';
 import { acquireDbTestLock } from './guard.ts';

@@ -3,8 +3,9 @@
 // table without a registered case fails coverage. Probe tables exist only in test databases.
 import { sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ownerDb, testDb } from '../../test-harness/index.ts';
+import { ownerDb } from '../../test-harness/index.ts';
 import { defineIsolationCase } from './define.ts';
+import { DB_MODES } from './modes.ts';
 import { coverageGaps, runIsolationCase } from './runner.ts';
 
 beforeAll(async () => {
@@ -41,13 +42,14 @@ function probeCase(table: 'rls_probe_isolation' | 'rls_probe_leaky') {
   });
 }
 
-describe('isolation runner', () => {
+// Directly and through PgBouncer (0.3-S2a).
+describe.each(DB_MODES)('isolation runner (%s)', (_mode, db) => {
   it('passes a correctly isolated table', async () => {
-    expect(await runIsolationCase(testDb(), probeCase('rls_probe_isolation'))).toEqual([]);
+    expect(await runIsolationCase(db(), probeCase('rls_probe_isolation'))).toEqual([]);
   });
 
   it('reports every leak of a `using (true)` table, naming the read path', async () => {
-    const findings = await runIsolationCase(testDb(), probeCase('rls_probe_leaky'));
+    const findings = await runIsolationCase(db(), probeCase('rls_probe_leaky'));
     const text = findings.join('\n');
     expect(text).toMatch(/rls_probe_leaky: read path "all rows" returned \d+ row\(s\) of tenant B/);
     expect(text).toMatch(/rls_probe_leaky: read path "by label" returned \d+ row\(s\) of tenant B/);
@@ -65,7 +67,7 @@ describe('isolation runner', () => {
   it('reports a path that does not select tenant_id (nothing to check)', async () => {
     const base = probeCase('rls_probe_isolation');
     const findings = await runIsolationCase(
-      testDb(),
+      db(),
       defineIsolationCase({
         ...base,
         paths: {

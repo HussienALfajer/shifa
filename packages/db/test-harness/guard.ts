@@ -13,11 +13,26 @@ export interface ContainerAddress {
   port: number;
 }
 
+/** The PostgreSQL container and, when started, the PgBouncer container in front of it. */
+export interface HarnessAddress extends ContainerAddress {
+  pooler?: ContainerAddress;
+}
+
 /** Databases the harness creates: per-worker clones, the template, and the maintenance DB. */
 const OWN_DATABASE = /^shifa_test_\d+$|^shifa_template$|^postgres$/;
+/** Databases reachable through PgBouncer: the clones only. */
+const POOLED_DATABASE = /^shifa_test_\d+$/;
+/** PgBouncer's console: a virtual database, accepted only on the pooler address. */
+const POOLER_ADMIN_DATABASE = 'pgbouncer';
 
-/** Throws unless `url` points at the harness container and one of its own databases. */
-export function assertTestTarget(url: string, container: ContainerAddress): void {
+const sameAddress = (a: ContainerAddress, host: string, port: number) =>
+  a.host === host && a.port === port;
+
+/**
+ * Throws unless `url` points at the harness PostgreSQL or PgBouncer address (the exact host and
+ * port pair) and one of the harness's own databases.
+ */
+export function assertTestTarget(url: string, container: HarnessAddress): void {
   let parsed: URL;
   try {
     parsed = new URL(url);
@@ -32,12 +47,24 @@ export function assertTestTarget(url: string, container: ContainerAddress): void
     throw new UnsafeDatabaseError('refusing a database URL with query parameters');
   }
   const port = parsed.port === '' ? 5432 : Number(parsed.port);
-  if (parsed.hostname !== container.host || port !== container.port) {
+  const viaPooler =
+    container.pooler !== undefined && sameAddress(container.pooler, parsed.hostname, port);
+  if (!viaPooler && !sameAddress(container, parsed.hostname, port)) {
+    const pooler = container.pooler
+      ? ` or ${container.pooler.host}:${String(container.pooler.port)}`
+      : '';
     throw new UnsafeDatabaseError(
-      `refusing ${parsed.hostname}:${String(port)}: not the test container (${container.host}:${String(container.port)})`,
+      `refusing ${parsed.hostname}:${String(port)}: not the test container (${container.host}:${String(container.port)}${pooler})`,
     );
   }
   const database = decodeURIComponent(parsed.pathname.slice(1));
+  if (viaPooler && database === POOLER_ADMIN_DATABASE) return;
+  // PgBouncer keeps idle server connections; one on the template would block every later clone.
+  if (viaPooler && !POOLED_DATABASE.test(database)) {
+    throw new UnsafeDatabaseError(
+      `refusing database "${database}" through PgBouncer: only shifa_test_<n> and its console`,
+    );
+  }
   if (!OWN_DATABASE.test(database)) {
     throw new UnsafeDatabaseError(
       `refusing database "${database}": the harness only uses shifa_test_<n>, shifa_template and postgres`,
