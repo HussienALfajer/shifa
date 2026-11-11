@@ -1,7 +1,7 @@
 // Second build entry, loaded first: `node --import ./dist/instrument.js dist/main.js`. The http
 // and pg instrumentations must patch those modules before main.ts imports Fastify and pg.
 import { readFileSync } from 'node:fs';
-import { bootstrapTelemetry } from './bootstrap.ts';
+import { bootstrapErrorReporting, bootstrapTelemetry } from './bootstrap.ts';
 
 function packageVersion(): string {
   try {
@@ -13,4 +13,6 @@ function packageVersion(): string {
   }
 }
 
-await bootstrapTelemetry(process.env, packageVersion());
+const version = packageVersion();
+await bootstrapTelemetry(process.env, version);
+bootstrapErrorReporting(process.env, version);

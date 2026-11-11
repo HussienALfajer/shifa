@@ -4,8 +4,9 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
 import { type ErrorEnvelope, envelopeFor, VALIDATION_FAILED_MESSAGE } from '@shifa/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
+import { reportError } from '../telemetry/errors.ts';
 import { RequestValidationError } from './contract/validation.ts';
-import type { Logger } from './logging.ts';
+import { type Logger, routeTemplate } from './logging.ts';
 
 // The envelope, the code catalogue and the fixed messages live in @shifa/contracts.
 export { type ErrorEnvelope, envelopeFor };
@@ -70,6 +71,13 @@ export function describeError(err: unknown): Record<string, unknown> {
   return { type: typeof err };
 }
 
+/** The error class and SQLSTATE: all that the error tracker is told about an error. */
+export function errorClass(err: unknown): { type: string; code?: string } {
+  const { type, sqlstate } = describeError(err);
+  const name = typeof type === 'string' ? type : 'Error';
+  return typeof sqlstate === 'string' ? { type: name, code: sqlstate } : { type: name };
+}
+
 /** HTTP status of an exception: Nest's HttpException, a Fastify 4xx error, otherwise 500. */
 function statusOf(exception: unknown): number {
   if (exception instanceof HttpException) return exception.getStatus();
@@ -88,11 +96,25 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     const request = http.getRequest<FastifyRequest | undefined>();
     const status = statusOf(exception);
     const log = request?.log ?? this.logger;
+    // 5xx only: a 4xx is the client's mistake, never reported to the error tracker.
+    const report = (err: unknown) => {
+      reportError(err, {
+        ...(request ? { route: routeTemplate(request), requestId: request.id } : {}),
+        status,
+        ...errorClass(err),
+      });
+    };
     if (!(exception instanceof HttpException)) {
-      if (status >= 500) log.error({ err: describeError(exception) }, 'request failed');
+      if (status >= 500) {
+        log.error({ err: describeError(exception) }, 'request failed');
+        report(exception);
+      }
     } else if (status >= 500 && exception.cause !== undefined) {
       // e.g. readiness 503: the cause is for operators, never for the client.
       log.warn({ err: describeError(exception.cause) }, 'request failed');
+      report(exception.cause);
+    } else if (status >= 500) {
+      report(exception);
     }
     if (reply.sent) return;
     void reply.status(status).send(bodyFor(exception, status));

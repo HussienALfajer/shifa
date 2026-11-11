@@ -9,7 +9,7 @@ import {
   serializeDocument,
 } from '../../src/platform/contract/openapi.ts';
 import { ProbeController } from '../access/probe.ts';
-import { EXPECTED_MATRIX } from '../architecture/route-matrix.expected.ts';
+import { EXPECTED_MATRIX, TEST_ONLY_ROUTES } from '../architecture/route-matrix.expected.ts';
 import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
 import { ContractProbeController } from './probe.ts';
 
@@ -163,7 +163,12 @@ describe('OpenAPI document', () => {
   });
 
   it('the access note on each route matches the route permission matrix', () => {
-    const matrixRoutes = Object.keys(EXPECTED_MATRIX);
+    // Test-only routes are never in the document (test-route.test.ts).
+    const matrixRoutes = Object.keys(EXPECTED_MATRIX).filter((r) => !TEST_ONLY_ROUTES.has(r));
+    for (const route of TEST_ONLY_ROUTES) {
+      const [, url] = route.split(' ') as [string, string];
+      expect(doc.paths[toOpenApiPath(url)], route).toBeUndefined();
+    }
     for (const route of matrixRoutes) {
       const [method, url] = route.split(' ') as [string, string];
       const op = (doc.paths[toOpenApiPath(url)] as Record<string, Operation> | undefined)?.[

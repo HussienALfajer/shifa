@@ -113,8 +113,11 @@ export async function buildTestApp({
   auth,
   grants,
   forwardLogs = false,
+  testRoutes = false,
 }: {
   db: ShifaDb;
+  /** Register the test-only routes of src/platform/test-support.ts (as NODE_ENV=test does). */
+  testRoutes?: boolean;
   /** Also send every log line to the OpenTelemetry log pipeline (telemetry tests). */
   forwardLogs?: boolean;
   controllers?: Type[];
@@ -130,7 +133,7 @@ export async function buildTestApp({
     ...(forwardLogs ? { forward: otlpLogForwarder() } : {}),
   });
   let builder = Test.createTestingModule({
-    imports: [AppModule.register({ db })],
+    imports: [AppModule.register({ db, testRoutes })],
     controllers,
   });
   if (auth) builder = builder.overrideProvider(AUTH_PORT).useValue(auth);

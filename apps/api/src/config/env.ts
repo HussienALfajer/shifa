@@ -12,6 +12,16 @@ export interface ApiConfig {
   databaseUrl: string;
   logLevel: LogLevel;
   telemetry: TelemetryConfig;
+  errors: ErrorReportingConfig;
+  /** NODE_ENV=test: the test-only routes of platform/test-support.ts are registered. */
+  testRoutes: boolean;
+}
+
+export interface ErrorReportingConfig {
+  /** Sentry DSN of the error tracker (GlitchTip); unset → the Sentry SDK is not initialised. */
+  dsn: string | undefined;
+  /** Release reported with each event; unset → the service version. */
+  release: string | undefined;
 }
 
 export interface TelemetryConfig {
@@ -36,7 +46,24 @@ const KNOWN_KEYS = new Set([
   'OTEL_EXPORTER_OTLP_ENDPOINT',
   'OTEL_TRACES_SAMPLER_ARG',
   'DEPLOYMENT_ENVIRONMENT',
+  'SENTRY_DSN',
+  'SENTRY_RELEASE',
 ]);
+
+/**
+ * Read as is, outside the near-miss rule: hosts set NODE_* variables of their own (NODE_EXE,
+ * NODE_PATH) that are within two edits of it.
+ */
+const NODE_ENV = 'NODE_ENV';
+
+const httpUrl = (value: string, check: (url: URL) => boolean = () => true) => {
+  try {
+    const url = new URL(value);
+    return (url.protocol === 'http:' || url.protocol === 'https:') && check(url);
+  } catch {
+    return false;
+  }
+};
 
 /** Edit distance with adjacent transpositions (optimal string alignment). */
 function distance(a: string, b: string): number {
@@ -89,14 +116,7 @@ const schema = z.object({
   LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
   OTEL_EXPORTER_OTLP_ENDPOINT: z
     .string()
-    .refine((value) => {
-      try {
-        const url = new URL(value);
-        return url.protocol === 'http:' || url.protocol === 'https:';
-      } catch {
-        return false;
-      }
-    })
+    .refine((value) => httpUrl(value))
     .optional(),
   // A decimal in [0, 1]. Not z.coerce: it turns an empty value into 0, i.e. no traces at all.
   OTEL_TRACES_SAMPLER_ARG: z
@@ -108,6 +128,15 @@ const schema = z.object({
     .string()
     .regex(/^[a-z0-9-]{1,32}$/)
     .default('development'),
+  // `http(s)://<public key>@host[:port]/<project id>`, as the Sentry SDK parses it.
+  SENTRY_DSN: z
+    .string()
+    .refine((value) => httpUrl(value, (url) => url.username !== '' && /^\/\d+$/.test(url.pathname)))
+    .optional(),
+  SENTRY_RELEASE: z
+    .string()
+    .regex(/^[A-Za-z0-9._+@-]{1,200}$/)
+    .optional(),
 });
 
 export function loadConfig(env: Readonly<Record<string, string | undefined>>): ApiConfig {
@@ -134,5 +163,7 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
       samplerRatio: parsed.data.OTEL_TRACES_SAMPLER_ARG ?? 1,
       environment: parsed.data.DEPLOYMENT_ENVIRONMENT,
     },
+    errors: { dsn: parsed.data.SENTRY_DSN, release: parsed.data.SENTRY_RELEASE },
+    testRoutes: env[NODE_ENV] === 'test',
   };
 }

@@ -21,6 +21,8 @@ const unit = [
   'test/telemetry/telemetry-config.test.ts',
   'test/telemetry/scrub-review.test.ts',
   'test/telemetry/scrub-security.test.ts',
+  'test/telemetry/error-config.test.ts',
+  'test/telemetry/test-route.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
@@ -31,6 +33,7 @@ const telemetry = [
   'test/telemetry/log-correlation.test.ts',
   'test/telemetry/telemetry-leak.test.ts',
   'test/telemetry/tracestate-leak.test.ts',
+  'test/telemetry/error-reporting.test.ts',
 ];
 
 const db = dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] });

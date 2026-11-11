@@ -23,6 +23,8 @@ describe('loadConfig', () => {
       databaseUrl: URL_OK,
       logLevel: 'info',
       telemetry: { endpoint: undefined, samplerRatio: 1, environment: 'development' },
+      errors: { dsn: undefined, release: undefined },
+      testRoutes: false,
     });
   });
 

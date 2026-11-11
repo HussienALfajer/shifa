@@ -55,12 +55,15 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
 export async function createApp({
   db,
   logger,
+  testRoutes = false,
 }: {
   db: ShifaDb;
   logger: Logger;
+  /** NODE_ENV=test only (config.testRoutes): registers platform/test-support.ts. */
+  testRoutes?: boolean;
 }): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule.register({ db }),
+    AppModule.register({ db, testRoutes }),
     createAdapter(logger),
     // From the first line on, so errors while Nest builds providers also go through pino.
     { logger: new NestPinoLogger(logger) },

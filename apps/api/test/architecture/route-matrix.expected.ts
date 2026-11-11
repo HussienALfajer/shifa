@@ -1,11 +1,13 @@
 // The route permission matrix: every API route × caller, with the expected status class.
 // This file is the review surface for access changes: a new route needs a row here, or CI fails.
 // 200 = any 2xx; 401 = not authenticated; 403 = authenticated without the permission.
-// Rows under "probe" come from the test-only ProbeModule (test/access/probe.ts).
+// Rows under "probe" come from the test-only ProbeModule (test/access/probe.ts); rows under
+// "test-only" from src/platform/test-support.ts, registered only when NODE_ENV=test.
+// 500 = the route fails on purpose (test-only routes only).
 import type { Role } from '../../src/access/roles.ts';
 
 export type Caller = 'anonymous' | Role;
-export type Expected = 200 | 401 | 403;
+export type Expected = 200 | 401 | 403 | 500;
 export type MatrixRow = Readonly<Record<Caller, Expected>>;
 export type Matrix = Readonly<Record<string, MatrixRow>>;
 
@@ -18,6 +20,19 @@ const everyone: MatrixRow = {
   accountant: 200,
   platform_admin: 200,
 };
+
+const failsForEveryone: MatrixRow = {
+  anonymous: 500,
+  owner: 500,
+  doctor: 500,
+  receptionist: 500,
+  assistant: 500,
+  accountant: 500,
+  platform_admin: 500,
+};
+
+/** Routes that exist only when NODE_ENV=test; never in production or the OpenAPI document. */
+export const TEST_ONLY_ROUTES: ReadonlySet<string> = new Set(['GET /_test/fail']);
 
 export const EXPECTED_MATRIX: Matrix = {
   // production
@@ -43,4 +58,6 @@ export const EXPECTED_MATRIX: Matrix = {
     accountant: 403,
     platform_admin: 403,
   },
+  // test-only (TEST_ONLY_ROUTES)
+  'GET /_test/fail': failsForEveryone,
 };
