@@ -79,6 +79,14 @@ export async function contextOf(tx: Tx): Promise<Context> {
   return { tenant: row.tenant, branch: row.branch, user: row.user };
 }
 
+/** `app.admin_reason` as this transaction sees it ('' when unset). */
+export async function adminReasonOf(tx: Tx): Promise<string> {
+  const { rows } = await tx.execute<{ reason: string }>(
+    sql`select coalesce(current_setting('app.admin_reason', true), '') as reason`,
+  );
+  return rows[0]?.reason ?? '';
+}
+
 /** Tenant ids of the probe rows this transaction can see, ordered by label. */
 export async function probeTenants(tx: Tx): Promise<string[]> {
   const { rows } = await tx.execute<{ tenant_id: string }>(

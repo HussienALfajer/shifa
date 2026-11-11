@@ -1,9 +1,9 @@
 // Spec 0.3-S2 criterion 5: a raw shifa_app client sets tenant A at session level through
 // PgBouncer and disconnects. On that server connection withTenant(B) still sees only B and
-// withPlatformAdmin no tenant rows, because the wrapper overrides all three settings locally in
-// every transaction. A second PgBouncer with `server_reset_query_always = 1` shows the setting
-// that would also clear the session value, and what it costs per transaction.
-import { sql } from 'drizzle-orm';
+// withPlatformAdmin no tenant rows, because the wrappers override every `app.*` setting locally
+// in every transaction. A second PgBouncer with `server_reset_query_always = 1` shows the
+// setting that also clears the session value, and what it costs per transaction.
+import { eq, sql } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { createDb, type ShifaDb, type Tx } from '../../src/index.ts';
 import {
@@ -13,15 +13,16 @@ import {
   pooledHarnessUrl,
   rawPooledSession,
   showPooler,
-  workerDatabaseName,
 } from '../../test-harness/index.ts';
 import {
+  adminReasonOf,
   BRANCH_A,
   CLEAN_VIEW,
   clearProbe,
   contextOf,
   ensureProbe,
   nextTransactionView,
+  poolProbe,
   probeTenants,
   recordFinding,
   seedProbe,
@@ -32,6 +33,7 @@ import {
   USER_B,
 } from './probe.ts';
 
+const CONCURRENT = 8;
 const findings: Record<string, unknown> = {};
 let release: (() => Promise<void>) | undefined;
 let db: ShifaDb | undefined;
@@ -72,7 +74,7 @@ async function leaveSessionContext(pooler: PoolerName): Promise<number> {
     await raw.query(`SET app.tenant_id TO '${TENANT_A}'`);
     const rows = await raw.query<{ pid: number }>(
       `select set_config('app.branch_id', $1, false), set_config('app.user_id', $2, false),
-              pg_backend_pid() as pid`,
+              set_config('app.admin_reason', 'left behind', false), pg_backend_pid() as pid`,
       [BRANCH_A, USER_A],
     );
     return Number(rows[0]?.pid);
@@ -82,7 +84,12 @@ async function leaveSessionContext(pooler: PoolerName): Promise<number> {
 }
 
 async function look(tx: Tx) {
-  return { pid: await serverPid(tx), ctx: await contextOf(tx), tenants: await probeTenants(tx) };
+  return {
+    pid: await serverPid(tx),
+    ctx: await contextOf(tx),
+    adminReason: await adminReasonOf(tx),
+    tenants: await probeTenants(tx),
+  };
 }
 
 describe('shared PgBouncer (server_reset_query_always = 0)', () => {
@@ -97,11 +104,14 @@ describe('shared PgBouncer (server_reset_query_always = 0)', () => {
     expect(inB.pid).toBe(pid);
     // No branch given: the wrapper must still blank the session's branch A.
     expect(inB.ctx).toEqual({ tenant: TENANT_B, branch: '', user: USER_B });
+    // A future audit trigger may read it: a tenant transaction must never look like admin work.
+    expect(inB.adminReason).toBe('');
     expect(inB.tenants).toEqual([TENANT_B, TENANT_B]);
 
     const admin = await app().withPlatformAdmin('pooling leak test', look);
     expect(admin.pid).toBe(pid);
     expect(admin.ctx).toEqual({ tenant: '', branch: '', user: '' });
+    expect(admin.adminReason).toBe('pooling leak test');
     expect(admin.tenants).toEqual([]);
 
     // The override is transaction-local: a client without the wrapper still sees tenant A.
@@ -136,13 +146,37 @@ describe('PgBouncer with server_reset_query_always = 1', () => {
   });
 
   it('records the per-transaction cost of the reset (report only)', async () => {
-    const shared = createDb(pooledHarnessUrl('app', workerDatabaseName()), { max: 1 });
-    const reset = createDb(pooledHarnessUrl('app', workerDatabaseName(), 'reset'), { max: 1 });
+    // Pool of 1 on both poolers: each transaction waits for the previous one's DISCARD ALL
+    // (on a pool of 2 the reset would hide behind the other idle server connection).
+    const shared = createDb(pooledHarnessUrl('app', POOLING_DATABASE), { max: CONCURRENT });
+    const reset = createDb(pooledHarnessUrl('app', POOLING_DATABASE, 'reset'), {
+      max: CONCURRENT,
+    });
     const ctx = { tenantId: TENANT_A, userId: USER_A };
+    // A typical request: context plus a named prepared statement, which DISCARD ALL deallocates
+    // on the server so that PgBouncer has to prepare it again.
+    const request = (handle: ShifaDb) =>
+      handle.withTenant(ctx, (tx) =>
+        tx
+          .select({ label: poolProbe.label })
+          .from(poolProbe)
+          .where(eq(poolProbe.label, sql.placeholder('label')))
+          .prepare('pool_probe_cost')
+          .execute({ label: 'a1' }),
+      );
     const timed = async (handle: ShifaDb): Promise<number> => {
       const start = process.hrtime.bigint();
-      await handle.withTenant(ctx, (tx) => tx.execute(sql`select 1`));
+      expect(await request(handle)).toEqual([{ label: 'a1' }]);
       return Number(process.hrtime.bigint() - start) / 1e6;
+    };
+    const throughput = async (handle: ShifaDb): Promise<number> => {
+      const start = Date.now();
+      await Promise.all(
+        Array.from({ length: CONCURRENT }, async () => {
+          for (let i = 0; i < 25; i += 1) await request(handle);
+        }),
+      );
+      return Math.round((CONCURRENT * 25 * 1000) / (Date.now() - start));
     };
     try {
       const samples = { shared: [] as number[], reset: [] as number[] };
@@ -157,10 +191,14 @@ describe('PgBouncer with server_reset_query_always = 1', () => {
       }
       const p50 = (xs: number[]) => [...xs].sort((x, y) => x - y)[Math.floor(xs.length / 2)] ?? NaN;
       const cost = {
-        transactions: samples.shared.length,
+        serverPoolSize: 1,
+        sequentialTransactions: samples.shared.length,
         p50SharedMs: p50(samples.shared),
         p50ResetAlwaysMs: p50(samples.reset),
         p50OverheadMs: p50(samples.reset) - p50(samples.shared),
+        concurrentClients: CONCURRENT,
+        sharedTransactionsPerSecond: await throughput(shared),
+        resetAlwaysTransactionsPerSecond: await throughput(reset),
       };
       expect(Number.isFinite(cost.p50SharedMs) && Number.isFinite(cost.p50ResetAlwaysMs)).toBe(
         true,

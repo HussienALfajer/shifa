@@ -12,7 +12,7 @@ Rough estimate for a team of 4–5 developers working with Claude Code: pilot af
 |---|---|---|---|
 | 0.1 Re-documentation | Archive research, write product, domain, ADR, compliance and process docs | Owner reviewed the docs | Done 2026-11-08; owner reviewed and approved 2026-11-08 |
 | 0.2 Foundation (harness) | Repo, tooling, quality gates, Claude Code setup, CI — no features | Checklist below all green | In progress: every slice merged and accepted (owner, 2026-11-11); open items are the design-token drift check (first Phase 0.4 slice) and `/release` (first deployment) |
-| 0.3 Spikes | Prove risky technology choices with throwaway code (S2 keeps its leak tests in CI, owner 2026-11-12) | Each spike has a written result and an ADR update | In progress: S2 spec approved (owner, 2026-11-12); S2 planned as slices 0.3-S2a to 0.3-S2c; 0.3-S2a (PgBouncer harness) in review |
+| 0.3 Spikes | Prove risky technology choices with throwaway code (S2 keeps its leak tests in CI, owner 2026-11-12) | Each spike has a written result and an ADR update | In progress: S2 spec approved (owner, 2026-11-12); S2 planned as slices 0.3-S2a to 0.3-S2c; 0.3-S2a (PgBouncer harness) done; 0.3-S2b (leak tests) in review |
 | 0.4 Design system foundations | Tokens pipeline, base components, Flutter theme from the same tokens | Storybook with core components, visual and a11y tests in CI | Not started |
 | A Core platform | Super admin, tenancy, patients, scheduling and queue, voice calling, billing in three currencies, general clinical template, prescriptions, reports, messaging, patient app, public booking pages, offline reception | 10 pilot clinics run a full day without paper; phase audit passed | Not started |
 | B Dental | Full dental module | Pilot dental clinics use charting, perio, plans and installments daily; advisor sign-off (OD-17) | Not started |
@@ -82,8 +82,8 @@ Nothing in Phase A starts before every item is done.
 
 | Slice | Title | Risk tier | Status |
 |---|---|---|---|
-| 0.3-S2a | PgBouncer (transaction mode) in the DB test harness, `pooledTestDb()`, isolation suite direct + pooled, CI image pull ([slice](slices/0.3-s2a-pgbouncer-harness.md)); spec criteria 1–3 | T0 | In review (PR open) |
-| 0.3-S2b | Leak tests behind PgBouncer: context reuse, session leftovers, killed clients, prepared statements, concurrency, session features; db rules ([slice](slices/0.3-s2b-pooling-leak-tests.md)); criteria 4–9; after 0.3-S2a | T0 | Planned |
+| 0.3-S2a | PgBouncer (transaction mode) in the DB test harness, `pooledTestDb()`, isolation suite direct + pooled, CI image pull ([slice](slices/0.3-s2a-pgbouncer-harness.md)); spec criteria 1–3 | T0 | Done (#40) |
+| 0.3-S2b | Leak tests behind PgBouncer: context reuse, session leftovers, killed clients, prepared statements, concurrency, session features; db rules ([slice](slices/0.3-s2b-pooling-leak-tests.md)); criteria 4–9; after 0.3-S2a | T0 | In review (PR open): no leak through the wrappers; `server_reset_query_always` required in production (OD-28) |
 | 0.3-S2c | RLS plan check, `bench:rls` (report only, manual CI workflow), spike report, ADR-0030 ([slice](slices/0.3-s2c-plan-bench-and-adr.md)); criteria 10–12; after 0.3-S2b | T0 | Planned |
 
 ## Phase A slices

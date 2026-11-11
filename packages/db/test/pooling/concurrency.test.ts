@@ -31,6 +31,8 @@ beforeAll(async () => {
   for (const tenantId of tenants) {
     // Chart ids as labels: synthetic, and different for every tenant.
     const labels = dataset.charts.filter((c) => c.tenantId === tenantId).map((c) => c.id);
+    // A tenant without rows would make the per-row check pass vacuously.
+    expect(labels.length, 'a synthetic tenant has no charts').toBeGreaterThan(0);
     await seedProbe(app(), tenantId, labels);
     expectedRows.set(tenantId, labels.length);
   }
