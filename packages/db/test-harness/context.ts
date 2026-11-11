@@ -9,12 +9,12 @@ export interface HarnessInfo extends HarnessAddress {
   superuserPassword: string;
   ownerPassword: string;
   appPassword: string;
-  /** PgBouncer-only login for its admin console (SHOW CONFIG etc.); not a PostgreSQL role. */
-  poolerAdminPassword: string;
+  /** PgBouncer-only read-only console login (`stats_users`: SHOW only); not a PostgreSQL role. */
+  poolerStatsPassword: string;
 }
 
-/** PgBouncer user allowed on the admin console; exists only in the generated userlist. */
-export const POOLER_ADMIN_USER = 'shifa_pooler_admin';
+/** PgBouncer `stats_users` login; exists only in the generated userlist. */
+export const POOLER_STATS_USER = 'shifa_pooler_stats';
 
 /** How a URL reaches PostgreSQL: straight to the container, or through PgBouncer. */
 export type Via = 'direct' | 'pooler';
@@ -60,9 +60,9 @@ export function urlFor(
   return guardedUrl(info, via === 'pooler' ? pooler(info) : info, USERS[role], password, database);
 }
 
-/** Guarded URL of PgBouncer's admin console (simple-protocol SHOW commands only). */
-export function poolerAdminUrl(info: HarnessInfo): string {
-  return guardedUrl(info, pooler(info), POOLER_ADMIN_USER, info.poolerAdminPassword, 'pgbouncer');
+/** Guarded URL of PgBouncer's console as the read-only stats user. */
+export function poolerStatsUrl(info: HarnessInfo): string {
+  return guardedUrl(info, pooler(info), POOLER_STATS_USER, info.poolerStatsPassword, 'pgbouncer');
 }
 
 function pooler(info: HarnessInfo): ContainerAddress {
@@ -78,6 +78,14 @@ export async function withPool<T>(url: string, fn: (pool: Pool) => Promise<T>): 
   } finally {
     await pool.end();
   }
+}
+
+/** Clones `shifa_template` into `name` (a superuser pool on `postgres`). */
+export async function cloneTemplate(pool: Pool, name: string): Promise<void> {
+  if (!/^shifa_test_\d+$/.test(name)) throw new Error(`refusing to clone into "${name}"`);
+  await pool.query(`CREATE DATABASE ${name} TEMPLATE shifa_template OWNER shifa_owner`);
+  // A clone does not inherit the template's database ACL; repeat the baseline's revoke.
+  await pool.query(`REVOKE TEMPORARY ON DATABASE ${name} FROM PUBLIC`);
 }
 
 /** sql/roles.sql, then test-only logins (passwords are random hex, generated per run). */

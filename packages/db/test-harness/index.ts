@@ -8,8 +8,9 @@ import { type CreateDbOptions, createDb, type ShifaDb } from '../src/client.ts';
 import { type SingleStatementExecute, withoutQueryParams } from '../src/transaction.ts';
 import {
   applyRoles,
+  cloneTemplate,
   type HarnessRole,
-  poolerAdminUrl,
+  poolerStatsUrl,
   urlFor,
   type Via,
   withPool,
@@ -48,9 +49,7 @@ export async function ensureWorkerDatabase(
     try {
       const { rowCount } = await pool.query('SELECT 1 FROM pg_database WHERE datname = $1', [name]);
       if (!rowCount) {
-        await pool.query(`CREATE DATABASE ${name} TEMPLATE shifa_template OWNER shifa_owner`);
-        // A clone does not inherit the template's database ACL; repeat the baseline's revoke.
-        await pool.query(`REVOKE TEMPORARY ON DATABASE ${name} FROM PUBLIC`);
+        await cloneTemplate(pool, name);
       }
     } finally {
       await pool.query('SELECT pg_advisory_unlock(hashtext($1))', [name]);
@@ -143,12 +142,32 @@ export function pooledTestDb(options?: CreateDbOptions): ShifaDb {
   return appDb('pooler', options);
 }
 
-/** Rows of a PgBouncer admin console `SHOW` command (CONFIG, DATABASES, POOLS, SERVERS...). */
-export async function showPooler(
-  what: 'CONFIG' | 'DATABASES' | 'POOLS' | 'SERVERS' | 'CLIENTS',
-): Promise<Record<string, unknown>[]> {
+/**
+ * Sends `text` to PgBouncer's console as the stats user and returns the error message, if any.
+ * Negative tests only (proving the shared console refuses changes).
+ */
+export async function rawPoolerConsole(text: string): Promise<string | undefined> {
+  return withPool(poolerStatsUrl(info()), async (pool) => {
+    try {
+      await pool.query(text);
+      return undefined;
+    } catch (err) {
+      return err instanceof Error ? err.message : String(err);
+    }
+  });
+}
+
+const SHOW_COMMANDS = new Set(['CONFIG', 'DATABASES', 'POOLS', 'SERVERS', 'CLIENTS'] as const);
+type ShowCommand = typeof SHOW_COMMANDS extends Set<infer T> ? T : never;
+
+/**
+ * Rows of a PgBouncer console `SHOW` command, as the read-only `stats_users` login: the shared
+ * PgBouncer cannot be reconfigured from a test (a `SET` would change it for every worker).
+ */
+export async function showPooler(what: ShowCommand): Promise<Record<string, unknown>[]> {
   // The admin console speaks the simple query protocol only: no parameters.
-  const { rows } = await withPool(poolerAdminUrl(info()), (pool) =>
+  if (!SHOW_COMMANDS.has(what)) throw new Error('showPooler() runs SHOW commands only');
+  const { rows } = await withPool(poolerStatsUrl(info()), (pool) =>
     pool.query<Record<string, unknown>>(`SHOW ${what}`),
   );
   return rows;

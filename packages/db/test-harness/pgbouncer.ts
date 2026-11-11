@@ -8,7 +8,7 @@ import {
   type StartedTestContainer,
   Wait,
 } from 'testcontainers';
-import { type HarnessInfo, POOLER_ADMIN_USER } from './context.ts';
+import { type HarnessInfo, POOLER_STATS_USER } from './context.ts';
 import type { ContainerAddress } from './guard.ts';
 import { PGBOUNCER_IMAGE } from './image.ts';
 
@@ -35,7 +35,8 @@ listen_port = ${String(LISTEN_PORT)}
 unix_socket_dir =
 auth_type = scram-sha-256
 auth_file = ${USERLIST}
-admin_users = ${POOLER_ADMIN_USER}
+stats_users = ${POOLER_STATS_USER}
+max_client_conn = 1000
 pool_mode = transaction
 default_pool_size = 2
 min_pool_size = 0
@@ -75,7 +76,7 @@ export async function startPooler(
   const userlist = pgbouncerUserlist([
     ['shifa_app', info.appPassword],
     ['shifa_owner', info.ownerPassword],
-    [POOLER_ADMIN_USER, info.poolerAdminPassword],
+    [POOLER_STATS_USER, info.poolerStatsPassword],
   ]);
   const container: StartedTestContainer = await new GenericContainer(PGBOUNCER_IMAGE)
     .withNetwork(network)

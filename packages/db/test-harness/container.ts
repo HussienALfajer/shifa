@@ -1,6 +1,6 @@
 // @shifa/db/harness: the throw-away PostgreSQL container with roles applied and migrations in
 // `shifa_template`, and PgBouncer in front of it on a private network (0.3-S2a). Used by
-// Vitest's globalSetup and by scripts outside Vitest (the API boot check). No vitest import
+// Vitest's globalSetup and by scripts outside Vitest (API boot check, obs smoke). No vitest import
 // here, so it runs under plain Node (type stripping).
 import { randomBytes } from 'node:crypto';
 import { PostgreSqlContainer, type StartedPostgreSqlContainer } from '@testcontainers/postgresql';
@@ -8,6 +8,7 @@ import { Network, type StartedNetwork } from 'testcontainers';
 import { migrate } from '../src/migrate.ts';
 import {
   applyRoles,
+  cloneTemplate,
   type HarnessInfo,
   type HarnessRole,
   urlFor,
@@ -16,7 +17,7 @@ import {
 } from './context.ts';
 import { explainStartFailure } from './docker.ts';
 import { POSTGRES_IMAGE, RYUK_IMAGE } from './image.ts';
-import { POSTGRES_ALIAS, startPooler } from './pgbouncer.ts';
+import { POOLING_DATABASE, POSTGRES_ALIAS, startPooler } from './pgbouncer.ts';
 
 export { acquireDbTestLock } from './guard.ts';
 export type { HarnessInfo, HarnessRole, Via };
@@ -78,13 +79,18 @@ export async function startHarnessContainer(): Promise<HarnessContainer> {
       superuserPassword,
       ownerPassword: secret(),
       appPassword: secret(),
-      poolerAdminPassword: secret(),
+      poolerStatsPassword: secret(),
     };
     await applyRoles(info);
     await withPool(urlFor(info, 'superuser', 'postgres'), (pool) =>
       pool.query(`CREATE DATABASE ${TEMPLATE_DATABASE} OWNER shifa_owner`),
     );
     await migrate(urlFor(info, 'owner', TEMPLATE_DATABASE));
+    // The pool-of-1 database exists before PgBouncer routes to it. Shared by every file that
+    // uses it and never truncated by setup.ts: those tests clean up after themselves.
+    await withPool(urlFor(info, 'superuser', 'postgres'), (pool) =>
+      cloneTemplate(pool, POOLING_DATABASE),
+    );
     const pooler = await startPooler(network, info);
     stops.push(() => pooler.stop());
     info.pooler = pooler.address;
