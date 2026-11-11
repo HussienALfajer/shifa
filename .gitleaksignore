@@ -12,3 +12,7 @@
 # {"sub":"fixture"}, signature the base64 of "signature"); proves the Collector masks bearer
 # tokens and JWTs.
 b9216c76fbb2bc8c900c7a73740fa9610296c0f9:scripts/test/fixtures/obs/denied-keys.mjs:jwt:54
+
+# 0.2-09c: Garage access key *id* (GK…, public identifier, not the secret) of a throw-away
+# local stack, used as fake `garage key create` output; the stack was reset and no longer exists.
+b80138af4feda858256d6e4cedb933e4b052703b:scripts/test/backup-env.test.mjs:generic-api-key:61
