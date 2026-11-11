@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Living document — the single source of project status · Last updated: 2026-11-11 · Owner: product owner
+Status: Living document — the single source of project status · Last updated: 2026-11-12 · Owner: product owner
 
 Release 1 is built in phases. Each phase is split into slices (one slice = one session = one small PR, see [development-workflow](process/development-workflow.md)). Slice details and hand-over notes live in [docs/slices](slices/README.md); this file only tracks phases and slice status.
 
@@ -12,7 +12,7 @@ Rough estimate for a team of 4–5 developers working with Claude Code: pilot af
 |---|---|---|---|
 | 0.1 Re-documentation | Archive research, write product, domain, ADR, compliance and process docs | Owner reviewed the docs | Done 2026-11-08; owner reviewed and approved 2026-11-08 |
 | 0.2 Foundation (harness) | Repo, tooling, quality gates, Claude Code setup, CI — no features | Checklist below all green | In progress: every slice merged and accepted (owner, 2026-11-11); open items are the design-token drift check (first Phase 0.4 slice) and `/release` (first deployment) |
-| 0.3 Spikes | Prove risky technology choices with throwaway code | Each spike has a written result and an ADR update | Not started |
+| 0.3 Spikes | Prove risky technology choices with throwaway code (S2 keeps its leak tests in CI, owner 2026-11-12) | Each spike has a written result and an ADR update | In progress: S2 spec approved (owner, 2026-11-12) |
 | 0.4 Design system foundations | Tokens pipeline, base components, Flutter theme from the same tokens | Storybook with core components, visual and a11y tests in CI | Not started |
 | A Core platform | Super admin, tenancy, patients, scheduling and queue, voice calling, billing in three currencies, general clinical template, prescriptions, reports, messaging, patient app, public booking pages, offline reception | 10 pilot clinics run a full day without paper; phase audit passed | Not started |
 | B Dental | Full dental module | Pilot dental clinics use charting, perio, plans and installments daily; advisor sign-off (OD-17) | Not started |
@@ -70,7 +70,7 @@ Nothing in Phase A starts before every item is done.
 | Spike | Question | Result goes to |
 |---|---|---|
 | S1 Offline sync | PowerSync vs custom outbox under real network cuts, for queue, appointments and cash | ADR-0014, OD-05 |
-| S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests | ADR-0004/0005 |
+| S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005 |
 | S3 Arabic output | Arabic PDF (Gotenberg), thermal receipt rendering, Arabic name search normaliser | ADR-0021 |
 | S4 Imaging | Garage + Orthanc + OHIF; upload a real CBCT over an Aleppo-like link | ADR-0019, OD-18 |
 | S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification | ADR-0016/0017, OD-12 |
