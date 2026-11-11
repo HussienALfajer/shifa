@@ -1,0 +1,11 @@
+# Dashboards from the repository (infra/observability/grafana/dashboards, mounted read-only).
+apiVersion: 1
+
+providers:
+  - name: shifa
+    type: file
+    folder: Shifa
+    disableDeletion: true
+    allowUiUpdates: false
+    options:
+      path: /etc/shifa/grafana/dashboards

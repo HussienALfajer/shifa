@@ -15,7 +15,7 @@ Purpose: define how personal and health data is handled across development, AI-a
 
 - Synthetic data generator (`packages/testing`): multiple tenants, branches and doctors; Syrian Arabic names and naming patterns; +963 and +90 phones; three currencies; dental charts, fractures, PROM answers; synthetic or public test DICOM. Built in stages: the core (tenancy, people, phones, money) in 0.2-08 ([spec](../specs/foundation/0.2-08-synthetic-data-generator.md)); clinical data with Phases B–D. Synthetic phones can belong to real people, so non-production sending is allowlisted (MSG-32, OD-23).
 - Claude Code: may read and edit `.env*`, secrets, dumps and data-export paths (ADR-0028); `.gitignore` and the CI secret scan keep them out of git; sandbox enabled under WSL2; no production credentials on development machines.
-- Logs, traces and error reports never contain personal or clinical data; a test fails if listed sensitive fields reach a logger.
+- Logs, traces and error reports never contain personal or clinical data; a test fails if listed sensitive fields reach a logger. Telemetry is scrubbed twice, by an allowlist in the API and again in the Collector before storage (PLT-52, [observability](../process/observability.md)).
 
 ## 2. Production access
 - Platform support access to a tenant: time-boxed, read-only by default, with a mandatory reason, visible to the clinic, fully audited.

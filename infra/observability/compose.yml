@@ -1,0 +1,125 @@
+# Local observability stack (spec 0.2-09b, ADR-0029). Development only: every published port is
+# bound to 127.0.0.1 and nothing leaves the machine. Start it with `pnpm obs:up`, which writes the
+# secrets this file references into ./.env (git-ignored) on first run.
+# Images are pinned by version and digest; update both together (docs/process/observability.md).
+name: shifa-obs
+
+services:
+  # The only telemetry entry point: the API exports OTLP here; it scrubs (PLT-52 layer two) and
+  # forwards to lgtm on the compose network.
+  collector:
+    image: otel/opentelemetry-collector-contrib:0.165.0@sha256:e40d61f10c9a617cca1ffd1be4d7e2b3a4b0f0001798ff07e58cabe82e618cea
+    command: ["--config=/etc/shifa/collector.yaml"]
+    volumes:
+      - ./collector.yaml:/etc/shifa/collector.yaml:ro
+    ports:
+      - 127.0.0.1:4317:4317
+      - 127.0.0.1:4318:4318
+    depends_on:
+      lgtm:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Grafana, Loki, Tempo and Prometheus in one development image. Its own OTLP ports (4317,
+  # 4318) stay on the compose network; the query ports are published for the smoke check.
+  lgtm:
+    image: grafana/otel-lgtm:0.40.0@sha256:72e05804790e6e0d8c0b70a6d5ff1f721ef7b203463374631e99aa3429bd0cf6
+    environment:
+      GF_PATHS_PROVISIONING: /etc/shifa/grafana/provisioning
+    volumes:
+      - ./grafana/provisioning:/etc/shifa/grafana/provisioning:ro
+      - ./grafana/dashboards:/etc/shifa/grafana/dashboards:ro
+      - lgtm-data:/data
+    ports:
+      - 127.0.0.1:3300:3000
+      - 127.0.0.1:3200:3200
+      - 127.0.0.1:3100:3100
+      - 127.0.0.1:9090:9090
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          curl -sf http://127.0.0.1:3000/api/health >/dev/null &&
+          curl -sf http://127.0.0.1:3200/ready >/dev/null &&
+          curl -sf http://127.0.0.1:3100/ready >/dev/null &&
+          curl -sf http://127.0.0.1:9090/-/ready >/dev/null
+      interval: 5s
+      timeout: 5s
+      retries: 60
+    restart: unless-stopped
+
+  glitchtip-web:
+    image: glitchtip/glitchtip:6.2.6@sha256:a3d8eb1b36c1e1603d55ab32711ea3dd8115874742a781a57391a62a16e0dff6
+    environment: &glitchtip-env
+      DATABASE_URL: postgres://glitchtip:${GLITCHTIP_DB_PASSWORD:?run pnpm obs:up}@glitchtip-postgres:5432/glitchtip
+      SECRET_KEY: ${GLITCHTIP_SECRET_KEY:?run pnpm obs:up}
+      REDIS_URL: redis://glitchtip-valkey:6379/0
+      PORT: "8000"
+      GLITCHTIP_DOMAIN: http://127.0.0.1:8000
+      DEFAULT_FROM_EMAIL: glitchtip@shifa.localhost
+      EMAIL_URL: consolemail://
+      ENABLE_USER_REGISTRATION: "false"
+      ENABLE_ORGANIZATION_CREATION: "false"
+    depends_on:
+      glitchtip-postgres:
+        condition: service_healthy
+      glitchtip-valkey:
+        condition: service_healthy
+    ports:
+      - 127.0.0.1:8000:8000
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/_health/', timeout=4)
+      interval: 5s
+      timeout: 5s
+      retries: 60
+      start_period: 30s
+    restart: unless-stopped
+
+  glitchtip-worker:
+    image: glitchtip/glitchtip:6.2.6@sha256:a3d8eb1b36c1e1603d55ab32711ea3dd8115874742a781a57391a62a16e0dff6
+    command: ./bin/run-celery-with-beat.sh
+    environment: *glitchtip-env
+    depends_on:
+      glitchtip-web:
+        condition: service_healthy
+    healthcheck:
+      test: [CMD-SHELL, "kill -0 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+
+  glitchtip-postgres:
+    image: postgres:18.6-trixie@sha256:e3d24f6906d0760bf4da0dae872415391ededefad23fd471c47dc53b0ddf3c42
+    environment:
+      POSTGRES_USER: glitchtip
+      POSTGRES_DB: glitchtip
+      POSTGRES_PASSWORD: ${GLITCHTIP_DB_PASSWORD:?run pnpm obs:up}
+    volumes:
+      - glitchtip-postgres:/var/lib/postgresql
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U glitchtip -d glitchtip"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  glitchtip-valkey:
+    image: valkey/valkey:9.1.3-alpine@sha256:bf09d58e96d6b4524a15396b65b242bbe18beebbcc15a04d8ee75ddac62fae0b
+    volumes:
+      - glitchtip-valkey:/data
+    healthcheck:
+      test: [CMD, valkey-cli, ping]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+volumes:
+  lgtm-data:
+  glitchtip-postgres:
+  glitchtip-valkey:
