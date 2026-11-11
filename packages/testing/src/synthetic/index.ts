@@ -1,3 +1,4 @@
+export * from './dataset/index.ts';
 export { DuplicateIdError, IdRegistry, nextId } from './ids.ts';
 export {
   CASH_UNIT_MINOR,

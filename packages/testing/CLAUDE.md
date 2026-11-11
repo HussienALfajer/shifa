@@ -12,5 +12,11 @@ Test helpers shared by every package: `Clock`/`FixedClock` and the synthetic dat
 - Phones: E.164 on a listed operator prefix with the `00` marker after it, so `isSyntheticPhone` stays true for every generated number. When adding a prefix, add its source in the table. The marker does not make a number safe to message: non-production sends go only to an allowlist (MSG-32).
 - Name lists are data reviewed by the owner: keep entries unique, Arabic letters and single spaces only, male and female lists disjoint, Turkmen names apart from the general family list.
 
+## Datasets (`src/synthetic/dataset/`)
+- `generateDataset({ seed, preset, clock?, load? })`: presets `minimal`, `demo`, `load`. Records are `Synthetic*` types in `model.ts`; tenant-scoped ones carry `tenantId`, practitioners, accounts and dependents are global.
+- Edge cases (duplicate pair, variant spellings) are pinned patients in `presets.ts`; the first family, the senior second account and Turkmen names in Azaz are rules in `build-tenant.ts`. Keep them when changing either.
+- Adding a record type or field: draw it from a new `fork` label, add it to `model.ts`, `sink.ts` and the walker in `test/synthetic/integrity.test.ts`, and update the golden hash in `test/synthetic/dataset-golden.ts` in the same PR with the reason.
+- `load` caps tenants × patients at 1,000,000; a full Syrian phone space falls back to Turkish numbers (`people.ts`).
+
 ## Commands
 - `pnpm --filter @shifa/testing test` — unit tests; `pnpm verify` from the root for the full gate.
