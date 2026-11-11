@@ -123,7 +123,7 @@ function checksFor(s: Settings, traceId: string, startNs: bigint): Check[] {
         const events = await getJson(`${projectApi}/events/`, glitchtipAuth);
         const id = glitchtipEventFor(events, traceId);
         if (id === undefined) return undefined;
-        return getJson(`${projectApi}/events/${id}/json/`, glitchtipAuth);
+        return getJson(`${projectApi}/events/${id}/`, glitchtipAuth);
       },
     },
   ];

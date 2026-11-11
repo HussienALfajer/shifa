@@ -23,7 +23,7 @@ processors:
   # record and metric data point attributes (attributes/deny). Patterns are RE2.
   resource/deny:
     attributes: &deny
-      - { action: delete, pattern: ^http\.(request|response)\.body(\..*)?$ }
+      - { action: delete, pattern: '^http\.(request|response)\.body(\..*)?$' }
       - { action: delete, key: url.query }
       - { action: delete, key: url.full }
       - { action: delete, key: url.path }
@@ -37,9 +37,9 @@ processors:
       - { action: delete, key: network.peer.address }
       - { action: delete, key: db.query.text }
       - { action: delete, key: db.statement }
-      - { action: delete, pattern: ^db\.query\.parameter\..* }
+      - { action: delete, pattern: '^db\.query\.parameter\..*' }
       - { action: delete, key: exception.message }
-      - { action: delete, pattern: ^enduser\..* }
+      - { action: delete, pattern: '^enduser\..*' }
       # Every header except the request content-type (RE2 has no negative look-ahead): keep a
       # copy, delete all headers, restore the copy. The API exports user-agent as
       # user_agent.original, never as a header attribute.
@@ -48,7 +48,7 @@ processors:
           key: shifa.keep.content_type,
           from_attribute: http.request.header.content-type,
         }
-      - { action: delete, pattern: ^http\.(request|response)\.header\..* }
+      - { action: delete, pattern: '^http\.(request|response)\.header\..*' }
       - {
           action: insert,
           key: http.request.header.content-type,

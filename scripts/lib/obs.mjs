@@ -34,7 +34,7 @@ const REQUIRED_SERVICES = ['collector', 'lgtm', 'glitchtip-web', 'glitchtip-work
 const BOOTSTRAP_PY = `
 import json, os
 from django.contrib.auth import get_user_model
-from apps.organizations_ext.models import Organization, OrganizationUserRole
+from apps.organizations_ext.models import Organization
 from apps.projects.models import Project, ProjectKey
 from apps.api_tokens.models import APIToken
 User = get_user_model()
@@ -44,14 +44,17 @@ if user is None:
 org = Organization.objects.filter(slug=${JSON.stringify(GLITCHTIP_ORG)}).first()
 if org is None:
     org = Organization.objects.create(name=${JSON.stringify(GLITCHTIP_ORG)}, slug=${JSON.stringify(GLITCHTIP_ORG)})
-    org.add_user(user, role=OrganizationUserRole.OWNER)
+    org.add_user(user)  # the first user of an organisation becomes its owner
 project = Project.objects.filter(organization=org, slug=${JSON.stringify(GLITCHTIP_PROJECT)}).first()
 if project is None:
     project = Project.objects.create(organization=org, name=${JSON.stringify(GLITCHTIP_PROJECT)}, slug=${JSON.stringify(GLITCHTIP_PROJECT)})
 key = ProjectKey.objects.filter(project=project).first() or ProjectKey.objects.create(project=project)
 token = os.environ["OBS_API_TOKEN"]
 if not APIToken.objects.filter(token=token).exists():
-    APIToken.objects.create(user=user, token=token, scopes=APIToken.scopes.all(), label="shifa obs smoke")
+    api_token = APIToken(user=user, token=token, label="shifa obs smoke (read only)")
+    for scope in ("org:read", "project:read", "event:read"):
+        setattr(api_token.scopes, scope, True)
+    api_token.save()
 dsn = "http://%s@127.0.0.1:8000/%s" % (key.public_key.hex, project.id)
 print(${JSON.stringify(BOOTSTRAP_MARKER)} + json.dumps({"dsn": dsn}))
 `;

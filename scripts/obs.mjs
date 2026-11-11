@@ -3,9 +3,8 @@
 // (infra/observability, docs/process/observability.md). The logic is in lib/obs.mjs; this file
 // only connects it to the real file system and child processes.
 //
-// Children run from argument arrays, never through a shell. pnpm is run as
-// `node <npm_execpath>` (set when this runs through a pnpm script), so Windows needs no shell
-// for its .cmd shim either.
+// Children run from argument arrays, never through a shell. pnpm is run from npm_execpath (set
+// when this runs through a pnpm script), so Windows needs no shell for a .cmd shim either.
 import { spawn } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
@@ -18,7 +17,8 @@ function resolve(cmd, args) {
   if (cmd !== 'pnpm') return [cmd, args];
   const pnpm = process.env.npm_execpath;
   if (!pnpm) throw new Error('run this through pnpm (pnpm obs:smoke)');
-  return [process.execPath, [pnpm, ...args]];
+  // pnpm 12 is a native executable; older installs point at a JavaScript entry point.
+  return /\.[cm]?js$/.test(pnpm) ? [process.execPath, [pnpm, ...args]] : [pnpm, args];
 }
 
 function run(cmd, args, options = {}) {
