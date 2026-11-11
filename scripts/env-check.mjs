@@ -2,7 +2,7 @@
 // `pnpm env:check`: is this machine ready to build Shifa? Prints one line per item (ok, warn,
 // fail) and exits 1 on any fail. Setup and fixes: docs/process/wsl2-setup.md.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { accessSync, constants, readFileSync, statSync } from 'node:fs';
 import { delimiter, join } from 'node:path';
 import { formatRows, runEnvChecks } from './lib/env-check.mjs';
 import { readPinnedVersion, readSdkVersion, resolveFlutterRoot } from './lib/flutter-sdk.mjs';
@@ -44,11 +44,29 @@ const probes = {
     }
   },
   dockerReachable: () => capture('docker', ['info', '--format', '{{.ServerVersion}}'], 15_000),
-  gitConfig: (key) => capture('git', ['config', '--get', key]),
-  lsFilesEol: () => capture('git', ['ls-files', '--eol']) ?? '',
+  gitConfig: (key) => {
+    const result = spawnSync('git', ['config', '--get', key], { cwd: root, encoding: 'utf8' });
+    // Exit 1 means "not set"; anything else (git missing, repository refused) is an error,
+    // which the core reports as a fail instead of a silent ok.
+    if (result.status === 1 && !result.error) return null;
+    if (result.error || result.status !== 0) throw new Error('git config failed');
+    return result.stdout.trim();
+  },
+  lsFilesEol: () => capture('git', ['-c', 'core.quotepath=off', 'ls-files', '--eol']),
   which: (cmd) =>
-    (process.env.PATH ?? '').split(delimiter).some((dir) => dir && existsSync(join(dir, cmd))),
+    (process.env.PATH ?? '').split(delimiter).some((dir) => dir && isExecutable(join(dir, cmd))),
 };
+
+/** @param {string} path */
+function isExecutable(path) {
+  try {
+    if (!statSync(path).isFile()) return false;
+    accessSync(path, constants.X_OK);
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 const { rows, exitCode } = runEnvChecks(probes, { platform: process.platform, repoRoot: root });
 process.stdout.write(formatRows(rows));

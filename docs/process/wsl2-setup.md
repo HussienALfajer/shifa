@@ -34,13 +34,13 @@ systemd=true
 appendWindowsPath=false
 ```
 
-`appendWindowsPath=false` keeps the Windows `node`, `pnpm` and `flutter` off the Linux PATH, so they cannot shadow the Linux ones. The cost: `code .` and `explorer.exe` no longer work from Ubuntu; open folders from VS Code instead (step 9). Apply with `wsl --shutdown` in PowerShell.
+`appendWindowsPath=false` keeps the Windows `node`, `pnpm` and `flutter` off the Linux PATH, so they cannot shadow the Linux ones. The cost: `code .` and `explorer.exe` no longer work from Ubuntu (open folders from VS Code instead, step 9), `gh auth login` and the Claude login print a URL to open in the Windows browser, and Docker's Windows credential helper is out of reach (see the `docker pull` row in [Troubleshooting](#troubleshooting)). Apply with `wsl --shutdown` in PowerShell.
 
 ## 3. System packages
 
 ```bash
 sudo apt update && sudo apt upgrade -y
-sudo apt install -y git curl unzip xz-utils bubblewrap socat
+sudo apt install -y git curl zip unzip xz-utils bubblewrap socat
 ```
 
 `bubblewrap` (`bwrap`) and `socat` are what the Claude Code sandbox needs on Linux.
@@ -113,10 +113,14 @@ git config --global init.defaultBranch main
 
 Use the same name and email as on Windows. `core.autocrlf` must not be `true`: the repository stores LF (`.gitattributes`) and a Linux checkout must not convert it. Install the GitHub CLI (cli.github.com, "Linux → Debian/Ubuntu"), then:
 
+Sign in with a **fine-grained token limited to this repository** (OD-26), not the default browser login, whose token can also write gists in any account repository. On github.com: Settings → Developer settings → Fine-grained tokens → Generate; Repository access: only `shifa`; permissions: Contents, Pull requests and Workflows read and write, Actions, Checks and Commit statuses read; no account permissions. Then:
+
 ```bash
-gh auth login
+gh auth login --with-token   # paste the token, then Ctrl+D
 gh auth setup-git
 ```
+
+In WSL there is usually no keyring, so gh stores the token in `~/.config/gh/hosts.yml` in plain text; the narrow scope is what limits the damage if it leaks.
 
 ## 8. Clone into the Linux filesystem
 
@@ -140,7 +144,24 @@ Clone into `~/src/shifa`, never under `/mnt/c` or `/mnt/d`: Windows drives are s
 - **Claude desktop app:** open the folder `\\wsl.localhost\Ubuntu-26.04\home\<user>\src\shifa` as the project. If the app cannot run a session there, use the CLI below.
 - **Claude Code CLI (fallback, and always valid):** install it inside Ubuntu (`curl -fsSL https://claude.ai/install.sh | bash`), then `cd ~/src/shifa && claude`.
 
-The project settings (`.claude/settings.json`) keep `sandbox.enabled: true` with an exact-domain network allowlist; in WSL2 the sandbox now applies. The hooks run `node`, so `bash -lc 'command -v node'` (step 5) must print a path.
+The project settings (`.claude/settings.json`) keep `sandbox.enabled: true` with an exact-domain network allowlist, ignore unsandboxed retries (`allowUnsandboxedCommands: false`, OD-24) and deny sandboxed reads of `~/.ssh`, the Claude credentials file and the Windows drives (OD-26). WebFetch is not covered by the sandbox (accepted risk, OD-25). The hooks run `node`, so `bash -lc 'command -v node'` (step 5) must print a path.
+
+Two settings only work from your user settings, because they would break the Windows fallback or are ignored in project settings. Create `~/.claude/settings.json` **inside Ubuntu** (not on Windows):
+
+```json
+{
+  "sandbox": {
+    "failIfUnavailable": true,
+    "network": { "strictAllowlist": true }
+  }
+}
+```
+
+`failIfUnavailable` stops a session from silently running unsandboxed when `bwrap` or `socat` is broken; `strictAllowlist` refuses unlisted hosts instead of asking.
+
+**Database tests and the sandbox:** the sandbox blocks the Docker socket, so Docker-backed tests (Testcontainers) cannot run inside a sandboxed session (OD-24). CI runs them in `verify:full` on every PR; run `pnpm verify:full` yourself in a plain Ubuntu terminal when you need them locally. The Stop hook runs outside the sandbox.
+
+**Caches outside the repository:** sandboxed commands may write only inside the project, while `pnpm install` (store under `~/.local/share/pnpm`), `fvm install` (`~/fvm`), `pub get` (`~/.pub-cache`) and Corepack (`~/.cache/node/corepack`) write to the home folder. Run installs in the plain terminal. The acceptance run records which of them fail inside a session; a `sandbox.filesystem.allowWrite` entry is added only for a path proven necessary, with the reason in the commit.
 
 ## 10. Check
 
@@ -152,7 +173,18 @@ node scripts/run-script-tests.mjs
 git status
 ```
 
-`env:check` must show `ok` on every line, `verify:full` must end with `all green`, and `git status` must be clean afterwards. Inside a Claude session in `~/src/shifa`, the sandbox proof is: `curl https://example.com` refused, `touch ~/outside-shifa.txt` refused, `pnpm view zod version` works.
+`env:check` must show `ok` on every line, `verify:full` must end with `all green`, and `git status` must be clean afterwards. Run these in the plain terminal (outside Claude). Then, inside a Claude session in `~/src/shifa`, in the client you will use day to day, check the sandbox:
+
+| Command (ask Claude to run it) | Expected |
+|---|---|
+| `curl https://example.com` | refused |
+| the same, asking Claude to retry with the sandbox disabled | still refused |
+| `touch ~/outside-shifa.txt` | refused |
+| `cat ~/.ssh/known_hosts` (or any file in `~/.ssh`) | refused |
+| `ls /mnt/c/Users` | refused |
+| `/mnt/c/Windows/System32/cmd.exe /c ver` | refused |
+| `pnpm view zod version` | works |
+| `docker info` | record what happens (expected: refused) |
 
 ## Troubleshooting
 
@@ -164,9 +196,11 @@ git status
 | `flutter fail` (other version) | `.fvmrc` changed since the last install | `fvm install && fvm use` in `~/src/shifa` |
 | `docker fail` | Docker Desktop stopped, or WSL integration off | Start Docker Desktop; Settings → Resources → WSL integration → Ubuntu-26.04 on (step 4) |
 | `git autocrlf fail` | `core.autocrlf=true` | `git config --global core.autocrlf false` (and without `--global` inside the repository if set there) |
+| `git autocrlf warn` (Windows only) | Git for Windows sets `true` system-wide; `.gitattributes` overrides it here | Optional: `git config --global core.autocrlf false` in Git Bash |
 | `line endings fail` | A tracked file was committed with CRLF | `git add --renormalize .`, commit the listed files on a branch |
 | `repo location fail` | Repository under `/mnt/` | Clone again into `~/src/shifa` (step 8); delete the `/mnt/` copy after pushing its work |
 | `bwrap fail` / `socat fail` | Sandbox packages missing | `sudo apt install bubblewrap socat` |
+| (not an `env:check` line) `docker pull` fails: `docker-credential-desktop.exe` not found | `appendWindowsPath=false` hides Docker Desktop's credential helper named in `~/.docker/config.json` | Remove the `"credsStore": "desktop.exe"` line from `~/.docker/config.json` (public images need no login) |
 | `sandbox warn` (Windows only) | Running in `D:\shifa` | Expected on the Windows fallback: hooks apply, the sandbox does not; use WSL2 for sandboxed sessions |
 
 On the Windows fallback (`D:\shifa`, Git Bash), `pnpm verify` and the script tests keep working; data rules are the same (synthetic data only).

@@ -24,6 +24,10 @@
   },
   "sandbox": {
     "enabled": true,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "denyRead": ["~/.ssh", "~/.claude/.credentials.json", "//mnt/c", "//mnt/d"]
+    },
     "network": {
       "allowedDomains": [
         "registry.npmjs.org",

@@ -14,7 +14,7 @@
  *   pinnedFlutter: () => string | null,
  *   dockerReachable: () => string | null,
  *   gitConfig: (key: string) => string | null,
- *   lsFilesEol: () => string,
+ *   lsFilesEol: () => string | null,
  *   which: (cmd: string) => boolean,
  * }} Probes
  */
@@ -35,7 +35,7 @@ export function runEnvChecks(probes, { platform, repoRoot }) {
     ['pnpm', () => checkPnpm(probes.pnpmVersion(), probes.packageManager())],
     ['flutter', () => checkFlutter(probes.fvmFlutterVersion(), probes.pinnedFlutter())],
     ['docker', () => checkDocker(probes.dockerReachable())],
-    ['git autocrlf', () => checkAutocrlf(probes.gitConfig('core.autocrlf'))],
+    ['git autocrlf', () => checkAutocrlf(probes.gitConfig('core.autocrlf'), platform)],
     ['line endings', () => checkLineEndings(probes.lsFilesEol())],
   ];
   if (platform === 'linux') {
@@ -81,7 +81,8 @@ function checkNode(version) {
 }
 
 function checkPnpm(actual, packageManager) {
-  const expected = /^pnpm@(.+)$/.exec(packageManager ?? '')?.[1];
+  // `corepack use` appends a hash (`pnpm@12.4.1+sha512.…`); only the version is compared.
+  const expected = /^pnpm@([^+]+)/.exec(packageManager ?? '')?.[1];
   if (!expected) return fail('package.json has no pnpm packageManager field');
   if (!actual) return fail(`pnpm not found; enable Corepack to get pnpm ${expected}`);
   return actual === expected
@@ -108,22 +109,31 @@ function checkDocker(version) {
       );
 }
 
-function checkAutocrlf(value) {
-  return value?.trim().toLowerCase() === 'true'
-    ? fail('core.autocrlf=true; run `git config core.autocrlf false`')
-    : ok(`core.autocrlf=${value?.trim() || '(unset)'}`);
+/** Values git reads as true for a boolean setting. */
+const GIT_TRUE = new Set(['true', 'yes', 'on', '1']);
+
+function checkAutocrlf(value, platform) {
+  const v = value?.trim().toLowerCase();
+  if (!GIT_TRUE.has(v ?? '')) return ok(`core.autocrlf=${v || '(unset)'}`);
+  const fix = 'run `git config --global core.autocrlf false`';
+  // Git for Windows sets true system-wide; `.gitattributes` (`eol=lf`) overrides it in this
+  // repository, so on the Windows fallback it is a warning, not a blocker.
+  return platform === 'win32'
+    ? warn(`core.autocrlf=${v} (overridden by .gitattributes here); ${fix}`)
+    : fail(`core.autocrlf=${v}; ${fix}`);
 }
 
 function checkLineEndings(eolListing) {
+  if (eolListing === null) return fail('`git ls-files --eol` could not run');
   const crlf = eolListing
     .split('\n')
-    .filter((line) => line.startsWith('i/crlf'))
+    .filter((line) => /^i\/(crlf|mixed)\s/.test(line))
     .map((line) => line.slice(line.indexOf('\t') + 1).trim());
   if (crlf.length === 0) return ok('no CRLF in tracked files');
   const shown = crlf.slice(0, MAX_PATHS).join(', ');
   const more = crlf.length > MAX_PATHS ? `, and ${crlf.length - MAX_PATHS} more` : '';
   return fail(
-    `${crlf.length} tracked file(s) committed with CRLF: ${shown}${more}; ` +
+    `${crlf.length} tracked file(s) committed with CRLF or mixed endings:${shown}${more}; ` +
       'run `git add --renormalize .`',
   );
 }

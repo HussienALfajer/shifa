@@ -34,7 +34,7 @@ When a task's work is done (a spec, a slice, a fix, a docs change), finish it in
 1. **Branch:** not `main`; name it by type (`feat/`, `fix/`, `chore/`, `docs/`, or the slice ID).
 2. **Docs:** update `docs/roadmap.md`, the slice file and every doc the change made stale.
 3. **Secrets:** `git status` and `git diff --stat` show no `.env`, key, dump or stray file.
-4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks).
+4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks). In a sandboxed WSL2 session Docker is blocked (OD-24): Docker-backed tests run in CI, so say so in the report.
 5. **Review:** for a slice, the `reviewer` agent (+ `security-reviewer` for T0) has run and its blocking findings are fixed.
 6. **Commit and PR:** Conventional Commit; `gh pr create --base main` with `## Summary` and `## Test plan`; then enable auto-merge (squash) and Auto-fix. If CI fails, fix the cause on the branch and push.
 7. **Report** in Arabic in the format below.
@@ -53,7 +53,7 @@ End every substantial task with these sections, in this order:
 - Shell writes into `apps/`, `packages/`, `tooling/`, `scripts/`, `.claude/` are refused: use Edit/Write so the formatter hook runs. The guard reads command text, so it cannot see `cd apps && echo > x` or `cp`/`node -e` writes: do not use them.
 - `--no-verify`, force pushes and pushes to `main` are refused.
 - On stop, uncommitted code changes must pass `verify` (fast), unless `.claude/state/red-phase` exists (red phase of `/build-slice`).
-- Hooks need `node` on the PATH of Git Bash.
+- Hooks need `node` on the PATH of the shell Claude uses (WSL2: `bash -lc 'command -v node'`; Windows: Git Bash).
 
 ## Gotchas
 - WSL2 (Ubuntu 26.04, repo in `~/src/shifa`) is primary and sandboxed; setup in `docs/process/wsl2-setup.md`. Windows (`D:\shifa`, Git Bash) is the unsandboxed fallback.

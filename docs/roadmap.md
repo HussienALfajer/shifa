@@ -58,7 +58,7 @@ Nothing in Phase A starts before every item is done.
 | 0.2-07d | `packages/i18n` shared translation source, ARB generation, ICU/plural/error-code checks ([slice](slices/0.2-07d-i18n-source-and-checks.md)); after 0.2-07b and 0.2-07c | T1 | Done (#22) |
 | 0.2-08a | Synthetic data primitives: seeded random, ids, Syrian names, synthetic phones, money ([slice](slices/0.2-08a-synthetic-primitives.md), [spec](specs/foundation/0.2-08-synthetic-data-generator.md)) | T1 | Done (#25) |
 | 0.2-08b | Synthetic dataset: tenancy model, `minimal`/`demo`/`load` presets, integrity checks ([slice](slices/0.2-08b-synthetic-dataset-and-presets.md)); after 0.2-08a | T1 | In review |
-| 0.2-09a | WSL2 move: Ubuntu 26.04 setup guide, `pnpm env:check`, sandbox proof; Windows stays as fallback ([slice](slices/0.2-09a-wsl2-move.md), [spec](specs/foundation/0.2-09a-wsl2-move.md)) | T0 | Planned |
+| 0.2-09a | WSL2 move: Ubuntu 26.04 setup guide, `pnpm env:check`, sandbox proof; Windows stays as fallback ([slice](slices/0.2-09a-wsl2-move.md), [spec](specs/foundation/0.2-09a-wsl2-move.md)) | T0 | In review (owner acceptance in WSL2) |
 | 0.2-09b | Observability skeleton: OpenTelemetry, GlitchTip, local Grafana stack, telemetry leak test ([spec](specs/foundation/0.2-09b-observability-skeleton.md)); after 0.2-09a | T0 | Spec approved |
 | 0.2-09c | pgBackRest on Garage, PITR scripts, weekly CI restore drill ([spec](specs/foundation/0.2-09c-backups-and-restore-drill.md)); after 0.2-09a | T0 | Spec approved |
 
