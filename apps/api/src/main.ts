@@ -3,12 +3,15 @@ import { createDb } from '@shifa/db';
 import { sql } from 'drizzle-orm';
 import { createApp } from './app.ts';
 import { ConfigError, loadConfig } from './config/env.ts';
-import { describeError } from './platform/errors.ts';
+import { describeError, errorClass } from './platform/errors.ts';
 import { createLogger } from './platform/logging.ts';
+import { flushErrors, reportError } from './telemetry/errors.ts';
 import { otlpLogForwarder } from './telemetry/logs.ts';
 
 /** In-flight requests get this long after SIGTERM/SIGINT before the process gives up. */
 const DRAIN_MS = 10_000;
+/** A crash waits this long for its error event to be sent before the process exits. */
+const CRASH_FLUSH_MS = 2000;
 const SIGNALS = ['SIGTERM', 'SIGINT'] as const;
 
 function readConfig() {
@@ -29,9 +32,15 @@ async function main(): Promise<void> {
     level: config.logLevel,
     ...(config.telemetry.endpoint === undefined ? {} : { forward: otlpLogForwarder() }),
   });
+  // Once only: stop taking connections, report, wait briefly for the event, exit.
+  const state: { crashing: boolean; server?: { close(): unknown } } = { crashing: false };
   const crash = (what: string) => (reason: unknown) => {
+    if (state.crashing) return;
+    state.crashing = true;
+    state.server?.close();
     logger.fatal({ err: describeError(reason) }, what);
-    process.exit(1);
+    reportError(reason, errorClass(reason));
+    void flushErrors(CRASH_FLUSH_MS).finally(() => process.exit(1));
   };
   process.on('unhandledRejection', crash('unhandled rejection'));
   process.on('uncaughtException', crash('uncaught exception'));
@@ -50,7 +59,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
-  const app = await createApp({ db, logger });
+  const app = await createApp({ db, logger, testRoutes: config.testRoutes });
+  state.server = app.getHttpServer();
+  if (config.testRoutes) logger.warn('NODE_ENV=test: test-only routes are registered');
   app.enableShutdownHooks([...SIGNALS], { useProcessExit: true });
   for (const signal of SIGNALS) {
     process.once(signal, () => {

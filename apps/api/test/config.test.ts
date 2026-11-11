@@ -14,6 +14,36 @@ function errorOf(fn: () => unknown): ConfigError {
   throw new Error('expected loadConfig to throw');
 }
 
+describe('error reporting and test routes (0.2-09b2 security review)', () => {
+  it.each([
+    'http://pub:s3cr%21t@127.0.0.1:8000/1',
+    'http://pub-key@127.0.0.1:8000/1',
+    'http://p%40b@127.0.0.1:8000/1',
+    'http://public@127.0.0.1:8000/1?x=y',
+  ])('rejects the DSN %s, which the Sentry SDK would print and refuse', (value) => {
+    expect(() => loadConfig({ DATABASE_URL: URL_OK, SENTRY_DSN: value })).toThrow(ConfigError);
+    try {
+      loadConfig({ DATABASE_URL: URL_OK, SENTRY_DSN: value });
+    } catch (err) {
+      expect((err as Error).message).not.toContain(value);
+    }
+  });
+
+  it('accepts an IPv6 host', () => {
+    const dsn = 'http://public@[::1]:8000/1';
+    expect(loadConfig({ DATABASE_URL: URL_OK, SENTRY_DSN: dsn }).errors.dsn).toBe(dsn);
+  });
+
+  it.each(['staging', 'production', 'prod'])(
+    'refuses NODE_ENV=test with DEPLOYMENT_ENVIRONMENT=%s',
+    (environment) => {
+      expect(() =>
+        loadConfig({ DATABASE_URL: URL_OK, NODE_ENV: 'test', DEPLOYMENT_ENVIRONMENT: environment }),
+      ).toThrow(ConfigError);
+    },
+  );
+});
+
 describe('loadConfig', () => {
   it('reads a valid environment and applies defaults', () => {
     const config = loadConfig({ DATABASE_URL: URL_OK, PATH: '/usr/bin' });
@@ -23,6 +53,8 @@ describe('loadConfig', () => {
       databaseUrl: URL_OK,
       logLevel: 'info',
       telemetry: { endpoint: undefined, samplerRatio: 1, environment: 'development' },
+      errors: { dsn: undefined, release: undefined },
+      testRoutes: false,
     });
   });
 

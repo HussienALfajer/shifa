@@ -3,6 +3,7 @@
 // loaded and the OTLP/HTTP exporters created.
 import { loadConfig } from '../config/env.ts';
 import { createLogger } from '../platform/logging.ts';
+import { startErrorReporting } from './errors.ts';
 import type { Telemetry } from './sdk.ts';
 
 /** Collector data paths of OTLP/HTTP. */
@@ -62,4 +63,36 @@ export async function bootstrapTelemetry(
       );
     },
   });
+}
+
+/**
+ * Error reporting (GlitchTip, Sentry protocol). Off unless SENTRY_DSN is set: then, and only
+ * then, a Sentry client is created. Returns whether it was.
+ */
+export function bootstrapErrorReporting(
+  env: Readonly<Record<string, string | undefined>>,
+  serviceVersion = 'unknown',
+): boolean {
+  let config: ReturnType<typeof loadConfig>;
+  try {
+    config = loadConfig(env);
+  } catch {
+    return false; // main.ts reports the configuration error and exits
+  }
+  const { dsn, release } = config.errors;
+  if (dsn === undefined) return false;
+  const logger = createLogger({ level: config.logLevel });
+  startErrorReporting({
+    dsn,
+    release: release ?? serviceVersion,
+    environment: config.telemetry.environment,
+    // A fixed text: fetch errors quote the address, and the DSN holds the key.
+    onSendFailure: () => {
+      logger.warn(
+        { component: 'error-reporting' },
+        'error event delivery failed; further failures are not logged for 60 s',
+      );
+    },
+  });
+  return true;
 }

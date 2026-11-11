@@ -5,7 +5,8 @@
 //      deliver SIGTERM, so it only stops it), once with telemetry off and once with
 //      OTEL_EXPORTER_OTLP_ENDPOINT on a port where no Collector listens (the API stays ready and
 //      logs exactly one export warning), and once against a stub Collector (server span, pg span
-//      and log lines arrive over OTLP/HTTP),
+//      and log lines arrive over OTLP/HTTP), and once with SENTRY_DSN on a stub GlitchTip and
+//      NODE_ENV=test (GET /_test/fail sends one scrubbed error event),
 //   3. runs it again with the owner's URL and expects a non-zero exit (createDb refuses owners),
 //   4. checks that no database password ever appeared in the app's output.
 import { type ChildProcess, spawn } from 'node:child_process';
@@ -132,7 +133,8 @@ async function startStubCollector(): Promise<StubCollector> {
     const chunks: Buffer[] = [];
     req.on('data', (chunk: Buffer) => chunks.push(chunk));
     req.on('end', () => {
-      const path = req.url ?? '';
+      // Without the query string: the Sentry envelope URL carries the key and client name there.
+      const path = (req.url ?? '').split('?')[0] ?? '';
       bodies.set(path, [...(bodies.get(path) ?? []), Buffer.concat(chunks)]);
       res.writeHead(200, { 'content-type': 'application/x-protobuf' }).end();
     });
@@ -186,6 +188,49 @@ async function checkCollectorUp(url: string): Promise<string> {
     throw err;
   } finally {
     await collector.close();
+  }
+}
+
+/** Must match TEST_FAILURE_MARKER in src/platform/test-support.ts (quoted by GET /_test/fail). */
+const TEST_FAILURE_MARKER = 'synthetic-patient-marker-7f3a91';
+
+/**
+ * With SENTRY_DSN pointing at a stub GlitchTip and NODE_ENV=test, the built bundle sends one
+ * scrubbed error event for GET /_test/fail (fetch transport, client created by instrument.js).
+ */
+async function checkErrorReporting(url: string): Promise<string> {
+  const glitchtip = await startStubCollector();
+  const port = await freePort();
+  const dsn = glitchtip.url.replace('http://', 'http://public@');
+  const app = startApi(url, port, { SENTRY_DSN: `${dsn}/1`, NODE_ENV: 'test' });
+  try {
+    await waitReady(port, app);
+    const res = await fetch(`http://127.0.0.1:${String(port)}/_test/fail`);
+    if (res.status !== 500) {
+      throw new BootCheckError(`error reporting: /_test/fail answered ${String(res.status)}`);
+    }
+    const path = '/api/1/envelope/';
+    const deadline = Date.now() + READY_TIMEOUT_MS;
+    while (!glitchtip.received(path).includes('"route":"/_test/fail"') && Date.now() < deadline) {
+      await new Promise((resolve) => setTimeout(resolve, 200));
+    }
+    const sent = glitchtip.received(path).toString('utf8');
+    if (!sent.includes('"route":"/_test/fail"') || !sent.includes('"status":"500"')) {
+      throw new BootCheckError('error reporting: no event with route and status arrived');
+    }
+    if (sent.includes(TEST_FAILURE_MARKER)) {
+      throw new BootCheckError('error reporting: the exception message reached the event');
+    }
+    say('error reporting: one scrubbed event for GET /_test/fail');
+    app.child.kill('SIGTERM');
+    await withTimeout(app.exited, EXIT_TIMEOUT_MS, 'no exit after SIGTERM');
+    return app.output();
+  } catch (err) {
+    app.child.kill('SIGKILL');
+    process.stdout.write(app.output());
+    throw err;
+  } finally {
+    await glitchtip.close();
   }
 }
 
@@ -282,6 +327,7 @@ async function main(): Promise<void> {
         await checkAppRole(harness.url('app'), 'off'),
         await checkAppRole(harness.url('app'), 'collector down'),
         await checkCollectorUp(harness.url('app')),
+        await checkErrorReporting(harness.url('app')),
         await checkOwnerRefused(harness.url('owner')),
       ].join('\n');
       const { appPassword, ownerPassword, superuserPassword } = harness.info;

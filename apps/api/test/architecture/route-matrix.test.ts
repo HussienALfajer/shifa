@@ -17,6 +17,7 @@ import {
   EXPECTED_MATRIX,
   type Matrix,
   type MatrixRow,
+  TEST_ONLY_ROUTES,
 } from './route-matrix.expected.ts';
 
 const CALLERS: readonly Caller[] = ['anonymous', ...ROLES];
@@ -82,8 +83,13 @@ beforeAll(async () => {
     controllers: [ProbeController],
     auth: new HeaderAuthAdapter(),
     grants: TEST_GRANTS,
+    testRoutes: true,
   });
-  withProductionAuth = await buildTestApp({ db: testDb(), controllers: [ProbeController] });
+  withProductionAuth = await buildTestApp({
+    db: testDb(),
+    controllers: [ProbeController],
+    testRoutes: true,
+  });
   observed = await observe(withTestAuth);
 });
 
@@ -112,6 +118,23 @@ describe('route permission matrix', () => {
           `${route} as ${caller}: ${String(want)}`,
         );
       }
+    }
+  });
+
+  it('test-only routes are covered here and absent from an app built without them', async () => {
+    for (const route of TEST_ONLY_ROUTES) expect(withTestAuth.routes).toContain(route);
+    const production = await buildTestApp({ db: testDb() });
+    try {
+      for (const route of TEST_ONLY_ROUTES) expect(production.routes).not.toContain(route);
+    } finally {
+      await production.app.close();
+    }
+  });
+
+  it('500 is expected only on test-only routes', () => {
+    for (const [route, row] of Object.entries(EXPECTED_MATRIX)) {
+      if (TEST_ONLY_ROUTES.has(route)) continue;
+      expect(Object.values(row), route).not.toContain(500);
     }
   });
 

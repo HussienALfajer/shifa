@@ -1,7 +1,8 @@
 // Criterion 6 (PLT-52), the leak test: synthetic patient data sent in the path, query, body,
 // headers and cookie of a request whose handler fails in PostgreSQL with an error that quotes
 // the value never appears in any exported span, metric or log record (serialised as OTLP JSON,
-// exactly what goes over the wire) or in the stdout log. 0.2-09b2 adds error events here.
+// exactly what goes over the wire), in any error event (the Sentry envelope as sent) or in the
+// stdout log.
 import { Body, Controller, HttpCode, Inject, Param, Post, Query } from '@nestjs/common';
 import { SpanStatusCode } from '@opentelemetry/api';
 import {
@@ -24,7 +25,13 @@ import { z } from 'zod';
 import { Public } from '../../src/access/index.ts';
 import { Contract } from '../../src/platform/contract/index.ts';
 import { SHIFA_DB } from '../../src/platform/database.module.ts';
+import {
+  flushErrors,
+  startErrorReporting,
+  stopErrorReporting,
+} from '../../src/telemetry/errors.ts';
 import { buildTestApp, TestAnything, type TestApp } from '../support.ts';
+import { type ErrorSink, errorSink, TEST_DSN } from './error-sink.ts';
 import { listen, startTestTelemetry, type TestTelemetry } from './support.ts';
 
 const random = createRandom(20261111);
@@ -72,10 +79,18 @@ class LeakController {
 }
 
 let test: TestTelemetry;
+let errors: ErrorSink;
 let current: TestApp;
 
 beforeAll(async () => {
   test = startTestTelemetry();
+  errors = errorSink();
+  startErrorReporting({
+    dsn: TEST_DSN,
+    release: 'shifa-api@0.0.0-test',
+    environment: 'test',
+    transport: errors.transport,
+  });
   current = await buildTestApp({ db: testDb(), controllers: [LeakController], forwardLogs: true });
   const base = await listen(current.app);
   const res = await fetch(
@@ -99,6 +114,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await current.app.close();
+  await stopErrorReporting();
   await test.telemetry.shutdown();
 });
 
@@ -143,6 +159,16 @@ describe('telemetry leak test (PLT-52)', () => {
     await test.telemetry.forceFlush();
     const records = test.logExporter.getFinishedLogRecords();
     expectClean('log records', decode(JsonLogsSerializer.serializeRequest(records)));
+  });
+
+  it('sent the error event it claims to cover', async () => {
+    await flushErrors(2000);
+    expect(errors.events()).toHaveLength(1);
+  });
+
+  it('exports no synthetic value in any error event', async () => {
+    await flushErrors(2000);
+    expectClean('error events', errors.text());
   });
 
   it('writes no synthetic value to the stdout log', () => {
