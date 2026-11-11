@@ -19,7 +19,15 @@
     "obs:up": "node scripts/obs.mjs up",
     "obs:down": "node scripts/obs.mjs down",
     "obs:reset": "node scripts/obs.mjs reset",
-    "obs:smoke": "node scripts/obs.mjs smoke"
+    "obs:smoke": "node scripts/obs.mjs smoke",
+    "backup:up": "node scripts/backup.mjs up",
+    "backup:down": "node scripts/backup.mjs down",
+    "backup:reset": "node scripts/backup.mjs reset",
+    "backup:full": "node scripts/backup.mjs full",
+    "backup:diff": "node scripts/backup.mjs diff",
+    "backup:check": "node scripts/backup.mjs check",
+    "backup:restore": "node scripts/backup.mjs restore",
+    "backup:drill": "node scripts/backup.mjs drill"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",

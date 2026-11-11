@@ -13,7 +13,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "db:generate": "drizzle-kit generate"
+    "db:generate": "drizzle-kit generate",
+    "backup-drill": "node scripts/backup-drill.ts"
   },
   "dependencies": {
     "drizzle-orm": "1.0.0-rc.5",
@@ -21,6 +22,7 @@
   },
   "devDependencies": {
     "@shifa/eslint-config": "workspace:*",
+    "@shifa/testing": "workspace:*",
     "@shifa/tsconfig": "workspace:*",
     "@testcontainers/postgresql": "12.2.1",
     "@types/node": "24.19.2",
@@ -29,6 +31,7 @@
     "eslint": "10.14.0",
     "testcontainers": "12.2.1",
     "typescript": "6.0.3",
-    "vitest": "5.1.0"
+    "vitest": "5.1.0",
+    "zod": "4.6.7"
   }
 }

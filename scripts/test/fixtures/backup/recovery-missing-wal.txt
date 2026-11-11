@@ -1,0 +1,9 @@
+2026-11-11 14:17:03.497 P00   INFO: archive-get command end: completed successfully (40ms)
+2026-11-11 14:17:03.523 P00   INFO: archive-get command begin 2.60.0: [000000010000000000000006, pg_wal/RECOVERYXLOG] --exec-id=40-7f10cc71 --repo1-cipher-pass=<redacted> --stanza=shifa
+2026-11-11 14:17:03.543 P00   INFO: unable to find 000000010000000000000006 in the archive
+2026-11-11 14:17:03.543 P00   INFO: archive-get command end: completed successfully (25ms)
+2026-11-11 14:17:03.557 P00   INFO: archive-get command begin 2.60.0: [000000010000000000000006, pg_wal/RECOVERYXLOG] --exec-id=42-9e122b51 --repo1-cipher-pass=<redacted> --stanza=shifa
+2026-11-11 14:17:03.579 P00   INFO: unable to find 000000010000000000000006 in the archive
+2026-11-11 14:17:03.579 P00   INFO: archive-get command end: completed successfully (26ms)
+2026-11-11 14:17:03.581 UTC [32] FATAL:  recovery ended before configured recovery target was reached
+2026-11-11 14:17:03.590 UTC [1] LOG:  startup process (PID 32) exited with exit code 1

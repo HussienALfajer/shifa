@@ -9,6 +9,8 @@ docs/research/archive/2026-11-08-r4-claude-code-method/project_*.md
 *.key
 *.p12
 secrets/
+# Local backup stack: the TLS root certificate copied by pnpm backup:up
+infra/backup/.state/
 
 # Dependencies and build output
 node_modules/
