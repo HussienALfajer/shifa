@@ -6,6 +6,7 @@ import type { Attributes, Link, SpanContext } from '@opentelemetry/api';
 import type { ExportResult } from '@opentelemetry/core';
 import { type Resource, resourceFromAttributes } from '@opentelemetry/resources';
 import type { ReadableSpan, SpanExporter, TimedEvent } from '@opentelemetry/sdk-trace';
+import { stackFrames } from './stack.ts';
 
 /**
  * Span attributes that can never hold patient data: the route template (never the URL),
@@ -72,29 +73,35 @@ export function pickAttributes(
 ): Attributes {
   const kept: Attributes = {};
   for (const [key, value] of Object.entries(attributes ?? {})) {
-    if (allowed.has(key)) kept[key] = value;
+    if (!allowed.has(key)) continue;
+    if (UUID_ATTRIBUTES.has(key) && !(typeof value === 'string' && UUID.test(value))) continue;
+    kept[key] = value;
   }
   return kept;
 }
 
-const FRAME = /^\s+at /;
+/** An error class or code (`DatabaseError`, `22P02`); anything else is reported as `Error`. */
+const ERROR_TYPE = /^[A-Za-z0-9_.$-]{1,64}$/;
 
-/**
- * Only the frames of a stack (`    at fn (file:line:col)`): its first lines repeat the message,
- * which can quote a value, so they are replaced by the error type.
- */
-export function stackFrames(stack: string, type: string): string {
-  const frames = stack.split('\n').filter((line) => FRAME.test(line));
-  return [type, ...frames].join('\n');
-}
+/** Opaque ids: allowed by key only when the value is a UUID. */
+const UUID_ATTRIBUTES = new Set(['tenant.id', 'user.id']);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 function scrubEvent(event: TimedEvent): TimedEvent | undefined {
   if (event.name !== EXCEPTION_EVENT) return undefined;
   const raw = event.attributes ?? {};
-  const type = typeof raw['exception.type'] === 'string' ? raw['exception.type'] : 'Error';
+  const rawType = raw['exception.type'];
+  const type = typeof rawType === 'string' && ERROR_TYPE.test(rawType) ? rawType : 'Error';
   const attributes: Attributes = { 'exception.type': type, 'exception.message': type };
   const stack = raw['exception.stacktrace'];
-  if (typeof stack === 'string') attributes['exception.stacktrace'] = stackFrames(stack, type);
+  const message = raw['exception.message'];
+  if (typeof stack === 'string') {
+    attributes['exception.stacktrace'] = stackFrames(
+      stack,
+      type,
+      typeof message === 'string' ? message : undefined,
+    );
+  }
   return { name: EXCEPTION_EVENT, time: event.time, attributes, droppedAttributesCount: 0 };
 }
 

@@ -1,8 +1,10 @@
 // Forwards pino lines to the OpenTelemetry log pipeline (→ Collector → Loki). Each line arrives
-// already serialised: the redaction paths and serializers of platform/logging.ts have run, so
-// the OTLP record holds exactly what stdout holds, plus the trace context it names.
+// already serialised: the redaction paths and serializers of platform/logging.ts have run. The
+// OTLP record holds what stdout holds, except that an `err` keeps identifiers and stack frames
+// only (no message), plus the trace context the line names.
 import { logs, ROOT_CONTEXT, SeverityNumber, TraceFlags, trace } from '@opentelemetry/api';
 import type { LogForwarder } from '../platform/logging.ts';
+import { stackFrames } from './stack.ts';
 
 const SCOPE = 'shifa-api';
 
@@ -30,6 +32,29 @@ function attributeOf(value: unknown): AttributeValue | undefined {
   return JSON.stringify(value);
 }
 
+/** Fields of a describeError() record that hold identifiers, never values. */
+const ERROR_FIELDS = ['type', 'sqlstate', 'constraint', 'table', 'column'] as const;
+
+/**
+ * The `err` field as it may leave the API (spec edge case: the message is replaced by the
+ * error class and code before sending). stdout keeps describeError()'s message and stack for
+ * local debugging; the exported record keeps identifiers and stack frames only.
+ */
+function exportedError(value: unknown): unknown {
+  if (typeof value !== 'object' || value === null) return value === undefined ? undefined : '?';
+  const err = value as Record<string, unknown>;
+  const kept: Record<string, string> = {};
+  for (const field of ERROR_FIELDS) {
+    if (typeof err[field] === 'string') kept[field] = err[field];
+  }
+  const type = kept['type'] ?? 'Error';
+  if (typeof err['stack'] === 'string') {
+    const message = typeof err['message'] === 'string' ? err['message'] : undefined;
+    kept['stack'] = stackFrames(err['stack'], type, message);
+  }
+  return kept;
+}
+
 export function otlpLogForwarder(): LogForwarder {
   const logger = logs.getLogger(SCOPE);
   return {
@@ -44,7 +69,7 @@ export function otlpLogForwarder(): LogForwarder {
       const [severityNumber, severityText] = SEVERITY[Number(level)] ?? DEFAULT_SEVERITY;
       const attributes: Record<string, AttributeValue> = {};
       for (const [key, value] of Object.entries(fields)) {
-        const attribute = attributeOf(value);
+        const attribute = attributeOf(key === 'err' ? exportedError(value) : value);
         if (attribute !== undefined) attributes[key] = attribute;
       }
       const correlated =

@@ -162,6 +162,8 @@ export function startTelemetry(options: TelemetryOptions): Telemetry {
 
   const tracerProvider = new TracerProvider({
     resource,
+    // A client controls user_agent.original: no free text of more than 256 characters per value.
+    spanLimits: { attributeValueLengthLimit: 256 },
     sampler: new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(options.samplerRatio) }),
     spanProcessors: [
       new BatchSpanProcessor({

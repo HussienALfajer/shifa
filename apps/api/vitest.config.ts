@@ -20,6 +20,7 @@ const unit = [
   'test/telemetry/scrub.test.ts',
   'test/telemetry/telemetry-config.test.ts',
   'test/telemetry/scrub-review.test.ts',
+  'test/telemetry/scrub-security.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
