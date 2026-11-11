@@ -32,7 +32,12 @@ async function main(): Promise<void> {
     level: config.logLevel,
     ...(config.telemetry.endpoint === undefined ? {} : { forward: otlpLogForwarder() }),
   });
+  // Once only: stop taking connections, report, wait briefly for the event, exit.
+  const state: { crashing: boolean; server?: { close(): unknown } } = { crashing: false };
   const crash = (what: string) => (reason: unknown) => {
+    if (state.crashing) return;
+    state.crashing = true;
+    state.server?.close();
     logger.fatal({ err: describeError(reason) }, what);
     reportError(reason, errorClass(reason));
     void flushErrors(CRASH_FLUSH_MS).finally(() => process.exit(1));
@@ -55,6 +60,8 @@ async function main(): Promise<void> {
   }
 
   const app = await createApp({ db, logger, testRoutes: config.testRoutes });
+  state.server = app.getHttpServer();
+  if (config.testRoutes) logger.warn('NODE_ENV=test: test-only routes are registered');
   app.enableShutdownHooks([...SIGNALS], { useProcessExit: true });
   for (const signal of SIGNALS) {
     process.once(signal, () => {

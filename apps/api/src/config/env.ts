@@ -56,6 +56,9 @@ const KNOWN_KEYS = new Set([
  */
 const NODE_ENV = 'NODE_ENV';
 
+/** DEPLOYMENT_ENVIRONMENT values of real deployments. */
+const DEPLOYED: ReadonlySet<string> = new Set(['staging', 'production', 'prod']);
+
 const httpUrl = (value: string, check: (url: URL) => boolean = () => true) => {
   try {
     const url = new URL(value);
@@ -128,10 +131,22 @@ const schema = z.object({
     .string()
     .regex(/^[a-z0-9-]{1,32}$/)
     .default('development'),
-  // `http(s)://<public key>@host[:port]/<project id>`, as the Sentry SDK parses it.
+  // `http(s)://<public key>@host[:port]/<project id>`, no password: exactly what the Sentry SDK
+  // accepts (it prints a DSN it rejects to stderr, key included, and then sends nothing).
   SENTRY_DSN: z
     .string()
-    .refine((value) => httpUrl(value, (url) => url.username !== '' && /^\/\d+$/.test(url.pathname)))
+    .refine((value) =>
+      httpUrl(
+        value,
+        (url) =>
+          /^\w+$/.test(url.username) &&
+          url.password === '' &&
+          /^(?:[\w.-]+|\[[0-9a-fA-F:.]+\])$/.test(url.hostname) &&
+          /^\/\d+$/.test(url.pathname) &&
+          url.search === '' &&
+          url.hash === '',
+      ),
+    )
     .optional(),
   SENTRY_RELEASE: z
     .string()
@@ -153,6 +168,13 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     const keys = [...new Set(parsed.error.issues.map((issue) => String(issue.path[0])))].sort();
     throw new ConfigError(`missing or invalid configuration: ${keys.join(', ')}`);
   }
+  const testRoutes = env[NODE_ENV] === 'test';
+  // The test-only routes (a public failing route) must never reach a deployed environment.
+  if (testRoutes && DEPLOYED.has(parsed.data.DEPLOYMENT_ENVIRONMENT)) {
+    throw new ConfigError(
+      'NODE_ENV=test is refused with DEPLOYMENT_ENVIRONMENT staging/production',
+    );
+  }
   return {
     port: parsed.data.API_PORT,
     host: parsed.data.API_HOST,
@@ -164,6 +186,6 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
       environment: parsed.data.DEPLOYMENT_ENVIRONMENT,
     },
     errors: { dsn: parsed.data.SENTRY_DSN, release: parsed.data.SENTRY_RELEASE },
-    testRoutes: env[NODE_ENV] === 'test',
+    testRoutes,
   };
 }

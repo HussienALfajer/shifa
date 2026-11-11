@@ -20,6 +20,7 @@ import {
   withScope,
 } from '@sentry/core';
 import { nodeStackLineParser, ServerRuntimeClient } from '@sentry/core/server';
+import { leadingStackFrames } from './stack.ts';
 
 export interface ErrorReportingOptions {
   dsn: string;
@@ -27,6 +28,8 @@ export interface ErrorReportingOptions {
   environment: string;
   /** Tests replace the network with a stub; production sends with fetch. */
   transport?: (options: BaseTransportOptions) => Transport;
+  /** Called at most once per SEND_WARNING_INTERVAL_MS when sending fails (fetch transport). */
+  onSendFailure?: () => void;
 }
 
 /** What is known about a failure when it is reported; the only description that is sent. */
@@ -61,16 +64,45 @@ interface Description {
   code?: string;
 }
 
-/** Sends envelopes with fetch (undici: not seen by the http instrumentation, so no spans). */
-export function fetchTransport(options: BaseTransportOptions): Transport {
+/** Send failures are reported at most this often, never per event (spec edge case). */
+export const SEND_WARNING_INTERVAL_MS = 60_000;
+
+/** At most one call per interval; the rest are dropped. */
+function throttled(fn: () => void, intervalMs: number): () => void {
+  let last = Number.NEGATIVE_INFINITY;
+  return () => {
+    const at = Date.now();
+    if (at - last < intervalMs) return;
+    last = at;
+    fn();
+  };
+}
+
+/**
+ * Sends envelopes with fetch (undici: not seen by the http instrumentation, so no spans). The
+ * SDK's buffer holds at most 64 envelopes; when GlitchTip is down, events beyond are dropped and
+ * `onFailure` (a fixed-text warning, throttled) is the only trace of it.
+ */
+export function fetchTransport(
+  options: BaseTransportOptions,
+  onFailure: () => void = () => undefined,
+): Transport {
+  const warn = throttled(onFailure, SEND_WARNING_INTERVAL_MS);
   return createTransport(options, async (request) => {
-    const res = await fetch(options.url, {
-      method: 'POST',
-      body: request.body,
-      ...(options.headers ? { headers: options.headers } : {}),
-      signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
-    });
+    let res: Response;
+    try {
+      res = await fetch(options.url, {
+        method: 'POST',
+        body: request.body,
+        ...(options.headers ? { headers: options.headers } : {}),
+        signal: AbortSignal.timeout(SEND_TIMEOUT_MS),
+      });
+    } catch (err) {
+      warn();
+      throw err;
+    }
     await res.body?.cancel();
+    if (res.status >= 400) warn();
     return {
       statusCode: res.status,
       headers: {
@@ -94,16 +126,25 @@ const text = (value: unknown) =>
   typeof value === 'string' && value !== '' ? value.slice(0, MAX_FRAME_TEXT) : undefined;
 const integer = (value: unknown) => (Number.isInteger(value) ? (value as number) : undefined);
 
-/** File, function, line and column; never source text (`context_line`) or `vars`. */
-function frameOf(frame: StackFrame): StackFrame {
+/** A real module location: an absolute path, a file URL or a Node built-in. */
+const MODULE_FILE = /^(?:\/|[A-Za-z]:[\\/]|file:\/\/|node:)/;
+
+/**
+ * File, function, line and column; never source text (`context_line`) or `vars`. A frame
+ * without an absolute file and a line number is not one V8 wrote: dropped.
+ */
+function frameOf(frame: StackFrame): StackFrame | undefined {
   const kept: StackFrame = {};
   const filename = text(frame.filename);
   const fn = text(frame.function);
   const lineno = integer(frame.lineno);
   const colno = integer(frame.colno);
-  if (filename !== undefined) kept.filename = filename;
+  if (filename === undefined || !MODULE_FILE.test(filename) || lineno === undefined) {
+    return undefined;
+  }
+  kept.filename = filename;
   if (fn !== undefined) kept.function = fn;
-  if (lineno !== undefined) kept.lineno = lineno;
+  kept.lineno = lineno;
   if (colno !== undefined) kept.colno = colno;
   return kept;
 }
@@ -117,7 +158,9 @@ export function scrubErrorEvent(event: ErrorEvent, hint: EventHint): ErrorEvent 
   const source = event.exception?.values?.at(-1);
   if (source === undefined) return null;
   const { type, code } = descriptionOf(hint);
-  const frames = (source.stacktrace?.frames ?? []).map(frameOf);
+  const frames = (source.stacktrace?.frames ?? [])
+    .map(frameOf)
+    .filter((frame): frame is StackFrame => frame !== undefined);
 
   const tags: Record<string, string> = {};
   for (const key of TAGS) {
@@ -127,10 +170,11 @@ export function scrubErrorEvent(event: ErrorEvent, hint: EventHint): ErrorEvent 
   if (event.release !== undefined) tags['release'] = event.release;
   if (event.environment !== undefined) tags['environment'] = event.environment;
 
+  // Only the OpenTelemetry ids reportError() copied from an active span (hex only); with no span
+  // (a crash) Sentry's own random trace id would point at no trace in Tempo, so none is sent.
   const context = event.contexts?.trace;
-  const traceId = tags['trace_id'] ?? context?.trace_id;
+  const traceId = tags['trace_id'];
   const spanId = context?.span_id;
-  // Opaque hex ids only; the trace id is the OpenTelemetry one when a span was active.
   const traced =
     typeof traceId === 'string' &&
     HEX_TRACE.test(traceId) &&
@@ -166,7 +210,9 @@ export function startErrorReporting(options: ErrorReportingOptions): void {
     dsn: options.dsn,
     release: options.release,
     environment: options.environment,
-    transport: options.transport ?? fetchTransport,
+    transport:
+      options.transport ??
+      ((transportOptions) => fetchTransport(transportOptions, options.onSendFailure)),
     stackParser: createStackParser(nodeStackLineParser()),
     // No integrations at all: no request data, local variables, console, http breadcrumbs or
     // global handlers (main.ts reports uncaught errors itself).
@@ -202,9 +248,10 @@ export function reportError(exception: unknown, context: ErrorContext): void {
       ...(traced ? { trace_id: traced.traceId } : {}),
     });
     if (traced) {
+      // propagationSpanId becomes contexts.trace.span_id: the OpenTelemetry span, not a random id.
       scope.setPropagationContext({
         traceId: traced.traceId,
-        parentSpanId: traced.spanId,
+        propagationSpanId: traced.spanId,
         sampleRand: Math.random(),
       });
     }
@@ -212,8 +259,26 @@ export function reportError(exception: unknown, context: ErrorContext): void {
       context.code === undefined
         ? { type: context.type }
         : { type: context.type, code: context.code };
-    scope.captureException(exception, { data: { [DESCRIPTION]: description } });
+    scope.captureException(standIn(exception, context.type), {
+      data: { [DESCRIPTION]: description },
+    });
   });
+}
+
+/**
+ * What the SDK is given instead of the error: an Error named by its class whose stack holds the
+ * frames only. Sentry's stack parser reads every line of `stack` after the first, so a
+ * multi-line message (Drizzle's `params: …` line) with ` at ` in it would become a "frame"; the
+ * message, `cause` and own properties never reach the SDK.
+ */
+function standIn(exception: unknown, type: string): Error {
+  const safe = new Error(type);
+  safe.name = type;
+  safe.stack =
+    exception instanceof Error && typeof exception.stack === 'string'
+      ? leadingStackFrames(exception.stack, type, exception.message)
+      : type;
+  return safe;
 }
 
 /** Waits up to `timeoutMs` for queued events; resolves false when off or timed out. */

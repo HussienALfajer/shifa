@@ -81,10 +81,18 @@ export function bootstrapErrorReporting(
   }
   const { dsn, release } = config.errors;
   if (dsn === undefined) return false;
+  const logger = createLogger({ level: config.logLevel });
   startErrorReporting({
     dsn,
     release: release ?? serviceVersion,
     environment: config.telemetry.environment,
+    // A fixed text: fetch errors quote the address, and the DSN holds the key.
+    onSendFailure: () => {
+      logger.warn(
+        { component: 'error-reporting' },
+        'error event delivery failed; further failures are not logged for 60 s',
+      );
+    },
   });
   return true;
 }

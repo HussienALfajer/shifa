@@ -131,6 +131,13 @@ describe('route permission matrix', () => {
     }
   });
 
+  it('500 is expected only on test-only routes', () => {
+    for (const [route, row] of Object.entries(EXPECTED_MATRIX)) {
+      if (TEST_ONLY_ROUTES.has(route)) continue;
+      expect(Object.values(row), route).not.toContain(500);
+    }
+  });
+
   it('red: a route without a row fails', () => {
     const rest: Matrix = Object.fromEntries(
       Object.entries(EXPECTED_MATRIX).filter(([route]) => route !== 'GET /__probe/read'),
