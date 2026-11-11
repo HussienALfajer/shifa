@@ -13,4 +13,5 @@ paths:
 - Roles live in `packages/db/sql/roles.sql` (cluster-level, idempotent), not in migrations.
 - Unique and foreign-key checks ignore RLS: include `tenant_id` in them so they cannot reveal other tenants' rows.
 - No real patient data in seeds, fixtures or migrations (`docs/compliance/data-handling.md`).
+- PgBouncer runs in transaction mode: no session state on the app pool. Forbidden: `SET` and `set_config(..., false)` (use `set_config(..., true)` inside `withTenant()`), session advisory locks (use `pg_advisory_xact_lock`), `LISTEN`, temp tables (no TEMP privilege, even `ON COMMIT DROP`), `WITH HOLD` cursors, SQL `PREPARE` (Drizzle `.prepare()` is fine). Proofs: `packages/db/test/pooling/`.
 - Every table in `public` is listed in `packages/db/src/schema/classification.ts` (tenant, global or system); every tenant table has an isolation case in `packages/db/test/isolation/cases/`. Use `/rls-policy`; the RLS presence test and isolation suite enforce both.

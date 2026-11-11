@@ -91,9 +91,19 @@ export async function startHarnessContainer(): Promise<HarnessContainer> {
     await withPool(urlFor(info, 'superuser', 'postgres'), (pool) =>
       cloneTemplate(pool, POOLING_DATABASE),
     );
-    const pooler = await startPooler(network, info);
-    stops.push(() => pooler.stop());
-    info.pooler = pooler.address;
+    // The shared pooler, and a variant with `server_reset_query_always = 1` that only the
+    // session-leftover tests use (0.3-S2b). Both are started before either address is published.
+    const [pooler, resetPooler] = await Promise.allSettled([
+      startPooler(network, info),
+      startPooler(network, info, { resetAlways: true }),
+    ]);
+    for (const started of [pooler, resetPooler]) {
+      if (started.status === 'fulfilled') stops.push(() => started.value.stop());
+    }
+    if (pooler.status === 'rejected') throw pooler.reason;
+    if (resetPooler.status === 'rejected') throw resetPooler.reason;
+    info.pooler = pooler.value.address;
+    info.resetPooler = resetPooler.value.address;
     return {
       info,
       url: (role, database = TEMPLATE_DATABASE, options) => urlFor(info, role, database, options),

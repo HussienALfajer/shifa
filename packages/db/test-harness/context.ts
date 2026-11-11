@@ -16,8 +16,11 @@ export interface HarnessInfo extends HarnessAddress {
 /** PgBouncer `stats_users` login; exists only in the generated userlist. */
 export const POOLER_STATS_USER = 'shifa_pooler_stats';
 
-/** How a URL reaches PostgreSQL: straight to the container, or through PgBouncer. */
-export type Via = 'direct' | 'pooler';
+/**
+ * How a URL reaches PostgreSQL: straight to the container, through the shared PgBouncer, or
+ * through the `server_reset_query_always = 1` PgBouncer (0.3-S2b).
+ */
+export type Via = 'direct' | 'pooler' | 'reset-pooler';
 
 declare module 'vitest' {
   export interface ProvidedContext {
@@ -57,17 +60,25 @@ export function urlFor(
     owner: info.ownerPassword,
     app: info.appPassword,
   }[role];
-  return guardedUrl(info, via === 'pooler' ? pooler(info) : info, USERS[role], password, database);
+  const address = via === 'direct' ? info : pooler(info, via);
+  return guardedUrl(info, address, USERS[role], password, database);
 }
 
-/** Guarded URL of PgBouncer's console as the read-only stats user. */
-export function poolerStatsUrl(info: HarnessInfo): string {
-  return guardedUrl(info, pooler(info), POOLER_STATS_USER, info.poolerStatsPassword, 'pgbouncer');
+/** Guarded URL of a PgBouncer console as the read-only stats user. */
+export function poolerStatsUrl(info: HarnessInfo, via: Exclude<Via, 'direct'> = 'pooler'): string {
+  return guardedUrl(
+    info,
+    pooler(info, via),
+    POOLER_STATS_USER,
+    info.poolerStatsPassword,
+    'pgbouncer',
+  );
 }
 
-function pooler(info: HarnessInfo): ContainerAddress {
-  if (!info.pooler) throw new Error('PgBouncer has not been started by this harness');
-  return info.pooler;
+function pooler(info: HarnessInfo, via: Exclude<Via, 'direct'>): ContainerAddress {
+  const address = via === 'pooler' ? info.pooler : info.resetPooler;
+  if (!address) throw new Error(`PgBouncer (${via}) has not been started by this harness`);
+  return address;
 }
 
 /** Runs `fn` with a short-lived single connection. */

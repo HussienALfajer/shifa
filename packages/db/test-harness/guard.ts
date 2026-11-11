@@ -13,9 +13,13 @@ export interface ContainerAddress {
   port: number;
 }
 
-/** The PostgreSQL container and, when started, the PgBouncer container in front of it. */
+/**
+ * The PostgreSQL container and, when started, the PgBouncer containers in front of it: the
+ * shared one and the `server_reset_query_always = 1` variant (0.3-S2b).
+ */
 export interface HarnessAddress extends ContainerAddress {
   pooler?: ContainerAddress;
+  resetPooler?: ContainerAddress;
 }
 
 /** Databases the harness creates: per-worker clones, the template, and the maintenance DB. */
@@ -47,14 +51,14 @@ export function assertTestTarget(url: string, container: HarnessAddress): void {
     throw new UnsafeDatabaseError('refusing a database URL with query parameters');
   }
   const port = parsed.port === '' ? 5432 : Number(parsed.port);
-  const viaPooler =
-    container.pooler !== undefined && sameAddress(container.pooler, parsed.hostname, port);
+  const poolers = [container.pooler, container.resetPooler].filter(
+    (a): a is ContainerAddress => a !== undefined,
+  );
+  const viaPooler = poolers.some((a) => sameAddress(a, parsed.hostname, port));
   if (!viaPooler && !sameAddress(container, parsed.hostname, port)) {
-    const pooler = container.pooler
-      ? ` or ${container.pooler.host}:${String(container.pooler.port)}`
-      : '';
+    const others = poolers.map((a) => ` or ${a.host}:${String(a.port)}`).join('');
     throw new UnsafeDatabaseError(
-      `refusing ${parsed.hostname}:${String(port)}: not the test container (${container.host}:${String(container.port)}${pooler})`,
+      `refusing ${parsed.hostname}:${String(port)}: not the test container (${container.host}:${String(container.port)}${others})`,
     );
   }
   const database = decodeURIComponent(parsed.pathname.slice(1));

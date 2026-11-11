@@ -22,8 +22,23 @@ const CONFIG_DIR = '/etc/pgbouncer';
 const INI = `${CONFIG_DIR}/pgbouncer.ini`;
 const USERLIST = `${CONFIG_DIR}/userlist.txt`;
 
-/** pgbouncer.ini for the harness. `server_reset_query` stays at its default, unused in transaction mode. */
-export function pgbouncerIni(): string {
+const RESET_ALWAYS = `server_reset_query = DISCARD ALL
+server_reset_query_always = 1
+`;
+
+export interface PoolerOptions {
+  /**
+   * `server_reset_query_always = 1`: run `DISCARD ALL` after every transaction even in
+   * transaction mode (0.3-S2b measures whether production needs it). Off by default.
+   */
+  resetAlways?: boolean;
+}
+
+/**
+ * pgbouncer.ini for the harness. Without `resetAlways`, `server_reset_query` stays at its default
+ * (`DISCARD ALL`), unused in transaction mode.
+ */
+export function pgbouncerIni({ resetAlways = false }: PoolerOptions = {}): string {
   const server = `host=${POSTGRES_ALIAS} port=5432`;
   return `[databases]
 ${POOLING_DATABASE} = ${server} dbname=${POOLING_DATABASE} pool_size=1
@@ -42,7 +57,7 @@ default_pool_size = 2
 min_pool_size = 0
 reserve_pool_size = 0
 max_prepared_statements = 200
-`;
+${resetAlways ? RESET_ALWAYS : ''}`;
 }
 
 /** `"user" "secret"` lines; every value is checked so none can break out of its quotes. */
@@ -64,10 +79,14 @@ export interface StartedPooler {
   stop(): Promise<void>;
 }
 
-/** Starts PgBouncer on `network` once roles exist; the caller stores the address in `info.pooler`. */
+/**
+ * Starts PgBouncer on `network` once roles exist; the caller stores the address in `info.pooler`
+ * (or `info.resetPooler` for the `resetAlways` variant).
+ */
 export async function startPooler(
   network: StartedNetwork,
   info: HarnessInfo,
+  options: PoolerOptions = {},
 ): Promise<StartedPooler> {
   // The random per-run passwords, not PostgreSQL's SCRAM secrets: applyRolesSql() re-sets the
   // passwords, which re-salts the stored secret, and a copied secret would then stop matching.
@@ -84,7 +103,7 @@ export async function startPooler(
     .withEntrypoint(['pgbouncer'])
     .withCommand([INI])
     .withCopyContentToContainer([
-      { content: pgbouncerIni(), target: INI, mode: 0o644 },
+      { content: pgbouncerIni(options), target: INI, mode: 0o644 },
       // Readable by the image's unprivileged user; the container is throw-away and private.
       { content: userlist, target: USERLIST, mode: 0o644 },
     ])

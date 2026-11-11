@@ -1,0 +1,97 @@
+// Spec 0.3-S2 criterion 7: a Drizzle named prepared statement, executed alternately for tenants
+// A and B on PgBouncer's 2-connection pool, returns only the current tenant's rows every time,
+// also after PostgreSQL may switch to a generic plan (more than 5 executions per server
+// connection) and with `plan_cache_mode = force_generic_plan`. This exercises PgBouncer's
+// `max_prepared_statements` tracking.
+import { eq, sql } from 'drizzle-orm';
+import { beforeAll, describe, expect, it } from 'vitest';
+import type { ShifaDb } from '../../src/index.ts';
+import { pooledTestDb, workerDatabaseName } from '../../test-harness/index.ts';
+import {
+  ensureProbe,
+  poolProbe,
+  recordFinding,
+  seedProbe,
+  serverPid,
+  TENANT_A,
+  TENANT_B,
+  USER_A,
+} from './probe.ts';
+
+const ROUNDS = 12;
+let db: ShifaDb | undefined;
+
+const app = (): ShifaDb => {
+  if (!db) throw new Error('beforeAll did not open the pooled handle');
+  return db;
+};
+
+beforeAll(async () => {
+  await ensureProbe(workerDatabaseName());
+  db = pooledTestDb({ max: 4 });
+  // Both tenants own a row labelled `shared`: a plan that ignored RLS would return two.
+  await seedProbe(app(), TENANT_A, ['shared', 'a-only']);
+  await seedProbe(app(), TENANT_B, ['shared', 'b-only']);
+});
+
+interface Execution {
+  pid: number;
+  tenants: string[];
+  genericPlans: number;
+}
+
+async function runPrepared(name: string, tenantId: string, forceGeneric: boolean) {
+  return app().withTenant({ tenantId, userId: USER_A }, async (tx): Promise<Execution> => {
+    if (forceGeneric) {
+      await tx.execute(sql`select set_config('plan_cache_mode', 'force_generic_plan', true)`);
+    }
+    const query = tx
+      .select({ tenantId: poolProbe.tenantId })
+      .from(poolProbe)
+      .where(eq(poolProbe.label, sql.placeholder('label')))
+      .prepare(name);
+    const rows = await query.execute({ label: 'shared' });
+    // Held briefly so that the A and B transactions of a round overlap on both server connections.
+    await tx.execute(sql`select pg_sleep(0.02)`);
+    const plans = await tx.execute<{ generic: number }>(
+      sql`select coalesce(sum(generic_plans), 0)::int as generic from pg_prepared_statements`,
+    );
+    return {
+      pid: await serverPid(tx),
+      tenants: rows.map((row) => row.tenantId),
+      genericPlans: Number(plans.rows[0]?.generic),
+    };
+  });
+}
+
+describe('named prepared statements through PgBouncer', () => {
+  it.each([
+    ['the default plan cache', 'pool_probe_by_label', false],
+    ['plan_cache_mode = force_generic_plan', 'pool_probe_by_label_generic', true],
+  ] as const)('%s: every execution sees only its own tenant', async (_mode, name, force) => {
+    const perPid = new Map<number, number>();
+    let wrong = 0;
+    let genericPlans = 0;
+    for (let round = 0; round < ROUNDS; round += 1) {
+      const pair = await Promise.all([
+        runPrepared(name, TENANT_A, force),
+        runPrepared(name, TENANT_B, force),
+      ]);
+      for (const [index, run] of pair.entries()) {
+        const expected = index === 0 ? TENANT_A : TENANT_B;
+        if (run.tenants.length !== 1 || run.tenants[0] !== expected) wrong += 1;
+        perPid.set(run.pid, (perPid.get(run.pid) ?? 0) + 1);
+        genericPlans = Math.max(genericPlans, run.genericPlans);
+      }
+    }
+    recordFinding(`prepared-statements-${force ? 'generic' : 'default'}`, {
+      executionsPerServerPid: Object.fromEntries(perPid),
+      wrong,
+      maxGenericPlansSeen: genericPlans,
+    });
+    expect(wrong, 'executions that returned another tenant or no row').toBe(0);
+    expect(perPid.size, 'both server connections were used').toBe(2);
+    for (const count of perPid.values()) expect(count).toBeGreaterThan(5);
+    if (force) expect(genericPlans, 'no generic plan was used').toBeGreaterThan(0);
+  });
+});
