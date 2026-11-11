@@ -104,6 +104,8 @@ A doctor's custom request is handled as a generic module behind an entitlement. 
 - PLT-48 MFA (TOTP or passkey) is mandatory for platform staff and clinic owners, and optional for other staff. Idle sessions log out automatically.
 - PLT-49 The clinic owner can export all of the clinic's data (patients, visits, invoices, attachments index) in a documented format.
 - PLT-50 No real patient data exists in any development or test environment. Only synthetic multi-tenant data is used (ADR-0023).
+- PLT-51 PostgreSQL is backed up with point-in-time recovery, encrypted, with data loss of at most 5 minutes and a restore within 4 hours; a restore drill proves it every week on synthetic data and every quarter in production (ADR-0029).
+- PLT-52 Logs, traces, metrics and error reports never contain personal or clinical data: attributes pass an allowlist in the application and a second filter before storage; a test with synthetic patient data proves it (ADR-0029).
 
 ## Key entities
 

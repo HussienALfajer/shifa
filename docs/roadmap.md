@@ -27,7 +27,7 @@ Nothing in Phase A starts before every item is done.
 
 - [x] Git repository: public on GitHub at `HussienALfajer/shifa`, created 2026-11-08 ([ADR-0026](adr/0026-public-repository.md)).
 - [x] Protected `main` (PR required, linear history, no force push, admins included), squash-only merges, auto-delete of merged branches, GitHub secret scanning and push protection — 2026-11-08. Branch naming: `<type>/<phase>-<nn>-<name>`.
-- [ ] Development environment in WSL2 (sandbox support, Linux parity, line endings). Line endings done (`.gitattributes`, `.editorconfig`, Biome `lf`); the owner installs Ubuntu and the repository moves into WSL in slice 0.2-09.
+- [ ] Development environment in WSL2 (sandbox support, Linux parity, line endings). Line endings done (`.gitattributes`, `.editorconfig`, Biome `lf`); the owner installs Ubuntu and the repository moves into WSL in slice 0.2-09a.
 - [x] Monorepo skeleton (pnpm + Turborepo + Flutter via FVM) per [architecture overview](architecture/overview.md). pnpm + Turborepo done in 0.2-01; Flutter 3.47.9 via FVM and the pub workspace in 0.2-04.
 - [x] Strict TypeScript, type-aware ESLint (incl. no-floating-promises), Biome for formatting (chosen 2026-11-08), `very_good_analysis` for Dart, file-length limits. TypeScript side done in 0.2-01 (TypeScript 6.0 until typescript-eslint supports 7); Dart (`very_good_analysis`, 400-line Dart limit) in 0.2-04.
 - [x] `verify` command in two modes: fast (affected packages, cached) and full (PR/CI); short summary output, full logs on disk — 0.2-01 (extended per toolchain as slices land).
@@ -58,7 +58,9 @@ Nothing in Phase A starts before every item is done.
 | 0.2-07d | `packages/i18n` shared translation source, ARB generation, ICU/plural/error-code checks ([slice](slices/0.2-07d-i18n-source-and-checks.md)); after 0.2-07b and 0.2-07c | T1 | Done (#22) |
 | 0.2-08a | Synthetic data primitives: seeded random, ids, Syrian names, synthetic phones, money ([slice](slices/0.2-08a-synthetic-primitives.md), [spec](specs/foundation/0.2-08-synthetic-data-generator.md)) | T1 | Done (#25) |
 | 0.2-08b | Synthetic dataset: tenancy model, `minimal`/`demo`/`load` presets, integrity checks ([slice](slices/0.2-08b-synthetic-dataset-and-presets.md)); after 0.2-08a | T1 | In review |
-| 0.2-09 | WSL2 move (owner installs Ubuntu), observability skeleton, pgBackRest scripts and restore drill | T0 | Planned |
+| 0.2-09a | WSL2 move: Ubuntu 26.04 setup guide, `pnpm env:check`, sandbox proof; Windows stays as fallback ([spec](specs/foundation/0.2-09a-wsl2-move.md)) | T0 | Spec approved |
+| 0.2-09b | Observability skeleton: OpenTelemetry, GlitchTip, local Grafana stack, telemetry leak test ([spec](specs/foundation/0.2-09b-observability-skeleton.md)); after 0.2-09a | T0 | Spec approved |
+| 0.2-09c | pgBackRest on Garage, PITR scripts, weekly CI restore drill ([spec](specs/foundation/0.2-09c-backups-and-restore-drill.md)); after 0.2-09a | T0 | Spec approved |
 
 ## Phase 0.3 — spikes
 

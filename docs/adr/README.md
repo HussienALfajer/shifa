@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Status: Living index · Last updated: 2026-11-08 · Owner: product owner
+Status: Living index · Last updated: 2026-11-11 · Owner: product owner
 Sources: [ADR-0001](0001-record-architecture-decisions.md)
 
 Purpose: this folder holds every decision that shapes Shifa's architecture, product structure or way of working. Research in `docs/research/archive/` is evidence; these files are the decisions. Where the two disagree, the ADR wins.
@@ -66,3 +66,4 @@ What we will do, stated precisely.
 | [0026](0026-public-repository.md) | Public GitHub repository; private notes stay local | Accepted |
 | [0027](0027-owner-chooses-permission-mode.md) | The owner chooses the Claude Code permission mode; `bypassPermissions` allowed | Accepted (secret rules superseded by 0028) |
 | [0028](0028-allow-all-permissions-and-auto-merge.md) | Allow all Claude Code permissions, including secret files; auto-merge every PR | Accepted |
+| [0029](0029-backup-targets-and-local-operations-stack.md) | Backup targets (RPO 5 min, RTO 4 h), local-first operations stack, WSL2 primary | Accepted |
