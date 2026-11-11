@@ -1,17 +1,30 @@
 // End-to-end check of the built API (run with plain Node after `pnpm build`):
 //   1. starts the pinned PostgreSQL image through the @shifa/db harness (roles + migrations),
-//   2. runs `node dist/main.js` as shifa_app, waits for /health/ready, sends SIGTERM and expects
-//      exit 0 within 15 s (Linux/macOS; Windows cannot deliver SIGTERM, so it only stops it),
+//   2. runs `node --import dist/instrument.js dist/main.js` as shifa_app, waits for
+//      /health/ready, sends SIGTERM and expects exit 0 within 15 s (Linux/macOS; Windows cannot
+//      deliver SIGTERM, so it only stops it), once with telemetry off and once with
+//      OTEL_EXPORTER_OTLP_ENDPOINT on a port where no Collector listens (the API stays ready and
+//      logs exactly one export warning), and once against a stub Collector (server span, pg span
+//      and log lines arrive over OTLP/HTTP),
 //   3. runs it again with the owner's URL and expects a non-zero exit (createDb refuses owners),
 //   4. checks that no database password ever appeared in the app's output.
 import { type ChildProcess, spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { createServer as createHttpServer } from 'node:http';
 import { createServer } from 'node:net';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { acquireDbTestLock, startHarnessContainer } from '@shifa/db/harness';
 
 const APP_DIR = join(import.meta.dirname, '..');
 const MAIN = join(APP_DIR, 'dist', 'main.js');
+const INSTRUMENT = join(APP_DIR, 'dist', 'instrument.js');
+const INSTRUMENT_URL = pathToFileURL(INSTRUMENT).href;
+const EXPORT_WARNING = 'telemetry export failed';
+/** The exporters retry with backoff before reporting a failure: wait up to this long for it. */
+const COLLECTOR_DOWN_WAIT_MS = 30_000;
+/** After the first warning, keep sending requests this long to show no second one follows. */
+const AFTER_WARNING_MS = 3000;
 const READY_TIMEOUT_MS = 30_000;
 const EXIT_TIMEOUT_MS = 15_000;
 const GRACEFUL_SIGNALS = process.platform !== 'win32';
@@ -42,19 +55,21 @@ interface Running {
   exited: Promise<{ code: number | null; signal: NodeJS.Signals | null }>;
 }
 
-function startApi(databaseUrl: string, port: number): Running {
+function startApi(databaseUrl: string, port: number, extra: Record<string, string> = {}): Running {
   // A minimal environment: nothing from the developer's shell leaks into the app.
   const env: Record<string, string> = {
     DATABASE_URL: databaseUrl,
     API_HOST: '127.0.0.1',
     API_PORT: String(port),
     LOG_LEVEL: 'info',
+    ...extra,
   };
   for (const key of ['PATH', 'SYSTEMROOT', 'TEMP', 'TMP']) {
     const value = process.env[key];
     if (value !== undefined) env[key] = value;
   }
-  const child = spawn(process.execPath, [MAIN], { cwd: APP_DIR, env });
+  // Exactly as `pnpm start`: the telemetry bootstrap runs before main.js imports anything.
+  const child = spawn(process.execPath, ['--import', INSTRUMENT_URL, MAIN], { cwd: APP_DIR, env });
   let output = '';
   child.stdout.on('data', (chunk: Buffer) => (output += chunk.toString()));
   child.stderr.on('data', (chunk: Buffer) => (output += chunk.toString()));
@@ -101,15 +116,118 @@ async function waitReady(port: number, app: Running): Promise<void> {
   );
 }
 
-async function checkAppRole(url: string): Promise<string> {
+const countOf = (text: string, needle: string) => text.split(needle).length - 1;
+
+interface StubCollector {
+  url: string;
+  /** Everything received on an OTLP path so far (protobuf bytes; strings appear verbatim). */
+  received(path: string): Buffer;
+  close(): Promise<void>;
+}
+
+/** Accepts OTLP/HTTP like a Collector and keeps the request bodies. */
+async function startStubCollector(): Promise<StubCollector> {
+  const bodies = new Map<string, Buffer[]>();
+  const server = createHttpServer((req, res) => {
+    const chunks: Buffer[] = [];
+    req.on('data', (chunk: Buffer) => chunks.push(chunk));
+    req.on('end', () => {
+      const path = req.url ?? '';
+      bodies.set(path, [...(bodies.get(path) ?? []), Buffer.concat(chunks)]);
+      res.writeHead(200, { 'content-type': 'application/x-protobuf' }).end();
+    });
+  });
   const port = await freePort();
-  const app = startApi(url, port);
+  await new Promise<void>((resolve) => server.listen(port, '127.0.0.1', resolve));
+  return {
+    url: `http://127.0.0.1:${String(port)}`,
+    received: (path) => Buffer.concat(bodies.get(path) ?? []),
+    close: () =>
+      new Promise((resolve) => {
+        server.close(() => {
+          resolve();
+        });
+      }),
+  };
+}
+
+/** With a Collector listening, the built bundle exports server spans, pg spans and logs. */
+async function checkCollectorUp(url: string): Promise<string> {
+  const collector = await startStubCollector();
+  const port = await freePort();
+  const app = startApi(url, port, { OTEL_EXPORTER_OTLP_ENDPOINT: collector.url });
   try {
     await waitReady(port, app);
-    say('ready as shifa_app');
+    const wanted = [
+      ['/v1/traces', 'GET /health/ready'],
+      ['/v1/traces', 'pg.query'],
+      ['/v1/logs', 'request completed'],
+    ] as const;
+    const deadline = Date.now() + COLLECTOR_DOWN_WAIT_MS;
+    const missing = () => wanted.filter(([path, text]) => !collector.received(path).includes(text));
+    while (missing().length > 0 && Date.now() < deadline) {
+      await fetch(`http://127.0.0.1:${String(port)}/health/ready`);
+      await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+    if (missing().length > 0) {
+      const names = missing().map(([path, text]) => `${path} "${text}"`);
+      throw new BootCheckError(`collector up: not exported: ${names.join(', ')}`);
+    }
+    if (app.output().includes(EXPORT_WARNING)) {
+      throw new BootCheckError('collector up: export warning although the Collector answered');
+    }
+    say('collector up: server span, pg span and log lines exported');
+    app.child.kill('SIGTERM');
+    await withTimeout(app.exited, EXIT_TIMEOUT_MS, 'no exit after SIGTERM');
+    return app.output();
+  } catch (err) {
+    app.child.kill('SIGKILL');
+    process.stdout.write(app.output());
+    throw err;
+  } finally {
+    await collector.close();
+  }
+}
+
+async function checkAppRole(url: string, telemetry: 'off' | 'collector down'): Promise<string> {
+  const port = await freePort();
+  const extra: Record<string, string> =
+    telemetry === 'off'
+      ? {}
+      : { OTEL_EXPORTER_OTLP_ENDPOINT: `http://127.0.0.1:${String(await freePort())}` };
+  const app = startApi(url, port, extra);
+  try {
+    await waitReady(port, app);
+    say(`ready as shifa_app (telemetry ${telemetry})`);
     const live = await fetch(`http://127.0.0.1:${String(port)}/health/live`);
     if (live.status !== 200)
       throw new BootCheckError(`/health/live answered ${String(live.status)}`);
+    if (telemetry === 'collector down') {
+      // Requests keep being served while exports fail; failures are logged once, not per request.
+      let deadline = Date.now() + COLLECTOR_DOWN_WAIT_MS;
+      let warned = false;
+      while (Date.now() < deadline) {
+        const res = await fetch(`http://127.0.0.1:${String(port)}/health/ready`);
+        if (res.status !== 200) {
+          throw new BootCheckError(`collector down: /health/ready answered ${String(res.status)}`);
+        }
+        if (!warned && app.output().includes(EXPORT_WARNING)) {
+          warned = true;
+          deadline = Date.now() + AFTER_WARNING_MS;
+        }
+        await new Promise((resolve) => setTimeout(resolve, 200));
+      }
+      const warnings = countOf(app.output(), EXPORT_WARNING);
+      if (warnings !== 1) {
+        throw new BootCheckError(`collector down: ${String(warnings)} export warnings, expected 1`);
+      }
+      if (!app.output().includes('"trace_id"')) {
+        throw new BootCheckError('collector down: log lines carry no trace_id');
+      }
+      say(`collector down: still serving, ${String(warnings)} export warning(s)`);
+    } else if (app.output().includes('"trace_id"') || app.output().includes(EXPORT_WARNING)) {
+      throw new BootCheckError('telemetry off: output shows telemetry activity');
+    }
     app.child.kill('SIGTERM');
     const { code, signal } = await withTimeout(
       app.exited,
@@ -153,13 +271,17 @@ async function checkOwnerRefused(url: string): Promise<string> {
 }
 
 async function main(): Promise<void> {
-  if (!existsSync(MAIN)) throw new BootCheckError(`${MAIN} is missing; run the build first`);
+  for (const file of [MAIN, INSTRUMENT]) {
+    if (!existsSync(file)) throw new BootCheckError(`${file} is missing; run the build first`);
+  }
   const release = await acquireDbTestLock();
   try {
     const harness = await startHarnessContainer();
     try {
       const output = [
-        await checkAppRole(harness.url('app')),
+        await checkAppRole(harness.url('app'), 'off'),
+        await checkAppRole(harness.url('app'), 'collector down'),
+        await checkCollectorUp(harness.url('app')),
         await checkOwnerRefused(harness.url('owner')),
       ].join('\n');
       const { appPassword, ownerPassword, superuserPassword } = harness.info;

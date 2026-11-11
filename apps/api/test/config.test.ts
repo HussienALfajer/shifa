@@ -22,6 +22,7 @@ describe('loadConfig', () => {
       host: '127.0.0.1',
       databaseUrl: URL_OK,
       logLevel: 'info',
+      telemetry: { endpoint: undefined, samplerRatio: 1, environment: 'development' },
     });
   });
 

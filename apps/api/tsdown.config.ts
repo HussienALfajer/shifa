@@ -6,7 +6,8 @@
 import { defineConfig } from 'tsdown';
 
 export default defineConfig({
-  entry: ['src/main.ts'],
+  // instrument.js is loaded with `node --import` before main.js (telemetry/instrument.ts).
+  entry: { main: 'src/main.ts', instrument: 'src/telemetry/instrument.ts' },
   format: 'esm',
   platform: 'node',
   target: 'node24',

@@ -17,13 +17,37 @@ const unit = [
   'test/contract/validation.test.ts',
   'test/contract/openapi.test.ts',
   'test/contract/hardening.test.ts',
+  'test/telemetry/scrub.test.ts',
+  'test/telemetry/telemetry-config.test.ts',
 ];
+
+// Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
+// instrumentations before the database harness (or anything else) loads those modules.
+const telemetry = [
+  'test/telemetry/tracing.test.ts',
+  'test/telemetry/metrics.test.ts',
+  'test/telemetry/log-correlation.test.ts',
+  'test/telemetry/telemetry-leak.test.ts',
+];
+
+const db = dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] });
+const telemetryProject = dbTestProject({ name: 'telemetry', include: telemetry });
 
 export default defineConfig({
   test: {
     projects: [
       { test: { name: 'unit', include: unit } },
-      dbTestProject({ name: 'db', exclude: unit }),
+      db,
+      {
+        ...telemetryProject,
+        test: {
+          ...telemetryProject.test,
+          setupFiles: [
+            'test/telemetry/setup.ts',
+            ...[telemetryProject.test?.setupFiles ?? []].flat(),
+          ],
+        },
+      },
     ],
   },
 });

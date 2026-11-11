@@ -13,6 +13,7 @@ import {
   REQUEST_ID_HEADER,
   requestIdFor,
 } from './platform/logging.ts';
+import { registerTelemetryHooks } from './telemetry/http.ts';
 
 /** 1 MB: no endpoint in Release 1 takes more in JSON (uploads go to object storage). */
 export const BODY_LIMIT_BYTES = 1024 * 1024;
@@ -42,6 +43,7 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
   app.useLogger(new NestPinoLogger(logger));
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   const fastify = app.getHttpAdapter().getInstance();
+  registerTelemetryHooks(fastify);
   fastify.addHook('onSend', async (request, reply, payload) => {
     void reply.header(REQUEST_ID_HEADER, request.id);
     return payload;
