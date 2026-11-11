@@ -12,6 +12,7 @@ Map of the documentation. Each kind of information has exactly one home; link to
 | Project status and phases | [roadmap.md](roadmap.md) |
 | Questions waiting for the owner | [open-decisions.md](open-decisions.md) |
 | How we build (Claude Code workflow, tiers, definition of done) | [process/development-workflow.md](process/development-workflow.md) |
+| Set up the development machine (WSL2, `pnpm env:check`) | [process/wsl2-setup.md](process/wsl2-setup.md) |
 | System shape and technology | [architecture/overview.md](architecture/overview.md) |
 | Design system | [architecture/design-system.md](architecture/design-system.md) |
 | Logo files and usage rules | [brand/logo.md](brand/logo.md) |

@@ -11,6 +11,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 ## Commands
 - `pnpm install` — Node 24, pnpm 12 (pinned); refuses packages younger than 24 hours.
 - Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm 4.3.2` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
+- `pnpm env:check` — one line per toolchain item (`ok`/`warn`/`fail`) with the fix; run on a new machine or when tools misbehave.
 - `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
 - `pnpm format` — Biome formats; ESLint (type-aware, `tooling/eslint-config`) lints. Files over 400 lines fail lint.
@@ -33,7 +34,7 @@ When a task's work is done (a spec, a slice, a fix, a docs change), finish it in
 1. **Branch:** not `main`; name it by type (`feat/`, `fix/`, `chore/`, `docs/`, or the slice ID).
 2. **Docs:** update `docs/roadmap.md`, the slice file and every doc the change made stale.
 3. **Secrets:** `git status` and `git diff --stat` show no `.env`, key, dump or stray file.
-4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks).
+4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks). In a sandboxed WSL2 session Docker is blocked (OD-24): Docker-backed tests run in CI, so say so in the report.
 5. **Review:** for a slice, the `reviewer` agent (+ `security-reviewer` for T0) has run and its blocking findings are fixed.
 6. **Commit and PR:** Conventional Commit; `gh pr create --base main` with `## Summary` and `## Test plan`; then enable auto-merge (squash) and Auto-fix. If CI fails, fix the cause on the branch and push.
 7. **Report** in Arabic in the format below.
@@ -52,9 +53,9 @@ End every substantial task with these sections, in this order:
 - Shell writes into `apps/`, `packages/`, `tooling/`, `scripts/`, `.claude/` are refused: use Edit/Write so the formatter hook runs. The guard reads command text, so it cannot see `cd apps && echo > x` or `cp`/`node -e` writes: do not use them.
 - `--no-verify`, force pushes and pushes to `main` are refused.
 - On stop, uncommitted code changes must pass `verify` (fast), unless `.claude/state/red-phase` exists (red phase of `/build-slice`).
-- Hooks need `node` on the PATH of Git Bash.
+- Hooks need `node` on the PATH of the shell Claude uses (WSL2: `bash -lc 'command -v node'`; Windows: Git Bash).
 
 ## Gotchas
-- Windows for now (Git Bash); the sandbox only runs under WSL2 (slice 0.2-09).
+- WSL2 (Ubuntu 26.04, repo in `~/src/shifa`) is primary and sandboxed; setup in `docs/process/wsl2-setup.md`. Windows (`D:\shifa`, Git Bash) is the unsandboxed fallback.
 - TypeScript stays on 6.0 until typescript-eslint supports 7.
 - Workspace packages import `.ts` paths directly (`allowImportingTsExtensions`, no build step yet).
