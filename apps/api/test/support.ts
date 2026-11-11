@@ -13,6 +13,7 @@ import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../src/access/roles.t
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
 import { createLogger } from '../src/platform/logging.ts';
+import { otlpLogForwarder } from '../src/telemetry/logs.ts';
 
 /** Response schema of test-only routes that are not about contracts. */
 export const TestAnything = z.unknown().meta({ id: 'TestAnything' });
@@ -111,8 +112,11 @@ export async function buildTestApp({
   controllers = [],
   auth,
   grants,
+  forwardLogs = false,
 }: {
   db: ShifaDb;
+  /** Also send every log line to the OpenTelemetry log pipeline (telemetry tests). */
+  forwardLogs?: boolean;
   controllers?: Type[];
   /** Replaces the production NoAuthAdapter. */
   auth?: AuthPort;
@@ -120,7 +124,11 @@ export async function buildTestApp({
   grants?: RoleGrants;
 }): Promise<TestApp> {
   const logs = captureLogs();
-  const logger = createLogger({ level: 'info', destination: logs.stream });
+  const logger = createLogger({
+    level: 'info',
+    destination: logs.stream,
+    ...(forwardLogs ? { forward: otlpLogForwarder() } : {}),
+  });
   let builder = Test.createTestingModule({
     imports: [AppModule.register({ db })],
     controllers,

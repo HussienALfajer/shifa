@@ -11,6 +11,16 @@ export interface ApiConfig {
   /** PostgreSQL URL of the application role (shifa_app); createDb() refuses anything stronger. */
   databaseUrl: string;
   logLevel: LogLevel;
+  telemetry: TelemetryConfig;
+}
+
+export interface TelemetryConfig {
+  /** OTLP/HTTP base URL of the Collector; unset → no telemetry SDK object is created at all. */
+  endpoint: string | undefined;
+  /** Share of root traces sampled, 0–1 (incoming sampled parents are always followed). */
+  samplerRatio: number;
+  /** `deployment.environment` resource attribute. */
+  environment: string;
 }
 
 export class ConfigError extends Error {
@@ -18,7 +28,15 @@ export class ConfigError extends Error {
 }
 
 /** Keys this app reads. */
-const KNOWN_KEYS = new Set(['API_PORT', 'API_HOST', 'DATABASE_URL', 'LOG_LEVEL']);
+const KNOWN_KEYS = new Set([
+  'API_PORT',
+  'API_HOST',
+  'DATABASE_URL',
+  'LOG_LEVEL',
+  'OTEL_EXPORTER_OTLP_ENDPOINT',
+  'OTEL_TRACES_SAMPLER_ARG',
+  'DEPLOYMENT_ENVIRONMENT',
+]);
 
 /** Edit distance with adjacent transpositions (optimal string alignment). */
 function distance(a: string, b: string): number {
@@ -69,6 +87,27 @@ const schema = z.object({
     }
   }),
   LOG_LEVEL: z.enum(LOG_LEVELS).default('info'),
+  OTEL_EXPORTER_OTLP_ENDPOINT: z
+    .string()
+    .refine((value) => {
+      try {
+        const url = new URL(value);
+        return url.protocol === 'http:' || url.protocol === 'https:';
+      } catch {
+        return false;
+      }
+    })
+    .optional(),
+  // A decimal in [0, 1]. Not z.coerce: it turns an empty value into 0, i.e. no traces at all.
+  OTEL_TRACES_SAMPLER_ARG: z
+    .string()
+    .regex(/^(0(\.\d+)?|1(\.0+)?)$/)
+    .transform(Number)
+    .optional(),
+  DEPLOYMENT_ENVIRONMENT: z
+    .string()
+    .regex(/^[a-z0-9-]{1,32}$/)
+    .default('development'),
 });
 
 export function loadConfig(env: Readonly<Record<string, string | undefined>>): ApiConfig {
@@ -90,5 +129,10 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     host: parsed.data.API_HOST,
     databaseUrl: parsed.data.DATABASE_URL,
     logLevel: parsed.data.LOG_LEVEL,
+    telemetry: {
+      endpoint: parsed.data.OTEL_EXPORTER_OTLP_ENDPOINT,
+      samplerRatio: parsed.data.OTEL_TRACES_SAMPLER_ARG ?? 1,
+      environment: parsed.data.DEPLOYMENT_ENVIRONMENT,
+    },
   };
 }

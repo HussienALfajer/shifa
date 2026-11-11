@@ -5,7 +5,7 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 ## Layout
 - `src/main.ts` bootstrap only: config → logger → `createDb()` + startup check → `createApp()` → signals.
 - `src/app.ts` adapter (body limit 1 MB, request timeout 30 s, `trustProxy` off, request ids, routing errors → envelope), global filter, hooks. Tests use the same `createAdapter()` + `configureApp()`.
-- `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info). Errors name the key, never the value.
+- `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info), `OTEL_*` (`.env.example`). Errors name the key, never the value.
 - `src/platform/` database module (`SHIFA_DB` token, pool closed at shutdown), logging, errors.
 - `src/modules/<context>/` one folder per bounded context; others import only its `index.ts`. `src/platform/` and `src/access/` never import a module. Enforced by lint (`shifa/module-boundaries`, `tooling/eslint-config/rules/`) and by `test/architecture/module-imports.test.ts`, which also fails on any comment silencing the rule.
 
@@ -24,10 +24,11 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - Log through pino (`request.log` in a request, else the app logger). Request lines carry the route template (`/patients/:id`), never the URL. Never log bodies, query strings, headers or patient data; log record IDs.
 - Throw Nest `HttpException`s; the global filter answers `{ error: { code, message } }` with a fixed message per status (catalogue in `@shifa/contracts`). Anything else becomes 500 `internal_error`.
 - Log errors with `describeError(err)`: database errors keep `sqlstate`, `constraint`, `table`, `column` only.
+- Telemetry (PLT-52): attributes pass the `src/telemetry/scrub.ts` allowlists; keep the leak test green.
 
 ## Commands
 - `pnpm --filter @shifa/api test` (Docker for the `db` project), `build` (tsdown → `dist/main.js`), `boot-check` (after `build`; also in `verify:full`).
-- Run locally: `DATABASE_URL=postgres://shifa_app:…@localhost:5432/shifa node dist/main.js`.
+- Run locally: `DATABASE_URL=postgres://shifa_app:…@localhost:5432/shifa pnpm start`.
 
 ## Build
 Decorators need metadata, which Node type stripping cannot run, so tsdown bundles `src/` and the `@shifa/*` workspace packages; npm packages stay external and must be listed in this package's `dependencies` (that is why `pg` is here, though code imports it only through `@shifa/db`).

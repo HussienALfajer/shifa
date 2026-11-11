@@ -5,6 +5,7 @@ import { createApp } from './app.ts';
 import { ConfigError, loadConfig } from './config/env.ts';
 import { describeError } from './platform/errors.ts';
 import { createLogger } from './platform/logging.ts';
+import { otlpLogForwarder } from './telemetry/logs.ts';
 
 /** In-flight requests get this long after SIGTERM/SIGINT before the process gives up. */
 const DRAIN_MS = 10_000;
@@ -23,7 +24,11 @@ function readConfig() {
 
 async function main(): Promise<void> {
   const config = readConfig();
-  const logger = createLogger({ level: config.logLevel });
+  // Telemetry was started by dist/instrument.js (--import) when the endpoint is set.
+  const logger = createLogger({
+    level: config.logLevel,
+    ...(config.telemetry.endpoint === undefined ? {} : { forward: otlpLogForwarder() }),
+  });
   const crash = (what: string) => (reason: unknown) => {
     logger.fatal({ err: describeError(reason) }, what);
     process.exit(1);

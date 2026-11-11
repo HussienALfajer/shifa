@@ -3,6 +3,7 @@
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage } from 'node:http';
 import type { LoggerService } from '@nestjs/common';
+import { isSpanContextValid, trace } from '@opentelemetry/api';
 import { type DestinationStream, type Logger, pino } from 'pino';
 import type { LogLevel } from '../config/env.ts';
 import { describeError } from './errors.ts';
@@ -33,15 +34,31 @@ const REDACT_PATHS = [
 
 interface RequestLike {
   method?: string;
-  routeOptions?: { url?: string };
+  routeOptions?: { url?: string | undefined };
 }
 
 /**
  * The route template (`/patients/:id`), never the concrete URL: path parameters and query
  * strings can carry patient data. Unmatched and malformed URLs are not logged at all.
  */
-function routeOf(req: RequestLike): string {
+export function routeTemplate(req: RequestLike): string {
   return req.routeOptions?.url ?? '[unmatched]';
+}
+
+/**
+ * `trace_id` and `span_id` of the active span, so a line can be found from its trace and back.
+ * Without the telemetry SDK nothing is ever active and lines carry no ids.
+ */
+function traceIds(): Record<string, string> {
+  const span = trace.getActiveSpan();
+  if (!span) return {};
+  const ids = span.spanContext();
+  return isSpanContextValid(ids) ? { trace_id: ids.traceId, span_id: ids.spanId } : {};
+}
+
+/** A second destination that receives every line already serialised and redacted. */
+export interface LogForwarder {
+  write(line: string): void;
 }
 
 type LogArgs = [unknown, ...unknown[]];
@@ -67,24 +84,38 @@ function errorFirst(
 export function createLogger({
   level,
   destination,
+  forward,
 }: {
   level: LogLevel;
   destination?: DestinationStream;
+  /** Telemetry on: the same lines also go here (telemetry/logs.ts → OTLP). */
+  forward?: LogForwarder;
 }): Logger {
   const options = {
     level,
     base: null, // no pid or hostname in every line
     redact: { paths: REDACT_PATHS, censor: '[redacted]' },
     hooks: { logMethod: errorFirst },
+    mixin: traceIds,
     serializers: {
       // Fastify's request log: method and route only (no headers, values, body or address).
-      req: (req: RequestLike) => ({ method: req.method, route: routeOf(req) }),
+      req: (req: RequestLike) => ({ method: req.method, route: routeTemplate(req) }),
       res: (res: { statusCode?: number }) => ({ statusCode: res.statusCode }),
       // Callers pass describeError() output; a raw error logged by mistake (or by a library)
       // is sanitised here, so a pg error's `detail` never reaches the log either way.
       err: (err: unknown) => (err instanceof Error ? describeError(err) : err),
     },
   };
+  if (forward) {
+    const primary = destination ?? pino.destination(1);
+    return pino(
+      options,
+      pino.multistream([
+        { level: 'trace', stream: primary },
+        { level: 'trace', stream: forward },
+      ]),
+    );
+  }
   return destination ? pino(options, destination) : pino(options);
 }
 
