@@ -1,10 +1,12 @@
 // Red cases added after the 0.2-06b reviews (security review M2 to M4, review N1, N2, N4): each
 // is a leaky table, or a weak case, that the first version of the runner reported as isolated.
+// Each runs directly and through PgBouncer (0.3-S2a).
 import { sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { ownerDb, testDb } from '../../test-harness/index.ts';
+import { ownerDb } from '../../test-harness/index.ts';
 import { defineIsolationCase } from './define.ts';
-import { runIsolationCase, TENANT_A } from './runner.ts';
+import { DB_MODES } from './modes.ts';
+import { coverageGaps, runIsolationCase, TENANT_A } from './runner.ts';
 
 const OK = 'tenant_id = current_tenant_id()';
 
@@ -64,9 +66,15 @@ function simpleCase(table: string, paths?: Parameters<typeof defineIsolationCase
   });
 }
 
-describe('isolation runner gaps', () => {
+describe.each(DB_MODES)('isolation runner gaps (%s)', (_mode, db) => {
+  it('fails coverage for a tenant table without a case', () => {
+    expect(coverageGaps({ gap_uncovered: { kind: 'tenant' } }, [])).toEqual([
+      expect.stringMatching(/gap_uncovered.*no isolation case/),
+    ]);
+  });
+
   it('reports a policy that shows every tenant without a tenant context (M2)', async () => {
-    const text = (await runIsolationCase(testDb(), simpleCase('gap_admin_all'))).join('\n');
+    const text = (await runIsolationCase(db(), simpleCase('gap_admin_all'))).join('\n');
     expect(text).toMatch(/gap_admin_all: without a tenant context, read path "all rows" returned/);
     expect(text).toMatch(
       /gap_admin_all: insert with tenant B's tenant_id without a tenant context was accepted/,
@@ -74,7 +82,7 @@ describe('isolation runner gaps', () => {
   });
 
   it('reports an UPDATE policy that reaches tenant B (N1)', async () => {
-    const text = (await runIsolationCase(testDb(), simpleCase('gap_update_leak'))).join('\n');
+    const text = (await runIsolationCase(db(), simpleCase('gap_update_leak'))).join('\n');
     expect(text).toMatch(
       /gap_update_leak: update without WHERE inside tenant A changed tenant B's rows/,
     );
@@ -82,7 +90,7 @@ describe('isolation runner gaps', () => {
 
   it('does not accept an RLS refusal raised by another table (M4)', async () => {
     const findings = await runIsolationCase(
-      testDb(),
+      db(),
       defineIsolationCase({
         table: 'gap_child',
         seed: async (tx, tenantId) => {
@@ -103,7 +111,7 @@ describe('isolation runner gaps', () => {
 
   it('checks an unfiltered select even when every path filters by tenant (M3)', async () => {
     const findings = await runIsolationCase(
-      testDb(),
+      db(),
       simpleCase('gap_leaky', {
         'own rows': async (tx) =>
           (await tx.execute(sql`select tenant_id from gap_leaky where tenant_id = ${TENANT_A}`))
@@ -117,7 +125,7 @@ describe('isolation runner gaps', () => {
 
   it('reports a path that returns no rows of its own tenant (N2)', async () => {
     const findings = await runIsolationCase(
-      testDb(),
+      db(),
       simpleCase('gap_parent', {
         'nothing matches': async (tx) =>
           (await tx.execute(sql`select tenant_id from gap_parent where label = 'absent'`)).rows,

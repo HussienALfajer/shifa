@@ -2,13 +2,22 @@
 import { readFileSync } from 'node:fs';
 import { Pool } from 'pg';
 import { ROLES_SQL } from '../src/migrate.ts';
-import { assertTestTarget, type ContainerAddress } from './guard.ts';
+import { assertTestTarget, type ContainerAddress, type HarnessAddress } from './guard.ts';
 
-export interface HarnessInfo extends ContainerAddress {
+/** `pooler` (PgBouncer in front of PostgreSQL, 0.3-S2a) is set once PgBouncer has started. */
+export interface HarnessInfo extends HarnessAddress {
   superuserPassword: string;
   ownerPassword: string;
   appPassword: string;
+  /** PgBouncer-only login for its admin console (SHOW CONFIG etc.); not a PostgreSQL role. */
+  poolerAdminPassword: string;
 }
+
+/** PgBouncer user allowed on the admin console; exists only in the generated userlist. */
+export const POOLER_ADMIN_USER = 'shifa_pooler_admin';
+
+/** How a URL reaches PostgreSQL: straight to the container, or through PgBouncer. */
+export type Via = 'direct' | 'pooler';
 
 declare module 'vitest' {
   export interface ProvidedContext {
@@ -24,16 +33,41 @@ const USERS: Record<HarnessRole, string> = {
   app: 'shifa_app',
 };
 
-/** Builds a guarded URL; throws UnsafeDatabaseError for anything outside the container. */
-export function urlFor(info: HarnessInfo, role: HarnessRole, database: string): string {
+function guardedUrl(
+  info: HarnessInfo,
+  address: ContainerAddress,
+  user: string,
+  password: string,
+  database: string,
+): string {
+  const url = `postgres://${user}:${encodeURIComponent(password)}@${address.host}:${String(address.port)}/${encodeURIComponent(database)}`;
+  assertTestTarget(url, info);
+  return url;
+}
+
+/** Builds a guarded URL; throws UnsafeDatabaseError for anything outside the containers. */
+export function urlFor(
+  info: HarnessInfo,
+  role: HarnessRole,
+  database: string,
+  { via = 'direct' }: { via?: Via } = {},
+): string {
   const password = {
     superuser: info.superuserPassword,
     owner: info.ownerPassword,
     app: info.appPassword,
   }[role];
-  const url = `postgres://${USERS[role]}:${encodeURIComponent(password)}@${info.host}:${String(info.port)}/${encodeURIComponent(database)}`;
-  assertTestTarget(url, info);
-  return url;
+  return guardedUrl(info, via === 'pooler' ? pooler(info) : info, USERS[role], password, database);
+}
+
+/** Guarded URL of PgBouncer's admin console (simple-protocol SHOW commands only). */
+export function poolerAdminUrl(info: HarnessInfo): string {
+  return guardedUrl(info, pooler(info), POOLER_ADMIN_USER, info.poolerAdminPassword, 'pgbouncer');
+}
+
+function pooler(info: HarnessInfo): ContainerAddress {
+  if (!info.pooler) throw new Error('PgBouncer has not been started by this harness');
+  return info.pooler;
 }
 
 /** Runs `fn` with a short-lived single connection. */

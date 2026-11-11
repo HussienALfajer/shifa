@@ -6,16 +6,24 @@ import { Pool } from 'pg';
 import { inject } from 'vitest';
 import { type CreateDbOptions, createDb, type ShifaDb } from '../src/client.ts';
 import { type SingleStatementExecute, withoutQueryParams } from '../src/transaction.ts';
-import { applyRoles, type HarnessRole, urlFor, withPool } from './context.ts';
+import {
+  applyRoles,
+  type HarnessRole,
+  poolerAdminUrl,
+  urlFor,
+  type Via,
+  withPool,
+} from './context.ts';
 
 export { UnsafeDatabaseError } from './guard.ts';
+export { POOLING_DATABASE } from './pgbouncer.ts';
 
 const closers: (() => Promise<void>)[] = [];
 /** Raw Drizzle handle with single-statement `execute` typing, like Tx. */
 export type RawDb = Omit<NodePgDatabase, 'execute'> & SingleStatementExecute;
 
 const raw = new Map<string, RawDb>();
-let defaultDb: ShifaDb | undefined;
+const shared = new Map<Via, ShifaDb>();
 const created = new Set<string>();
 
 const info = () => inject('shifaDb');
@@ -52,9 +60,9 @@ export async function ensureWorkerDatabase(
   return name;
 }
 
-function rawDb(role: HarnessRole, database: string): RawDb {
-  const url = urlFor(info(), role, database); // guard runs before any connection
-  const key = `${role}@${database}`;
+function rawDb(role: HarnessRole, database: string, via: Via = 'direct'): RawDb {
+  const url = urlFor(info(), role, database, { via }); // guard runs before any connection
+  const key = `${role}@${database}/${via}`;
   let db = raw.get(key);
   if (!db) {
     const pool = new Pool({ connectionString: url, max: 2 });
@@ -83,6 +91,11 @@ export function rawAppDb(database = workerDatabaseName()): RawDb {
   return rawDb('app', database);
 }
 
+/** Raw `shifa_app` connection through PgBouncer, outside withTenant(): negative tests only. */
+export function rawPooledAppDb(database = workerDatabaseName()): RawDb {
+  return rawDb('app', database, 'pooler');
+}
+
 /** Container superuser on the maintenance database: cluster-level tests (roles) only. */
 export function superuserDb(): RawDb {
   return rawDb('superuser', 'postgres');
@@ -93,26 +106,52 @@ export function harnessUrl(role: HarnessRole, database = workerDatabaseName()): 
   return urlFor(info(), role, database);
 }
 
+/** Like harnessUrl(), but through PgBouncer. */
+export function pooledHarnessUrl(role: HarnessRole, database = workerDatabaseName()): string {
+  return urlFor(info(), role, database, { via: 'pooler' });
+}
+
+function appDb(via: Via, options?: CreateDbOptions): ShifaDb {
+  const existing = shared.get(via);
+  if (!options && existing) return existing;
+  const db = createDb(urlFor(info(), 'app', workerDatabaseName(), { via }), options);
+  closers.push(() => db.close());
+  if (options) return db;
+  const handle: ShifaDb = {
+    withTenant: (ctx, fn) => db.withTenant(ctx, fn),
+    withPlatformAdmin: (reason, fn) => db.withPlatformAdmin(reason, fn),
+    close: () => {
+      if (shared.get(via) === handle) shared.delete(via);
+      return db.close();
+    },
+  };
+  shared.set(via, handle);
+  return handle;
+}
+
 /**
  * The application view: `createDb()` as `shifa_app` on this worker's database. Without options
  * the handle is shared within a file until someone closes it (an app under test owns and
  * closes its handle at shutdown); the next call then opens a new one.
  */
 export function testDb(options?: CreateDbOptions): ShifaDb {
-  if (!options && defaultDb) return defaultDb;
-  const db = createDb(urlFor(info(), 'app', workerDatabaseName()), options);
-  closers.push(() => db.close());
-  if (options) return db;
-  const shared: ShifaDb = {
-    withTenant: (ctx, fn) => db.withTenant(ctx, fn),
-    withPlatformAdmin: (reason, fn) => db.withPlatformAdmin(reason, fn),
-    close: () => {
-      if (defaultDb === shared) defaultDb = undefined;
-      return db.close();
-    },
-  };
-  defaultDb = shared;
-  return shared;
+  return appDb('direct', options);
+}
+
+/** The same application view as testDb(), connected through PgBouncer in transaction mode. */
+export function pooledTestDb(options?: CreateDbOptions): ShifaDb {
+  return appDb('pooler', options);
+}
+
+/** Rows of a PgBouncer admin console `SHOW` command (CONFIG, DATABASES, POOLS, SERVERS...). */
+export async function showPooler(
+  what: 'CONFIG' | 'DATABASES' | 'POOLS' | 'SERVERS' | 'CLIENTS',
+): Promise<Record<string, unknown>[]> {
+  // The admin console speaks the simple query protocol only: no parameters.
+  const { rows } = await withPool(poolerAdminUrl(info()), (pool) =>
+    pool.query<Record<string, unknown>>(`SHOW ${what}`),
+  );
+  return rows;
 }
 
 /** Truncates every table outside the migration history (`drizzle` schema). */
@@ -139,6 +178,6 @@ export async function applyRolesSql(): Promise<void> {
 export async function closeTestConnections(): Promise<void> {
   const pending = closers.splice(0);
   raw.clear();
-  defaultDb = undefined;
+  shared.clear();
   await Promise.all(pending.map((close) => close()));
 }

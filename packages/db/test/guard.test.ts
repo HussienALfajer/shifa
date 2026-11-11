@@ -36,6 +36,48 @@ describe('assertTestTarget', () => {
   });
 });
 
+describe('assertTestTarget with the PgBouncer address (0.3-S2a)', () => {
+  // Distinct hosts so that "pooler host + PostgreSQL port" is a pair the harness never created.
+  const harness = { host: 'localhost', port: 55432, pooler: { host: '127.0.0.1', port: 56432 } };
+
+  it('accepts the pooler address the harness created', () => {
+    expect(() => {
+      assertTestTarget('postgres://shifa_app:pw@127.0.0.1:56432/shifa_test_1', harness);
+    }).not.toThrow();
+    expect(() => {
+      assertTestTarget('postgres://shifa_app:pw@localhost:55432/shifa_test_1', harness);
+    }).not.toThrow();
+  });
+
+  it('refuses another port, a mixed host and port pair, and an unknown host', () => {
+    for (const address of [
+      '127.0.0.1:56433',
+      '127.0.0.1:55432',
+      'localhost:56432',
+      'pooler.example:56432',
+    ]) {
+      expect(() => {
+        assertTestTarget(`postgres://shifa_app:pw@${address}/shifa_test_1`, harness);
+      }).toThrow(UnsafeDatabaseError);
+    }
+  });
+
+  it('refuses the pooler address when the harness started no pooler', () => {
+    expect(() => {
+      assertTestTarget('postgres://shifa_app:pw@127.0.0.1:56432/shifa_test_1', container);
+    }).toThrow(UnsafeDatabaseError);
+  });
+
+  it('accepts the PgBouncer admin database only on the pooler address', () => {
+    expect(() => {
+      assertTestTarget('postgres://admin:pw@127.0.0.1:56432/pgbouncer', harness);
+    }).not.toThrow();
+    expect(() => {
+      assertTestTarget('postgres://admin:pw@localhost:55432/pgbouncer', harness);
+    }).toThrow(UnsafeDatabaseError);
+  });
+});
+
 function tempLockFile(): string {
   return join(mkdtempSync(join(tmpdir(), 'shifa-lock-')), 'db-test.lock');
 }
