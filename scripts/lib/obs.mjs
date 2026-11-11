@@ -16,6 +16,7 @@ export const SECRET_KEYS = [
   'GLITCHTIP_ADMIN_PASSWORD',
   'GLITCHTIP_DB_PASSWORD',
   'GLITCHTIP_API_TOKEN',
+  'GRAFANA_ADMIN_PASSWORD',
 ];
 /** Written by the GlitchTip bootstrap. */
 export const BOOTSTRAP_KEYS = ['GLITCHTIP_DSN'];
@@ -89,6 +90,25 @@ const compose = (io, ...args) => [
   ...args,
 ];
 
+/**
+ * `down` and `reset` without a .env (lost or deleted while the volumes remain): Compose refuses
+ * a missing --env-file and the `${VAR:?}` references, though neither command uses the values.
+ * Run without the file and with placeholders, so the stack can still be stopped or wiped.
+ */
+function stopArgs(io, ...args) {
+  const env = readEnv(io);
+  // An older .env may lack a key added since (e.g. GRAFANA_ADMIN_PASSWORD): fill only the gaps,
+  // so the stack can still be stopped and reset. The shell value wins over --env-file.
+  const missing = SECRET_KEYS.filter((key) => !env?.[key]);
+  const options =
+    missing.length > 0 ? { env: Object.fromEntries(missing.map((k) => [k, 'unused'])) } : {};
+  const argv =
+    env === undefined
+      ? ['compose', '-f', join(io.root, COMPOSE_PATH), ...args]
+      : compose(io, ...args);
+  return [argv, options];
+}
+
 function readEnv(io) {
   const text = io.readFile(join(io.root, ENV_PATH));
   return text === undefined ? undefined : parseEnv(String(text));
@@ -154,7 +174,9 @@ async function up(io) {
     writeEnv(io, { ...env, GLITCHTIP_DSN: dsn });
     io.out(`obs: GlitchTip organisation ${GLITCHTIP_ORG}, project ${GLITCHTIP_PROJECT} ready`);
   }
-  io.out(`obs: Grafana   ${GRAFANA_URL}`);
+  io.out(
+    `obs: Grafana   ${GRAFANA_URL} (view anonymously; to edit: user admin, password in ${ENV_PATH})`,
+  );
   io.out(`obs: GlitchTip ${GLITCHTIP_URL} (user ${ADMIN_EMAIL}, password in ${ENV_PATH})`);
   return 0;
 }
@@ -184,9 +206,10 @@ async function smoke(io) {
       OBS_GLITCHTIP_ORG: GLITCHTIP_ORG,
       OBS_GLITCHTIP_PROJECT: GLITCHTIP_PROJECT,
       OBS_OTLP_ENDPOINT: 'http://127.0.0.1:4318',
-      OBS_TEMPO_URL: 'http://127.0.0.1:3200',
-      OBS_LOKI_URL: 'http://127.0.0.1:3100',
-      OBS_PROMETHEUS_URL: 'http://127.0.0.1:9090',
+      // The stores are not published (they accept pushes): read them through Grafana.
+      OBS_TEMPO_URL: `${GRAFANA_URL}/api/datasources/proxy/uid/shifa-tempo`,
+      OBS_LOKI_URL: `${GRAFANA_URL}/api/datasources/proxy/uid/shifa-loki`,
+      OBS_PROMETHEUS_URL: `${GRAFANA_URL}/api/datasources/proxy/uid/shifa-prometheus`,
     },
   });
   return check.code === 0 ? 0 : 1;
@@ -201,7 +224,7 @@ export async function obs(argv, io) {
     case 'up':
       return up(io);
     case 'down': {
-      const result = await io.run('docker', compose(io, 'down'));
+      const result = await io.run('docker', ...stopArgs(io, 'down'));
       return result.code === 0 ? 0 : 1;
     }
     case 'reset': {
@@ -210,7 +233,7 @@ export async function obs(argv, io) {
         io.out('obs: run pnpm obs:reset --yes to confirm');
         return 1;
       }
-      const result = await io.run('docker', compose(io, 'down', '-v'));
+      const result = await io.run('docker', ...stopArgs(io, 'down', '-v'));
       if (result.code !== 0) return 1;
       io.removeFile(join(io.root, ENV_PATH));
       io.out(`obs: stack, volumes and ${ENV_PATH} removed`);

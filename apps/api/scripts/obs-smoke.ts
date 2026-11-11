@@ -33,6 +33,8 @@ import {
 /** Must match TEST_FAILURE_MARKER in src/platform/test-support.ts (quoted by GET /_test/fail). */
 const TEST_FAILURE_MARKER = 'synthetic-patient-marker-7f3a91';
 const FAILING_SPAN = 'GET /_test/fail';
+/** The error filter's log message for an unhandled error (src/platform/errors.ts). */
+const FAILURE_LOG_LINE = 'request failed';
 const WAIT_MS = 60_000;
 const POLL_MS = 2000;
 const EXIT_TIMEOUT_MS = 15_000;
@@ -86,7 +88,9 @@ async function poll(check: Check, deadline: number): Promise<unknown> {
   return undefined;
 }
 
-function checksFor(s: Settings, traceId: string, startNs: bigint): Check[] {
+function checksFor(s: Settings, traceId: string, startMs: number): Check[] {
+  const startSec = Math.floor(startMs / 1000);
+  const startNs = BigInt(startMs - 60_000) * 1_000_000n;
   const glitchtipAuth = { authorization: `Bearer ${s.token}` };
   const projectApi = `${s.glitchtip}/api/0/projects/${s.org}/${s.project}`;
   return [
@@ -103,14 +107,17 @@ function checksFor(s: Settings, traceId: string, startNs: bigint): Check[] {
         const query = `{service_name="shifa-api"} | trace_id="${traceId}"`;
         const params = new URLSearchParams({ query, start: String(startNs), limit: '100' });
         const body = await getJson(`${s.loki}/loki/api/v1/query_range?${params.toString()}`);
-        const lines = lokiLines(body, traceId);
-        return lines.length > 0 ? body : undefined;
+        // Wait for the failing request's own error line (src/platform/errors.ts), so the marker
+        // search runs on it, not only on the health check's lines.
+        return lokiLines(body, traceId).includes(FAILURE_LOG_LINE) ? body : undefined;
       },
     },
     {
       name: 'request metric in Prometheus',
       probe: async () => {
-        const query = 'http_server_request_duration_seconds_count{http_route="/_test/fail"}';
+        // Only samples written during this run: the series has the same labels on every run, and
+        // Prometheus keeps answering with the last sample for five minutes.
+        const query = `timestamp(http_server_request_duration_seconds_count{job="shifa-api",http_route="/_test/fail"}) > ${String(startSec)}`;
         const body = await getJson(
           `${s.prometheus}/api/v1/query?${new URLSearchParams({ query }).toString()}`,
         );
@@ -147,7 +154,7 @@ async function runChecks(s: Settings, databaseUrl: string): Promise<boolean> {
     await waitReady(port, app);
     say(`API ready (OTLP ${s.otlp}, GlitchTip ${maskDsn(s.dsn)})`);
     const traceId = randomBytes(16).toString('hex');
-    const startNs = BigInt(Date.now() - 60_000) * 1_000_000n;
+    const startMs = Date.now();
     const traceparent = () => `00-${traceId}-${randomBytes(8).toString('hex')}-01`;
     const base = `http://127.0.0.1:${String(port)}`;
     const ready = await fetch(`${base}/health/ready`, { headers: { traceparent: traceparent() } });
@@ -159,7 +166,7 @@ async function runChecks(s: Settings, databaseUrl: string): Promise<boolean> {
     }
     say(`requests sent with trace id ${traceId}`);
     const deadline = Date.now() + WAIT_MS;
-    const checks = checksFor(s, traceId, startNs);
+    const checks = checksFor(s, traceId, startMs);
     const found = await Promise.all(checks.map((check) => poll(check, deadline)));
     let passed = true;
     checks.forEach((check, i) => {

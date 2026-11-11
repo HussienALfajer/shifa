@@ -5,9 +5,10 @@
 //
 // Children run from argument arrays, never through a shell. pnpm is run from npm_execpath (set
 // when this runs through a pnpm script), so Windows needs no shell for a .cmd shim either.
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { randomBytes } from 'node:crypto';
 import { chmodSync, existsSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { userInfo } from 'node:os';
 import { join } from 'node:path';
 import { obs } from './lib/obs.mjs';
 
@@ -39,6 +40,22 @@ function run(cmd, args, options = {}) {
   });
 }
 
+/**
+ * Windows ignores the mode: replace the inherited ACL (often "Authenticated Users: modify" on
+ * a data drive) with full control for the current user only.
+ */
+function ownerOnly(path) {
+  const domain = process.env.USERDOMAIN;
+  const user = userInfo().username;
+  const account = domain ? `${domain}\\${user}` : user;
+  const result = spawnSync('icacls', [path, '/inheritance:r', '/grant:r', `${account}:F`], {
+    encoding: 'utf8',
+  });
+  if (result.status !== 0) {
+    process.stderr.write(`obs: could not restrict access to ${path}; restrict it by hand\n`);
+  }
+}
+
 const io = {
   root,
   run,
@@ -49,6 +66,7 @@ const io = {
     writeFileSync(path, text, { mode });
     // writeFileSync applies `mode` only when it creates the file.
     if (process.platform !== 'win32') chmodSync(path, mode);
+    else ownerOnly(path);
   },
   removeFile: (path) => rmSync(path, { force: true }),
 };

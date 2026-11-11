@@ -42,7 +42,9 @@ processors:
       - { action: delete, pattern: '^enduser\..*' }
       # Every header except the request content-type (RE2 has no negative look-ahead): keep a
       # copy, delete all headers, restore the copy. The API exports user-agent as
-      # user_agent.original, never as a header attribute.
+      # user_agent.original, never as a header attribute. The copy key is deleted first, so an
+      # incoming attribute of that name cannot be promoted to the allowed header.
+      - { action: delete, key: shifa.keep.content_type }
       - {
           action: insert,
           key: shifa.keep.content_type,
@@ -114,10 +116,35 @@ processors:
       - status
       - issues
       - signal
+      # Span events: scrub.ts keeps exceptions as their class and stack frames only.
+      - exception.type
+      - exception.stacktrace
     blocked_values:
       - '[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
       - '(?i)bearer\s+[A-Za-z0-9._~+/=-]+'
       - 'eyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]*'
+      - '(?i)basic\s+[A-Za-z0-9+/=]{8,}'
+      # Syrian mobile numbers, international and national form
+      - '(?:\+|00)963[\s-]?9\d{2}[\s-]?\d{3}[\s-]?\d{3}'
+      - '\b09\d{8}\b'
+
+  # What attribute processors cannot reach. Span status messages are free text (the pg
+  # instrumentation copies database error messages, which can quote values) and trace state
+  # comes from the client header: both are emptied. Opaque ids leave only as UUIDs, as in
+  # scrub.ts. Span-link attributes and metric exemplars are out of reach here: layer one only.
+  transform/scrub:
+    error_mode: ignore
+    trace_statements:
+      - set(span.status.message, "")
+      - set(span.trace_state, "")
+      - delete_key(span.attributes, "tenant.id") where span.attributes["tenant.id"] != nil and not IsMatch(span.attributes["tenant.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+      - delete_key(span.attributes, "user.id") where span.attributes["user.id"] != nil and not IsMatch(span.attributes["user.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    log_statements:
+      - delete_key(log.attributes, "tenant.id") where log.attributes["tenant.id"] != nil and not IsMatch(log.attributes["tenant.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+      - delete_key(log.attributes, "user.id") where log.attributes["user.id"] != nil and not IsMatch(log.attributes["user.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+    metric_statements:
+      - delete_key(datapoint.attributes, "tenant.id") where datapoint.attributes["tenant.id"] != nil and not IsMatch(datapoint.attributes["tenant.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
+      - delete_key(datapoint.attributes, "user.id") where datapoint.attributes["user.id"] != nil and not IsMatch(datapoint.attributes["user.id"], "^(?i)[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$")
 
   batch:
     timeout: 1s
@@ -135,13 +162,16 @@ service:
   pipelines:
     traces:
       receivers: [otlp]
-      processors: [memory_limiter, resource/deny, attributes/deny, redaction, batch]
+      processors:
+        [memory_limiter, resource/deny, attributes/deny, redaction, transform/scrub, batch]
       exporters: [otlp_grpc/lgtm]
     metrics:
       receivers: [otlp]
-      processors: [memory_limiter, resource/deny, attributes/deny, redaction, batch]
+      processors:
+        [memory_limiter, resource/deny, attributes/deny, redaction, transform/scrub, batch]
       exporters: [otlp_grpc/lgtm]
     logs:
       receivers: [otlp]
-      processors: [memory_limiter, resource/deny, attributes/deny, redaction, batch]
+      processors:
+        [memory_limiter, resource/deny, attributes/deny, redaction, transform/scrub, batch]
       exporters: [otlp_grpc/lgtm]
