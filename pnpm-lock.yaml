@@ -398,6 +398,9 @@ importers:
       '@shifa/tsconfig':
         specifier: workspace:*
         version: link:../../tooling/tsconfig
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
       eslint:
         specifier: 10.14.0
         version: 10.14.0(supports-color@10.2.2)
