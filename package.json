@@ -15,7 +15,11 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "check:instructions": "node scripts/check-instruction-size.mjs",
-    "env:check": "node scripts/env-check.mjs"
+    "env:check": "node scripts/env-check.mjs",
+    "obs:up": "node scripts/obs.mjs up",
+    "obs:down": "node scripts/obs.mjs down",
+    "obs:reset": "node scripts/obs.mjs reset",
+    "obs:smoke": "node scripts/obs.mjs smoke"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
@@ -25,6 +29,7 @@
     "eslint": "10.14.0",
     "globals": "17.14.0",
     "turbo": "2.11.10",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "yaml": "2.9.1"
   }
 }

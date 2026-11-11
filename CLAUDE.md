@@ -14,6 +14,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `pnpm env:check` — one line per toolchain item (`ok`/`warn`/`fail`) with the fix; run on a new machine or when tools misbehave.
 - `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
+- `pnpm obs:up` / `obs:smoke` / `obs:down` / `obs:reset --yes` — local Grafana + GlitchTip stack (`docs/process/observability.md`); needs Docker.
 - `pnpm format` — Biome formats; ESLint (type-aware, `tooling/eslint-config`) lints. Files over 400 lines fail lint.
 - Script and hook tests: `node scripts/run-script-tests.mjs`.
 - Database tests need Docker running (Testcontainers, PostgreSQL 18); see `packages/db/CLAUDE.md`. Schema changes: `/db-migration`.

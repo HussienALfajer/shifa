@@ -7,3 +7,8 @@
 # 0.2-06a: synthetic database password in a config test ("synthetic-pw-4417"); proves config
 # errors never echo a password.
 9b81620a0bcd068370c1353a2a4d07413a5644f3:apps/api/test/config.test.ts:generic-api-key:4
+
+# 0.2-09b3: synthetic JWT in the Collector fixture (header {"alg":"HS256"}, payload
+# {"sub":"fixture"}, signature the base64 of "signature"); proves the Collector masks bearer
+# tokens and JWTs.
+b9216c76fbb2bc8c900c7a73740fa9610296c0f9:scripts/test/fixtures/obs/denied-keys.mjs:jwt:54

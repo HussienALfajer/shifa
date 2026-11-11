@@ -1,0 +1,39 @@
+# Grafana datasources for the local stack (otel-lgtm runs Prometheus, Loki and Tempo beside
+# Grafana in one container, so they are on localhost). Fixed uids: the dashboard refers to them.
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    uid: shifa-prometheus
+    access: proxy
+    url: http://localhost:9090
+    isDefault: true
+    editable: false
+
+  - name: Loki
+    type: loki
+    uid: shifa-loki
+    access: proxy
+    url: http://localhost:3100
+    editable: false
+
+  - name: Tempo
+    type: tempo
+    uid: shifa-tempo
+    access: proxy
+    url: http://localhost:3200
+    editable: false
+    jsonData:
+      # From a span to its log lines: the API's log records carry the trace id.
+      tracesToLogsV2:
+        datasourceUid: shifa-loki
+        spanStartTimeShift: -5m
+        spanEndTimeShift: 5m
+        filterByTraceID: false
+        customQuery: true
+        query: '{service_name="shifa-api"} | trace_id="$${__span.traceId}"'
+      serviceMap:
+        datasourceUid: shifa-prometheus
+      nodeGraph:
+        enabled: true

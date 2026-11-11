@@ -25,6 +25,7 @@ const unit = [
   'test/telemetry/test-route.test.ts',
   'test/telemetry/error-transport.test.ts',
   'test/telemetry/stack-strict.test.ts',
+  'test/obs-smoke-parse.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
