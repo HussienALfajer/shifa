@@ -7,6 +7,7 @@ import { sql } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
 import { createDb } from '../src/client.ts';
 import {
+  holdPoolingDatabase,
   POOLING_DATABASE,
   pooledHarnessUrl,
   rawAppDb,
@@ -58,6 +59,8 @@ describe('the shared PgBouncer', () => {
   });
 
   it('has the pool-of-1 database ready behind it', async () => {
+    // Its single server connection is shared with the leak tests in test/pooling/.
+    const release = await holdPoolingDatabase();
     const db = createDb(pooledHarnessUrl('app', POOLING_DATABASE), { max: 1 });
     try {
       const name = await db.withTenant({ tenantId: TENANT, userId: USER }, async (tx) => {
@@ -67,8 +70,9 @@ describe('the shared PgBouncer', () => {
       expect(name).toBe(POOLING_DATABASE);
     } finally {
       await db.close();
+      await release();
     }
-  });
+  }, 60_000);
 });
 
 /** Every file under `dir`, dot-directories included; skips node_modules and .git. */

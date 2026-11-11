@@ -15,9 +15,16 @@ import {
   type Via,
   withPool,
 } from './context.ts';
+import { POOLING_DATABASE } from './pgbouncer.ts';
+import { openRawSession, type RawSession } from './sessions.ts';
 
 export { UnsafeDatabaseError } from './guard.ts';
 export { POOLING_DATABASE } from './pgbouncer.ts';
+export type { RawSession } from './sessions.ts';
+
+/** Which PgBouncer: the shared one, or the `server_reset_query_always = 1` variant (0.3-S2b). */
+export type PoolerName = 'shared' | 'reset';
+const VIA = { shared: 'pooler', reset: 'reset-pooler' } as const satisfies Record<PoolerName, Via>;
 
 const closers: (() => Promise<void>)[] = [];
 /** Raw Drizzle handle with single-statement `execute` typing, like Tx. */
@@ -105,9 +112,51 @@ export function harnessUrl(role: HarnessRole, database = workerDatabaseName()): 
   return urlFor(info(), role, database);
 }
 
-/** Like harnessUrl(), but through PgBouncer. */
-export function pooledHarnessUrl(role: HarnessRole, database = workerDatabaseName()): string {
-  return urlFor(info(), role, database, { via: 'pooler' });
+/** Like harnessUrl(), but through PgBouncer (the shared one unless `pooler` says otherwise). */
+export function pooledHarnessUrl(
+  role: HarnessRole,
+  database = workerDatabaseName(),
+  pooler: PoolerName = 'shared',
+): string {
+  return urlFor(info(), role, database, { via: VIA[pooler] });
+}
+
+/**
+ * One raw `shifa_app` session through PgBouncer that a test can leave mid-transaction or kill
+ * (0.3-S2b). Negative tests only. Closed after the file if the test does not close it.
+ */
+export async function rawPooledSession(
+  database = workerDatabaseName(),
+  { pooler = 'shared' }: { pooler?: PoolerName } = {},
+): Promise<RawSession> {
+  const session = await openRawSession(urlFor(info(), 'app', database, { via: VIA[pooler] }));
+  closers.push(() => session.end().catch(() => undefined));
+  return session;
+}
+
+/**
+ * Serialises the files that rely on POOLING_DATABASE's single server connection, across
+ * workers: a session advisory lock on a direct superuser connection (never through PgBouncer),
+ * held until the returned release. Then clears any session-level setting an earlier, crashed
+ * file left on the shared pooler's server connection.
+ */
+export async function holdPoolingDatabase(): Promise<() => Promise<void>> {
+  const lock = await openRawSession(urlFor(info(), 'superuser', 'postgres'));
+  try {
+    await lock.query('SELECT pg_advisory_lock(hashtext($1))', ['shifa.pooling-database']);
+    const pooled = await openRawSession(urlFor(info(), 'app', POOLING_DATABASE, { via: 'pooler' }));
+    try {
+      await pooled.query('RESET ALL');
+    } finally {
+      await pooled.end();
+    }
+  } catch (err) {
+    await lock.end();
+    throw err;
+  }
+  // Ending the session releases the lock; also done after the file if the test forgets.
+  closers.push(() => lock.end());
+  return () => lock.end();
 }
 
 function appDb(via: Via, options?: CreateDbOptions): ShifaDb {
@@ -164,10 +213,13 @@ type ShowCommand = typeof SHOW_COMMANDS extends Set<infer T> ? T : never;
  * Rows of a PgBouncer console `SHOW` command, as the read-only `stats_users` login: the shared
  * PgBouncer cannot be reconfigured from a test (a `SET` would change it for every worker).
  */
-export async function showPooler(what: ShowCommand): Promise<Record<string, unknown>[]> {
+export async function showPooler(
+  what: ShowCommand,
+  pooler: PoolerName = 'shared',
+): Promise<Record<string, unknown>[]> {
   // The admin console speaks the simple query protocol only: no parameters.
   if (!SHOW_COMMANDS.has(what)) throw new Error('showPooler() runs SHOW commands only');
-  const { rows } = await withPool(poolerStatsUrl(info()), (pool) =>
+  const { rows } = await withPool(poolerStatsUrl(info(), VIA[pooler]), (pool) =>
     pool.query<Record<string, unknown>>(`SHOW ${what}`),
   );
   return rows;

@@ -35,8 +35,11 @@ export async function runWithTenant<T>(
   assertUuid('tenantId', ctx.tenantId);
   if (ctx.branchId !== undefined) assertUuid('branchId', ctx.branchId);
   assertUuid('userId', ctx.userId);
+  // Every `app.*` setting a policy or trigger may read is set or cleared here and in
+  // withPlatformAdmin(), so a session-level value on a pooled connection never applies.
   const setup = sql`select set_config('app.tenant_id', ${ctx.tenantId}, true),
                            set_config('app.branch_id', ${ctx.branchId ?? ''}, true),
-                           set_config('app.user_id', ${ctx.userId}, true)`;
+                           set_config('app.user_id', ${ctx.userId}, true),
+                           set_config('app.admin_reason', '', true)`;
   return runScoped(pool, setup, fn);
 }

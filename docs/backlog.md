@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-09 · Owner: product owner
+Status: Living · Last updated: 2026-11-12 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -22,6 +22,9 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Cross-module table access** (0.2-06d plan): once modules own Drizzle schema files, extend `module-imports.test.ts` so a module reads and writes only its own tables (no import of another module's schema, no raw SQL naming its tables).
 - **Subpath import aliases** (0.2-06d review 5): `boundaryViolation` resolves relative, absolute and `@/` specifiers only. If `apps/api/package.json` ever defines `imports` (`#modules/...`), resolve them too, or the alias becomes a loophole.
 - **Parent rows for child isolation cases** (0.2-06b review N3, before the first table with a tenant FK): `seed` may write only its own table, so a child table cannot seed its parent. Add `prepare(tx, tenantId)` to `defineIsolationCase` (runs before `seed` for both tenants, never in the forged-insert step).
+- **Role check per transaction behind a pooler** (0.3-S2b security review 3): `assertApplicationRole` is cached per client connection; behind PgBouncer a RELOAD with a forced `user=` would switch server connections to another role while clients stay "verified". Return `current_user`/`session_user` from the existing setup statement and compare with the verified name, or set the pool's `maxLifetimeSeconds`.
+- **TEMP privilege in the role check** (0.3-S2b security review 4): the baseline's `REVOKE TEMPORARY … FROM PUBLIC` silently does nothing when the database is not owned by `shifa_owner` (managed PostgreSQL); the harness hides it by revoking again as superuser. Add `has_database_privilege(r.oid, current_database(), 'TEMPORARY')` to the unsafe condition in `assertApplicationRole`, or a migration that raises.
+- **Enforce the session-state ban** (0.3-S2b security review 1): the forbidden session forms (`WITH HOLD`, `LISTEN`, `pg_advisory_lock(`, `set_config(…, false)`, `SET` in `sql` templates) are guarded by rule text only; `server_reset_query_always` (OD-28) is the production backstop. Add a `verify` grep over `src/` and `apps/` once application queries exist.
 - **Joined read paths** (0.2-06b review N6): the runner checks only the `tenant_id` the path returns. A path joining a second tenant table should return that table's `tenant_id` too (e.g. `patientTenantId`), and the runner should check every `*tenant_id`/`*TenantId` column.
 - **Append-only tenant tables** (0.2-06b security review B7, before signed notes, payments or the audit log): the presence check requires UPDATE and DELETE policies and the runner treats `permission denied` like an RLS refusal. Add an `appendOnly` class option: no UPDATE/DELETE privilege for `shifa_app`, and the runner expects both refused with "permission denied".
 - **Policy roles** (0.2-06b security review B1): count only policies whose `polroles` include PUBLIC or `shifa_app` as coverage (fails closed today: default deny).

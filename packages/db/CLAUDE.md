@@ -11,7 +11,7 @@ const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) =>
   tx.select().from(appointments).where(eq(appointments.day, day)),
 );
 ```
-- Context is set with `set_config(..., true)` inside the transaction: never `SET`, never outside a transaction.
+- Context is set with `set_config(..., true)` inside the transaction: never `SET`, never outside a transaction. No session state behind PgBouncer (list: `.claude/rules/db.md`).
 - Throwing inside the callback rolls back. Do not catch and swallow database errors inside it.
 - `tx` works only while the callback runs: never store it or use it after an un-awaited call. Raw SQL only as a `sql` template, one statement per `execute`.
 - `createDb()` refuses a role that is superuser, has BYPASSRLS or owns tables.
@@ -21,10 +21,10 @@ const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) =>
 
 ## Tests
 - Docker must be running (Docker Desktop on Windows). `pnpm --filter @shifa/db test` (or `pnpm verify`).
-- One PostgreSQL + PgBouncer pair per run; each Vitest worker gets `shifa_test_<pool id>` cloned from the migrated `shifa_template`; tables are truncated before each file.
+- One PostgreSQL + PgBouncer set per run; each Vitest worker gets `shifa_test_<pool id>` cloned from the migrated `shifa_template`; tables are truncated before each file.
 - From `@shifa/db/testing` (lint allows it in test files only): `testDb()` (app role, use for behaviour), `ownerDb()` (create test-only tables, read catalogs), `rawAppDb()` (negative tests only), `superuserDb()` (role tests, inside a rolled-back transaction), `resetTestDb()`.
 - Another package adds DB tests with `dbTestProject()` from `@shifa/db/vitest.db.config` in its Vitest `projects`.
-- PgBouncer (transaction mode, server pool 2) runs in front: `pooledTestDb()`, `rawPooledAppDb()`, `pooledHarnessUrl()` mirror the direct handles; `showPooler('CONFIG')` reads its console (read-only); `POOLING_DATABASE` (server pool 1) exists from start, is never truncated.
+- PgBouncer (transaction mode, server pool 2) in front: `pooledTestDb()`, `rawPooledAppDb()`, `pooledHarnessUrl()` mirror the direct handles; `showPooler()` is read-only. A second one has `server_reset_query_always = 1` (`'reset'`). `POOLING_DATABASE` (server pool 1) is never truncated; take `holdPoolingDatabase()` first. Leak tests: `test/pooling/`.
 - `testDb()` is shared within a file; once something closes it (an app under test at shutdown), the next call opens a new one.
 - Outside Vitest (scripts such as the API boot check), `@shifa/db/harness` starts the container: `startHarnessContainer()` under `acquireDbTestLock()`. Lint allows it in tests and `scripts/` only.
 - The guard refuses any host, port or database the harness did not create and never reads `DATABASE_URL`. A second run waits up to 5 minutes for `.verify/db-test.lock`.
