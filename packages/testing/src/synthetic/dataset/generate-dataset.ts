@@ -42,12 +42,15 @@ export const generateDataset = (options: GenerateDatasetOptions): SyntheticDatas
     nowMs: now.getTime(),
     sink,
   };
-  const tenantStreams = root.fork('tenants');
+  // Forked by preset first, so two presets with one seed never share ids or phones and can be
+  // seeded into the same database.
+  const presetRoot = root.fork(options.preset);
+  const tenantStreams = presetRoot.fork('tenants');
   const builds = plan.tenants.map((tenantPlan, index) =>
     buildTenant(tenantStreams.fork(String(index)), tenantPlan, context),
   );
 
-  const cross = root.fork('cross');
+  const cross = presetRoot.fork('cross');
   if (plan.cross.practitioner !== undefined) {
     const from = at(builds, plan.cross.practitioner.from);
     const to = at(builds, plan.cross.practitioner.to);

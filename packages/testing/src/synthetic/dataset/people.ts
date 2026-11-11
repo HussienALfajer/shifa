@@ -14,7 +14,8 @@ const DAYS_PER_YEAR = 365.25;
 export const AGE_RANGES = {
   child: [0, 16],
   adult: [19, 63],
-  parent: [25, 50],
+  /** At least 35, so a parent is always 18 or more years older than a child (0–16). */
+  parent: [35, 55],
   senior: [66, 90],
 } as const satisfies Record<string, readonly [number, number]>;
 
