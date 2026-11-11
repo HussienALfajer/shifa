@@ -63,7 +63,7 @@ Nothing in Phase A starts before every item is done.
 | 0.2-09b1 | API telemetry: OpenTelemetry traces, metrics, correlated logs, layer-one allowlist, leak test ([slice](slices/0.2-09b1-api-telemetry.md)); after 0.2-09a | T0 | Done (#31) |
 | 0.2-09b2 | Error reporting to GlitchTip (Sentry SDK), scrubbed events, test-only failing route ([slice](slices/0.2-09b2-error-reporting.md)); after 0.2-09b1 | T0 | Done (#32) |
 | 0.2-09b3 | Local stack (Collector with layer-two redaction, Grafana, GlitchTip), `obs:*` scripts, smoke check; one slice (owner) ([slice](slices/0.2-09b3-local-observability-stack.md)); after 0.2-09b2 | T0 | In review (owner acceptance: `pnpm obs:up` + `pnpm obs:smoke` in WSL2) |
-| 0.2-09c | pgBackRest on Garage, PITR scripts, weekly CI restore drill ([spec](specs/foundation/0.2-09c-backups-and-restore-drill.md)); after 0.2-09a | T0 | Spec approved |
+| 0.2-09c | pgBackRest on Garage, PITR scripts, weekly CI restore drill ([slice](slices/0.2-09c-backups-and-restore-drill.md), [spec](specs/foundation/0.2-09c-backups-and-restore-drill.md)); after 0.2-09a; one slice (owner) | T0 | Planned |
 
 ## Phase 0.3 — spikes
 
