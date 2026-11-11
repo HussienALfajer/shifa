@@ -1,0 +1,8 @@
+{
+  "$comment": "Backup schedule and retention (spec 0.2-09c criterion 3, ADR-0029). The one source for backup:check, the runbook and the production scheduler; pgbackrest.conf repeats retentionDays (a script test keeps them equal). Times are UTC cron expressions.",
+  "full": { "cron": "0 2 * * 0", "command": "pnpm backup:full" },
+  "diff": { "cron": "0 2 * * 1-6", "command": "pnpm backup:diff" },
+  "wal": { "mode": "continuous", "archiveTimeoutSeconds": 60 },
+  "retentionDays": 30,
+  "maxBackupAgeHours": 26
+}

@@ -1,0 +1,67 @@
+# Weekly restore drill (spec 0.2-09c criteria 9 and 10, ADR-0029): back up a fresh local stack
+# with synthetic data, restore it to a point in time, check rows, migrations and RLS, then prove
+# that a wrong passphrase, a missing WAL segment and an unreachable repository each fail loudly.
+# Not a required PR check; `verify:full` does not run it. Every secret is generated in the job
+# and masked before any step prints; nothing is read from repository secrets.
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: Backup restore drill
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Monday 03:00 UTC
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: backup-drill
+  cancel-in-progress: false
+
+jobs:
+  drill:
+    name: restore drill and fault self-tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      # Per-run secrets, never stored: masked first, then handed to backup:up through the
+      # environment (a value in the environment wins over generation). The S3 key secret is
+      # created by Garage inside the stack and never printed by the scripts.
+      - name: Generate and mask per-run secrets
+        run: |
+          for name in BACKUP_POSTGRES_PASSWORD BACKUP_CIPHER_PASS BACKUP_GARAGE_RPC_SECRET BACKUP_GARAGE_ADMIN_TOKEN; do
+            value="$(openssl rand -hex 32)"
+            echo "::add-mask::${value}"
+            echo "${name}=${value}" >> "$GITHUB_ENV"
+          done
+      - name: Restore drill
+        run: pnpm backup:drill
+      - name: "Self-test: wrong passphrase"
+        if: ${{ !cancelled() }}
+        run: pnpm backup:drill --self-test wrong-passphrase
+      - name: "Self-test: missing WAL segment"
+        if: ${{ !cancelled() }}
+        run: pnpm backup:drill --self-test missing-wal
+      - name: "Self-test: repository unreachable"
+        if: ${{ !cancelled() }}
+        run: pnpm backup:drill --self-test garage-down
+      - name: Upload the drill report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: backup-drill-report
+          path: .verify/backup-drill/
+          retention-days: 90
+          if-no-files-found: warn
+      - name: Remove the stack
+        if: always()
+        run: pnpm backup:reset --yes

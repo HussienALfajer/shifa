@@ -28,7 +28,7 @@ Purpose: define how personal and health data is handled across development, AI-a
 - Patients can see who viewed their file (clinic, role, date) in the patient app.
 - Signed clinical notes are immutable; corrections are addenda. Payments and completed procedures are voided with a reason, never deleted.
 - Staff MFA (mandatory for owners and super admins), session timeouts, device sessions list.
-- Backups: point-in-time recovery, encrypted, off-provider, restore drills quarterly ([ADR-0022](../adr/0022-deployment-portable-hosting.md)).
+- Backups: point-in-time recovery, encrypted, off-provider, restore drills quarterly ([ADR-0022](../adr/0022-deployment-portable-hosting.md)); RPO 5 min, RTO 4 h ([ADR-0029](../adr/0029-backup-targets-and-local-operations-stack.md)). How backups, restores and the weekly CI drill work: [backups and restore](../process/backup-restore.md).
 - Verification target: OWASP ASVS 5.0 level appropriate to health data [RN-04 §6].
 
 ## 4. Patient rights and sharing

@@ -1,0 +1,40 @@
+[
+  {
+    "archive": [
+      {
+        "database": { "id": 1, "repo-key": 1 },
+        "id": "18-1",
+        "max": "000000010000000000000005",
+        "min": "000000010000000000000001"
+      }
+    ],
+    "backup": [
+      {
+        "archive": { "start": "000000010000000000000003", "stop": "000000010000000000000003" },
+        "backrest": { "format": 5, "version": "2.60.0" },
+        "database": { "id": 1, "repo-key": 1 },
+        "error": false,
+        "info": {
+          "delta": 32099376,
+          "repository": { "delta": 3883984, "size": 3883984 },
+          "size": 32099376
+        },
+        "label": "20261111-142914F",
+        "lsn": { "start": "0/3000028", "stop": "0/3000120" },
+        "prior": null,
+        "reference": null,
+        "timestamp": { "start": 1794407354, "stop": 1794407357 },
+        "type": "full"
+      }
+    ],
+    "cipher": "aes-256-cbc",
+    "db": [{ "id": 1, "repo-key": 1, "system-id": 7706920867538157611, "version": "18" }],
+    "name": "shifa",
+    "repo": [{ "cipher": "aes-256-cbc", "key": 1, "status": { "code": 0, "message": "ok" } }],
+    "status": {
+      "code": 0,
+      "lock": { "backup": { "held": false }, "restore": { "held": false } },
+      "message": "ok"
+    }
+  }
+]

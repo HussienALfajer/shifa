@@ -1,0 +1,24 @@
+[
+  {
+    "archive": [],
+    "backup": [],
+    "cipher": "aes-256-cbc",
+    "db": [],
+    "name": "shifa",
+    "repo": [
+      {
+        "cipher": "aes-256-cbc",
+        "key": 1,
+        "status": {
+          "code": 99,
+          "message": "[FormatError] unable to load info file '/shifa/backup/shifa/backup.info' or '/shifa/backup/shifa/backup.info.copy':\nFormatError: key/value found outside of section at line 1"
+        }
+      }
+    ],
+    "status": {
+      "code": 99,
+      "lock": { "backup": { "held": false }, "restore": { "held": false } },
+      "message": "other"
+    }
+  }
+]

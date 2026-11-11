@@ -1,0 +1,3 @@
+2026-11-11 14:16:22.011 P00   INFO: restore command begin 2.60.0: --exec-id=1-0c6a3d55 --io-timeout=5 --log-level-console=info --repo1-cipher-pass=<redacted> --repo1-s3-endpoint=garage-tls --repo1-s3-key=<redacted> --repo1-s3-key-secret=<redacted> --stanza=shifa --type=time
+2026-11-11 14:16:27.021 P00   WARN: repo1: [HostConnectError] unable to load info file '/shifa/backup/shifa/backup.info' or '/shifa/backup/shifa/backup.info.copy':
+2026-11-11 14:16:27.021 P00  ERROR: [075]: unable to find backup set with stop time less than '2026-11-11 14:14:54.04579+00'

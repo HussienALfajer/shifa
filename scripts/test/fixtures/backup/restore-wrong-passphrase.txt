@@ -1,0 +1,4 @@
+2026-11-11 14:16:16.689 P00   INFO: restore command begin 2.60.0: --exec-id=1-9b2e0c11 --log-level-console=info --log-level-file=info --pg1-path=/var/lib/postgresql/18/docker --repo1-cipher-pass=<redacted> --repo1-cipher-type=aes-256-cbc --repo1-path=/shifa --repo1-s3-bucket=shifa-backup --repo1-s3-endpoint=garage-tls --repo1-s3-key=<redacted> --repo1-s3-key-secret=<redacted> --repo1-s3-region=garage --repo1-s3-uri-style=path --repo1-storage-ca-file=/etc/pgbackrest/ca/ca.crt --repo1-type=s3 --stanza=shifa --target=2026-11-11 14:14:54.04579+00 --target-action=promote --type=time
+2026-11-11 14:16:16.712 P00   WARN: repo1: [FormatError] unable to load info file '/shifa/backup/shifa/backup.info' or '/shifa/backup/shifa/backup.info.copy':
+2026-11-11 14:16:16.712 P00  ERROR: [075]: unable to find backup set with stop time less than '2026-11-11 14:14:54.04579+00'
+2026-11-11 14:16:16.713 P00   INFO: restore command end: aborted with exception [075]

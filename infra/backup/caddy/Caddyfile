@@ -1,0 +1,13 @@
+# TLS in front of Garage's S3 API (spec 0.2-09c): pgBackRest's S3 driver needs HTTPS. Caddy's
+# internal CA signs the certificate for the compose host name `garage-tls`; `pnpm backup:up`
+# copies the CA's root certificate to infra/backup/.state/ca.crt for pgBackRest to verify.
+{
+	admin off
+	skip_install_trust
+	auto_https disable_redirects
+}
+
+https://garage-tls {
+	tls internal
+	reverse_proxy garage:3900
+}
