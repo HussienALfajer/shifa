@@ -26,6 +26,7 @@ import {
 } from './backup-drill-checks.ts';
 import {
   type DrillReport,
+  failedRestoreReport,
   reportMarkdown,
   restoreRate,
   writeReport,
@@ -47,6 +48,8 @@ function required(name: string): string {
 }
 
 const port = Number(required('BACKUP_DRILL_PORT'));
+// Only the local backup stack (infra/backup/compose.yml): never another PostgreSQL on this host.
+if (port !== 55432) throw new Error('BACKUP_DRILL_PORT must be 55432 (the local backup stack)');
 const password = required('BACKUP_DRILL_PASSWORD');
 const selfTest = process.env['BACKUP_DRILL_SELF_TEST'] ?? '';
 const keep = process.env['BACKUP_DRILL_KEEP'] === '1';
@@ -163,7 +166,7 @@ interface Restored {
 async function restoreTo(
   target: string,
   env: NodeJS.ProcessEnv,
-): Promise<{ code: number; result: Restored | undefined }> {
+): Promise<{ code: number; result: Restored | undefined; failure: string }> {
   const args = [
     'restore',
     '--target-time',
@@ -174,11 +177,15 @@ async function restoreTo(
   ];
   const restored = await backupCli(keep ? [...args, '--keep'] : args, { capture: true, env });
   let result: Restored | undefined;
+  let failure = 'restore failed';
   for (const line of restored.stdout.split(/\r?\n/)) {
     if (line.startsWith('{')) result = JSON.parse(line) as Restored;
-    else if (line.trim()) process.stdout.write(`${line}\n`);
+    else if (line.trim()) {
+      process.stdout.write(`${line}\n`);
+      failure = line.trim();
+    }
   }
-  return { code: restored.code, result };
+  return { code: restored.code, result, failure };
 }
 
 async function injectFault(segmentA: string): Promise<NodeJS.ProcessEnv> {
@@ -204,9 +211,22 @@ async function main(): Promise<number> {
   process.stdout.write(`drill: target time ${target}\n`);
 
   const env = selfTest ? await injectFault(segmentA) : {};
-  const { code, result } = await restoreTo(target, env);
+  const started = Date.now();
+  const { code, result, failure } = await restoreTo(target, env);
   if (selfTest) return code === 0 ? 0 : 1;
-  if (code !== 0 || !result) return 1;
+  if (code !== 0 || !result) {
+    // The weekly artifact must show this failure too, not only the passing runs.
+    const report = failedRestoreReport({
+      date: new Date().toISOString(),
+      targetTime: target,
+      restoreSeconds: Math.round((Date.now() - started) / 100) / 10,
+      maxRestoreMinutes,
+      failure,
+    });
+    const dir = writeReport(ROOT, report);
+    process.stdout.write(`${reportMarkdown(report)}\ndrill: report in ${dir}\n`);
+    return 1;
+  }
 
   const restoredUrl = superuser(DATABASE, result.port);
   const checks: CheckResult[] = await withCatalog(superuser(DATABASE), (source) =>
@@ -253,7 +273,14 @@ async function main(): Promise<number> {
 try {
   process.exitCode = await main();
 } catch (err) {
-  // The message only: driver errors can carry a `detail` with values.
-  process.stderr.write(`drill: failed: ${err instanceof Error ? err.message : String(err)}\n`);
+  // Name and SQLSTATE only: a driver or Drizzle message can quote the failed SQL (the owner's
+  // password statement) or a `detail` with values. Our own errors are plain Error with a
+  // fixed message and are shown as they are.
+  const cause = err instanceof Error ? (err.cause as { code?: unknown } | undefined) : undefined;
+  const ours = err instanceof Error && err.constructor === Error && cause === undefined;
+  const line = ours
+    ? err.message
+    : `${err instanceof Error ? err.name : 'error'}${typeof cause?.code === 'string' ? ` (SQLSTATE ${cause.code})` : ''}`;
+  process.stderr.write(`drill: failed: ${line}\n`);
   process.exitCode = 1;
 }

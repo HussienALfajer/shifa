@@ -4,5 +4,5 @@ import { createConfig } from '@shifa/eslint-config';
 // the operations scripts (the restore drill compares two of its own containers as superuser).
 export default createConfig({
   tsconfigRootDir: import.meta.dirname,
-  allowRawDb: ['src/**', 'test-harness/**', 'scripts/**'],
+  allowRawDb: ['src/**', 'test-harness/**', 'scripts/backup-drill*.ts'],
 });

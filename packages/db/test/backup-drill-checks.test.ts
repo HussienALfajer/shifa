@@ -10,9 +10,10 @@ import {
   checkRls,
   compareJournal,
   compareRows,
+  shortReason,
 } from '../scripts/backup-drill-checks.ts';
 import { TABLE_CLASSIFICATION, type TableClassification } from '../src/schema/classification.ts';
-import { ensureWorkerDatabase, ownerDb, type RawDb } from '../test-harness/index.ts';
+import { ensureWorkerDatabase, ownerDb, type RawDb, superuserDb } from '../test-harness/index.ts';
 import type { Catalog } from './architecture/rls-presence.ts';
 
 let source: RawDb;
@@ -122,5 +123,32 @@ describe('restore drill comparisons', () => {
     );
     expect(weakened.passed).toBe(false);
     expect(weakened.reason).toContain('presence_probe: FORCE ROW LEVEL SECURITY is off');
+  });
+
+  it('reports shifa_app as a member of another role (SET ROLE would bypass RLS)', async () => {
+    let result: Awaited<ReturnType<typeof checkAppRole>> | undefined;
+    try {
+      // Roles are cluster-wide: grant as superuser inside a transaction that is rolled back.
+      await superuserDb().transaction(async (tx) => {
+        await tx.execute(sql`grant shifa_owner to shifa_app`);
+        result = await checkAppRole(tx as unknown as Catalog);
+        throw new RolledBack();
+      });
+    } catch (err) {
+      if (!(err instanceof RolledBack)) throw err;
+    }
+    expect(result).toMatchObject({ passed: false, reason: 'member of another role' });
+    expect((await checkAppRole(restore)).passed).toBe(true);
+  });
+
+  it('cuts a long list of violations to fit the report', () => {
+    const reason = shortReason(
+      Array.from(
+        { length: 20 },
+        (_, i) => `a_long_tenant_table_${String(i)}: ENABLE ROW LEVEL SECURITY is off`,
+      ),
+    );
+    expect(reason.length).toBeLessThanOrEqual(400);
+    expect(reason.startsWith('20 violations: ')).toBe(true);
   });
 });

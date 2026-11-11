@@ -13,6 +13,7 @@ export const fixture = (name) =>
 
 /** A complete .env as `up` leaves it. */
 export const FULL_ENV = {
+  BACKUP_STACK: 'local',
   BACKUP_POSTGRES_PASSWORD: 'a'.repeat(64),
   BACKUP_CIPHER_PASS: 'b'.repeat(64),
   BACKUP_GARAGE_RPC_SECRET: 'c'.repeat(64),

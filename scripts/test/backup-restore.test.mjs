@@ -119,6 +119,15 @@ describe('backup restore', () => {
     assert.equal(restoreCalls(w).length, 0);
   });
 
+  it('refuses --target-time without a value instead of restoring the latest point', async () => {
+    for (const argv of [['--target-time'], ['--target-time', ''], ['--target-time', '--keep']]) {
+      const w = world({ env: FULL_ENV, answer: stack() });
+      assert.equal(await backupCommand(['restore', ...argv], w.io), 2, argv.join(' '));
+      assert.equal(w.calls.length, 0);
+      assert.match(w.output(), /--target-time needs a value/);
+    }
+  });
+
   it('refuses a target without a time zone', async () => {
     const w = world({ env: FULL_ENV, answer: stack() });
     assert.equal(await backupCommand(['restore', '--target-time', '2026-11-11 14:29:30'], w.io), 2);
@@ -150,6 +159,8 @@ describe('backup restore', () => {
   });
 
   it('builds time and default restore arguments', () => {
-    assert.deepEqual(restoreArgs(undefined), ['restore', '--type=default']);
+    // The restored data directory itself is written with archive_mode=off (pgBackRest option).
+    assert.deepEqual(restoreArgs(undefined), ['restore', '--type=default', '--archive-mode=off']);
+    assert.ok(restoreArgs(parseTarget('2026-11-11T14:29:30Z')).includes('--archive-mode=off'));
   });
 });

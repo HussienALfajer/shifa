@@ -95,7 +95,11 @@ async function copyCa(io) {
 }
 
 export async function up(io) {
-  const { env: initial, created } = ensureEnv(io);
+  const { env: initial, created, error } = ensureEnv(io);
+  if (error) {
+    io.out(`backup: ${error}`);
+    return 1;
+  }
   let env = initial;
   if (created) io.out(`backup: generated ${ENV_PATH} (secrets stay in that file)`);
   io.makeDir(join(io.root, STATE_DIR));
@@ -115,6 +119,8 @@ export async function up(io) {
   if (GARAGE_KEYS.some((key) => !env[key])) {
     const key = await bootstrapGarage(io, env);
     if (!key) return 1;
+    // CI: hide the Garage-created secret from the job log too (the others are masked earlier).
+    if (io.env?.GITHUB_ACTIONS === 'true') io.out(`::add-mask::${key.secret}`);
     env = { ...env, BACKUP_S3_KEY_ID: key.id, BACKUP_S3_KEY_SECRET: key.secret };
     writeEnv(io, env);
     io.out(`backup: Garage bucket ${BUCKET} and key ${GARAGE_KEY_NAME} ready`);

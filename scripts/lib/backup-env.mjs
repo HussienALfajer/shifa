@@ -77,11 +77,31 @@ export function writeEnv(io, env) {
 export function ensureEnv(io) {
   const existing = readEnv(io);
   if (existing !== undefined) return { env: existing, created: false };
-  const env = Object.fromEntries(
-    SECRET_KEYS.map((key) => [key, io.env?.[key] || io.randomBytes(SECRET_BYTES).toString('hex')]),
-  );
+  // A provided value must be as strong as a generated one (and cannot inject .env lines).
+  const weak = SECRET_KEYS.filter((key) => io.env?.[key] && !STRONG_SECRET.test(io.env[key]));
+  if (weak.length > 0) {
+    return { error: `${weak.join(', ')} in the environment must be at least 32 bytes in hex` };
+  }
+  const env = {
+    // Marks a disposable local or CI stack: only then may `drill` and `fault` destroy data.
+    [STACK_MARKER]: 'local',
+    ...Object.fromEntries(
+      SECRET_KEYS.map((key) => [
+        key,
+        io.env?.[key] || io.randomBytes(SECRET_BYTES).toString('hex'),
+      ]),
+    ),
+  };
   writeEnv(io, env);
   return { env, created: true };
+}
+
+const STRONG_SECRET = /^[0-9a-f]{64,}$/;
+export const STACK_MARKER = 'BACKUP_STACK';
+
+/** True when the .env is missing (nothing to lose) or marks a disposable local stack. */
+export function isDisposableStack(env) {
+  return env === undefined || env[STACK_MARKER] === 'local';
 }
 
 /** `docker compose` arguments for this stack. */

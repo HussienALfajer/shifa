@@ -2,9 +2,9 @@
 // (spec 0.2-09c). Every effect goes through `io` (lib/stack-io.mjs).
 
 import { check } from './backup-check.mjs';
-import { POSTGRES_PORT, readEnv } from './backup-env.mjs';
+import { isDisposableStack, POSTGRES_PORT, readEnv } from './backup-env.mjs';
 import { FAULTS, injectFault, selfTestVerdict } from './backup-faults.mjs';
-import { restore } from './backup-restore.mjs';
+import { flagValue, restore } from './backup-restore.mjs';
 import { down, reset, backup as runBackup, up } from './backup-stack.mjs';
 
 const USAGE =
@@ -19,8 +19,10 @@ export function parseDrillArgs(argv) {
   const options = { keep: false, selfTest: undefined };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === '--keep') options.keep = true;
-    else if (argv[i] === '--self-test') options.selfTest = argv[++i];
-    else return { error: `unknown option ${argv[i]}` };
+    else if (argv[i] === '--self-test') {
+      // Never fall back to the normal drill when the value is missing.
+      options.selfTest = flagValue(argv, i++) ?? '';
+    } else return { error: `unknown option ${argv[i]}` };
   }
   if (options.selfTest !== undefined && !FAULTS.includes(options.selfTest)) {
     return { error: `--self-test takes one of ${FAULTS.join(', ')}` };
@@ -85,9 +87,16 @@ export async function backupCommand(argv, io) {
     case 'restore':
       return restore(io, rest);
     case 'drill':
-      return drill(io, rest);
-    case 'fault': // internal: called by the drill's self-tests
-      return injectFault(io, rest);
+    case 'fault': {
+      // Both destroy data (reset; an archived WAL segment): only on a disposable stack whose
+      // .env `up` marked as local, never on a stack set up some other way.
+      if (!isDisposableStack(readEnv(io))) {
+        io.out(`backup: ${command} runs only on the local stack (BACKUP_STACK=local in .env)`);
+        return 1;
+      }
+      // `fault` is internal: called by the drill's self-tests.
+      return command === 'drill' ? drill(io, rest) : injectFault(io, rest);
+    }
     default:
       io.out(USAGE);
       return 2;

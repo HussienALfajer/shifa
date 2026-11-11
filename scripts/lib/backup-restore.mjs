@@ -46,15 +46,25 @@ export function restoreRange(backups, archiver, now) {
   };
 }
 
+/** The value after a flag; undefined when it is missing or another flag (an empty `$T`). */
+export function flagValue(argv, i) {
+  const value = argv[i + 1];
+  return value === undefined || value === '' || value.startsWith('--') ? undefined : value;
+}
+
 export function parseRestoreArgs(argv) {
   const options = { keep: false, json: false, timeoutMinutes: DEFAULT_TIMEOUT_MINUTES };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === '--keep') options.keep = true;
     else if (arg === '--json') options.json = true;
-    else if (arg === '--target-time') options.targetTime = argv[++i];
-    else if (arg === '--timeout-minutes') options.timeoutMinutes = Number(argv[++i]);
-    else return { error: `unknown option ${arg}` };
+    else if (arg === '--target-time' || arg === '--timeout-minutes') {
+      // A missing value must never fall back to "latest": that could restore past the damage.
+      const value = flagValue(argv, i++);
+      if (value === undefined) return { error: `${arg} needs a value` };
+      if (arg === '--target-time') options.targetTime = value;
+      else options.timeoutMinutes = Number(value);
+    } else return { error: `unknown option ${arg}` };
   }
   if (options.targetTime !== undefined && !parseTarget(options.targetTime)) {
     return { error: 'give --target-time as an ISO time with a zone, e.g. 2026-11-11T14:00:00Z' };
@@ -114,8 +124,14 @@ export function pgbackrestRun(io, volume, args) {
 /** pgBackRest restore arguments for a target (or the latest point when none is given). */
 export function restoreArgs(target) {
   return target
-    ? ['restore', '--type=time', `--target=${target.text}`, '--target-action=promote']
-    : ['restore', '--type=default'];
+    ? [
+        'restore',
+        '--type=time',
+        `--target=${target.text}`,
+        '--target-action=promote',
+        '--archive-mode=off',
+      ]
+    : ['restore', '--type=default', '--archive-mode=off'];
 }
 
 /** The `docker run -d` of the restored PostgreSQL. */

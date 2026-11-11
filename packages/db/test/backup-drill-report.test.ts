@@ -6,6 +6,7 @@ import {
   DRILL_CHECKS,
   type DrillReport,
   drillReportSchema,
+  failedRestoreReport,
   reportMarkdown,
   restoreRate,
 } from '../scripts/backup-drill-report.ts';
@@ -61,6 +62,22 @@ describe('drill report', () => {
     const md = reportMarkdown(report());
     for (const name of DRILL_CHECKS) expect(md).toContain(`| ${name} | pass |`);
     expect(md).toContain('120.8 MB/min');
+  });
+
+  it('builds a valid failure report when the restore fails, every check failed', () => {
+    const failed = failedRestoreReport({
+      date: '2026-11-11T14:27:22.623Z',
+      targetTime: '2026-11-11T14:27:05.389697Z',
+      restoreSeconds: 12.5,
+      maxRestoreMinutes: 15,
+      failure:
+        "pgBackRest error [075]: unable to find backup set with stop time less than '2026-11-11 14:27:05+00'",
+    });
+    expect(drillReportSchema.safeParse(failed).success).toBe(true);
+    expect(failed.checks.every((c) => !c.passed)).toBe(true);
+    expect(reportMarkdown(failed)).toContain('# Restore drill FAILED');
+    const leaky = failedRestoreReport({ ...failed, failure: 'postgres://u:pw@127.0.0.1:5432/x' });
+    expect(leaky.checks.at(-1)?.reason).toBe('restore failed (message withheld)');
   });
 
   it('measures the rate in MB per minute', () => {

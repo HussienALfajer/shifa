@@ -78,11 +78,24 @@ describe('self-test verdict', () => {
 
   it('accepts only the three faults on the command line', () => {
     assert.ok(parseDrillArgs(['--self-test', 'disk-full']).error);
+    assert.ok(parseDrillArgs(['--self-test']).error, 'a missing value runs the normal drill');
+    assert.ok(parseDrillArgs(['--self-test', '--keep']).error);
     assert.equal(parseDrillArgs(['--self-test', 'missing-wal', '--keep']).options.keep, true);
   });
 });
 
 describe('fault injection', () => {
+  it('refuses drill and fault on a stack whose .env is not marked local', async () => {
+    const { BACKUP_STACK, ...unmarked } = FULL_ENV;
+    assert.equal(BACKUP_STACK, 'local');
+    for (const argv of [['drill'], ['fault', 'garage-down']]) {
+      const w = world({ env: unmarked });
+      assert.equal(await backupCommand(argv, w.io), 1);
+      assert.equal(w.calls.length, 0, `${argv[0]} ran a command`);
+      assert.match(w.output(), /runs only on the local stack/);
+    }
+  });
+
   it('removes the named segment through pgBackRest inside the stack', async () => {
     const listing =
       '18-1/0000000100000000/000000010000000000000004-c6b912709e11a648474e3145fda8e13f0502745b.zst\n';

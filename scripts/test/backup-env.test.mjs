@@ -52,6 +52,25 @@ describe('backup up', () => {
     assert.equal(w.env().BACKUP_CIPHER_PASS, processEnv.BACKUP_CIPHER_PASS);
   });
 
+  it('refuses a weak or multi-line secret from the environment', async () => {
+    for (const value of ['test', `${'1'.repeat(64)}\nBACKUP_STACK=local`]) {
+      const w = world({ answer: freshStack, processEnv: { BACKUP_CIPHER_PASS: value } });
+      assert.equal(await backupCommand(['up'], w.io), 1);
+      assert.equal(w.calls.length, 0);
+      assert.ok(!w.files.has(ENV_FILE));
+      assert.match(w.output(), /BACKUP_CIPHER_PASS in the environment must be at least 32 bytes/);
+    }
+  });
+
+  it('marks the stack as local and masks the Garage key secret in GitHub Actions', async () => {
+    const w = world({ answer: freshStack, processEnv: { GITHUB_ACTIONS: 'true' } });
+    assert.equal(await backupCommand(['up'], w.io), 0);
+    assert.equal(w.env().BACKUP_STACK, 'local');
+    const mask = w.lines.findIndex((l) => l === `::add-mask::${KEY_SECRET}`);
+    assert.ok(mask >= 0, 'secret not masked');
+    assert.equal(w.lines.filter((l) => l.includes(KEY_SECRET)).length, 1, 'printed elsewhere');
+  });
+
   it('allows the key to read and write the one bucket only, never as owner', async () => {
     const w = world({ answer: freshStack });
     await backupCommand(['up'], w.io);

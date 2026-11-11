@@ -34,7 +34,8 @@ export const drillReportSchema = z
     date: z.iso.datetime(),
     postgresVersion: z.string().min(1),
     pgbackrestVersion: z.string().min(1),
-    backupLabel: z.string().regex(/^\d{8}-\d{6}[FDI](_\d{8}-\d{6}[DI])?$/),
+    // `none` when the restore failed before a backup set was chosen.
+    backupLabel: z.string().regex(/^(none|\d{8}-\d{6}[FDI](_\d{8}-\d{6}[DI])?)$/),
     targetTime: z.string().min(1),
     restoreSeconds: z.number().nonnegative(),
     restoredMegabytes: z.number().nonnegative(),
@@ -55,6 +56,38 @@ export const drillReportSchema = z
   );
 
 export type DrillReport = z.infer<typeof drillReportSchema>;
+
+/**
+ * The report for a restore that failed or timed out: every check failed, the failure line (one
+ * line from scripts/lib/backup-faults.mjs, characters outside the safe set blanked) as reason.
+ */
+export function failedRestoreReport(input: {
+  date: string;
+  targetTime: string;
+  restoreSeconds: number;
+  maxRestoreMinutes: number;
+  failure: string;
+}): DrillReport {
+  const failure = input.failure.replace(/[^\w .,;:()<>=%/'"-]/gu, ' ').slice(0, 300);
+  const reason = FORBIDDEN.test(failure) ? 'restore failed (message withheld)' : failure;
+  return {
+    date: input.date,
+    postgresVersion: 'unknown',
+    pgbackrestVersion: 'unknown',
+    backupLabel: 'none',
+    targetTime: input.targetTime,
+    restoreSeconds: input.restoreSeconds,
+    restoredMegabytes: 0,
+    rateMegabytesPerMinute: 0,
+    maxRestoreMinutes: input.maxRestoreMinutes,
+    passed: false,
+    checks: DRILL_CHECKS.map((name) => ({
+      name,
+      passed: false,
+      reason: name === 'restore.duration' ? reason : 'not run: the restore failed',
+    })),
+  };
+}
 
 /** MB per minute of restore (restore + recovery + promotion), one decimal. */
 export function restoreRate(megabytes: number, seconds: number): number {

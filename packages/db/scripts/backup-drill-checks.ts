@@ -12,6 +12,12 @@ import type { DRILL_CHECKS } from './backup-drill-report.ts';
 export type DrillCheckName = (typeof DRILL_CHECKS)[number];
 const n = (value: number) => String(value);
 
+/** Violations joined and cut to fit the report's reason (400 characters). */
+export function shortReason(violations: readonly string[]): string {
+  const text = `${n(violations.length)} violations: ${violations.join('; ')}`;
+  return text.length <= 400 ? text : `${text.slice(0, 397)}...`;
+}
+
 export interface CheckResult {
   name: DrillCheckName;
   passed: boolean;
@@ -117,7 +123,7 @@ export async function checkRls(
         passed: true,
         reason: `${n(tenantTables)} tenant tables, no violations`,
       }
-    : { name: 'rls.presence', passed: false, reason: violations.slice(0, 5).join('; ') };
+    : { name: 'rls.presence', passed: false, reason: shortReason(violations) };
 }
 
 /** shifa_app: not superuser, not BYPASSRLS, owns no relation (ADR-0004). */
@@ -126,9 +132,11 @@ export async function checkAppRole(restored: Catalog): Promise<CheckResult> {
     superuser: boolean;
     bypass: boolean;
     owned: string;
+    member: boolean;
   }>(sql`
     select r.rolsuper as superuser, r.rolbypassrls as bypass,
-           (select count(*) from pg_class c where c.relowner = r.oid)::text as owned
+           (select count(*) from pg_class c where c.relowner = r.oid)::text as owned,
+           exists (select 1 from pg_auth_members m where m.member = r.oid) as member
       from pg_roles r where r.rolname = 'shifa_app'`);
   const role = rows[0];
   const name = 'roles.app_not_owner';
@@ -137,8 +145,10 @@ export async function checkAppRole(restored: Catalog): Promise<CheckResult> {
     role.superuser && 'superuser',
     role.bypass && 'BYPASSRLS',
     role.owned !== '0' && `owns ${role.owned} relations`,
+    // Through membership it could SET ROLE to the owner and switch RLS off (roles.sql).
+    role.member && 'member of another role',
   ].filter(Boolean);
   return problems.length === 0
-    ? { name, passed: true, reason: 'not superuser, no BYPASSRLS, owns nothing' }
+    ? { name, passed: true, reason: 'not superuser, no BYPASSRLS, owns nothing, no membership' }
     : { name, passed: false, reason: problems.join(', ') };
 }

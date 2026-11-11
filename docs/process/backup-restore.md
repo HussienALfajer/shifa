@@ -2,7 +2,7 @@
 
 How Shifa's PostgreSQL is backed up and restored to a point in time, locally and later in production. Targets (ADR-0029): data loss at most **5 minutes** (RPO), restore within **4 hours** (RTO). Spec: [0.2-09c](../specs/foundation/0.2-09c-backups-and-restore-drill.md); slice: [0.2-09c](../slices/0.2-09c-backups-and-restore-drill.md).
 
-The local stack holds synthetic data only (PLT-50). Production uses the same scripts and configuration once hosting is chosen (OD-01).
+The local stack holds synthetic data only (PLT-50). Production will use the same pgBackRest configuration, schedule and procedure once hosting is chosen (OD-01). The scripts are wired to the local compose stack today (network `shifa-backup_default`, CA in `infra/backup/.state`, `docker compose exec` into the `postgres` service); the production slice makes the host, network and CA configurable. `backup:drill` and the internal `scripts/backup.mjs fault` refuse to run unless the `.env` carries `BACKUP_STACK=local` (written by `backup:up`), because both destroy data.
 
 ## Architecture
 
@@ -68,8 +68,18 @@ PostgreSQL listens on `127.0.0.1:55432` (user `postgres`, password `BACKUP_POSTG
    - creates a new volume and container `shifa-backup-restore-<timestamp>` and refuses (exit 2) if its data directory is not empty;
    - runs `pgbackrest restore --type=time --target=<T> --target-action=promote` in a separate container, so it works while the source is down and never touches the source's volumes;
    - starts PostgreSQL with `archive_mode=off` (a restored copy must never push a new timeline into the source's repository), waits for promotion and prints the backup set, target, port and duration.
-3. Connect to the printed port, check the data, then switch the application over (production: change the connection string and restart; see the quarterly drill).
+3. Connect to the printed port and check the data. The copy is for **inspection only**: it does not archive WAL, and `backup:full`, `backup:diff` and `backup:check` keep working against the source container. Never point the application at it.
 4. Remove the copy when done: `docker rm -f <container>` and `docker volume rm <container>` (or `backup:reset --yes` locally).
+
+### Recovering the primary (disaster recovery)
+
+When the restored data must become the new primary:
+1. Stop the application and the old primary (or at least its `archive_command`), so only one server writes to the stanza.
+2. Start PostgreSQL on the restored data directory with the normal archive settings (`archive_mode=on`, `archive_command=pgbackrest --stanza=shifa archive-push %p`, as in `compose.yml`). The promotion opened a new timeline; pgBackRest keeps it apart from the old one in the same stanza.
+3. Take a full backup at once (`--type=full`) and run `backup:check` against **that** server: until then the new primary's data has no base backup.
+4. Point the application at the new primary and restart it.
+
+Until the production slice makes the scripts' target configurable, steps 2–3 are run by hand on the database host.
 
 Errors are one line each: `restore failed: repository passphrase rejected`, `restore failed: WAL segment <name> missing from the archive`, `repository unreachable at garage-tls:443`; anything else passes through as `pgBackRest error [<code>]: <message>`.
 
@@ -82,8 +92,8 @@ Errors are one line each: `restore failed: repository passphrase rejected`, `res
 | `rows.baseline_and_a` | count and md5 of the canonical rows written before T are equal on source and restore |
 | `rows.b_absent` | no row written after T exists |
 | `migrations.journal` | Drizzle's migration journal is identical |
-| `rls.presence` | the 0.2-06b presence check finds no violation on the restore (ENABLE + FORCE RLS, policies, classification) |
-| `roles.app_not_owner` | `shifa_app` is not superuser, has no `BYPASSRLS`, owns nothing |
+| `rls.presence` | the 0.2-06b presence check finds no violation on the restore (ENABLE + FORCE RLS, policies, classification); until the first tenant table exists it reports "0 tenant tables" and only proves the check runs (its test proves it catches a missing FORCE) |
+| `roles.app_not_owner` | `shifa_app` is not superuser, has no `BYPASSRLS`, owns nothing and is a member of no role |
 | `restore.duration` | the restore took less than 15 minutes |
 
 It writes `.verify/backup-drill/report.json` and `report.md` (versions, backup set, target time, duration, size, rate, each check; no row values, no connection strings) and exits 1 if any check fails. `--keep` leaves the restored container running.
@@ -115,7 +125,7 @@ Losing `BACKUP_CIPHER_PASS` makes every backup in that repository unreadable. Pr
 
 ## Off-site second repository (`repo2`, blocked by OD-01)
 
-PLT-51 needs a copy at a second provider. `pgbackrest.conf` carries a commented `repo2-*` block: once OD-01 names the provider, fill the endpoint, bucket and region, give it its own key and passphrase through `PGBACKREST_REPO2_*` environment variables, run `stanza-create`, and every backup and WAL segment goes to both repositories. `backup:check` then covers both.
+PLT-51 needs a copy at a second provider. `pgbackrest.conf` carries a commented `repo2-*` block: once OD-01 names the provider, fill the endpoint, bucket and region, give it its own key and passphrase through `PGBACKREST_REPO2_*` environment variables, and run `stanza-create`. WAL is then pushed to both repositories, but a `backup` command writes to one repository only (repo1 unless `--repo=2` is given): the scheduler must also run `backup --repo=2 --type=full|diff` (its own schedule entry), or repo2 holds WAL without a base backup and cannot be restored. `backup:check` reads repo1's status and the newest backup across repositories today; before repo2 goes live it needs a per-repository freshness check.
 
 ## Quarterly production drill
 
