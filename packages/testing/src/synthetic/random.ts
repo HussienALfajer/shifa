@@ -58,6 +58,9 @@ export interface Random {
    * An independent stream that depends only on the root seed and the label path, never on how
    * many values were drawn before. Give every new field its own fork so adding it later does
    * not shift the values of every other field.
+   *
+   * The same label on the same parent always returns the same stream, so labels must be unique
+   * per parent: in a loop, fork by index (`fork(String(index))`) and then by field.
    */
   fork(label: string): Random;
 }

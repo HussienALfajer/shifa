@@ -70,6 +70,54 @@ export const generatePhone = (random: Random, country: PhoneCountry): string => 
   return `+${COUNTRY_CODE[country]}${prefix}${SYNTHETIC_PHONE_MARKER}${digits}`;
 };
 
+/** How many distinct synthetic numbers each country's prefixes hold (5 free digits per prefix). */
+export const SYNTHETIC_PHONE_CAPACITY: Readonly<Record<PhoneCountry, number>> = {
+  SY: prefixesFor('SY').length * 10 ** RANDOM_DIGITS,
+  TR: prefixesFor('TR').length * 10 ** RANDOM_DIGITS,
+};
+
+/** Share of the number space a registry fills before it refuses, so redraws stay cheap. */
+const REGISTRY_FILL_LIMIT = 0.5;
+
+export class PhoneSpaceExhaustedError extends RangeError {
+  constructor(country: PhoneCountry) {
+    super(`Synthetic phone space for ${country} is too full to draw another unique number`);
+    this.name = 'PhoneSpaceExhaustedError';
+  }
+}
+
+/**
+ * Hands out numbers that are unique within one dataset (an account's phone is unique, PLT-07):
+ * a repeat is redrawn from the same seeded source, so the result stays deterministic. Shared
+ * phones (dependents on one account) reuse the account's number instead of drawing again.
+ */
+export class PhoneRegistry {
+  readonly #phones = new Set<string>();
+  readonly #counts: Record<PhoneCountry, number> = { SY: 0, TR: 0 };
+
+  get size(): number {
+    return this.#phones.size;
+  }
+
+  has(e164: string): boolean {
+    return this.#phones.has(e164);
+  }
+
+  next(random: Random, country: PhoneCountry): string {
+    if (this.#counts[country] >= SYNTHETIC_PHONE_CAPACITY[country] * REGISTRY_FILL_LIMIT) {
+      throw new PhoneSpaceExhaustedError(country);
+    }
+    for (;;) {
+      const phone = generatePhone(random, country);
+      if (!this.#phones.has(phone)) {
+        this.#phones.add(phone);
+        this.#counts[country] += 1;
+        return phone;
+      }
+    }
+  }
+}
+
 /** True only for a well-formed mobile number on a listed prefix that carries the marker. */
 export const isSyntheticPhone = (e164: string): boolean => {
   for (const country of ['SY', 'TR'] as const) {

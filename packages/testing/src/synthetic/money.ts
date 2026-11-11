@@ -18,10 +18,11 @@ export const CASH_UNIT_MINOR: Readonly<Record<Currency, bigint>> = {
 };
 
 /**
- * SYP amounts at or above 1,000,000.00 new pounds look like old-pound scale (×100) for a clinic
- * price (BIL-05); the generator never produces one, and 0.2-08b tests assert it.
+ * Sanity ceiling for generated SYP prices: 100,000.00 new pounds, just above the default range.
+ * A ×100 old-pound mistake (BIL-05) on any default price above 1,000 SYP lands over it; the
+ * generator never produces an amount at or above it, and 0.2-08b tests assert that.
  */
-export const OLD_POUND_THRESHOLD_MINOR = 100_000_000n;
+export const OLD_POUND_THRESHOLD_MINOR = 10_000_000n;
 
 export interface PriceRangeMinor {
   readonly minMinor: bigint;
