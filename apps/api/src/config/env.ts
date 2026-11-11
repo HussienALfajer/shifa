@@ -98,7 +98,12 @@ const schema = z.object({
       }
     })
     .optional(),
-  OTEL_TRACES_SAMPLER_ARG: z.coerce.number().min(0).max(1).default(1),
+  // A decimal in [0, 1]. Not z.coerce: it turns an empty value into 0, i.e. no traces at all.
+  OTEL_TRACES_SAMPLER_ARG: z
+    .string()
+    .regex(/^(0(\.\d+)?|1(\.0+)?)$/)
+    .transform(Number)
+    .optional(),
   DEPLOYMENT_ENVIRONMENT: z
     .string()
     .regex(/^[a-z0-9-]{1,32}$/)
@@ -126,7 +131,7 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     logLevel: parsed.data.LOG_LEVEL,
     telemetry: {
       endpoint: parsed.data.OTEL_EXPORTER_OTLP_ENDPOINT,
-      samplerRatio: parsed.data.OTEL_TRACES_SAMPLER_ARG,
+      samplerRatio: parsed.data.OTEL_TRACES_SAMPLER_ARG ?? 1,
       environment: parsed.data.DEPLOYMENT_ENVIRONMENT,
     },
   };

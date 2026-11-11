@@ -111,16 +111,33 @@ function scrubResource(resource: Resource): Resource {
   return scrubbed;
 }
 
+/**
+ * Trace and span id, flags and remoteness only. `traceState` is dropped: it comes from the
+ * client's `tracestate` header (free text, up to 32 entries of 256 characters), and every child
+ * span inherits it.
+ */
+export function scrubContext(context: SpanContext): SpanContext {
+  return {
+    traceId: context.traceId,
+    spanId: context.spanId,
+    traceFlags: context.traceFlags,
+    ...(context.isRemote === undefined ? {} : { isRemote: context.isRemote }),
+  };
+}
+
 /** A copy of `span` holding only allowed data; identity and timing unchanged. */
 export function scrubSpan(span: ReadableSpan): ReadableSpan {
-  const context: SpanContext = span.spanContext();
+  const context = scrubContext(span.spanContext());
   const events = span.events.map(scrubEvent).filter((e): e is TimedEvent => e !== undefined);
-  const links: Link[] = span.links.map((link) => ({ context: link.context, attributes: {} }));
+  const links: Link[] = span.links.map((link) => ({
+    context: scrubContext(link.context),
+    attributes: {},
+  }));
   return {
     name: span.name,
     kind: span.kind,
     spanContext: () => context,
-    ...(span.parentSpanContext ? { parentSpanContext: span.parentSpanContext } : {}),
+    ...(span.parentSpanContext ? { parentSpanContext: scrubContext(span.parentSpanContext) } : {}),
     startTime: span.startTime,
     endTime: span.endTime,
     duration: span.duration,

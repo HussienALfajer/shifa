@@ -90,8 +90,11 @@ export function installInstrumentations(): Instrumentation[] {
           // The instrumentation writes only the stable `db.system.name`; Tempo and Grafana's
           // service graph still key on the older `db.system`.
           span.setAttribute('db.system', 'postgresql');
-          const operation = OPERATION.exec(info.query.text)?.[1];
-          if (operation) span.setAttribute('db.operation.name', operation.toUpperCase());
+          const operation = OPERATION.exec(info.query.text)?.[1]?.toUpperCase();
+          if (operation) span.setAttribute('db.operation.name', operation);
+          // The instrumentation names the span from the SQL text up to its first space (or from
+          // a prepared statement's name); a known keyword is all the name may carry.
+          span.updateName(operation ? `pg.query:${operation}` : 'pg.query');
         },
       }),
       // Event-loop delay sampled every 10 ms (the default), reported as min/max/mean/percentiles.
