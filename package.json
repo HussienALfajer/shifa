@@ -14,7 +14,8 @@
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "check:instructions": "node scripts/check-instruction-size.mjs"
+    "check:instructions": "node scripts/check-instruction-size.mjs",
+    "env:check": "node scripts/env-check.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",

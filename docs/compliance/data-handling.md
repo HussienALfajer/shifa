@@ -8,7 +8,8 @@ Purpose: define how personal and health data is handled across development, AI-a
 ## 1. Environments
 | Environment | Data allowed | Access |
 |---|---|---|
-| Development (WSL2), CI, Claude Code sessions | Synthetic data only | Developers and agents |
+| Development (WSL2, primary, sandboxed), CI, Claude Code sessions | Synthetic data only | Developers and agents |
+| Development fallback (Windows `D:\shifa`, no sandbox) | Synthetic data only; development `.env` values only | Developers and agents |
 | Staging | Synthetic, or de-identified via a reviewed pipeline | Owner and named staff |
 | Production | Real data | Clinics by role; platform staff only via audited support access |
 

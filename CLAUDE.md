@@ -11,6 +11,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 ## Commands
 - `pnpm install` — Node 24, pnpm 12 (pinned); refuses packages younger than 24 hours.
 - Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm 4.3.2` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
+- `pnpm env:check` — one line per toolchain item (`ok`/`warn`/`fail`) with the fix; run on a new machine or when tools misbehave.
 - `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
 - `pnpm format` — Biome formats; ESLint (type-aware, `tooling/eslint-config`) lints. Files over 400 lines fail lint.
@@ -55,6 +56,6 @@ End every substantial task with these sections, in this order:
 - Hooks need `node` on the PATH of Git Bash.
 
 ## Gotchas
-- Windows for now (Git Bash); the sandbox only runs under WSL2 (slice 0.2-09).
+- WSL2 (Ubuntu 26.04, repo in `~/src/shifa`) is primary and sandboxed; setup in `docs/process/wsl2-setup.md`. Windows (`D:\shifa`, Git Bash) is the unsandboxed fallback.
 - TypeScript stays on 6.0 until typescript-eslint supports 7.
 - Workspace packages import `.ts` paths directly (`allowImportingTsExtensions`, no build step yet).

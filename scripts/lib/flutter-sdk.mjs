@@ -68,7 +68,7 @@ export function readPinnedVersion(root) {
 }
 
 /** Version of an SDK: Flutter's own version file, else the `version` file at its root. */
-function readSdkVersion(sdkRoot) {
+export function readSdkVersion(sdkRoot) {
   try {
     const json = readFileSync(join(sdkRoot, 'bin', 'cache', 'flutter.version.json'), 'utf8');
     return JSON.parse(json).frameworkVersion ?? null;
