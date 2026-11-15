@@ -47,6 +47,10 @@ describe('measure', () => {
 });
 
 describe('judge', () => {
+  it('budgets about 4,000 hand-written lines (ADR-0032)', () => {
+    assert.equal(WARN_LINES, 4000);
+  });
+
   it('passes at the budget', () => {
     assert.equal(judge(WARN_LINES).level, 'ok');
   });

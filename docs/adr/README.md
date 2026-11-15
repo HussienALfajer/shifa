@@ -62,9 +62,10 @@ What we will do, stated precisely.
 | [0022](0022-deployment-portable-hosting.md) | Docker Compose + Kamal on portable hosting; location pending legal opinion | Proposed (OD-01) |
 | [0023](0023-no-real-patient-data-in-dev.md) | No real patient data in development or AI-agent environments | Accepted |
 | [0024](0024-licensed-clinical-content-gating.md) | Licensed clinical content gated per tenant until licences are signed | Accepted |
-| [0025](0025-development-methodology-claude-code.md) | Development methodology: Claude Code, harness-first, risk tiers | Accepted (bypass rule superseded by 0027) |
+| [0025](0025-development-methodology-claude-code.md) | Development methodology: Claude Code, harness-first, risk tiers | Accepted (bypass rule superseded by 0027; PR size cap by 0032) |
 | [0026](0026-public-repository.md) | Public GitHub repository; private notes stay local | Accepted |
 | [0027](0027-owner-chooses-permission-mode.md) | The owner chooses the Claude Code permission mode; `bypassPermissions` allowed | Accepted (secret rules superseded by 0028) |
 | [0028](0028-allow-all-permissions-and-auto-merge.md) | Allow all Claude Code permissions, including secret files; auto-merge every PR | Accepted |
 | [0029](0029-backup-targets-and-local-operations-stack.md) | Backup targets (RPO 5 min, RTO 4 h), local-first operations stack, WSL2 primary | Accepted |
 | [0030](0030-pgbouncer-transaction-mode-tenant-context.md) | PgBouncer in transaction mode with transaction-scoped tenant context; `server_reset_query_always` and other required settings | Accepted |
+| [0032](0032-slice-size-budget-4000-lines.md) | Slice and PR size budget about 4,000 hand-written lines (CI warns, never fails) | Accepted |

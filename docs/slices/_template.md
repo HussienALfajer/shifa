@@ -15,7 +15,7 @@ One or two sentences: what the user can do after this slice.
 6. End-to-end — journeys, including one real-backend smoke test if the path is critical.
 
 Tests written first: <list>.
-Estimated hand-written lines: <n> (budget ~1,000).
+Estimated hand-written lines: <n> (budget ~4,000).
 
 ## Stopped at
 <one line, updated at every checkpoint>
