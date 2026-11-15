@@ -1,6 +1,6 @@
 # ADR-0004: PostgreSQL 18 with pooled multi-tenancy, FORCE RLS, transaction-scoped tenant context, and a tenant routing table
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude) · Amended by ADR-0030
 
 ## Context
 Most tenants are small clinics (solo to a few doctors); a few may become multi-branch groups. Cross-tenant leakage of medical data would be catastrophic. AWS SaaS Lens and Azure guidance favour starting pooled with a path to dedicated databases for large tenants [RN-05 §1]. RLS has known pitfalls with poolers and owners [RN-05 §1] [RN-16 §2].

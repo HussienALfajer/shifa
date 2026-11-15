@@ -1,6 +1,6 @@
 # ADR-0005: Data access with Drizzle and a withTenant() transaction wrapper
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude) · Amended by ADR-0030
 
 ## Context
 RLS context must be set inside an explicit transaction on every request and job ([ADR-0004](0004-postgresql-pooled-tenancy-rls.md)). The ORM must make that hard to forget. As of 2026-11-08, Drizzle 1.0 is still a release candidate; Prisma 7's RLS path conflicts with `$transaction`, and Prisma 8's native `@@rls` is also pre-release [RN-16 §3].
