@@ -12,7 +12,7 @@ Rough estimate for a team of 4–5 developers working with Claude Code: pilot af
 |---|---|---|---|
 | 0.1 Re-documentation | Archive research, write product, domain, ADR, compliance and process docs | Owner reviewed the docs | Done 2026-11-08; owner reviewed and approved 2026-11-08 |
 | 0.2 Foundation (harness) | Repo, tooling, quality gates, Claude Code setup, CI — no features | Checklist below all green | In progress: every slice merged and accepted (owner, 2026-11-11); open items are the design-token drift check (first Phase 0.4 slice) and `/release` (first deployment) |
-| 0.3 Spikes | Prove risky technology choices with throwaway code (S2 keeps its leak tests in CI, owner 2026-11-12) | Each spike has a written result and an ADR update | In progress: S2 spec approved (owner, 2026-11-12); S2 planned as slices 0.3-S2a to 0.3-S2c; 0.3-S2a and 0.3-S2b done; 0.3-S2c in review: S2 answer "safe with these settings" ([result](spikes/s2-tenant-isolation.md)), ADR-0030 Accepted (owner, 2026-11-15) |
+| 0.3 Spikes | Prove risky technology choices with throwaway code (S2 keeps its leak tests in CI, owner 2026-11-12) | Each spike has a written result and an ADR update | In progress: S1 spec approved (owner, 2026-11-15), next /slice-plan; S2 spec approved (owner, 2026-11-12); S2 planned as slices 0.3-S2a to 0.3-S2c; 0.3-S2a and 0.3-S2b done; 0.3-S2c in review: S2 answer "safe with these settings" ([result](spikes/s2-tenant-isolation.md)), ADR-0030 Accepted (owner, 2026-11-15) |
 | 0.4 Design system foundations | Tokens pipeline, base components, Flutter theme from the same tokens | Storybook with core components, visual and a11y tests in CI | Not started |
 | A Core platform | Super admin, tenancy, patients, scheduling and queue, voice calling, billing in three currencies, general clinical template, prescriptions, reports, messaging, patient app, public booking pages, offline reception | 10 pilot clinics run a full day without paper; phase audit passed | Not started |
 | B Dental | Full dental module | Pilot dental clinics use charting, perio, plans and installments daily; advisor sign-off (OD-17) | Not started |
@@ -69,7 +69,7 @@ Nothing in Phase A starts before every item is done.
 
 | Spike | Question | Result goes to |
 |---|---|---|
-| S1 Offline sync | PowerSync vs custom outbox under real network cuts, for queue, appointments and cash | ADR-0014, OD-05 |
+| S1 Offline sync | PowerSync vs custom outbox under real network cuts, for queue, appointments and cash ([spec](specs/spikes/0.3-s1-offline-sync.md), approved) | ADR-0031 updating ADR-0014; OD-05 |
 | S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005; [result](spikes/s2-tenant-isolation.md): safe only with the PgBouncer settings in ADR-0030 (`server_reset_query_always = 1` among them); session state leaks without them |
 | S3 Arabic output | Arabic PDF (Gotenberg), thermal receipt rendering, Arabic name search normaliser | ADR-0021 |
 | S4 Imaging | Garage + Orthanc + OHIF; upload a real CBCT over an Aleppo-like link | ADR-0019, OD-18 |
