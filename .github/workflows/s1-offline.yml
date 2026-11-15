@@ -12,7 +12,7 @@ on:
         options: [outbox, powersync, both]
         default: both
       flutter:
-        description: Also run the Flutter probe
+        description: Also run the Flutter probe (its job arrives with slice 0.3-S1e)
         type: boolean
         default: true
 

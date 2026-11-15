@@ -1,7 +1,9 @@
 // One reception device driven through the prototype's UI, with Playwright's fake clock so two
 // simulated hours pass in seconds. Every action is checked to have been queued locally.
-import { type Browser, type BrowserContext, expect, type Page } from '@playwright/test';
-import { deviceUrl, type ProxyName } from './toxi.ts';
+import { type Browser, type BrowserContext, expect, type Page, test } from '@playwright/test';
+import { deviceUrl, type ProxyName, toxi } from './toxi.ts';
+
+const firstOpens = new Set<string>();
 
 export type Currency = 'SYP' | 'TRY' | 'USD';
 
@@ -17,6 +19,14 @@ export class Device {
     const context =
       'newContext' in browserOrContext ? await browserOrContext.newContext() : browserOrContext;
     const page = context.pages()[0] ?? (await context.newPage());
+    // A device's first open in a test starts on a healthy link, whatever an earlier (failed) spec
+    // left behind; a reopen in the same test (browser restart offline) keeps the current link.
+    const key = `${test.info().testId}:${proxy}`;
+    if (!firstOpens.has(key)) {
+      firstOpens.add(key);
+      await toxi.clear(proxy);
+      await toxi.restore(proxy);
+    }
     await page.clock.install({ time: Date.now() });
     await page.goto(deviceUrl(proxy));
     return new Device(proxy, context, page);

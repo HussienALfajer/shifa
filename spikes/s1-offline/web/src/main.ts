@@ -15,17 +15,17 @@ function powerSyncEndpoint(): string {
 }
 
 async function createEngine(): Promise<SyncEngine> {
-  const engine: unknown = import.meta.env['VITE_ENGINE'];
   const baseUrl = location.origin;
-  if (engine === 'powersync') {
+  // Direct comparisons with the build constant, so each build drops the other engines' code.
+  if (import.meta.env.VITE_ENGINE === 'powersync') {
     const { createPowerSyncEngine } = await import('./powersync/index.ts');
     return createPowerSyncEngine({ baseUrl, endpoint: powerSyncEndpoint() });
   }
-  if (engine === 'stub-drop' || engine === 'stub-dup') {
-    const stubs = await import('./stubs.ts');
-    return engine === 'stub-drop'
-      ? stubs.createDroppingEngine(baseUrl)
-      : stubs.createDuplicatingEngine(baseUrl);
+  if (import.meta.env.VITE_ENGINE === 'stub-drop') {
+    return (await import('./stubs.ts')).createDroppingEngine(baseUrl);
+  }
+  if (import.meta.env.VITE_ENGINE === 'stub-dup') {
+    return (await import('./stubs.ts')).createDuplicatingEngine(baseUrl);
   }
   return createOutboxEngine({ baseUrl });
 }

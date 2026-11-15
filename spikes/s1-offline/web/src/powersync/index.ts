@@ -130,8 +130,10 @@ export function createPowerSyncEngine(options: PowerSyncOptions): SyncEngine {
       }
       db.registerListener({
         statusChanged: (status) => {
-          if (status.connected && !status.uploadError) markOnline();
-          else if (!status.connecting || status.downloadError) markOffline();
+          // The stream connection decides; a failed upload marks offline in uploadData. (An old
+          // uploadError stays set until the next upload, so it cannot mean "offline now".)
+          if (status.connected) markOnline();
+          else markOffline();
         },
       });
       const abort = new AbortController();
@@ -169,7 +171,7 @@ export function createPowerSyncEngine(options: PowerSyncOptions): SyncEngine {
       // PowerSync syncs on its own; a round here only refreshes the offline mark.
       await Promise.resolve();
       const status = db.currentStatus;
-      if (status.connected && !status.uploadError && !needsLogin) markOnline();
+      if (status.connected && !needsLogin) markOnline();
     },
     async today(): Promise<Today> {
       const [tickets, appointments, sessions, movements] = await Promise.all([

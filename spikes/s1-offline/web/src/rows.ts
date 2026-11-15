@@ -13,7 +13,14 @@ const num = (v: unknown): number => (typeof v === 'number' ? v : Number(v));
 const opt = <K extends string>(k: K, v: unknown): Partial<Record<K, string>> =>
   v === null || v === undefined || v === '' ? {} : ({ [k]: str(v) } as Record<K, string>);
 /** Server timestamps come as text in PostgreSQL's or ISO format; normalise to ISO. */
-const iso = (v: unknown): string => new Date(str(v).replace(' ', 'T')).toISOString();
+const iso = (v: unknown): string => {
+  // "2026-11-16 14:00:00+00" (PostgreSQL text) → "2026-11-16T14:00:00+00:00" (parseable ISO).
+  const text = str(v)
+    .replace(' ', 'T')
+    .replace(/([+-]\d{2})$/, '$1:00');
+  const date = new Date(text);
+  return Number.isNaN(date.getTime()) ? text : date.toISOString();
+};
 
 export const toTicket = (r: Raw): TicketRow => ({
   id: str(r['id']),

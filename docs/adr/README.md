@@ -51,7 +51,7 @@ What we will do, stated precisely.
 | [0011](0011-design-system-base-ui.md) | Custom design system on Base UI with DTCG tokens shared with Flutter | Accepted |
 | [0012](0012-flutter-patient-app.md) | Patient app in Flutter (official MVVM + Riverpod 3) | Accepted |
 | [0013](0013-api-contract-openapi-zod.md) | REST + OpenAPI 3.1 from named Zod schemas; generated TS and Dart clients | Accepted |
-| [0014](0014-offline-sync-engine.md) | Offline reception and patient app; sync engine chosen by spike | Proposed (OD-05) |
+| [0014](0014-offline-sync-engine.md) | Offline reception and patient app; sync engine chosen by spike | Proposed (OD-05; spike result in 0031, Proposed) |
 | [0015](0015-realtime-centrifugo.md) | Realtime with Centrifugo fed from the outbox | Accepted |
 | [0016](0016-identity-better-auth-reverse-whatsapp.md) | Better Auth; reverse WhatsApp phone verification; no SMS | Accepted |
 | [0017](0017-notifications-push-whatsapp.md) | Push + in-app inbox primary; WhatsApp via self-hosted WAHA secondary | Accepted |
@@ -68,4 +68,5 @@ What we will do, stated precisely.
 | [0028](0028-allow-all-permissions-and-auto-merge.md) | Allow all Claude Code permissions, including secret files; auto-merge every PR | Accepted |
 | [0029](0029-backup-targets-and-local-operations-stack.md) | Backup targets (RPO 5 min, RTO 4 h), local-first operations stack, WSL2 primary | Accepted |
 | [0030](0030-pgbouncer-transaction-mode-tenant-context.md) | PgBouncer in transaction mode with transaction-scoped tenant context; `server_reset_query_always` and other required settings | Accepted |
+| [0031](0031-offline-sync-custom-outbox.md) | Offline sync with a custom outbox (command log, idempotency keys, pull endpoint); decides ADR-0014 | Proposed |
 | [0032](0032-slice-size-budget-4000-lines.md) | Slice and PR size budget about 4,000 hand-written lines (CI warns, never fails) | Accepted |
