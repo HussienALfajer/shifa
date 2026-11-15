@@ -41,8 +41,8 @@ What we will do, stated precisely.
 | [0001](0001-record-architecture-decisions.md) | Record architecture decisions | Accepted |
 | [0002](0002-monorepo-pnpm-turborepo.md) | Monorepo with pnpm workspaces + Turborepo; TypeScript and Flutter in one repo | Accepted |
 | [0003](0003-nestjs-modular-monolith.md) | Backend: NestJS 12 modular monolith with bounded contexts and a transactional outbox | Accepted |
-| [0004](0004-postgresql-pooled-tenancy-rls.md) | PostgreSQL 18, pooled multi-tenancy, FORCE RLS, tenant routing table | Accepted |
-| [0005](0005-drizzle-withtenant.md) | Data access with Drizzle and a withTenant() transaction wrapper | Accepted |
+| [0004](0004-postgresql-pooled-tenancy-rls.md) | PostgreSQL 18, pooled multi-tenancy, FORCE RLS, tenant routing table | Accepted (amended by 0030) |
+| [0005](0005-drizzle-withtenant.md) | Data access with Drizzle and a withTenant() transaction wrapper | Accepted (amended by 0030) |
 | [0006](0006-one-organisation-model.md) | One organisation model; global practitioner and patient identities | Accepted |
 | [0007](0007-configuration-layers.md) | Entitlements, feature flags and cascading settings; per-doctor features as gated modules | Accepted |
 | [0008](0008-custom-fields.md) | Custom fields: definitions registry + JSONB with fixed limits | Accepted |
@@ -67,3 +67,4 @@ What we will do, stated precisely.
 | [0027](0027-owner-chooses-permission-mode.md) | The owner chooses the Claude Code permission mode; `bypassPermissions` allowed | Accepted (secret rules superseded by 0028) |
 | [0028](0028-allow-all-permissions-and-auto-merge.md) | Allow all Claude Code permissions, including secret files; auto-merge every PR | Accepted |
 | [0029](0029-backup-targets-and-local-operations-stack.md) | Backup targets (RPO 5 min, RTO 4 h), local-first operations stack, WSL2 primary | Accepted |
+| [0030](0030-pgbouncer-transaction-mode-tenant-context.md) | PgBouncer in transaction mode with transaction-scoped tenant context; `server_reset_query_always` and other required settings | Accepted |

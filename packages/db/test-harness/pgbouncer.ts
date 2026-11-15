@@ -32,6 +32,11 @@ export interface PoolerOptions {
    * transaction mode (0.3-S2b measures whether production needs it). Off by default.
    */
   resetAlways?: boolean;
+  /**
+   * Extra `[user, password]` userlist entries, for a script that creates the matching role in
+   * its own throw-away container (the RLS bench's BYPASSRLS role, 0.3-S2c). Never a harness role.
+   */
+  extraUsers?: readonly (readonly [user: string, secret: string])[];
 }
 
 /**
@@ -92,10 +97,15 @@ export async function startPooler(
   // passwords, which re-salts the stored secret, and a copied secret would then stop matching.
   // PgBouncer runs SCRAM with the client and, separately, with PostgreSQL. The owner is listed
   // only so that tests can prove createDb() refuses it behind the pooler.
+  const reserved = new Set(['postgres', 'shifa_app', 'shifa_owner', POOLER_STATS_USER]);
+  if ((options.extraUsers ?? []).some(([user]) => reserved.has(user))) {
+    throw new Error('extraUsers must not redefine a harness role');
+  }
   const userlist = pgbouncerUserlist([
     ['shifa_app', info.appPassword],
     ['shifa_owner', info.ownerPassword],
     [POOLER_STATS_USER, info.poolerStatsPassword],
+    ...(options.extraUsers ?? []),
   ]);
   const container: StartedTestContainer = await new GenericContainer(PGBOUNCER_IMAGE)
     .withNetwork(network)
