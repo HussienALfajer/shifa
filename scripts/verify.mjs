@@ -11,7 +11,7 @@
 // A fast or full run that ends all green records the tree (lib/green-tree.mjs), so the Stop hook
 // does not run the same checks again on an unchanged tree.
 
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { recordGreen, treeState } from './lib/green-tree.mjs';
@@ -45,8 +45,26 @@ try {
   process.exit(3);
 }
 process.on('exit', releaseLock);
+// Steps run in parallel, so a stopped verify (Ctrl+C, the Stop hook's timeout) must stop every
+// step's process tree before it releases the lock; orphans would overlap the next run.
+const children = new Set();
+function killTree(child) {
+  if (child.exitCode !== null || child.pid === undefined) return;
+  try {
+    if (process.platform === 'win32') {
+      spawnSync('taskkill', ['/T', '/F', '/PID', String(child.pid)], { stdio: 'ignore' });
+    } else {
+      process.kill(-child.pid, 'SIGTERM'); // the step's own process group (detached below)
+    }
+  } catch {
+    // Already gone.
+  }
+}
 for (const signal of ['SIGINT', 'SIGTERM']) {
-  process.on(signal, () => process.exit(130));
+  process.on(signal, () => {
+    for (const child of children) killTree(child);
+    process.exit(130);
+  });
 }
 
 const hasMain = await run('git', ['rev-parse', '--verify', '--quiet', 'main'], null);
@@ -96,8 +114,12 @@ function run(cmd, args, logPath) {
     const child = spawn(win ? [cmd, ...args].join(' ') : cmd, win ? [] : args, {
       cwd: root,
       shell: win,
+      // POSIX: a process group per step, so killTree can stop the whole tree.
+      detached: !win,
       env: { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1', TURBO_TELEMETRY_DISABLED: '1' },
     });
+    children.add(child);
+    child.on('exit', () => children.delete(child));
     let output = '';
     child.stdout.on('data', (d) => {
       output += d;

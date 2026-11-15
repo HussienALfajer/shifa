@@ -8,7 +8,7 @@ import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'nod
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
-import { runDrift } from '../lib/drift.mjs';
+import { formatReport, runDrift } from '../lib/drift.mjs';
 import { driftCacheDir, readMarker } from '../lib/drift-cache.mjs';
 
 const cli = join(import.meta.dirname, '..', 'check-drift.mjs');
@@ -177,6 +177,8 @@ describe('driftCacheDir', () => {
 
 describe('check-drift CLI cache', () => {
   function runCli(extra = [], env = LOCAL) {
+    // Every CLI test needs --root/--config (a temp tree), which is exactly what turns the cache
+    // off; the cached path itself is covered through runDrift above.
     const config = join(root, 'drift.config.mjs');
     write(
       config,
@@ -195,17 +197,20 @@ describe('check-drift CLI cache', () => {
     });
   }
 
-  it('prints a cached check as CLEAN (cached); --no-cache and CI regenerate', () => {
+  it('is off with --root/--config: the generator that runs is not the one hashed', () => {
     git('init', '-q');
-    const first = runCli();
-    assert.equal(first.status, 0, first.stderr);
-    assert.doesNotMatch(first.stdout, /\(cached\)/);
-    assert.match(runCli().stdout, /CLEAN {4}copy \(cached\)/);
-    const noCache = runCli(['--no-cache']);
-    assert.doesNotMatch(noCache.stdout, /\(cached\)/);
-    assert.match(noCache.stdout, /cache off: --no-cache/);
-    const ci = runCli([], { CI: 'true' });
-    assert.doesNotMatch(ci.stdout, /\(cached\)/);
-    assert.match(ci.stdout, /cache off: CI/);
+    for (let i = 0; i < 2; i += 1) {
+      const res = runCli();
+      assert.equal(res.status, 0, res.stderr);
+      assert.doesNotMatch(res.stdout, /\(cached\)/);
+      assert.match(res.stdout, /cache off: --root\/--config/);
+    }
+    assert.equal(readMarker(cacheDir, 'copy'), null);
+  });
+
+  it('formatReport marks a cached check', () => {
+    const r = { name: 'copy', status: 'clean', cached: true, problems: [] };
+    for (const k of ['stale', 'missing', 'extra']) r[k] = [];
+    assert.match(formatReport([r]), /CLEAN {4}copy \(cached\)/);
   });
 });

@@ -13,10 +13,12 @@
 //     containers (scripts/test/obs-collector-*.test.mjs) under their own names, with temp-dir
 //     mounts and no published ports, so it shares Docker with the DB tests without a conflict.
 //   - drift waits for pub-get: in full mode the Dart client check resolves offline from the pub
-//     cache that pub-get fills, and two pub resolutions at once would race on that cache.
+//     cache that pub-get fills, so the cache must be complete first.
 //   - typecheck+lint+test requires pub-get (below) and runs next to drift: drift generates into
 //     temp directories and node_modules/.cache only, and the DB tests serialise on
-//     .verify/db-test.lock themselves.
+//     .verify/db-test.lock themselves. Its `dart test`/`dart analyze` read the same pub cache as
+//     drift's offline `pub get` and build_runner; pub writes that cache atomically, and a clash
+//     would crash drift (exit 2), never pass it. If it ever flakes, make drift wait for it too.
 //   - build waits for typecheck+lint+test: two Turborepo runs at once would share .turbo/ and
 //     its daemon, and build rewrites dist/ under running tests. boot requires build and takes the
 //     DB test lock like the DB tests.

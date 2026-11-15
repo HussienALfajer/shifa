@@ -49,7 +49,12 @@ if (values.list) {
 }
 
 const logDir = process.env.DRIFT_LOG_DIR ?? join(root, '.verify', 'logs');
-const cache = driftCacheDir(root, { noCache: values['no-cache'] });
+// With --root or --config the generator that runs need not be the one hashed under root, so a
+// marker could vouch for code that never ran on that tree: the cache is off.
+const cache =
+  values.root || values.config
+    ? { dir: null, reason: '--root/--config' }
+    : driftCacheDir(root, { noCache: values['no-cache'] });
 const { code, results } = await runDrift({
   root,
   checks,
