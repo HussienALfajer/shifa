@@ -5,11 +5,13 @@ import type { ShifaDb } from '@shifa/db';
 import { sql } from 'drizzle-orm';
 import Fastify, { type FastifyInstance, type FastifyRequest } from 'fastify';
 import { z } from 'zod';
-import { createAuth, type Principal } from './auth.ts';
+import { createAuth, type Principal, type SigningKeys } from './auth.ts';
 import { CommandBatch } from './commands.ts';
 import { handleBatch } from './handler/index.ts';
 import { findTenant, type Identities } from './identities.ts';
 import { type Logger, redacting } from './log.ts';
+import { registerPowerSyncUpload } from './powersync-upload.ts';
+import { registerReportRoute } from './report.ts';
 import { registerSyncRoutes } from './sync.ts';
 
 export interface ServerOptions {
@@ -19,6 +21,8 @@ export interface ServerOptions {
   log: Logger;
   /** Built prototype to serve at `/` (optional). */
   staticDir?: string;
+  /** Signing keys shared with another server instance (default: a fresh pair). */
+  keys?: SigningKeys;
 }
 
 async function seedPractitioners(db: ShifaDb, ids: Identities): Promise<void> {
@@ -42,7 +46,7 @@ const PatientLogin = z.object({ patientId: z.uuid() });
 
 export async function buildServer(options: ServerOptions): Promise<FastifyInstance> {
   const log = redacting(options.log);
-  const auth = await createAuth(options.tokenTtlSeconds);
+  const auth = await createAuth(options.tokenTtlSeconds, options.keys);
   await seedPractitioners(options.db, options.identities);
   const app = Fastify({ logger: false, bodyLimit: 1_048_576 });
 
@@ -115,6 +119,8 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
   });
 
   registerSyncRoutes(app, { db: options.db, log, principalOf });
+  registerReportRoute(app, { db: options.db, log, principalOf });
+  registerPowerSyncUpload(app, { db: options.db, log, principalOf });
 
   if (options.staticDir) {
     await app.register(fastifyStatic, { root: options.staticDir, prefix: '/' });

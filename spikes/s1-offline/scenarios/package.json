@@ -1,0 +1,28 @@
+{
+  "name": "@shifa-spike/s1-scenarios",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "scenario": "playwright test",
+    "serve": "node harness/serve.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@shifa-spike/s1-server": "workspace:*",
+    "@shifa/db": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@testcontainers/postgresql": "12.2.1",
+    "@testcontainers/toxiproxy": "12.2.1",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "eslint": "10.14.0",
+    "fastify": "5.12.8",
+    "pg": "8.23.1",
+    "testcontainers": "12.2.1",
+    "typescript": "6.0.3"
+  }
+}

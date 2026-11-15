@@ -21,12 +21,21 @@ export interface Auth {
   jwks(): { keys: JWK[] };
 }
 
-export async function createAuth(ttlSeconds: number): Promise<Auth> {
-  const { privateKey, publicKey } = await generateKeyPair('ES256');
+export type SigningKeys = Awaited<ReturnType<typeof generateKeyPair>>;
+
+/** A fresh ES256 key pair (share one between servers that PowerSync must both trust). */
+export const newSigningKeys = (): Promise<SigningKeys> => generateKeyPair('ES256');
+
+/** The clinic's date (Asia/Damascus): PowerSync streams sync "today" by this claim. */
+const clinicDay = () =>
+  new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(new Date());
+
+export async function createAuth(ttlSeconds: number, keys?: SigningKeys): Promise<Auth> {
+  const { privateKey, publicKey } = keys ?? (await newSigningKeys());
   const publicJwk = { ...(await exportJWK(publicKey)), alg: 'ES256', kid: KID, use: 'sig' };
   return {
     sign: (p) =>
-      new SignJWT({ tenant_id: p.tenantId, branch_id: p.branchId, role: p.role })
+      new SignJWT({ tenant_id: p.tenantId, branch_id: p.branchId, role: p.role, day: clinicDay() })
         .setProtectedHeader({ alg: 'ES256', kid: KID })
         .setSubject(p.sub)
         .setAudience(AUDIENCE)

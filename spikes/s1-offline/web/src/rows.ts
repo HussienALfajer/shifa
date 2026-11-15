@@ -21,7 +21,10 @@ export const toTicket = (r: Raw): TicketRow => ({
   shiftDate: str(r['shift_date']).slice(0, 10),
   provisionalNumber: num(r['provisional_number']),
   deviceId: str(r['device_id']),
-  realNumber: num(r['real_number']),
+  // An optimistic local row (PowerSync) has no real number yet.
+  ...(r['real_number'] === null || r['real_number'] === undefined
+    ? {}
+    : { realNumber: num(r['real_number']) }),
   status: str(r['status']),
   walkInLabel: str(r['walk_in_label']),
 });

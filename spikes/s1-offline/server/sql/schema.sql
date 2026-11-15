@@ -22,6 +22,11 @@ CREATE TABLE IF NOT EXISTS s1.appointment (
   practitioner_id uuid NOT NULL,
   patient_id uuid,
   slot tstzrange NOT NULL,
+  -- The clinic's date of the slot start (Asia/Damascus): PowerSync streams filter "today" on it.
+  clinic_day date NOT NULL,
+  -- Plain columns for clients that cannot read a range (PowerSync replicates it as text).
+  starts_at timestamptz GENERATED ALWAYS AS (lower(slot)) STORED,
+  ends_at timestamptz GENERATED ALWAYS AS (upper(slot)) STORED,
   status text NOT NULL DEFAULT 'booked' CHECK (status IN ('booked', 'cancelled')),
   updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY (tenant_id, id),
@@ -62,6 +67,7 @@ CREATE TABLE IF NOT EXISTS s1.cash_session (
   -- units of the currency per 1 USD, as decimal strings (never floats).
   rates jsonb NOT NULL,
   opened_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+  clinic_day date NOT NULL DEFAULT (now() AT TIME ZONE 'Asia/Damascus')::date,
   closed_at timestamptz,
   updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY (tenant_id, id)
@@ -81,6 +87,7 @@ CREATE TABLE IF NOT EXISTS s1.cash_movement (
   offline boolean NOT NULL,
   refund_of uuid,
   device_id text NOT NULL,
+  clinic_day date NOT NULL DEFAULT (now() AT TIME ZONE 'Asia/Damascus')::date,
   updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
   PRIMARY KEY (tenant_id, id),
   FOREIGN KEY (tenant_id, session_id) REFERENCES s1.cash_session (tenant_id, id),

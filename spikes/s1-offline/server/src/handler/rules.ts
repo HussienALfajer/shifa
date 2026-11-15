@@ -73,9 +73,10 @@ async function book(ctx: RuleContext, p: Payload<'appointment.book'>): Promise<A
   }
   // An overlap raises 23P01 (exclusion constraint); the handler stores it as a conflict.
   await ctx.tx.execute(
-    sql`insert into s1.appointment (id, branch_id, practitioner_id, patient_id, slot)
+    sql`insert into s1.appointment (id, branch_id, practitioner_id, patient_id, slot, clinic_day)
         values (${p.appointmentId}, ${ctx.principal.branchId}, ${p.practitionerId},
-                ${p.patientId ?? null}, tstzrange(${p.start}::timestamptz, ${p.end}::timestamptz, '[)'))`,
+                ${p.patientId ?? null}, tstzrange(${p.start}::timestamptz, ${p.end}::timestamptz, '[)'),
+                (${p.start}::timestamptz at time zone 'Asia/Damascus')::date)`,
   );
   return {};
 }
