@@ -1,13 +1,13 @@
 // The RLS bench (spec 0.3-S2 criterion 11, report only, no threshold). Run by
 // `pnpm --filter @shifa/db bench:rls`; needs Docker. Under the DB test lock it starts its own
 // harness (PostgreSQL + PgBouncer), clones the template into BENCH_DATABASE, fills the plan probe
-// with the `load` preset's volume, and times the same transaction through PgBouncer:
-//   (a) as shifa_app, under RLS;
+// with the `load` preset's volume, and times the same rows through PgBouncer:
+//   (a) as shifa_app, under RLS, with the application query that names no tenant (the policy
+//       picks it);
 //   (b) as shifa_bench_bypass, a BYPASSRLS login created only inside this throw-away container
-//       (never in roles.sql or migrations; the RLS presence and roles tests still reject any
-//       BYPASSRLS application role in the real schema).
-// Both run BEGIN; set_config('app.tenant_id', $1, true); the query; COMMIT, interleaved, so RLS is
-// the only difference. Writes `.verify/s2-bench/report.json`; prints no credentials or rows.
+//       (never in roles.sql or migrations), with the tenant named explicitly.
+// Both run BEGIN; set_config('app.tenant_id', $1, true); the query; COMMIT, interleaved, and
+// return the same 20 rows. Writes `.verify/s2-bench/report.json`; prints no credentials or rows.
 import { randomBytes } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { cpus, totalmem } from 'node:os';
@@ -21,11 +21,12 @@ import {
   startHarnessContainer,
 } from '../test-harness/container.ts';
 import { cloneTemplate, withPool } from '../test-harness/context.ts';
-import { type BenchReport, summarize, writeBenchReport } from './bench-report.ts';
+import { assertNoSecrets, type BenchReport, summarize, writeBenchReport } from './bench-report.ts';
 import {
   createPlanProbe,
   fillPlanProbe,
   PLAN_PROBE_TABLE,
+  POLICY_LATEST_TEXT,
   planProbeTenants,
   planScans,
   ROWS_PER_TENANT,
@@ -49,13 +50,23 @@ const ITERATIONS = Math.max(1, positiveInt('BENCH_RLS_ITERATIONS', 2000));
 
 const say = (line: string) => process.stdout.write(`bench:rls: ${line}\n`);
 
+type Side = 'rls' | 'bypass';
+
+/**
+ * Under RLS the application query names no tenant (the policy picks it); without RLS the same
+ * rows need the tenant named explicitly.
+ */
+const queryFor = (side: Side, tenantId: string): [string, string[]] =>
+  side === 'rls' ? [POLICY_LATEST_TEXT, []] : [TENANT_LATEST_TEXT, [tenantId]];
+
 /** One measured transaction; checks it saw exactly one page of its own tenant's rows. */
-async function timedTransaction(client: ClientBase, tenantId: string): Promise<number> {
+async function timedTransaction(client: ClientBase, side: Side, tenantId: string): Promise<number> {
+  const [text, values] = queryFor(side, tenantId);
   const start = performance.now();
   await client.query('BEGIN');
   try {
     await client.query("select set_config('app.tenant_id', $1, true)", [tenantId]);
-    const { rows } = await client.query<{ tenant_id: string }>(TENANT_LATEST_TEXT, [tenantId]);
+    const { rows } = await client.query<{ tenant_id: string }>(text, values);
     await client.query('COMMIT');
     const elapsed = performance.now() - start;
     if (rows.length !== PAGE || rows.some((row) => row.tenant_id !== tenantId)) {
@@ -71,13 +82,14 @@ async function timedTransaction(client: ClientBase, tenantId: string): Promise<n
 }
 
 /** The index the query's plan uses for this client (or `none`). */
-async function planIndex(client: ClientBase, tenantId: string): Promise<string> {
+async function planIndex(client: ClientBase, side: Side, tenantId: string): Promise<string> {
+  const [text, values] = queryFor(side, tenantId);
   await client.query('BEGIN');
   try {
     await client.query("select set_config('app.tenant_id', $1, true)", [tenantId]);
     const { rows } = await client.query<{ 'QUERY PLAN': unknown }>(
-      `explain (format json) ${TENANT_LATEST_TEXT}`,
-      [tenantId],
+      `explain (format json) ${text}`,
+      values,
     );
     const scans = planScans(rows[0]?.['QUERY PLAN'], PLAN_PROBE_TABLE);
     return scans.find((scan) => scan.index !== undefined)?.index ?? 'none';
@@ -139,7 +151,7 @@ async function measure(container: HarnessContainer, bypassPassword: string): Pro
       // Alternate which goes first so neither always runs on a warmer cache.
       const order = i % 2 === 0 ? (['rls', 'bypass'] as const) : (['bypass', 'rls'] as const);
       for (const which of order) {
-        const elapsed = await timedTransaction(which === 'rls' ? app : bypass, tenantId);
+        const elapsed = await timedTransaction(which === 'rls' ? app : bypass, which, tenantId);
         if (i >= WARMUP) samples[which].push(elapsed);
       }
     }
@@ -158,13 +170,17 @@ async function measure(container: HarnessContainer, bypassPassword: string): Pro
     const cpu = cpus();
     return {
       date: new Date().toISOString(),
-      query: `latest ${String(PAGE)} rows of one tenant by created_at (${PLAN_PROBE_TABLE})`,
+      query: `latest ${String(PAGE)} rows of one tenant by created_at (${PLAN_PROBE_TABLE}); RLS side: policy only, bypass side: explicit tenant filter`,
       tenants: tenants.length,
       rowsPerTenant: ROWS_PER_TENANT,
       warmup: WARMUP,
       iterations: ITERATIONS,
-      rls: { role: 'shifa_app', ...rls, planIndex: await planIndex(app, probeTenant) },
-      bypass: { role: BYPASS_ROLE, ...off, planIndex: await planIndex(bypass, probeTenant) },
+      rls: { role: 'shifa_app', ...rls, planIndex: await planIndex(app, 'rls', probeTenant) },
+      bypass: {
+        role: BYPASS_ROLE,
+        ...off,
+        planIndex: await planIndex(bypass, 'bypass', probeTenant),
+      },
       overhead: {
         p50Ratio: ratio(rls.p50Ms, off.p50Ms),
         p95Ratio: ratio(rls.p95Ms, off.p95Ms),
@@ -202,6 +218,14 @@ async function main(): Promise<void> {
     await prepare(container, bypassPassword);
     say(`measuring: ${String(WARMUP)} warm-up + ${String(ITERATIONS)} iterations each`);
     const report = await measure(container, bypassPassword);
+    const { info } = container;
+    assertNoSecrets(report, [
+      bypassPassword,
+      info.superuserPassword,
+      info.ownerPassword,
+      info.appPassword,
+      info.poolerStatsPassword,
+    ]);
     const dir = writeBenchReport(ROOT, report);
     say(
       `RLS (shifa_app) p50 ${String(report.rls.p50Ms)} ms, p95 ${String(report.rls.p95Ms)} ms; ` +

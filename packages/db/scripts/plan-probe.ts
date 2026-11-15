@@ -60,19 +60,31 @@ export async function fillPlanProbe(owner: Executor, tenants: readonly string[])
   await owner.execute(sql.raw(`analyze ${PLAN_PROBE_TABLE}`));
 }
 
-/** The typical tenant query's text: the tenant's latest 20 rows ($1 is the tenant id). */
+/**
+ * The typical application query: the current tenant's latest 20 rows, with no tenant filter of
+ * its own. Under RLS only the policy (`tenant_id = current_tenant_id()`) picks the tenant, so the
+ * plan shows whether the policy predicate itself can use the index.
+ */
+export const POLICY_LATEST_TEXT = `select tenant_id, created_at, label from ${PLAN_PROBE_TABLE}
+ order by created_at desc limit 20`;
+
+/** POLICY_LATEST_TEXT as a Drizzle `sql` template, for withTenant(). */
+export function policyLatestQuery(): SQL {
+  return sql.raw(POLICY_LATEST_TEXT);
+}
+
+/**
+ * The same rows for a role without RLS (the bench's BYPASSRLS side): the tenant named
+ * explicitly ($1), because no policy applies.
+ */
 export const TENANT_LATEST_TEXT = `select tenant_id, created_at, label from ${PLAN_PROBE_TABLE}
  where tenant_id = $1 order by created_at desc limit 20`;
-
-/** The same query as a Drizzle `sql` template, for withTenant(). */
-export function tenantLatestQuery(tenantId: string): SQL {
-  return sql`select tenant_id, created_at, label from ${sql.identifier(PLAN_PROBE_TABLE)}
- where tenant_id = ${tenantId}::uuid order by created_at desc limit 20`;
-}
 
 export interface PlanScan {
   nodeType: string;
   index: string | undefined;
+  /** The scan's `Index Cond`, when it has one. */
+  indexCond: string | undefined;
   /** `Seq Scan on plan_probe`, `Index Scan using plan_probe_tenant_created on plan_probe`. */
   description: string;
 }
@@ -102,7 +114,13 @@ export function planScans(explained: unknown, table: string): PlanScan[] {
     const index = typeof node['Index Name'] === 'string' ? node['Index Name'] : undefined;
     if (nodeType && (relation === table || (relation === undefined && index !== undefined))) {
       const using = index === undefined ? '' : ` using ${index}`;
-      scans.push({ nodeType, index, description: `${nodeType}${using} on ${table}` });
+      const cond = node['Index Cond'];
+      scans.push({
+        nodeType,
+        index,
+        indexCond: typeof cond === 'string' ? cond : undefined,
+        description: `${nodeType}${using} on ${table}`,
+      });
     }
     if (Array.isArray(node['Plans'])) visit(node['Plans']);
   };

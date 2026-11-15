@@ -5,7 +5,18 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { z } from 'zod';
 
-const FORBIDDEN = /postgres(ql)?:\/\/|password|secret|\d{1,3}(\.\d{1,3}){3}:\d+|@[\w.-]+:\d+/i;
+// URLs, host:port pairs (names, IPv4, bracketed IPv6), credential words and harness-style hex
+// passwords (32 hex digits).
+const FORBIDDEN =
+  /postgres(ql)?:\/\/|password|secret|[\w.-]+:\d{2,5}\b|\[[\da-f:]+\]:\d+|\b[\da-f]{32}\b/i;
+
+/** Throws when the serialised report contains any of `secrets` (the run's own passwords). */
+export function assertNoSecrets(report: BenchReport, secrets: readonly string[]): void {
+  const text = JSON.stringify(report);
+  if (secrets.some((secret) => secret !== '' && text.includes(secret))) {
+    throw new Error('the bench report contains a credential of this run; not written');
+  }
+}
 
 const safe = (max = 200) =>
   z

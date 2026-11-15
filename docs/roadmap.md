@@ -70,7 +70,7 @@ Nothing in Phase A starts before every item is done.
 | Spike | Question | Result goes to |
 |---|---|---|
 | S1 Offline sync | PowerSync vs custom outbox under real network cuts, for queue, appointments and cash | ADR-0014, OD-05 |
-| S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005; [result](spikes/s2-tenant-isolation.md): safe with `server_reset_query_always = 1` and `max_prepared_statements > 0` |
+| S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005; [result](spikes/s2-tenant-isolation.md): safe only with the PgBouncer settings in ADR-0030 (`server_reset_query_always = 1` among them); session state leaks without them |
 | S3 Arabic output | Arabic PDF (Gotenberg), thermal receipt rendering, Arabic name search normaliser | ADR-0021 |
 | S4 Imaging | Garage + Orthanc + OHIF; upload a real CBCT over an Aleppo-like link | ADR-0019, OD-18 |
 | S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification | ADR-0016/0017, OD-12 |
