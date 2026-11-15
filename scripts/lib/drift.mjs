@@ -13,6 +13,10 @@
 //   hint      — one line printed under a drifted check
 //   budget    — { files, lines }: ceilings for the generated outputs. Exceeding one is drift
 //               reported as one problem (never fixed), so an inflated output is not a 10k-line diff.
+//   cacheInputs — opt in to the drift cache (lib/drift-cache.mjs): repo-relative files besides
+//               `inputs` that decide what the generator writes (its own source, the pinned
+//               toolchain). A run whose inputs, cache inputs and committed outputs hash to the key
+//               recorded after the last clean run reports clean without generating.
 import {
   existsSync,
   mkdirSync,
@@ -25,6 +29,7 @@ import {
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
+import { cacheKey, readMarker, writeMarker } from './drift-cache.mjs';
 
 /** Repo-relative POSIX paths of every file at `rel` under `base` (a file, a directory or nothing). */
 function listFiles(base, rel) {
@@ -95,13 +100,37 @@ function applyFix(root, outDir, { stale, missing, extra }) {
   for (const path of extra) rmSync(join(root, path));
 }
 
-async function runOne(check, { root, full, fix, logDir }) {
-  const base = { name: check.name, stale: [], missing: [], extra: [], problems: [] };
+/** The check's cache key, or null when it is not cached here or a file cannot be read. */
+function keyOf(check, root, cacheDir) {
+  if (!cacheDir || !check.cacheInputs) return null;
+  try {
+    return cacheKey(root, check, listFiles);
+  } catch {
+    return null;
+  }
+}
+
+async function runOne(check, { root, full, fix, logDir, cacheDir }) {
+  const base = { name: check.name, stale: [], missing: [], extra: [], problems: [], cached: false };
   if (check.full && !full) return { ...base, status: 'skipped' };
+  const key = keyOf(check, root, cacheDir);
+  // --fix always regenerates: the marker only says the committed outputs were already right.
+  if (key && !fix && readMarker(cacheDir, check.name) === key) {
+    return { ...base, status: 'clean', cached: true };
+  }
   const outDir = mkdtempSync(join(tmpdir(), `drift-${check.name}-`));
   try {
     // Errors while comparing or fixing count as a crash too, so exit 1 always means drift.
-    return await generateAndCompare(check, { root, fix, outDir, base });
+    const result = await generateAndCompare(check, { root, fix, outDir, base });
+    // Recorded only for a clean run of a tree that did not change while the generator ran.
+    if (key && result.status === 'clean' && keyOf(check, root, cacheDir) === key) {
+      try {
+        writeMarker(cacheDir, check.name, key);
+      } catch {
+        // A read-only state folder only costs the next run a regeneration.
+      }
+    }
+    return result;
   } catch (err) {
     mkdirSync(logDir, { recursive: true });
     const logPath = join(logDir, `drift-${check.name}.log`);
@@ -127,10 +156,16 @@ async function generateAndCompare(check, { root, fix, outDir, base }) {
   return { ...result, status: 'drift' };
 }
 
-/** Runs the checks in order. Exit code: 0 clean (or fixed), 1 drift, 2 a generator crashed. */
-export async function runDrift({ root, checks, full = false, fix = false, logDir }) {
+/**
+ * Runs the checks in order. Exit code: 0 clean (or fixed), 1 drift, 2 a generator crashed.
+ * `cacheDir` turns the drift cache on for checks with `cacheInputs` (lib/drift-cache.mjs says
+ * where it may be used); without it every check regenerates.
+ */
+export async function runDrift({ root, checks, full = false, fix = false, logDir, cacheDir }) {
   const results = [];
-  for (const check of checks) results.push(await runOne(check, { root, full, fix, logDir }));
+  for (const check of checks) {
+    results.push(await runOne(check, { root, full, fix, logDir, cacheDir }));
+  }
   const code = results.some((r) => r.status === 'crash')
     ? 2
     : results.some((r) => r.status === 'drift')
@@ -142,7 +177,7 @@ export async function runDrift({ root, checks, full = false, fix = false, logDir
 export function formatReport(results, { fix = false } = {}) {
   const lines = [];
   for (const r of results) {
-    lines.push(`  ${r.status.toUpperCase().padEnd(8)} ${r.name}`);
+    lines.push(`  ${r.status.toUpperCase().padEnd(8)} ${r.name}${r.cached ? ' (cached)' : ''}`);
     if (r.status === 'crash') lines.push(`    generator crashed; log: ${r.logPath}`);
     for (const p of r.problems) lines.push(`    problem  ${p}`);
     for (const kind of ['stale', 'missing', 'extra']) {

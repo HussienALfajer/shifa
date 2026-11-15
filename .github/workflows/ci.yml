@@ -198,6 +198,9 @@ jobs:
             exit 1
           fi
           for image in $images; do docker pull --quiet "$image"; done
+      # The drift cache (scripts/lib/drift-cache.mjs) is off here because CI is set: a marker
+      # only claims "this exact tree was clean" and cannot be re-checked without regenerating,
+      # so it is never restored from an actions/cache entry; CI always regenerates the clients.
       - name: verify
         env:
           MODE: ${{ steps.scope.outputs.mode }}
