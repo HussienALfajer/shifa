@@ -81,6 +81,15 @@ export function apiClientDartCheck({
       `${pkgDir}/pubspec.yaml`,
       'pubspec.lock',
     ],
+    // The generator's own source and the pinned SDK it runs on (lib/drift-cache.mjs): with
+    // the inputs and the committed output unchanged since the last clean run, the ~50 s
+    // regeneration is skipped locally. CI always regenerates.
+    cacheInputs: [
+      'scripts/lib/drift-api-clients.mjs',
+      'scripts/dart.mjs',
+      'scripts/lib/flutter-sdk.mjs',
+      '.fvmrc',
+    ],
     outputs: [generated],
     budget,
     hint: 'openapi.json changed: run `node scripts/check-drift.mjs --full --fix` and commit the Dart client',

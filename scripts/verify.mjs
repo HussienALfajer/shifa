@@ -4,7 +4,9 @@
 //   full — everything, no affected filter, plus build and the API boot check; before a PR and in CI.
 //   docs — only the steps that read docs and repository scripts (no Flutter, no packages); CI uses
 //          it for pull requests that change nothing outside docs/.
-// Prints a short summary; full output of each step is written to .verify/logs/<step>.log.
+// Steps run in parallel where they do not conflict (lib/verify-steps.mjs lists the steps and
+// why some wait for others). Prints a short summary in the declared step order; full output of
+// each step is written to .verify/logs/<step>.log.
 // Only one verify may run at a time (lock file), so parallel runs never fight over test databases.
 // A fast or full run that ends all green records the tree (lib/green-tree.mjs), so the Stop hook
 // does not run the same checks again on an unchanged tree.
@@ -14,6 +16,7 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { recordGreen, treeState } from './lib/green-tree.mjs';
 import { acquireLock, LockBusyError } from './lib/lock.mjs';
+import { runSteps, verifySteps } from './lib/verify-steps.mjs';
 
 const MODES = ['fast', 'full', 'docs'];
 const mode = process.argv[2] ?? 'fast';
@@ -50,98 +53,13 @@ const hasMain = await run('git', ['rev-parse', '--verify', '--quiet', 'main'], n
 const affected = mode === 'fast' && hasMain.code === 0 ? ['--affected'] : [];
 const treeBefore = mode === 'docs' ? null : treeState(root);
 
-// `docs: true` marks the steps docs mode runs; every other step needs packages or Flutter.
-const steps = [
-  {
-    name: 'format',
-    docs: true,
-    cmd: 'pnpm',
-    args: ['exec', 'biome', mode === 'fast' ? 'check' : 'ci', '.'],
-  },
-  { name: 'instructions', docs: true, cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
-  {
-    name: 'lint-root',
-    docs: true,
-    cmd: 'pnpm',
-    // The cache is keyed on each file's content and the resolved config. That is enough only
-    // while the root config uses single-file rules; a rule that reads other files (type-aware,
-    // import resolution) would need the cache removed.
-    args: [
-      'exec',
-      'eslint',
-      '--max-warnings=0',
-      '--cache',
-      '--cache-strategy',
-      'content',
-      '--cache-location',
-      '.verify/eslint-root.cache',
-      '.',
-    ],
-  },
-  { name: 'scripts-test', docs: true, cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
-  { name: 'file-length', docs: true, cmd: 'node', args: ['scripts/check-file-length.mjs'] },
-  // Resolves the pub workspace from pubspec.lock without changing it (fast when up to date).
-  // Runs before drift: the Dart client check resolves offline from the pub cache this fills.
-  {
-    name: 'pub-get',
-    cmd: 'node',
-    args: ['scripts/dart.mjs', 'flutter', 'pub', 'get', '--enforce-lockfile'],
-  },
-  // Generated files and migrations match their sources (scripts/drift.config.mjs).
-  {
-    name: 'drift',
-    cmd: 'node',
-    args: ['scripts/check-drift.mjs', ...(mode === 'full' ? ['--full'] : [])],
-  },
-  {
-    name: 'typecheck+lint+test',
-    // `dart test` re-resolves the workspace and would rewrite pubspec.lock if pub-get failed.
-    requires: 'pub-get',
-    cmd: 'pnpm',
-    args: [
-      'exec',
-      'turbo',
-      'run',
-      'typecheck',
-      'lint',
-      'test',
-      '--output-logs=errors-only',
-      // full never trusts the cache, so CI and pre-PR runs re-execute every task
-      ...(mode === 'full' ? ['--force'] : affected),
-    ],
-  },
-  // Full only: build every app and boot the built API against a real database
-  // (apps/api/scripts/boot-check.ts; needs Docker like the DB tests).
-  {
-    name: 'build',
-    full: true,
-    cmd: 'pnpm',
-    args: ['exec', 'turbo', 'run', 'build', '--output-logs=errors-only', '--force'],
-  },
-  {
-    name: 'boot',
-    full: true,
-    requires: 'build',
-    cmd: 'pnpm',
-    args: ['--filter', '@shifa/api', 'run', 'boot-check'],
-  },
-].filter((step) => (mode === 'docs' ? step.docs : mode === 'full' || !step.full));
-
-const results = [];
-for (const step of steps) {
-  const logPath = join(logDir, `${step.name.replaceAll('+', '-')}.log`);
-  const prerequisite = results.find((r) => r.name === step.requires);
-  if (prerequisite && prerequisite.code !== 0) {
-    const output = `skipped: ${step.requires} failed\n`;
-    writeFileSync(logPath, output);
-    results.push({ ...step, code: 1, output, logPath, seconds: '0.0' });
-    continue;
-  }
-  const started = performance.now();
-  const { code, output } = await run(step.cmd, step.args, logPath);
-  const seconds = ((performance.now() - started) / 1000).toFixed(1);
-  results.push({ ...step, code, output, logPath, seconds });
-}
+const logPathOf = (step) => join(logDir, `${step.name.replaceAll('+', '-')}.log`);
+const results = (
+  await runSteps(verifySteps(mode, { affected }), (step) =>
+    run(step.cmd, step.args, logPathOf(step)),
+  )
+).map((r) => ({ ...r, logPath: logPathOf(r) }));
+for (const r of results.filter((x) => x.skipped)) writeFileSync(r.logPath, r.output);
 
 let failed = 0;
 process.stdout.write(`verify (${mode}${affected.length ? ', affected' : ''})\n`);
@@ -173,7 +91,7 @@ if (!failed && treeBefore) {
 function run(cmd, args, logPath) {
   return new Promise((resolve) => {
     // On Windows, pnpm is a .cmd shim that needs a shell. Arguments here are fixed strings
-    // from this file (never user input), so joining them into one command line is safe.
+    // from lib/verify-steps.mjs (never user input), so joining them into one command line is safe.
     const win = process.platform === 'win32';
     const child = spawn(win ? [cmd, ...args].join(' ') : cmd, win ? [] : args, {
       cwd: root,
