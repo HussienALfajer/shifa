@@ -1,0 +1,32 @@
+{
+  "name": "@shifa-spike/s1-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/static": "10.1.11",
+    "@shifa/db": "workspace:*",
+    "@shifa/testing": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.5",
+    "fastify": "5.12.8",
+    "jose": "6.2.17",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
