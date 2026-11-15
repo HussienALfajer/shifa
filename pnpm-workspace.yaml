@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
   - tooling/*
+  # Throwaway spikes (0.3-S1): linted, typechecked and tested in verify like any package.
+  - spikes/*/*
 
 # Install scripts are denied unless listed true. These three are optional native speed-ups of
 # testcontainers' Docker client (ssh2) and gRPC (protobufjs); the pure-JS fallbacks are used.

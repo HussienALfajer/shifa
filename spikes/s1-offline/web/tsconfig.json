@@ -1,0 +1,8 @@
+{
+  "extends": "@shifa/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["es2024", "dom", "dom.iterable", "webworker.importscripts"],
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src", "test", "*.config.ts"]
+}

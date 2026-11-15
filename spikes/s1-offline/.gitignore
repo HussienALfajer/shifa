@@ -1,0 +1,7 @@
+# Prototype builds per engine and scenario outputs (CI uploads them as artefacts).
+web/dist/
+web/dist-*/
+scenarios/test-results/
+scenarios/playwright-report/
+flutter_probe/.dart_tool/
+flutter_probe/build/

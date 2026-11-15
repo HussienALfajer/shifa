@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-12 · Owner: product owner
+Status: Living · Last updated: 2026-11-16 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -68,3 +68,7 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Collector health in `obs:up`** (0.2-09b3 review N6): the distroless Collector has no healthcheck, so `up --wait` and the smoke pre-check accept a crash-looping container. Enable the `health_check` extension and probe it from `obs.mjs` (or check `docker compose ps` for restarts) before printing the URLs.
 - **Owner-only `.env` before content on Windows** (0.2-09c security review L7): `scripts/lib/stack-io.mjs` writes the `.env` under the inherited ACL, then restricts it with `icacls`, and only warns when `icacls` fails. Create it empty, restrict, then write; fail on an `icacls` error. Shared by `obs` and `backup`.
 - **Backup scripts for production** (0.2-09c reviews N5, security 1; with OD-01): the scripts target the local compose stack (network, CA path, `compose exec postgres`). Make host, network and CA configurable, script the disaster-recovery switch-over (new primary with archiving on, immediate full backup), and give `backup:check` a per-repository freshness check before `repo2` goes live.
+- **S1 outbox for Phase A** (0.3-S1 reviews): replace the pull's 5-second time overlap with a commit-ordered change counter (a write transaction longer than 5 s could be missed); store who issued each cash movement and command (`user_id`); compare a replayed command's payload with the stored one instead of silently returning the old result; check `rate_used` on online cash movements; request `navigator.storage.persist()` and show a lost-queue warning.
+- **S1 scenario assertions** (0.3-S1 review N2, N3, N4, N5): tenant scoping checks only ticket ids on A's screen (also read A's local store and B's appointment and cash ids; the `main.textContent` check cannot fail); the pull test cannot catch a cursor filter that is ignored (backdate a row and assert it is absent); Toxiproxy `reset_peer` with toxicity 0.3 resets 30% of *connections*, not packets (force new connections or state it); the harness declares `POWERSYNC_VERSION` but never compares it with the running service.
+- **S1 PowerSync if revisited** (0.3-S1 reviews): fetchCredentials hands out an expired token, so with no pending upload an expired session could stay "offline" instead of "needs login" (the expiry spec passed because uploads were pending); the `s1_powersync` REPLICATION role can read every table's changes through a slot regardless of grants; the `patient_appointments` stream has no day or branch filter; re-login in the prototype needs no credential, so criterion 9 proves token expiry, not re-authentication.
+- **Testcontainers ports on all interfaces** (0.3-S1 security review N7): containers publish on 0.0.0.0 (Toxiproxy admin API, sshd helper, PostgreSQL); on a shared LAN set Docker's default bind to 127.0.0.1 or firewall everything but the app port. Applies to `packages/db` tests too.

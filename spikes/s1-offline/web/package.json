@@ -1,0 +1,31 @@
+{
+  "name": "@shifa-spike/s1-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@journeyapps/wa-sqlite": "2.0.10",
+    "@powersync/common": "2.5.0",
+    "@powersync/shared-internals": "1.6.0",
+    "@powersync/web": "2.7.0",
+    "idb": "8.0.4"
+  },
+  "devDependencies": {
+    "@shifa-spike/s1-server": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "fake-indexeddb": "6.2.8",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}
