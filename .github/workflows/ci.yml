@@ -31,7 +31,7 @@ jobs:
       FLUTTER_VERSION: 3.47.9
       FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
       # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
-      FLUTTER_TREE_SHA256: ""
+      FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
