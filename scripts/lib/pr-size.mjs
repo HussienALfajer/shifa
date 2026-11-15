@@ -1,7 +1,8 @@
 // Pure logic for the PR size budget (docs/process/development-workflow.md §6).
 // Counts hand-written changed lines (added + deleted); generated and binary files are excluded.
 
-export const WARN_LINES = 1000;
+// Raised from 1,000 by the owner on 2026-11-15 (ADR-0032).
+export const WARN_LINES = 4000;
 
 /** Paths that are always generated, in addition to files marked linguist-generated. */
 const ALWAYS_GENERATED = [/(^|\/)pnpm-lock\.yaml$/, /(^|\/)pubspec\.lock$/];

@@ -8,7 +8,7 @@ disable-model-invocation: true
 Plan slices for the approved spec: $ARGUMENTS
 
 1. Read the spec, its domain doc and ADRs, `docs/roadmap.md` and the code the change touches.
-2. Split the work so each slice is one session and one PR of about 1,000 hand-written lines or fewer. Split by sub-feature, not only by backend/frontend. Schema and API-contract changes are serialised.
+2. Split the work so each slice is one session and one PR of about 4,000 hand-written lines or fewer (ADR-0032); a large slice names checkpoints in its plan. Split by sub-feature, not only by backend/frontend. Schema and API-contract changes are serialised.
 3. Give each slice a risk tier from `docs/process/development-workflow.md` §2 (T0 auth/RLS/patient data/audit/money/migrations/permissions/infra; T1 domain/contracts; T2 UI polish/docs/tests).
 4. For each slice copy `docs/slices/_template.md` to `docs/slices/<phase>-<nn>-<kebab-title>.md` and fill in:
    - goal, tier, branch `<type>/<phase>-<nn>-<name>`, spec link and requirement IDs;
