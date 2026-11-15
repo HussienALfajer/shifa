@@ -16,51 +16,180 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # The job keeps its name: "verify (full)" is a required check. Pull requests that change only
+  # docs/ run `verify docs` (format, instructions, root lint, script tests, file length) and skip
+  # Flutter, the database images and the packages; every push to main runs the full verify.
+  # `verify docs` still executes repository code (script tests, ESLint configs), so a docs-only
+  # pull request is not "no code ran" and gets the same review.
   verify:
     name: verify (full)
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
       contents: read
+    env:
+      FLUTTER_VERSION: 3.47.9
+      FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+      # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
+      FLUTTER_TREE_SHA256: ""
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          # Two commits: the PR merge commit and its first parent (the base), to list the change.
+          fetch-depth: 2
           persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      - name: Choose verify mode
+        id: scope
+        env:
+          EVENT: ${{ github.event_name }}
+        run: |
+          mode=full
+          if [ "$EVENT" = pull_request ]; then
+            # --no-renames lists both sides of a move, so moving a file out of docs/ is code.
+            # quotePath=false keeps non-ASCII (Arabic) names unquoted; control characters stay
+            # quoted, start with `"` and so force full.
+            changed="$(git -c core.quotePath=false diff --name-only --no-renames HEAD^1 HEAD)"
+            if [ -n "$changed" ] && ! printf '%s\n' "$changed" | grep -qv '^docs/'; then
+              mode=docs
+            fi
+            # Printed between stop-commands markers with a random token, so no file name can act
+            # as a workflow command (`::add-mask::`, `##[...]`) in this job.
+            echo 'Changed files:'
+            token="$(openssl rand -hex 16)"
+            echo "::stop-commands::${token}"
+            printf '%s\n' "$changed"
+            echo "::${token}::"
+          fi
+          echo "verify mode: $mode"
+          echo "mode=$mode" >> "$GITHUB_OUTPUT"
+      # Caches (Flutter SDK, pub packages) are saved only by pushes to main, right after the
+      # download is verified and before any repository dependency or test runs; pull requests
+      # only restore. That alone is not enough: any job on main can create a cache key that does
+      # not exist yet (for example the next Flutter version's), so a restored entry is only as
+      # trustworthy as the check run on it (OD-30).
+      - name: Restore Flutter SDK
+        id: flutter-cache
+        if: steps.scope.outputs.mode == 'full'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
-      - run: pnpm install --frozen-lockfile
+          path: ${{ runner.temp }}/flutter
+          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
       # Flutter from Google's release storage, checksum-verified, no third-party action. The
       # version must match .fvmrc; the SHA-256 comes from Google's releases_linux.json for it.
-      - name: Install Flutter 3.47.9
+      # The cache holds the untouched extraction, and FLUTTER_TREE_SHA256 pins a digest of that
+      # tree (paths, types, modes, link targets, file contents). A restored tree that does not
+      # match is discarded and reinstalled from the archive, so a planted entry costs time, never
+      # integrity. On a version bump, set FLUTTER_TREE_SHA256 to the digest a run prints.
+      - name: Install Flutter
+        id: flutter-install
+        if: steps.scope.outputs.mode == 'full'
+        working-directory: ${{ runner.temp }}
         env:
-          FLUTTER_VERSION: 3.47.9
-          FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+          CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
+          FVMRC: ${{ github.workspace }}/.fvmrc
         run: |
+          tree_digest() {
+            ( cd "$1" && {
+              find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
+              find . -type f -print0 | xargs -0 -r -P4 -n256 sha256sum | LC_ALL=C sort -k2
+            } | sha256sum | cut -d' ' -f1 )
+          }
           # Only known keys: FVM honours flutterUrl/cachePath in .fvmrc, which could point
           # every developer's `fvm install` at another repository.
-          jq -e 'keys - ["flutter","updateGitIgnore","updateVscodeSettings"] == []' .fvmrc > /dev/null \
+          jq -e 'keys - ["flutter","updateGitIgnore","updateVscodeSettings"] == []' "$FVMRC" > /dev/null \
             || { echo "::error::.fvmrc has keys other than flutter/updateGitIgnore/updateVscodeSettings"; exit 1; }
-          pinned="$(jq -r .flutter .fvmrc)"
+          pinned="$(jq -r .flutter "$FVMRC")"
           if [ "$pinned" != "$FLUTTER_VERSION" ]; then
             echo "::error::.fvmrc pins Flutter $pinned but CI installs $FLUTTER_VERSION; update ci.yml"
             exit 1
           fi
-          archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-          curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
-          echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
-          tar -xJf "$archive" -C "$RUNNER_TEMP"
-          rm "$archive"
+          sdk="${RUNNER_TEMP}/flutter"
+          save=false
+          if [ "$CACHE_HIT" = true ]; then
+            restored="$(tree_digest "$sdk")"
+            if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
+              echo "Restored Flutter SDK matches the pinned tree digest"
+            else
+              echo "::warning::restored Flutter SDK does not match FLUTTER_TREE_SHA256 ($restored); reinstalling from the archive"
+              rm -rf "$sdk"
+            fi
+          fi
+          if [ ! -d "$sdk" ]; then
+            archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+            curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+            echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+            tar -xJf "$archive" -C "$RUNNER_TEMP"
+            rm "$archive"
+            extracted="$(tree_digest "$sdk")"
+            echo "Flutter SDK tree digest: $extracted"
+            if [ -z "$FLUTTER_TREE_SHA256" ]; then
+              echo "::warning::FLUTTER_TREE_SHA256 is not set; the SDK is not cached. Pin: $extracted"
+            elif [ "$extracted" != "$FLUTTER_TREE_SHA256" ]; then
+              echo "::error::the verified archive extracts to tree digest $extracted, but ci.yml pins $FLUTTER_TREE_SHA256"
+              exit 1
+            elif [ "$CACHE_HIT" != true ]; then
+              save=true
+            fi
+          fi
+          echo "save=$save" >> "$GITHUB_OUTPUT"
+      # Saved before the first `flutter` call, which writes into the SDK (tool snapshot, caches).
+      - name: Save Flutter SDK
+        if: >-
+          steps.scope.outputs.mode == 'full' && github.event_name == 'push' &&
+          steps.flutter-install.outputs.save == 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/flutter
+          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+      - name: Set up Flutter
+        if: steps.scope.outputs.mode == 'full'
+        working-directory: ${{ runner.temp }}
+        run: |
           echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
           "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
+          installed="$("${RUNNER_TEMP}/flutter/bin/flutter" --version --machine | jq -r .frameworkVersion)"
+          if [ "$installed" != "$FLUTTER_VERSION" ]; then
+            echo "::error::the Flutter SDK reports $installed, expected $FLUTTER_VERSION"
+            exit 1
+          fi
           "${RUNNER_TEMP}/flutter/bin/flutter" --version
+      # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
+      # reuses an unpacked copy from the cache. The cache is filled by a plain
+      # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
+      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
+      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
+      - name: Restore pub cache
+        id: pub-cache
+        if: steps.scope.outputs.mode == 'full'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pub-cache
+          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+      - name: Fetch pub packages
+        if: steps.scope.outputs.mode == 'full' && steps.pub-cache.outputs.cache-hit != 'true'
+        run: '"${SHIFA_FLUTTER_ROOT}/bin/flutter" pub get --enforce-lockfile'
+      - name: Save pub cache
+        if: >-
+          steps.scope.outputs.mode == 'full' && github.event_name == 'push' &&
+          steps.pub-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pub-cache
+          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
+      # have run, which breaks the rule above; a clean install takes about 2 s anyway.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
+      - run: pnpm install --frozen-lockfile
       # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
       # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
       # test timeouts.
       - name: Pull database test images
+        if: steps.scope.outputs.mode == 'full'
         run: |
           images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
             packages/db/test-harness/image.ts | tr -d "'")"
@@ -69,7 +198,10 @@ jobs:
             exit 1
           fi
           for image in $images; do docker pull --quiet "$image"; done
-      - run: node scripts/verify.mjs full
+      - name: verify
+        env:
+          MODE: ${{ steps.scope.outputs.mode }}
+        run: node scripts/verify.mjs "$MODE"
       # verify must never re-resolve Dart dependencies; a changed lockfile means it did.
       - name: pubspec.lock unchanged
         run: git diff --exit-code -- pubspec.lock

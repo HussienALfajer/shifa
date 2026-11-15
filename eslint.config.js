@@ -5,7 +5,19 @@ import { defineConfig } from 'eslint/config';
 import globals from 'globals';
 
 export default defineConfig(
-  { ignores: ['apps/**', 'packages/**', 'node_modules/**', '.turbo/**', '.verify/**'] },
+  // spikes/ packages lint themselves through Turborepo like apps/ and packages/; without this
+  // ignore, ESLint's per-directory config lookup ran their type-aware configs a second time here.
+  {
+    ignores: [
+      'apps/**',
+      'packages/**',
+      'spikes/**',
+      'node_modules/**',
+      '.turbo/**',
+      '.verify/**',
+      '.claude/worktrees/**',
+    ],
+  },
   {
     files: ['**/*.js', '**/*.mjs'],
     extends: [js.configs.recommended],

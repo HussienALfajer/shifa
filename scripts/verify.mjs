@@ -1,18 +1,24 @@
 #!/usr/bin/env node
-// One entry point for every check. Usage: node scripts/verify.mjs [fast|full]
+// One entry point for every check. Usage: node scripts/verify.mjs [fast|full|docs]
 //   fast — packages affected since main (cached); used after each layer and by hooks.
 //   full — everything, no affected filter, plus build and the API boot check; before a PR and in CI.
+//   docs — only the steps that read docs and repository scripts (no Flutter, no packages); CI uses
+//          it for pull requests that change nothing outside docs/.
 // Prints a short summary; full output of each step is written to .verify/logs/<step>.log.
 // Only one verify may run at a time (lock file), so parallel runs never fight over test databases.
+// A fast or full run that ends all green records the tree (lib/green-tree.mjs), so the Stop hook
+// does not run the same checks again on an unchanged tree.
 
 import { spawn } from 'node:child_process';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { recordGreen, treeState } from './lib/green-tree.mjs';
 import { acquireLock, LockBusyError } from './lib/lock.mjs';
 
+const MODES = ['fast', 'full', 'docs'];
 const mode = process.argv[2] ?? 'fast';
-if (mode !== 'fast' && mode !== 'full') {
-  process.stderr.write(`verify: unknown mode "${mode}" (use fast or full)\n`);
+if (!MODES.includes(mode)) {
+  process.stderr.write(`verify: unknown mode "${mode}" (use ${MODES.join(', ')})\n`);
   process.exit(2);
 }
 
@@ -42,17 +48,38 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
 
 const hasMain = await run('git', ['rev-parse', '--verify', '--quiet', 'main'], null);
 const affected = mode === 'fast' && hasMain.code === 0 ? ['--affected'] : [];
+const treeBefore = mode === 'docs' ? null : treeState(root);
 
+// `docs: true` marks the steps docs mode runs; every other step needs packages or Flutter.
 const steps = [
   {
     name: 'format',
+    docs: true,
     cmd: 'pnpm',
-    args: ['exec', 'biome', mode === 'full' ? 'ci' : 'check', '.'],
+    args: ['exec', 'biome', mode === 'fast' ? 'check' : 'ci', '.'],
   },
-  { name: 'instructions', cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
-  { name: 'lint-root', cmd: 'pnpm', args: ['exec', 'eslint', '--max-warnings=0', '.'] },
-  { name: 'scripts-test', cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
-  { name: 'file-length', cmd: 'node', args: ['scripts/check-file-length.mjs'] },
+  { name: 'instructions', docs: true, cmd: 'node', args: ['scripts/check-instruction-size.mjs'] },
+  {
+    name: 'lint-root',
+    docs: true,
+    cmd: 'pnpm',
+    // The cache is keyed on each file's content and the resolved config. That is enough only
+    // while the root config uses single-file rules; a rule that reads other files (type-aware,
+    // import resolution) would need the cache removed.
+    args: [
+      'exec',
+      'eslint',
+      '--max-warnings=0',
+      '--cache',
+      '--cache-strategy',
+      'content',
+      '--cache-location',
+      '.verify/eslint-root.cache',
+      '.',
+    ],
+  },
+  { name: 'scripts-test', docs: true, cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
+  { name: 'file-length', docs: true, cmd: 'node', args: ['scripts/check-file-length.mjs'] },
   // Resolves the pub workspace from pubspec.lock without changing it (fast when up to date).
   // Runs before drift: the Dart client check resolves offline from the pub cache this fills.
   {
@@ -98,7 +125,7 @@ const steps = [
     cmd: 'pnpm',
     args: ['--filter', '@shifa/api', 'run', 'boot-check'],
   },
-].filter((step) => mode === 'full' || !step.full);
+].filter((step) => (mode === 'docs' ? step.docs : mode === 'full' || !step.full));
 
 const results = [];
 for (const step of steps) {
@@ -129,6 +156,19 @@ for (const r of results.filter((x) => x.code !== 0)) {
 }
 process.stdout.write(failed ? `\n${failed} step(s) failed\n` : '\nall green\n');
 process.exitCode = failed ? 1 : 0;
+
+// Recorded only when the tree did not change while the checks ran (an edit mid-run, or a step
+// that rewrote a file, must not mark the new tree green).
+if (!failed && treeBefore) {
+  const treeAfter = treeState(root);
+  if (treeAfter?.fingerprint === treeBefore.fingerprint) {
+    try {
+      recordGreen(root, treeBefore.fingerprint);
+    } catch {
+      // A read-only state folder only costs the Stop hook a repeat run.
+    }
+  }
+}
 
 function run(cmd, args, logPath) {
   return new Promise((resolve) => {
