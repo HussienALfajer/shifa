@@ -159,7 +159,7 @@ Two settings only work from your user settings, because they would break the Win
 
 `failIfUnavailable` stops a session from silently running unsandboxed when `bwrap` or `socat` is broken; `strictAllowlist` refuses unlisted hosts instead of asking.
 
-**Database tests and the sandbox:** the sandbox blocks the Docker socket, so Docker-backed tests (Testcontainers) cannot run inside a sandboxed session (OD-24). CI runs them in `verify:full` on every PR; run `pnpm verify:full` yourself in a plain Ubuntu terminal when you need them locally. The Stop hook runs outside the sandbox.
+**Database tests and the sandbox:** the sandbox blocks the Docker socket, so Docker-backed tests (Testcontainers) cannot run inside a sandboxed session (OD-24). CI runs them in `verify:full` on every PR that changes anything outside `docs/`; run `pnpm verify:full` yourself in a plain Ubuntu terminal when you need them locally. The Stop hook runs outside the sandbox.
 
 **Caches outside the repository:** sandboxed commands may write only inside the project, while `pnpm install` (store under `~/.local/share/pnpm`), `fvm install` (`~/fvm`), `pub get` (`~/.pub-cache`) and Corepack (`~/.cache/node/corepack`) write to the home folder. Run installs in the plain terminal. The acceptance run records which of them fail inside a session; a `sandbox.filesystem.allowWrite` entry is added only for a path proven necessary, with the reason in the commit.
 

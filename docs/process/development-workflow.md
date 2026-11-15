@@ -48,7 +48,7 @@ Every slice and every PR carries a tier. The tier decides effort level and revie
 
 ## 5. Verification
 
-- `verify` has two modes: **fast** (affected packages, cached; used after every layer and by the Stop hook) and **full** (PR and CI). Both print a short summary and keep full logs on disk. It exists before the first feature [RN-20, RN-21].
+- `verify` has three modes: **fast** (affected packages, cached; used after every layer and by the Stop hook) and **full** (PR and CI). Both print a short summary and keep full logs on disk. It exists before the first feature [RN-20, RN-21]. An all-green fast or full run records the tree (`scripts/lib/green-tree.mjs`), so the Stop hook skips a tree that already passed. A third mode, **docs**, runs only the steps that read docs and repository scripts; CI uses it for pull requests that change nothing outside `docs/` (pushes to `main` always run full).
 - One test run at a time (test guard); per-worker test databases; fixed clocks in tests.
 - End-to-end: typed, per-feature mocks for UI tests are allowed, but every critical path (booking, queue, payment, signing a note) also has a smoke test against the real backend [RN-21].
 - Clinical calculations (CAL, RUST, EDD, currency conversion and rounding) have table-driven unit tests with worked examples from the domain docs.

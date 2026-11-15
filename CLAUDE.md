@@ -12,7 +12,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `pnpm install` — Node 24, pnpm 12 (pinned); refuses packages younger than 24 hours.
 - Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm 4.3.2` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
 - `pnpm env:check` — one line per toolchain item (`ok`/`warn`/`fail`) with the fix; run on a new machine or when tools misbehave.
-- `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same).
+- `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same; docs-only PRs run `verify docs`).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
 - `pnpm obs:up` / `obs:smoke` / `obs:down` / `obs:reset --yes` — local Grafana + GlitchTip stack (`docs/process/observability.md`); needs Docker.
 - `pnpm backup:up` / `backup:full` / `backup:check` / `backup:restore` / `backup:drill` — local pgBackRest + Garage stack and restore drill (`docs/process/backup-restore.md`); needs Docker.
