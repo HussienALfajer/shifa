@@ -64,7 +64,10 @@ export function useServer(options: { tokenTtlSeconds?: number } = {}): TestServe
   return state;
 }
 
-export const TODAY = new Date().toISOString().slice(0, 10);
+/** The clinic's date (Asia/Damascus), which the pull endpoint calls "today". */
+export const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(
+  new Date(),
+);
 
 let clientSeconds = 0;
 function envelope(deviceId: string, offline: boolean) {

@@ -1,6 +1,5 @@
 // Spike server: plain Fastify on @shifa/db. Routes: spike login, JWKS, POST /commands (the shared
-// handler), health. Later checkpoints add the pull, report and PowerSync upload routes here.
-
+// handler), the outbox pull, health. The prototype is served from `staticDir` when given.
 import fastifyStatic from '@fastify/static';
 import type { ShifaDb } from '@shifa/db';
 import { sql } from 'drizzle-orm';
@@ -11,6 +10,7 @@ import { CommandBatch } from './commands.ts';
 import { handleBatch } from './handler/index.ts';
 import { findTenant, type Identities } from './identities.ts';
 import { type Logger, redacting } from './log.ts';
+import { registerSyncRoutes } from './sync.ts';
 
 export interface ServerOptions {
   db: ShifaDb;
@@ -113,6 +113,8 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
     log({ event: 'batch', tenantId: principal.tenantId, count: results.length });
     return { results };
   });
+
+  registerSyncRoutes(app, { db: options.db, log, principalOf });
 
   if (options.staticDir) {
     await app.register(fastifyStatic, { root: options.staticDir, prefix: '/' });

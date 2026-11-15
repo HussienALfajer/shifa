@@ -1,0 +1,116 @@
+:root {
+  font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+  color: #1d2733;
+  background: #f5f7f9;
+}
+body {
+  margin: 0;
+}
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 12px 16px 48px;
+}
+h1 {
+  font-size: 1.3rem;
+  margin: 8px 0;
+}
+h2 {
+  font-size: 1.05rem;
+  margin: 0 0 8px;
+}
+section {
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 12px;
+}
+.banner {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 16px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.banner.online {
+  background: #dff3e4;
+}
+.banner.offline {
+  background: #fff1c2;
+}
+.banner.needs-login {
+  background: #ffd9d6;
+}
+form {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: end;
+  margin-bottom: 8px;
+}
+label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.85rem;
+  gap: 2px;
+}
+input,
+select,
+button {
+  font: inherit;
+  padding: 4px 8px;
+}
+button[disabled] {
+  opacity: 0.5;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+td,
+th {
+  border-bottom: 1px solid #eef1f4;
+  padding: 4px;
+  text-align: start;
+}
+.ticket {
+  border: 2px dashed #555;
+  padding: 8px;
+  display: inline-block;
+  min-width: 180px;
+}
+.ticket .num {
+  font-size: 2rem;
+  font-weight: 700;
+}
+.receipt {
+  white-space: pre-line;
+  border: 1px solid #ccc;
+  padding: 8px;
+  font-family: monospace;
+}
+.note {
+  color: #8a4b00;
+  font-size: 0.85rem;
+}
+.events li {
+  margin-bottom: 4px;
+}
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .ticket,
+  .ticket * {
+    visibility: visible;
+  }
+}

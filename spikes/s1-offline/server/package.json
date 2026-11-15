@@ -4,7 +4,9 @@
   "private": true,
   "type": "module",
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./commands": "./src/commands.ts",
+    "./messages": "./src/handler/messages.ts"
   },
   "scripts": {
     "start": "node src/main.ts",
