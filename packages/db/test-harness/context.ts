@@ -64,6 +64,23 @@ export function urlFor(
   return guardedUrl(info, address, USERS[role], password, database);
 }
 
+/**
+ * Guarded URL for a login that is not a harness role (the RLS bench's own role, 0.3-S2c): the
+ * caller created it in the container and, for `via` a pooler, listed it in that PgBouncer.
+ */
+export function urlForLogin(
+  info: HarnessInfo,
+  login: { user: string; password: string },
+  database: string,
+  { via = 'direct' }: { via?: Via } = {},
+): string {
+  if (!/^[a-z_]+$/.test(login.user) || Object.values(USERS).includes(login.user)) {
+    throw new Error('urlForLogin() is for logins outside the harness roles');
+  }
+  const address = via === 'direct' ? info : pooler(info, via);
+  return guardedUrl(info, address, login.user, login.password, database);
+}
+
 /** Guarded URL of a PgBouncer console as the read-only stats user. */
 export function poolerStatsUrl(info: HarnessInfo, via: Exclude<Via, 'direct'> = 'pooler'): string {
   return guardedUrl(

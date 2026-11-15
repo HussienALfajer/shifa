@@ -2,6 +2,7 @@
 // the template or the maintenance database (0.3-S2a review: an idle pooled server connection on
 // shifa_template would block every later clone). No Docker needed.
 import { describe, expect, it } from 'vitest';
+import { urlForLogin } from '../test-harness/context.ts';
 import { assertTestTarget, UnsafeDatabaseError } from '../test-harness/guard.ts';
 import { pgbouncerIni } from '../test-harness/pgbouncer.ts';
 
@@ -48,6 +49,24 @@ describe('assertTestTarget through the pooler', () => {
     expect(() => {
       assertTestTarget('postgres://u:pw@localhost:57432/shifa_test_1', harness);
     }).toThrow(UnsafeDatabaseError);
+  });
+
+  it('urlForLogin() (0.3-S2c bench role) is guarded and refuses the harness roles', () => {
+    const info = {
+      ...harness,
+      superuserPassword: 'a',
+      ownerPassword: 'b',
+      appPassword: 'c',
+      poolerStatsPassword: 'd',
+    };
+    const login = { user: 'shifa_bench_bypass', password: 'e' };
+    expect(urlForLogin(info, login, 'shifa_test_9990', { via: 'pooler' })).toMatch(/:56432\//);
+    expect(() => urlForLogin(info, login, 'shifa_template', { via: 'pooler' })).toThrow(
+      UnsafeDatabaseError,
+    );
+    for (const user of ['shifa_app', 'shifa_owner', 'postgres', 'Bad-Name']) {
+      expect(() => urlForLogin(info, { user, password: 'e' }, 'shifa_test_1')).toThrow();
+    }
   });
 
   it('still accepts the template and the maintenance database directly', () => {

@@ -8,6 +8,7 @@ const unit = [
   'test/docker.test.ts',
   'test/lock-reentry.test.ts',
   'test/backup-drill-report.test.ts',
+  'test/bench-report.test.ts',
 ];
 
 export default defineConfig({

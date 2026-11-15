@@ -11,7 +11,9 @@ import {
   cloneTemplate,
   type HarnessInfo,
   type HarnessRole,
+  poolerStatsUrl,
   urlFor,
+  urlForLogin,
   type Via,
   withPool,
 } from './context.ts';
@@ -51,7 +53,23 @@ export interface HarnessContainer {
   info: HarnessInfo;
   /** Guarded URL of a harness role (throws for anything outside these containers). */
   url(role: HarnessRole, database?: string, options?: { via?: Via }): string;
+  /** Guarded URL for one of `poolerUsers` (the caller creates that role in the container). */
+  loginUrl(
+    login: { user: string; password: string },
+    database: string,
+    options?: { via?: Via },
+  ): string;
+  /** Guarded URL of the shared PgBouncer's read-only console (SHOW only). */
+  poolerConsoleUrl(): string;
   stop(): Promise<void>;
+}
+
+export interface HarnessOptions {
+  /**
+   * Extra `[user, password]` entries for the shared PgBouncer's userlist (scripts only, e.g. the
+   * RLS bench's BYPASSRLS role, which exists only in that run's container). Fixed at start.
+   */
+  poolerUsers?: readonly (readonly [user: string, secret: string])[];
 }
 
 /**
@@ -59,7 +77,9 @@ export interface HarnessContainer {
  * creates `shifa_template` and migrates it as the owner, then starts PgBouncer in front of it.
  * The caller holds the DB test lock.
  */
-export async function startHarnessContainer(): Promise<HarnessContainer> {
+export async function startHarnessContainer(
+  options: HarnessOptions = {},
+): Promise<HarnessContainer> {
   process.env['RYUK_CONTAINER_IMAGE'] ??= RYUK_IMAGE;
   const network = await new Network().start().catch((err: unknown) => {
     throw explainStartFailure(err);
@@ -94,7 +114,7 @@ export async function startHarnessContainer(): Promise<HarnessContainer> {
     // The shared pooler, and a variant with `server_reset_query_always = 1` that only the
     // session-leftover tests use (0.3-S2b). Both are started before either address is published.
     const [pooler, resetPooler] = await Promise.allSettled([
-      startPooler(network, info),
+      startPooler(network, info, { extraUsers: options.poolerUsers ?? [] }),
       startPooler(network, info, { resetAlways: true }),
     ]);
     for (const started of [pooler, resetPooler]) {
@@ -106,7 +126,9 @@ export async function startHarnessContainer(): Promise<HarnessContainer> {
     info.resetPooler = resetPooler.value.address;
     return {
       info,
-      url: (role, database = TEMPLATE_DATABASE, options) => urlFor(info, role, database, options),
+      url: (role, database = TEMPLATE_DATABASE, via) => urlFor(info, role, database, via),
+      loginUrl: (login, database, via) => urlForLogin(info, login, database, via),
+      poolerConsoleUrl: () => poolerStatsUrl(info),
       stop: stopAll,
     };
   } catch (err) {

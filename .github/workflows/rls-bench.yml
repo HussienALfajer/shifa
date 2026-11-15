@@ -1,0 +1,43 @@
+# RLS cost bench (spec 0.3-S2 criterion 11, report only, no threshold): times the tenant's
+# latest-20 query through PgBouncer as shifa_app under RLS and as a BYPASSRLS role that exists
+# only inside the throw-away container, then uploads `.verify/s2-bench/report.json`.
+# Manual dispatch only; not a required PR check, and `verify:full` does not run it. Every
+# password is generated inside the script and never printed; nothing is read from secrets.
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: RLS bench
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: rls-bench
+  cancel-in-progress: false
+
+jobs:
+  bench:
+    name: RLS cost through PgBouncer
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+      - run: pnpm install --frozen-lockfile
+      - name: RLS bench
+        run: pnpm --filter @shifa/db bench:rls
+      - name: Upload the bench report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: rls-bench-report
+          path: .verify/s2-bench/report.json
+          retention-days: 90
+          if-no-files-found: warn
