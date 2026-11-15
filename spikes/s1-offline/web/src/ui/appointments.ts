@@ -1,6 +1,6 @@
 // Appointment booking; a double booking comes back as a conflict in the events list (SCH-14).
 import type { Ctx } from './context.ts';
-import { clinicToday, field, h } from './dom.ts';
+import { clinicToday, field, h, uuid } from './dom.ts';
 
 const time = (iso: string) =>
   new Intl.DateTimeFormat('ar-SY', {
@@ -38,7 +38,7 @@ export function appointmentsSection(ctx: Ctx): HTMLElement {
       ...ctx.envelope(),
       type: 'appointment.book',
       payload: {
-        appointmentId: crypto.randomUUID(),
+        appointmentId: uuid(),
         practitionerId: field(form, 'practitioner'),
         start: start.toISOString(),
         end: end.toISOString(),

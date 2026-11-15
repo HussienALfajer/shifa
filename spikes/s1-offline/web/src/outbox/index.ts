@@ -98,6 +98,15 @@ export function createOutboxEngine(options: OutboxOptions): SyncEngine {
   }
 
   async function pull(): Promise<void> {
+    // Local stores keep only today's data: a new clinic day drops the old rows and takes a fresh
+    // snapshot (the queue is empty here, so no optimistic row is lost).
+    const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(new Date());
+    const storedDay = await store().get('meta', 'day');
+    if (storedDay !== undefined && storedDay !== day) {
+      await store().clear('rows');
+      await store().delete('meta', 'cursor');
+    }
+    if (storedDay !== day) await store().put('meta', day, 'day');
     const cursor = (await store().get('meta', 'cursor')) as string | undefined;
     const query = cursor ? `?cursor=${encodeURIComponent(cursor)}` : '';
     const body = (await call(`/sync/pull${query}`)) as {

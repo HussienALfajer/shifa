@@ -3,11 +3,14 @@
 Criterion 12 of [spec 0.3-S1](../specs/spikes/0.3-s1-offline-sync.md): two real devices on a clinic-like LAN, Wi-Fi off for 2 real hours, the scripted actions of criterion 6 by hand, the browser restarted and the laptop put to sleep once in between. Run it once per engine. Synthetic data only: type made-up names such as "مراجع 1".
 
 ## Setup (once per engine)
+Run it only on a network you control (home or office router), never on a real clinic network: the spike has no passwords, and Docker publishes the test containers' ports on every interface (allow only port 4310, and for PowerSync the printed sync port, through the laptop's firewall).
+
 1. On the server laptop (Docker running), from the repository root (Git Bash):
    - outbox: `ENGINE=outbox pnpm --filter @shifa-spike/s1-scenarios serve`
    - PowerSync: the same with `ENGINE=powersync`.
    It prints the laptop's LAN address(es) (`http://<laptop-ip>:4310`); open the same address on both devices. Keep it running for the whole test. The devices must reach the laptop over the LAN (same Wi-Fi router, firewall allowing port 4310).
-2. On each of the two devices (laptop or tablet with Chrome or Edge), open its address, log in as **استقبال — عيادة أ**, wait for the banner to say **متصل**.
+   - The prototype needs a secure context (service worker, PowerSync's database). Over plain HTTP on the LAN, start Chrome on each device with `--unsafely-treat-insecure-origin-as-secure=http://<laptop-ip>:4310` (for PowerSync, add the printed `:<port>` of the sync service too, comma-separated) and a fresh `--user-data-dir`, or open `chrome://flags/#unsafely-treat-insecure-origin-as-secure` and add the same origins. Synthetic data only, so this is acceptable for the test.
+2. On each of the two devices (laptop or tablet with Chrome or Edge), open the printed address, log in as **استقبال — عيادة أ**, wait for the banner to say **متصل**.
 3. On device 1 open the cash session (**فتح الصندوق**); on device 2 wait until the cash form appears.
 
 ## The outage (2 real hours)

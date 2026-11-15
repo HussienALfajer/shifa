@@ -23,15 +23,20 @@ interface OutboxSchema extends DBSchema {
 
 export type OutboxDb = IDBPDatabase<OutboxSchema>;
 
-export function openStore(name: string): Promise<OutboxDb> {
-  return openDB<OutboxSchema>(name, 1, {
-    upgrade(db) {
-      db.createObjectStore('commands', { keyPath: 'seq', autoIncrement: true });
-      db.createObjectStore('rows', { keyPath: 'key' });
-      db.createObjectStore('events', { keyPath: 'seq', autoIncrement: true });
-      db.createObjectStore('meta');
+export async function openStore(name: string): Promise<OutboxDb> {
+  const db: OutboxDb = await openDB<OutboxSchema>(name, 1, {
+    upgrade(upgrading) {
+      upgrading.createObjectStore('commands', { keyPath: 'seq', autoIncrement: true });
+      upgrading.createObjectStore('rows', { keyPath: 'key' });
+      upgrading.createObjectStore('events', { keyPath: 'seq', autoIncrement: true });
+      upgrading.createObjectStore('meta');
+    },
+    // Another tab logging out deletes the database: let it, instead of blocking the wipe.
+    blocking() {
+      db.close();
     },
   });
+  return db;
 }
 
 export async function destroyStore(db: OutboxDb | undefined, name: string): Promise<void> {

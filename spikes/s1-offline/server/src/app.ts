@@ -41,8 +41,12 @@ async function seedPractitioners(db: ShifaDb, ids: Identities): Promise<void> {
   }
 }
 
-const Login = z.object({ username: z.string().max(40) });
-const PatientLogin = z.object({ patientId: z.uuid() });
+const DeviceId = z
+  .string()
+  .regex(/^[A-Za-z0-9-]{1,40}$/)
+  .optional();
+const Login = z.object({ username: z.string().max(40), deviceId: DeviceId });
+const PatientLogin = z.object({ patientId: z.uuid(), deviceId: DeviceId });
 
 export async function buildServer(options: ServerOptions): Promise<FastifyInstance> {
   const log = redacting(options.log);
@@ -82,6 +86,7 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       tenantId: tenant.tenantId,
       branchId: tenant.branchId,
       role: 'reception',
+      ...(body.success && body.data.deviceId ? { deviceId: body.data.deviceId } : {}),
     });
     return {
       token,
@@ -102,6 +107,7 @@ export async function buildServer(options: ServerOptions): Promise<FastifyInstan
       tenantId: tenant.tenantId,
       branchId: tenant.branchId,
       role: 'patient',
+      ...(body.data.deviceId ? { deviceId: body.data.deviceId } : {}),
     });
     return { token, tenantId: tenant.tenantId, branchId: tenant.branchId };
   });

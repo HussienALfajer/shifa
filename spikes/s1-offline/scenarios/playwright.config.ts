@@ -15,5 +15,10 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
   outputDir: 'test-results/output',
-  use: { locale: 'ar-SY', timezoneId: 'Asia/Damascus', trace: 'retain-on-failure' },
+  use: {
+    locale: 'ar-SY',
+    timezoneId: 'Asia/Damascus',
+    // Traces record request headers (bearer tokens): local runs only, never in CI artefacts.
+    trace: process.env['CI'] ? 'off' : 'retain-on-failure',
+  },
 });

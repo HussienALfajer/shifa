@@ -14,6 +14,12 @@ export interface Ctx {
   offline(): boolean;
   /** Enqueues, tries a sync at once, then re-renders. */
   submit(command: Command): Promise<void>;
+  /**
+   * Online-only actions (OD-29: open/close the cash session, expense, deposit, float adjustment)
+   * are never queued: sent straight to the server; returns an Arabic error, or undefined when
+   * applied. A queued online-only command could otherwise sync hours later as "online".
+   */
+  sendNow(command: Command): Promise<string | undefined>;
   envelope(): Pick<Command, 'id' | 'deviceId' | 'offline' | 'clientTime'>;
   rerender(): void;
 }

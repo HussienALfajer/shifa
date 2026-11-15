@@ -13,7 +13,7 @@ export async function recordSummary(info: TestInfo, name: string, data: unknown)
     (_k, v: unknown) => (typeof v === 'bigint' ? v.toString() : v),
     2,
   );
-  // Device ids are random per run; drop the per-device keys' names from the summary.
+  // Device ids are random per run (e.g. "dev-3fa2c1"): no person, no patient, no secret.
   await writeFile(join(dir, `${engine}-${name}.json`), body);
   await info.attach(`${name}.json`, { body, contentType: 'application/json' });
 }

@@ -1,9 +1,9 @@
 // Prototype shell: login, offline banner (SCH-33), screens, remaps and conflicts list.
-import type { Command, SyncEngine, SyncEvent } from '../engine.ts';
+import type { Command, CommandResult, SyncEngine, SyncEvent } from '../engine.ts';
 import { appointmentsSection } from './appointments.ts';
 import { cashSection } from './cash.ts';
 import type { Ctx, StoredSession } from './context.ts';
-import { field, formatDuration, h, kids } from './dom.ts';
+import { field, formatDuration, h, kids, uuid } from './dom.ts';
 import { queueSection } from './queue.ts';
 
 const SESSION_KEY = 's1-session';
@@ -12,7 +12,7 @@ const DEVICE_KEY = 's1-device';
 function deviceId(): string {
   let id = localStorage.getItem(DEVICE_KEY);
   if (!id) {
-    id = `dev-${crypto.randomUUID().slice(0, 6)}`;
+    id = `dev-${uuid().slice(0, 6)}`;
     localStorage.setItem(DEVICE_KEY, id);
   }
   return id;
@@ -27,7 +27,9 @@ async function login(username: string): Promise<StoredSession | undefined> {
   const res = await fetch('/auth/login', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ username }),
+    // The token is bound to this device: the server refuses commands naming another one, and
+    // PowerSync streams this device's results by the token's claim.
+    body: JSON.stringify({ username, deviceId: deviceId() }),
   });
   if (!res.ok) return undefined;
   const body = (await res.json()) as Omit<StoredSession, 'deviceId' | 'username'>;
@@ -53,7 +55,7 @@ export function mountApp(root: HTMLElement, engine: SyncEngine): void {
     today,
     offline: () => engine.status().state !== 'online',
     envelope: (): Pick<Command, 'id' | 'deviceId' | 'offline' | 'clientTime'> => ({
-      id: crypto.randomUUID(),
+      id: uuid(),
       deviceId: s.deviceId,
       offline: engine.status().state !== 'online',
       clientTime: new Date().toISOString(),
@@ -63,6 +65,29 @@ export function mountApp(root: HTMLElement, engine: SyncEngine): void {
       await render(true);
       await engine.sync();
       await render(true);
+    },
+    async sendNow(command) {
+      let message: string | undefined;
+      try {
+        const res = await fetch('/commands', {
+          method: 'POST',
+          headers: { authorization: `Bearer ${s.token}`, 'content-type': 'application/json' },
+          body: JSON.stringify({ commands: [{ ...command, offline: false }] }),
+          signal: AbortSignal.timeout(15_000),
+        });
+        if (res.status === 401) message = 'انتهت الجلسة — سجّل الدخول ثم أعد المحاولة.';
+        else if (!res.ok) message = 'تعذّر تنفيذ الإجراء. أعد المحاولة.';
+        else {
+          const [result] = ((await res.json()) as { results: CommandResult[] }).results;
+          if (result && result.status !== 'applied')
+            message = result.conflict?.messageAr ?? 'رُفض الإجراء.';
+        }
+      } catch {
+        message = 'هذا الإجراء يحتاج اتصالاً بالإنترنت ولم يُرسل. أعد المحاولة عند عودة الاتصال.';
+      }
+      await engine.sync();
+      await render(true);
+      return message;
     },
     rerender: () => void render(true),
   });
@@ -126,9 +151,20 @@ export function mountApp(root: HTMLElement, engine: SyncEngine): void {
   }
 
   async function logout(): Promise<void> {
-    await engine.wipe();
+    // Logout wipes the local store: never silently with unsynced commands in it.
+    const pending = await engine.pendingCount();
+    if (
+      pending > 0 &&
+      !window.confirm(
+        `لديك ${String(pending)} عملية لم تُزامن بعد وستُحذف من هذا الجهاز. هل تريد الخروج؟`,
+      )
+    ) {
+      return;
+    }
+    // Forget the token first, so a slow or blocked wipe cannot leave a usable session behind.
     localStorage.removeItem(SESSION_KEY);
     session = undefined;
+    await engine.wipe();
     await render(true);
   }
 

@@ -2,7 +2,7 @@
 // synced: SCH-32), status buttons.
 import type { TicketRow } from '../engine.ts';
 import type { Ctx } from './context.ts';
-import { clinicToday, field, h } from './dom.ts';
+import { clinicToday, field, h, uuid } from './dom.ts';
 
 const STATUS_AR: Record<string, string> = {
   waiting: 'ينتظر',
@@ -71,7 +71,7 @@ export function queueSection(ctx: Ctx): HTMLElement {
     ev.preventDefault();
     const practitionerId = field(form, 'practitioner');
     const shiftDate = clinicToday();
-    const ticketId = crypto.randomUUID();
+    const ticketId = uuid();
     const provisionalNumber = nextProvisional(ctx, practitionerId, shiftDate);
     printed = {
       id: ticketId,

@@ -47,14 +47,28 @@ streams:
          AND clinic_day = auth.parameter('day')
          AND auth.parameter('role') = 'reception'
 
-  # Results of this device's own commands (remaps, conflicts, refusals).
+  # Results of this device's own commands (remaps, conflicts, refusals). The device id comes from
+  # the token (bound at login; the server refuses commands naming another device), never from
+  # a client-chosen parameter.
   device_results:
     auto_subscribe: true
     query: >-
       SELECT id, device_id, type, result
         FROM s1.offline_command
        WHERE tenant_id = auth.parameter('tenant_id')
-         AND device_id = connection.parameter('device_id')
+         AND branch_id = auth.parameter('branch_id')
+         AND device_id = auth.parameter('device_id')
+
+  # A session left open from an earlier day stays usable (the outbox pull includes it too).
+  reception_open_cash_sessions:
+    auto_subscribe: true
+    query: >-
+      SELECT id, rates, closed_at
+        FROM s1.cash_session
+       WHERE tenant_id = auth.parameter('tenant_id')
+         AND branch_id = auth.parameter('branch_id')
+         AND closed_at IS NULL
+         AND auth.parameter('role') = 'reception'
 
   patient_appointments:
     auto_subscribe: true

@@ -12,6 +12,8 @@ export interface Principal {
   tenantId: string;
   branchId: string;
   role: Role;
+  /** Set when the client logged in with a device id: its commands must carry that id. */
+  deviceId?: string;
 }
 
 export interface Auth {
@@ -35,7 +37,13 @@ export async function createAuth(ttlSeconds: number, keys?: SigningKeys): Promis
   const publicJwk = { ...(await exportJWK(publicKey)), alg: 'ES256', kid: KID, use: 'sig' };
   return {
     sign: (p) =>
-      new SignJWT({ tenant_id: p.tenantId, branch_id: p.branchId, role: p.role, day: clinicDay() })
+      new SignJWT({
+        tenant_id: p.tenantId,
+        branch_id: p.branchId,
+        role: p.role,
+        day: clinicDay(),
+        ...(p.deviceId ? { device_id: p.deviceId } : {}),
+      })
         .setProtectedHeader({ alg: 'ES256', kid: KID })
         .setSubject(p.sub)
         .setAudience(AUDIENCE)
@@ -50,11 +58,19 @@ export async function createAuth(ttlSeconds: number, keys?: SigningKeys): Promis
           audience: AUDIENCE,
           algorithms: ['ES256'],
         });
-        const { sub, tenant_id: tenantId, branch_id: branchId, role } = payload;
+        const {
+          sub,
+          tenant_id: tenantId,
+          branch_id: branchId,
+          role,
+          device_id: deviceId,
+        } = payload;
         if (typeof sub !== 'string' || typeof tenantId !== 'string' || typeof branchId !== 'string')
           return undefined;
         if (role !== 'reception' && role !== 'patient') return undefined;
-        return { sub, tenantId, branchId, role };
+        return typeof deviceId === 'string'
+          ? { sub, tenantId, branchId, role, deviceId }
+          : { sub, tenantId, branchId, role };
       } catch {
         return undefined;
       }

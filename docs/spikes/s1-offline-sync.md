@@ -51,7 +51,10 @@ Survival on tab close / browser restart (edge case): a persistent Chromium profi
 
 ## Risks and limits found
 - **Pull cursor:** the outbox pull re-reads a 5-second overlap so rows committed after the cursor but stamped earlier are not missed; a write transaction longer than 5 s could still be missed until the next snapshot. Phase A should use a commit-ordered change counter instead.
-- **Offline flag:** the server decides the OD-29 cash rules from the device's own `offline` flag; a device that is wrong about its state can only make an online-only movement look offline (refused), not the reverse, unless it lies. Acceptable for staff devices; the role matrix comes in Phase A.
+- **Offline flag (review fix):** the server decides the OD-29 cash rules from the command's `offline` flag. A device can believe it is online for a few seconds after the link drops, so online-only cash actions (open, close, expense, deposit, float adjustment) are never queued: the prototype sends them directly and shows an Arabic error when there is no answer. Only sales and refunds go through the queue.
+- **Device binding (review fix):** the device id is bound into the token at login; the server refuses commands naming another device, and PowerSync streams a device's results by the token's claim, not a client-chosen parameter (`server/test/device-binding.test.ts`).
+- **Degraded link wording:** Toxiproxy's `reset_peer` with toxicity 0.3 resets 30% of *connections*, not 30% of packets; with keep-alive the effective loss is lower. Combined with 2 s latency and the cut mid-upload it still exercised retries and idempotency.
+- **Re-login:** the spike's login needs no password (synthetic users), so criterion 9 proves that an expired token blocks sync and that the queue survives, not real re-authentication.
 - **PowerSync status semantics:** a stale upload error kept the banner "offline" after sync until the engine was changed to follow the stream connection only. Outbox status is fully ours.
 - **Bugs the suite caught in the spike itself:** a timestamp format the browser could not parse made pulls fail after the first booking (fixed in `web/src/rows.ts`); the PostgreSQL 18 publication default above.
 - **Not measured:** real mobile networks (the owner's manual run covers a LAN), eviction, battery.

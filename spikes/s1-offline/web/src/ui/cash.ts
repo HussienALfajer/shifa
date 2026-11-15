@@ -1,10 +1,23 @@
 // Cash panel (OD-29): open/close online only; offline only sales and refunds at the session's
 // last synced rate; the receipt shows that rate and an offline mark.
-import { CURRENCIES, MOVEMENT_TYPES, type MovementType } from '@shifa-spike/s1-server/commands';
+import {
+  CURRENCIES,
+  MOVEMENT_TYPES,
+  type MovementType,
+  OFFLINE_MOVEMENT_TYPES,
+} from '@shifa-spike/s1-server/commands';
 import { canRecord, formatMinor, receiptLines, refundRemaining } from '../cash-rules.ts';
-import type { MovementRow } from '../engine.ts';
+import type { Command, MovementRow } from '../engine.ts';
 import type { Ctx } from './context.ts';
-import { field, h, kids, toMinor } from './dom.ts';
+import { field, h, kids, toMinor, uuid } from './dom.ts';
+
+/** The last online-only action's error, shown until the next one (survives re-renders). */
+let notice = '';
+
+async function sendNow(ctx: Ctx, command: Command): Promise<void> {
+  notice = (await ctx.sendNow(command)) ?? '';
+  ctx.rerender();
+}
 
 const DEFAULT_RATES = { SYP: '11000', TRY: '41.5', USD: '1' };
 const TYPE_AR: Record<MovementType, string> = {
@@ -42,14 +55,15 @@ export function cashSection(ctx: Ctx): HTMLElement {
           'data-testid': 'open-session',
           disabled: offline,
           onclick: () =>
-            void ctx.submit({
+            void sendNow(ctx, {
               ...ctx.envelope(),
               type: 'cash.open',
-              payload: { sessionId: crypto.randomUUID(), rates: DEFAULT_RATES },
+              payload: { sessionId: uuid(), rates: DEFAULT_RATES },
             }),
         },
         'فتح الصندوق',
       ),
+      h('p', { class: 'note', 'data-testid': 'cash-message' }, notice),
     );
     if (offline) section.append(h('p', { class: 'note' }, 'فتح الصندوق يحتاج اتصالاً بالإنترنت.'));
     return section;
@@ -79,7 +93,7 @@ export function cashSection(ctx: Ctx): HTMLElement {
         ),
       );
   }
-  const message = h('p', { class: 'note', 'data-testid': 'cash-message' });
+  const message = h('p', { class: 'note', 'data-testid': 'cash-message' }, notice);
   form.append(
     h('label', {}, 'النوع', type),
     h('label', {}, 'العملة', currency),
@@ -103,9 +117,13 @@ export function cashSection(ctx: Ctx): HTMLElement {
     )
       message.textContent = 'مبلغ الاسترداد أكبر من المتبقي من عملية البيع.';
     else {
-      const movementId = crypto.randomUUID();
+      const movementId = uuid();
       lastReceiptId = movementId;
-      void ctx.submit({
+      // Sales and refunds are queued (they may sync later); everything else is online-only.
+      const send = OFFLINE_MOVEMENT_TYPES.includes(t)
+        ? (c: Command) => ctx.submit(c)
+        : (c: Command) => sendNow(ctx, c);
+      void send({
         ...ctx.envelope(),
         type: 'cash.move',
         payload: {
@@ -143,7 +161,7 @@ export function cashSection(ctx: Ctx): HTMLElement {
           type: 'button',
           disabled: offline,
           onclick: () =>
-            void ctx.submit({
+            void sendNow(ctx, {
               ...ctx.envelope(),
               type: 'cash.close',
               payload: { sessionId: open.id },

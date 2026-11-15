@@ -104,6 +104,8 @@ export async function assertOutcome(
   for (const c of CURRENCY) {
     expect(BigInt(report.cash[c] ?? '0'), `cash total ${c}`).toBe(expected.cash[c]);
   }
+  // Both devices number from the same base offline, so remaps must exist (not a vacuous 0 = 0).
+  expect(totals(report).remaps, 'clashing provisional numbers produced remaps').toBeGreaterThan(0);
   const remapsShown = await Promise.all(devices.map((d) => d.events('remap')));
   for (const [i, d] of ids.entries()) {
     expect(remapsShown[i], `every remap shown on ${d}`).toBe(report.byDevice[d]?.remaps);

@@ -5,6 +5,12 @@ import { deviceUrl, type ProxyName, toxi } from './toxi.ts';
 
 const firstOpens = new Set<string>();
 
+/** Today 08:00 in Asia/Damascus (UTC+3), as epoch ms. */
+function clinicMorning(): number {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(new Date());
+  return Date.parse(`${day}T08:00:00+03:00`);
+}
+
 export type Currency = 'SYP' | 'TRY' | 'USD';
 
 export class Device {
@@ -27,7 +33,9 @@ export class Device {
       await toxi.clear(proxy);
       await toxi.restore(proxy);
     }
-    await page.clock.install({ time: Date.now() });
+    // 08:00 at the clinic today, so 2+ simulated hours never cross the clinic's midnight while
+    // the server's "today" stays on the real date.
+    await page.clock.install({ time: clinicMorning() });
     await page.goto(deviceUrl(proxy));
     return new Device(proxy, context, page);
   }

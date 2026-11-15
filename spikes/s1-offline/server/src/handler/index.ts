@@ -89,12 +89,19 @@ async function handleOne(
       return result;
     });
   } catch (err) {
-    if (sqlState(err) !== EXCLUSION_VIOLATION) throw err;
-    // SCH-14: the overlap rolled the transaction back; store the conflict in a new one.
+    const code = sqlState(err) ?? '';
+    // SCH-14: the overlap rolled the transaction back; store the conflict in a new one. A data or
+    // integrity error (classes 22, 23) is this command's fault: store it as refused, so one bad
+    // command cannot block a device's queue forever. Anything else (transient) fails the batch.
+    let result: CommandResult;
+    if (code === EXCLUSION_VIOLATION)
+      result = reason(command.id, 'conflict', 'appointment_overlap');
+    else if (code.startsWith('22') || code.startsWith('23')) {
+      result = reason(command.id, 'refused', 'invalid_command');
+    } else throw err;
     return deps.db.withTenant(context(principal), async (tx) => {
       const stored = await lockAndFind(tx, principal, command.id);
       if (stored) return stored;
-      const result = reason(command.id, 'conflict', 'appointment_overlap');
       await store(tx, principal, command, result);
       return result;
     });
@@ -114,6 +121,10 @@ export async function handleBatch(
     let result: CommandResult;
     if (!parsed.success) {
       result = reason(envelope.success ? envelope.data.id : '', 'refused', 'invalid_command');
+    } else if (principal.deviceId !== undefined && parsed.data.deviceId !== principal.deviceId) {
+      // A token bound to a device may only send that device's commands (not stored, so nothing
+      // lands in another device's results).
+      result = reason(parsed.data.id, 'refused', 'forbidden');
     } else {
       result = await handleOne(deps, principal, parsed.data);
     }

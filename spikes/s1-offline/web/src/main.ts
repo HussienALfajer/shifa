@@ -4,8 +4,20 @@ import type { SyncEngine } from './engine.ts';
 import { createOutboxEngine } from './outbox/index.ts';
 import { mountApp } from './ui/app.ts';
 
+/** Only a sync service on this page's own host may receive the token (never another site). */
+function sameHost(url: string | null): string | null {
+  if (!url) return null;
+  try {
+    const parsed = new URL(url);
+    const ok = parsed.hostname === location.hostname && /^https?:$/.test(parsed.protocol);
+    return ok ? parsed.origin : null;
+  } catch {
+    return null;
+  }
+}
+
 function powerSyncEndpoint(): string {
-  const fromUrl = new URL(location.href).searchParams.get('ps');
+  const fromUrl = sameHost(new URL(location.href).searchParams.get('ps'));
   if (fromUrl) localStorage.setItem('s1-ps-endpoint', fromUrl);
   return (
     fromUrl ??

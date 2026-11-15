@@ -25,7 +25,7 @@ const payloads = {
     ticketId: uuid,
     practitionerId: uuid,
     shiftDate: day,
-    provisionalNumber: z.int().positive(),
+    provisionalNumber: z.int().positive().max(100_000),
     walkInLabel: z.string().min(1).max(40),
   }),
   'ticket.status': z.object({ ticketId: uuid, status: z.enum(TICKET_STATUSES) }),
@@ -59,7 +59,8 @@ const envelope = z.object({
   deviceId: z.string().regex(/^[A-Za-z0-9-]{1,40}$/),
   /** True when the device made the command while offline (decides the OD-29 cash rules). */
   offline: z.boolean(),
-  clientTime: z.iso.datetime({ offset: true }),
+  // Information only (the server times commands on receipt); bounded so PostgreSQL accepts it.
+  clientTime: z.iso.datetime({ offset: true }).refine((v) => Date.parse(v) > Date.UTC(2000, 0, 1)),
 });
 
 const variant = <T extends CommandType>(type: T) =>
