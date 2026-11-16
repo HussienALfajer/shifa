@@ -12,7 +12,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `pnpm install` — Node 24, pnpm 12 (pinned); refuses packages younger than 24 hours.
 - Flutter is pinned in `.fvmrc`: once per machine `dart pub global activate fvm 4.3.2` and `fvm install`. Dart tools run through `node scripts/dart.mjs <dart|flutter> ...`, never a global SDK (`.claude/rules/dart.md`).
 - `pnpm env:check` — one line per toolchain item (`ok`/`warn`/`fail`) with the fix; run on a new machine or when tools misbehave.
-- `pnpm verify` — checks packages affected since `main`; run after every change. `pnpm verify:full` before a PR (CI runs the same; docs-only PRs run `verify docs`).
+- `pnpm verify` — checks packages affected since `main`; run after every change and before a PR. `pnpm verify:full` runs everything; CI runs it on every PR (docs-only PRs: `verify docs`).
 - Read the `verify` summary; full logs are in `.verify/logs/`. One `verify` at a time (a lock refuses a second).
 - `pnpm obs:up` / `obs:smoke` / `obs:down` / `obs:reset --yes` — local Grafana + GlitchTip stack (`docs/process/observability.md`); needs Docker.
 - `pnpm backup:up` / `backup:full` / `backup:check` / `backup:restore` / `backup:drill` — local pgBackRest + Garage stack and restore drill (`docs/process/backup-restore.md`); needs Docker.
@@ -36,7 +36,7 @@ When a task's work is done (a spec, a slice, a fix, a docs change), finish it in
 1. **Branch:** not `main`; name it by type (`feat/`, `fix/`, `chore/`, `docs/`, or the slice ID).
 2. **Docs:** update `docs/roadmap.md`, the slice file and every doc the change made stale.
 3. **Secrets:** `git status` and `git diff --stat` show no `.env`, key, dump or stray file.
-4. **Checks:** `pnpm verify:full` passes on the final tree (docs-only changes: CI runs the checks). In a sandboxed WSL2 session Docker is blocked (OD-24): Docker-backed tests run in CI, so say so in the report.
+4. **Checks:** `pnpm verify` passes on the final tree; CI's `verify (full)` is the full gate and blocks the merge (ADR-0033). Also run `pnpm verify:full` when the change touches build or boot check, the DB test harness, drift generators, CI or `verify` itself. Docs-only changes: CI runs the checks. In a sandboxed WSL2 session Docker is blocked (OD-24): Docker-backed tests run in CI, so say so in the report.
 5. **Review:** for a slice, the `reviewer` agent (+ `security-reviewer` for T0) has run and its blocking findings are fixed.
 6. **Commit and PR:** Conventional Commit; `gh pr create --base main` with `## Summary` and `## Test plan`; then enable auto-merge (squash) and Auto-fix. If CI fails, fix the cause on the branch and push.
 7. **Report** in Arabic in the format below.
