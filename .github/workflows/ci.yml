@@ -10,6 +10,13 @@ on:
 
 permissions: {}
 
+# Flutter pins for the caches and dart jobs (one copy, so their cache keys cannot drift apart).
+env:
+  FLUTTER_VERSION: 3.47.9
+  FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+  # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
+  FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
+
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   # Never cancel runs on main: every merged commit must get a completed verify and secret scan.
@@ -71,11 +78,6 @@ jobs:
     name: CI caches
     needs: scope
     if: github.event_name == 'push' && needs.scope.outputs.mode == 'full'
-    env:
-      FLUTTER_VERSION: 3.47.9
-      FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
-      # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
-      FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -125,7 +127,9 @@ jobs:
           fi
           sdk="${RUNNER_TEMP}/flutter"
           save=false
-          if [ "$CACHE_HIT" = true ]; then
+          # Checked whenever anything is at the path: a restore that failed half-way reports
+          # no cache hit but leaves its files behind.
+          if [ -e "$sdk" ]; then
             restored="$(tree_digest "$sdk")"
             if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
               echo "Restored Flutter SDK matches the pinned tree digest"
@@ -161,6 +165,17 @@ jobs:
         with:
           path: ${{ runner.temp }}/flutter
           key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+      # actions/cache only warns when a save fails; a lookup proves the entry exists.
+      - name: Check Flutter SDK was saved
+        if: >-
+          github.event_name == 'push' &&
+          steps.flutter-install.outputs.save == 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/flutter
+          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+          lookup-only: true
+          fail-on-cache-miss: true
       - name: Set up Flutter
         working-directory: ${{ runner.temp }}
         run: |
@@ -194,11 +209,23 @@ jobs:
         with:
           path: ~/.pub-cache
           key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+      - name: Check pub cache was saved
+        if: >-
+          github.event_name == 'push' &&
+          steps.pub-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pub-cache
+          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+          lookup-only: true
+          fail-on-cache-miss: true
 
   checks:
     name: verify checks
     needs: [scope, caches]
-    if: ${{ !cancelled() && needs.scope.result == 'success' }}
+    if: >-
+      ${{ !cancelled() && needs.scope.result == 'success' &&
+      (needs.caches.result == 'success' || (github.event_name != 'push' && needs.caches.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     permissions:
@@ -225,7 +252,10 @@ jobs:
   node:
     name: verify node packages
     needs: [scope, caches]
-    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
+    if: >-
+      ${{ !cancelled() && needs.scope.result == 'success' &&
+      needs.scope.outputs.mode == 'full' &&
+      (needs.caches.result == 'success' || (github.event_name != 'push' && needs.caches.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -264,7 +294,10 @@ jobs:
   build:
     name: verify build and boot
     needs: [scope, caches]
-    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
+    if: >-
+      ${{ !cancelled() && needs.scope.result == 'success' &&
+      needs.scope.outputs.mode == 'full' &&
+      (needs.caches.result == 'success' || (github.event_name != 'push' && needs.caches.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -303,12 +336,10 @@ jobs:
   dart:
     name: verify dart
     needs: [scope, caches]
-    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
-    env:
-      FLUTTER_VERSION: 3.47.9
-      FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
-      # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
-      FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
+    if: >-
+      ${{ !cancelled() && needs.scope.result == 'success' &&
+      needs.scope.outputs.mode == 'full' &&
+      (needs.caches.result == 'success' || (github.event_name != 'push' && needs.caches.result == 'skipped')) }}
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
@@ -354,7 +385,9 @@ jobs:
           fi
           sdk="${RUNNER_TEMP}/flutter"
           save=false
-          if [ "$CACHE_HIT" = true ]; then
+          # Checked whenever anything is at the path: a restore that failed half-way reports
+          # no cache hit but leaves its files behind.
+          if [ -e "$sdk" ]; then
             restored="$(tree_digest "$sdk")"
             if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
               echo "Restored Flutter SDK matches the pinned tree digest"
@@ -432,7 +465,7 @@ jobs:
   # A cancelled, failed or wrongly skipped part fails it.
   verify:
     name: verify (full)
-    needs: [scope, checks, node, build, dart]
+    needs: [scope, caches, checks, node, build, dart]
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -440,16 +473,24 @@ jobs:
     steps:
       - name: Every verify part passed
         env:
+          EVENT: ${{ github.event_name }}
           MODE: ${{ needs.scope.outputs.mode }}
           SCOPE: ${{ needs.scope.result }}
+          CACHES: ${{ needs.caches.result }}
           CHECKS: ${{ needs.checks.result }}
           NODE: ${{ needs.node.result }}
           BUILD: ${{ needs.build.result }}
           DART: ${{ needs.dart.result }}
         run: |
-          echo "mode=$MODE scope=$SCOPE checks=$CHECKS node=$NODE build=$BUILD dart=$DART"
+          echo "event=$EVENT mode=$MODE scope=$SCOPE caches=$CACHES checks=$CHECKS node=$NODE build=$BUILD dart=$DART"
           if [ "$SCOPE" != success ] || [ "$CHECKS" != success ]; then
             echo "::error::verify scope or checks did not succeed"
+            exit 1
+          fi
+          # Pushes to main save the caches before any code runs (OD-30); pull requests skip it.
+          if [ "$EVENT" = push ]; then want_caches=success; else want_caches=skipped; fi
+          if [ "$CACHES" != "$want_caches" ]; then
+            echo "::error::the caches job ended '$CACHES', expected '$want_caches' on $EVENT"
             exit 1
           fi
           case "$MODE" in
