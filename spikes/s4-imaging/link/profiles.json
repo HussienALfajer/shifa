@@ -1,0 +1,26 @@
+{
+  "P1": {
+    "upMbit": 1,
+    "downMbit": 3,
+    "rttMs": 150,
+    "jitterMs": 30,
+    "lossPercent": 1,
+    "cuts": { "everySeconds": 300, "cutSeconds": 30 }
+  },
+  "P2": {
+    "upMbit": 3,
+    "downMbit": 10,
+    "rttMs": 80,
+    "jitterMs": 0,
+    "lossPercent": 0,
+    "cuts": null
+  },
+  "P3": {
+    "upMbit": 8,
+    "downMbit": 25,
+    "rttMs": 60,
+    "jitterMs": 20,
+    "lossPercent": 0,
+    "cuts": null
+  }
+}

@@ -1,0 +1,31 @@
+{
+  "name": "@shifa-spike/s4-stack",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./test/use-stack.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "@shifa-spike/s4-generator": "workspace:*",
+    "aws4fetch": "1.0.20",
+    "jose": "6.2.17",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "eslint": "10.14.0",
+    "playwright": "1.65.1",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
