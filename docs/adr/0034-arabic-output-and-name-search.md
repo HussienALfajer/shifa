@@ -7,13 +7,14 @@ Status: Proposed · Date: 2026-11-16 · Deciders: product owner (with Claude) ·
 
 ## Decision
 **PDF engine**
-- Gotenberg 8.x pinned by version and digest (8.40.0 in the spike, OD-41), on an internal network only. HTML and fonts are uploaded with every request; the client never sends a URL. Chromium allow-list `^file:///tmp/.*` with the matching deny list.
+- Gotenberg 8.x pinned by version and digest (8.40.0 in the spike, OD-41), on an internal network only. HTML and fonts are uploaded with every request; the client never sends a URL. Chromium allow-list `^file:///tmp/.*` with the matching deny list. Only the Chromium routes stay on: `--webhook-disable`, `--api-disable-download-from`, `--libreoffice-disable-routes`, `--pdfengines-disable-routes`; Phase A adds `--api-enable-basic-auth` and publishes the port only on the internal network.
 - Every conversion waits for `document.fonts.status === 'loaded'` (`waitForExpression`) and leaves the network-idle wait off.
 - Paged documents (A5, A4) set their size in CSS `@page` and use `preferCssPageSize`. Roll documents (receipts, tickets) set no CSS page size; Gotenberg prints them with `paperWidth`, zero margins and `singlePage`. Their template ends with an empty 10 mm tear-off block, because `singlePage` drops anything that spills past the measured height. The worker checks that a roll PDF has one page.
 - Page headers and "صفحة X من Y" are CSS page-margin boxes (`@top-center`, `@bottom-center` with `counter(page)`/`counter(pages)`, `arabic-indic` for Arabic digits). They print the same in Gotenberg and in the browser.
 
 **Font and template conventions**
 - **Vazirmatn** (OFL, `@fontsource/vazirmatn`, arabic + latin + latin-ext subsets, 400/700), self-hosted and uploaded with the HTML. Noto Naskh Arabic and Amiri are rejected because they fragment the PDF text layer (copy, search, screen readers).
+- Data never goes into CSS unescaped: text in page-margin `content` is CSS-escaped (`cssString`), HTML text and the title HTML-escaped.
 - `<html lang="ar" dir="rtl">`; one font family with no generic fallback, so a missing glyph shows up as an extra font in `pdffonts`; Latin runs (drug names, doses, phones, currency codes) in `<bdi dir="ltr">`; `font-variant-numeric: tabular-nums`; sizes in pt and mm.
 - Numbers through `Intl.NumberFormat('ar-SY-u-nu-<style>')` and dates through `Intl.DateTimeFormat` (day/month/year with RLM marks), never a bare ISO date in Arabic text. Both digit styles stay supported until OD-20 is decided.
 - 58 mm receipts at 9 pt base size, 80 mm at 10 pt (owner, 2026-11-16).
@@ -33,7 +34,7 @@ Status: Proposed · Date: 2026-11-16 · Deciders: product owner (with Claude) ·
 + Arabic PDFs, browser prints and thermal images come from one template set and are covered by goldens, text checks and a parity test (kept in `spikes/s3-arabic-output/` for Phase A).
 + The server and the offline clients compute the same search key, held equal by one vector file.
 − Copying text out of a PDF reverses lam-alef ligatures and changes date order in every reader tested: PDFs are for people, never a data source.
-− One Gotenberg container needs about 0.5 GB and serves about 3 PDFs per second at 5 in flight; throughput scales with containers.
+− One Gotenberg container needs about 0.5 GB and served about 2.5–3 PDFs per second one at a time and about 5–6 per second with 5 in flight on the spike machine; beyond that, throughput needs more containers.
 − Search on large tenants is slow until OD-42 is decided.
 
 ## Alternatives considered
