@@ -2,8 +2,8 @@
 # methods, then the viewer on those profiles and the edge LAN, encryption on against off, and the
 # chunk (256 KiB, 4 MiB) and Transfers bucket (4 MB) variants on P3. Manual dispatch only; never
 # part of PR CI (OD-31). A workflow of its own, beside `s4-imaging`, because that one's suites
-# must run unconditionally (scripts/test/spike-tests.test.mjs). P1 × 1 GB takes about 2.5 hours
-# per method: dispatch P1 and P3 separately when the matrix is large. Uploads `.verify/s4/`
+# must run unconditionally (scripts/test/spike-tests.test.mjs). The bench saves after every row,
+# so a run cut by the timeout still uploads what it measured. Uploads `.verify/s4/`
 # (counts, bytes and times only; no tags, names or image content).
 # Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
 name: s4-imaging-bench
@@ -11,10 +11,12 @@ name: s4-imaging-bench
 on:
   workflow_dispatch:
     inputs:
+      # The defaults fit the 6-hour job (P3). For P1 dispatch one study and one or two methods
+      # at a time with extras off (P1 × 1 GB is about 2.5 hours per method).
       profiles:
         description: Profiles (comma-separated, P1–P3)
         type: string
-        default: P1,P3
+        default: P3
       studies:
         description: Studies (comma-separated)
         type: string
@@ -22,7 +24,11 @@ on:
       methods:
         description: Methods (chunked, chunked-par3, stow, edge)
         type: string
-        default: chunked,stow,edge
+        default: chunked-par3,stow,edge
+      extras:
+        description: Also the viewer, encryption on/off and the chunk and bucket variants
+        type: boolean
+        default: true
 
 permissions: {}
 
@@ -59,11 +65,14 @@ jobs:
           PROFILES: ${{ inputs.profiles }}
           STUDIES: ${{ inputs.studies }}
           METHODS: ${{ inputs.methods }}
+          EXTRAS: ${{ inputs.extras }}
         run: |
           for v in "$PROFILES" "$STUDIES" "$METHODS"; do
-            printf '%s' "$v" | grep -Eq '^[A-Za-z0-9,-]+$' || { echo "bad input"; exit 2; }
+            [[ "$v" =~ ^[A-Za-z0-9,-]+$ ]] || { echo "bad input"; exit 2; }
           done
-          pnpm run bench:s4 --profiles "$PROFILES" --studies "$STUDIES" --methods "$METHODS"
+          extra=()
+          [ "$EXTRAS" = true ] || extra=(--no-viewer --no-encryption --no-variants)
+          pnpm run bench:s4 --profiles "$PROFILES" --studies "$STUDIES" --methods "$METHODS" "${extra[@]}"
       - name: Upload .verify/s4
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2

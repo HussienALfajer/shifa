@@ -126,7 +126,13 @@ export async function uploadChunked(
   // pending file, so a few connections share the link as STOW-RS's requests do.
   const pending = session.files.filter((f) => f.state === 'pending');
   const worker = async () => {
-    for (let entry = pending.shift(); entry; entry = pending.shift()) await sendFile(entry);
+    try {
+      for (let entry = pending.shift(); entry; entry = pending.shift()) await sendFile(entry);
+    } catch (error) {
+      // One file gave up: the others stop taking new files, so nothing runs after "failed".
+      pending.length = 0;
+      throw error;
+    }
   };
   await Promise.all(Array.from({ length: Math.max(1, parallel) }, worker));
   const finished = await settle<{ done: number; skipped: string[] }>(() =>
