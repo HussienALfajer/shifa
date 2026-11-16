@@ -35,6 +35,8 @@ export interface Edge {
   container: string;
   /** C-STORE of the given files (paths relative to `dir`) from the dcmtk container. */
   storescu(dir: string, paths: readonly string[]): Promise<void>;
+  /** SOP Instance UID → SHA-256 of each stored file of the study on the edge. */
+  files(studyInstanceUid: string): Promise<Map<string, string>>;
   /** Starts a Transfers push of the study to the cloud peer; returns the job id. */
   push(studyInstanceUid: string): Promise<string>;
   job(id: string): Promise<EdgeJob>;

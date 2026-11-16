@@ -2,9 +2,13 @@
 // LAN; the edge pushes it with the Transfers plugin through the link and the gateway to its
 // tenant's cloud Orthanc. On P1 with cuts and an edge Orthanc restart at about 40 % of the job,
 // the push completes (the job resumes, or the test resubmits it and records which); the cloud
-// study equals the source (count and SHA-256). Bytes on the wire are recorded against the study.
+// study equals the edge's copy byte for byte and the source by dataset SHA-256 (C-STORE
+// rewrites the file meta group; owner decision). Bytes on the wire are recorded.
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { ensureStudy, type StudyName } from '@shifa-spike/s4-generator';
 import { cloudStudy, LONG, record } from '@shifa-spike/s4-scenarios';
+import { datasetSha256 } from '@shifa-spike/s4-stack';
 import { useStack } from '@shifa-spike/s4-stack/testing';
 import { describe, expect, it } from 'vitest';
 
@@ -56,8 +60,16 @@ describe('edge box push on P1', () => {
     expect(restarted).toBe(true);
     await stack.link.applyProfile('none');
     const cloud = await cloudStudy(stack, 'a', manifest.studyInstanceUid);
+    const datasets = await cloudStudy(stack, 'a', manifest.studyInstanceUid, 'dataset');
     await stack.link.applyProfile('P1');
-    expect(cloud).toEqual(new Map(manifest.files.map((f) => [f.sopInstanceUid, f.sha256])));
+    // Lossless push: the cloud holds the edge's files byte for byte. C-STORE into the edge
+    // rewrites the file meta group, so against the source the datasets are compared.
+    expect(cloud).toEqual(await edge.files(manifest.studyInstanceUid));
+    const sources = new Map<string, string>();
+    for (const f of manifest.files) {
+      sources.set(f.sopInstanceUid, datasetSha256(await readFile(join(dir, f.path))));
+    }
+    expect(datasets).toEqual(sources);
     const studyBytes = manifest.files.reduce((n, f) => n + f.bytes, 0);
     await record('edge-push', {
       study: NAME,

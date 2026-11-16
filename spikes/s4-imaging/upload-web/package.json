@@ -1,0 +1,22 @@
+{
+  "name": "@shifa-spike/s4-upload-web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "dicom-parser": "1.8.21",
+    "hash-wasm": "4.13.0"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.8"
+  }
+}

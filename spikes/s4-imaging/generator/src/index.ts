@@ -1,3 +1,4 @@
+export { dcmtkImage } from './dcmtk.ts';
 export {
   type DicomDataset,
   ensureStudy,

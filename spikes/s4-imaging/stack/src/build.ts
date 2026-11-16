@@ -1,5 +1,6 @@
 // Local images: the link shaper, the gateway and the dcmtk tools. Each is tagged by a hash of
 // its inputs and built only when that tag is missing.
+import { spawn } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { cp, mkdir, readdir, readFile, realpath, rm, stat } from 'node:fs/promises';
@@ -81,22 +82,54 @@ async function vendor(packageDir: string, dest: string): Promise<void> {
   }
 }
 
+/** Builds the upload page (Vite) into `outDir`; the gateway serves it at /upload/. */
+function buildUploadPage(outDir: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const child = spawn('pnpm', ['exec', 'vite', 'build', '--outDir', outDir, '--emptyOutDir'], {
+      cwd: join(SPIKE, 'upload-web'),
+      stdio: ['ignore', 'ignore', 'pipe'],
+      shell: process.platform === 'win32',
+      windowsHide: true,
+    });
+    let stderr = '';
+    child.stderr.on('data', (chunk: Buffer) => {
+      stderr += chunk.toString();
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) resolve();
+      else reject(new Error(`upload page build failed: ${stderr.slice(-400)}`));
+    });
+  });
+}
+
 export async function gatewayImage(): Promise<string> {
   const gateway = join(SPIKE, 'gateway');
+  const page = join(SPIKE, 'upload-web');
   const inputs = [
     join(gateway, 'src'),
     join(gateway, 'package.json'),
     join(gateway, 'Dockerfile'),
+    join(page, 'src'),
+    join(page, 'index.html'),
+    join(page, 'vite.config.ts'),
+    join(page, 'package.json'),
     join(repoRoot(), 'pnpm-lock.yaml'),
   ];
   const tag = `shifa-s4-gateway:${await hashTree(inputs)}`;
   if ((await docker(['image', 'inspect', tag], { check: false })).code === 0) return tag;
-  const context = cacheDir('build', 'gateway');
+  // A context per process: two suites starting at once must not share (and delete) one.
+  const context = cacheDir('build', `gateway-${String(process.pid)}`);
   await rm(context, { recursive: true, force: true });
   await mkdir(context, { recursive: true });
   await cp(join(gateway, 'src'), join(context, 'src'), { recursive: true });
   await cp(join(gateway, 'package.json'), join(context, 'package.json'));
   await cp(join(gateway, 'Dockerfile'), join(context, 'Dockerfile'));
   await vendor(gateway, context);
-  return buildIfMissing(tag, context);
+  await buildUploadPage(join(context, 'upload-web'));
+  try {
+    return await buildIfMissing(tag, context);
+  } finally {
+    await rm(context, { recursive: true, force: true });
+  }
 }

@@ -3,7 +3,13 @@
 // Orthanc; viewer and uploader tokens are refused; Transfers pull, send, lookup, peers and
 // chunks, Orthanc jobs and peers are refused for every role. One audit row per committed push.
 // An edge credential may live up to 12 hours (a P1 push outlasts the 5-minute user tokens).
+// Lossless: the cloud copy equals the edge copy byte for byte; against the source files the
+// datasets after the file meta group are compared, as C-STORE rewrites that group (owner
+// decision, 0.3-S4b).
+import { readFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { ensureStudy, type Manifest } from '@shifa-spike/s4-generator';
+import { datasetSha256 } from '@shifa-spike/s4-stack';
 import { orthanc, sha256, useStack } from '@shifa-spike/s4-stack/testing';
 import pg from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -46,16 +52,22 @@ describe('edge push through the gateway', () => {
     expect(done.State).toBe('Success');
     const ids = (await (await orthanc(stack.tenants.a, '/instances')).json()) as string[];
     expect(ids).toHaveLength(5);
-    const hashes = await Promise.all(
-      ids.map(async (id) =>
-        sha256(
+    const stored = await Promise.all(
+      ids.map(
+        async (id) =>
           new Uint8Array(
             await (await orthanc(stack.tenants.a, `/instances/${id}/file`)).arrayBuffer(),
           ),
-        ),
       ),
     );
-    expect(hashes.sort()).toEqual(files.map((f) => f.sha256).sort());
+    // The push is lossless: the cloud holds the edge's files byte for byte. C-STORE into the
+    // edge rewrites the file meta group, so against the source the datasets are compared.
+    const onEdge = await edge.files(study.manifest.studyInstanceUid);
+    expect(stored.map((b) => sha256(b)).sort()).toEqual([...onEdge.values()].sort());
+    const sources = await Promise.all(files.map((f) => readFile(join(study.dir, f.path))));
+    expect(stored.map((b) => datasetSha256(b)).sort()).toEqual(
+      sources.map((b) => datasetSha256(b)).sort(),
+    );
     expect(await (await orthanc(stack.tenants.b, '/instances')).json()).toEqual([]);
     const audit = await db.query<{ actor: string; tenant_id: string; action: string }>(
       "select actor, tenant_id, action from s4.audit where action = 'push'",

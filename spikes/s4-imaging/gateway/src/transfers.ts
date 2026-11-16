@@ -8,7 +8,8 @@ import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { request } from 'undici';
 import { type Context, ERROR_BODY, unsafePath } from './context.ts';
 
-const TX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+/** Orthanc's transaction ids (hex and dashes; no dots, so no dot segments upstream). */
+const TX = /^[0-9a-f][0-9a-f-]{7,63}$/;
 const BUCKET = /^(0|[1-9][0-9]{0,5})$/;
 /** A bucket is about 4 MB (the plugin's default query size); the instance list is small. */
 const MAX_BODY_BYTES = 64 * 1024 * 1024;

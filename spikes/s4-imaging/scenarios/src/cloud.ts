@@ -5,7 +5,7 @@ import { createHash } from 'node:crypto';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { cacheDir, repoRoot } from '@shifa-spike/s4-generator';
-import { multipartParts, type Stack, stowBody } from '@shifa-spike/s4-stack';
+import { datasetSha256, multipartParts, type Stack, stowBody } from '@shifa-spike/s4-stack';
 
 const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 
@@ -16,11 +16,15 @@ async function asViewer(stack: Stack, tenant: 'a' | 'b', path: string, accept: s
   });
 }
 
-/** SOP Instance UID → SHA-256 of every instance of the study in the tenant. */
+/**
+ * SOP Instance UID → SHA-256 of every instance of the study in the tenant: of the whole file,
+ * or of its dataset after the file meta group (`dataset`, for copies that crossed a C-STORE).
+ */
 export async function cloudStudy(
   stack: Stack,
   tenant: 'a' | 'b',
   studyUid: string,
+  hash: 'file' | 'dataset' = 'file',
 ): Promise<Map<string, string>> {
   const list = await asViewer(
     stack,
@@ -44,7 +48,8 @@ export async function cloudStudy(
     if (res.status !== 200) throw new Error(`WADO ${String(res.status)}`);
     const body = new Uint8Array(await res.arrayBuffer());
     const [part] = multipartParts(body, res.headers.get('content-type') ?? '');
-    found.set(sop, sha256(part ?? new Uint8Array()));
+    const bytes = part ?? new Uint8Array();
+    found.set(sop, hash === 'file' ? sha256(bytes) : datasetSha256(bytes));
   }
   return found;
 }
