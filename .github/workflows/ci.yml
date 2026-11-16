@@ -19,7 +19,8 @@ jobs:
   # verify runs as parallel jobs (OD-34). `checks` runs the repository-level steps (`verify docs`:
   # format, instructions, root lint, script tests, file length); `node`, `dart` and `build`
   # run `verify full --part <name>`. Together they run every step of `verify full`
-  # (scripts/test/verify-parts.test.mjs checks the split). Pull requests that change only docs/
+  # (scripts/test/verify-parts.test.mjs and ci-verify-jobs.test.mjs check the split). On pushes
+  # to main, `caches` saves the Flutter SDK and pub caches first. Pull requests that change only docs/
   # run `checks` alone; every push to main runs everything. `verify docs` still executes
   # repository code (script tests, ESLint configs), so a docs-only pull request is not "no code
   # ran" and gets the same review. No job restores a Turborepo cache: a cached task result is an
@@ -63,121 +64,20 @@ jobs:
           echo "verify mode: $mode"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
 
-  checks:
-    name: verify checks
+  # Saves the Flutter SDK and pub caches on pushes to main, before any job of the run executes
+  # repository or dependency code: every job that does (checks, node, build, dart) needs this one
+  # and starts only after it has finished (OD-30). Skipped on pull requests, which only restore.
+  caches:
+    name: CI caches
     needs: scope
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
-      # have run, which breaks the cache rule (see the dart job); a clean install takes about 2 s.
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          package-manager-cache: false
-      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
-      - run: pnpm install --frozen-lockfile
-      - name: verify docs
-        run: node scripts/verify.mjs docs
-      - name: Show verify logs
-        if: failure()
-        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
-
-  node:
-    name: verify node packages
-    needs: scope
-    if: needs.scope.outputs.mode == 'full'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 30
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
-      # have run, which breaks the cache rule (see the dart job); a clean install takes about 2 s.
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          package-manager-cache: false
-      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
-      - run: pnpm install --frozen-lockfile
-      # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
-      # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
-      # test timeouts.
-      - name: Pull database test images
-        run: |
-          images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
-            packages/db/test-harness/image.ts | tr -d "'")"
-          if [ "$(echo "$images" | wc -w)" -ne 3 ]; then
-            echo "::error::expected 3 digest-pinned images in packages/db/test-harness/image.ts"
-            exit 1
-          fi
-          for image in $images; do docker pull --quiet "$image"; done
-      - name: verify full --part node
-        run: node scripts/verify.mjs full --part node
-      - name: Show verify logs
-        if: failure()
-        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
-
-  build:
-    name: verify build and boot
-    needs: scope
-    if: needs.scope.outputs.mode == 'full'
-    runs-on: ubuntu-24.04
-    timeout-minutes: 20
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
-      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
-      # have run, which breaks the cache rule (see the dart job); a clean install takes about 2 s.
-      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        with:
-          node-version-file: .nvmrc
-          package-manager-cache: false
-      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
-      - run: pnpm install --frozen-lockfile
-      # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
-      # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
-      # test timeouts.
-      - name: Pull database test images
-        run: |
-          images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
-            packages/db/test-harness/image.ts | tr -d "'")"
-          if [ "$(echo "$images" | wc -w)" -ne 3 ]; then
-            echo "::error::expected 3 digest-pinned images in packages/db/test-harness/image.ts"
-            exit 1
-          fi
-          for image in $images; do docker pull --quiet "$image"; done
-      - name: verify full --part build
-        run: node scripts/verify.mjs full --part build
-      - name: Show verify logs
-        if: failure()
-        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
-
-  dart:
-    name: verify dart
-    needs: scope
-    if: needs.scope.outputs.mode == 'full'
+    if: github.event_name == 'push' && needs.scope.outputs.mode == 'full'
     env:
       FLUTTER_VERSION: 3.47.9
       FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
       # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
       FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 20
     permissions:
       contents: read
     steps:
@@ -294,9 +194,221 @@ jobs:
         with:
           path: ~/.pub-cache
           key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+
+  checks:
+    name: verify checks
+    needs: [scope, caches]
+    if: ${{ !cancelled() && needs.scope.result == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
       # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
-      # have run, which breaks the cache rule (see the dart job); a clean install takes about 2 s.
+      # have run, which breaks the cache rule (see the caches job); a clean install takes about 2 s.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
+      - run: pnpm install --frozen-lockfile
+      - name: verify docs
+        run: node scripts/verify.mjs docs
+      - name: Show verify logs
+        if: failure()
+        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
+
+  node:
+    name: verify node packages
+    needs: [scope, caches]
+    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
+      # have run, which breaks the cache rule (see the caches job); a clean install takes about 2 s.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
+      - run: pnpm install --frozen-lockfile
+      # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
+      # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
+      # test timeouts.
+      - name: Pull database test images
+        run: |
+          images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
+            packages/db/test-harness/image.ts | tr -d "'")"
+          if [ "$(echo "$images" | wc -w)" -ne 3 ]; then
+            echo "::error::expected 3 digest-pinned images in packages/db/test-harness/image.ts"
+            exit 1
+          fi
+          for image in $images; do docker pull --quiet "$image"; done
+      - name: verify full --part node
+        run: node scripts/verify.mjs full --part node
+      - name: Show verify logs
+        if: failure()
+        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
+
+  build:
+    name: verify build and boot
+    needs: [scope, caches]
+    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
+      # have run, which breaks the cache rule (see the caches job); a clean install takes about 2 s.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
+      - run: pnpm install --frozen-lockfile
+      # DB tests (packages/db) start PostgreSQL, PgBouncer and Ryuk through Testcontainers. Pull
+      # them by the digests pinned in packages/db/test-harness/image.ts, so the pull is outside
+      # test timeouts.
+      - name: Pull database test images
+        run: |
+          images="$(grep -oE "'(postgres|edoburu/pgbouncer|testcontainers/ryuk):[^']+@sha256:[0-9a-f]{64}'" \
+            packages/db/test-harness/image.ts | tr -d "'")"
+          if [ "$(echo "$images" | wc -w)" -ne 3 ]; then
+            echo "::error::expected 3 digest-pinned images in packages/db/test-harness/image.ts"
+            exit 1
+          fi
+          for image in $images; do docker pull --quiet "$image"; done
+      - name: verify full --part build
+        run: node scripts/verify.mjs full --part build
+      - name: Show verify logs
+        if: failure()
+        run: if [ -d .verify/logs ]; then tail -n 200 .verify/logs/*.log; fi
+
+  dart:
+    name: verify dart
+    needs: [scope, caches]
+    if: ${{ !cancelled() && needs.scope.result == 'success' && needs.scope.outputs.mode == 'full' }}
+    env:
+      FLUTTER_VERSION: 3.47.9
+      FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+      # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
+      FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      # Restore only: the `caches` job saves on pushes to main (OD-30).
+      - name: Restore Flutter SDK
+        id: flutter-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ runner.temp }}/flutter
+          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
+      # Flutter from Google's release storage, checksum-verified, no third-party action. The
+      # version must match .fvmrc; the SHA-256 comes from Google's releases_linux.json for it.
+      # The cache holds the untouched extraction, and FLUTTER_TREE_SHA256 pins a digest of that
+      # tree (paths, types, modes, link targets, file contents). A restored tree that does not
+      # match is discarded and reinstalled from the archive, so a planted entry costs time, never
+      # integrity. On a version bump, set FLUTTER_TREE_SHA256 to the digest a run prints.
+      - name: Install Flutter
+        id: flutter-install
+        working-directory: ${{ runner.temp }}
+        env:
+          CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
+          FVMRC: ${{ github.workspace }}/.fvmrc
+        run: |
+          tree_digest() {
+            ( cd "$1" && {
+              find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
+              find . -type f -print0 | xargs -0 -r -P4 -n256 sha256sum | LC_ALL=C sort -k2
+            } | sha256sum | cut -d' ' -f1 )
+          }
+          # Only known keys: FVM honours flutterUrl/cachePath in .fvmrc, which could point
+          # every developer's `fvm install` at another repository.
+          jq -e 'keys - ["flutter","updateGitIgnore","updateVscodeSettings"] == []' "$FVMRC" > /dev/null \
+            || { echo "::error::.fvmrc has keys other than flutter/updateGitIgnore/updateVscodeSettings"; exit 1; }
+          pinned="$(jq -r .flutter "$FVMRC")"
+          if [ "$pinned" != "$FLUTTER_VERSION" ]; then
+            echo "::error::.fvmrc pins Flutter $pinned but CI installs $FLUTTER_VERSION; update ci.yml"
+            exit 1
+          fi
+          sdk="${RUNNER_TEMP}/flutter"
+          save=false
+          if [ "$CACHE_HIT" = true ]; then
+            restored="$(tree_digest "$sdk")"
+            if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
+              echo "Restored Flutter SDK matches the pinned tree digest"
+            else
+              echo "::warning::restored Flutter SDK does not match FLUTTER_TREE_SHA256 ($restored); reinstalling from the archive"
+              rm -rf "$sdk"
+            fi
+          fi
+          if [ ! -d "$sdk" ]; then
+            archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+            curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+            echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+            tar -xJf "$archive" -C "$RUNNER_TEMP"
+            rm "$archive"
+            extracted="$(tree_digest "$sdk")"
+            echo "Flutter SDK tree digest: $extracted"
+            if [ -z "$FLUTTER_TREE_SHA256" ]; then
+              echo "::warning::FLUTTER_TREE_SHA256 is not set; the SDK is not cached. Pin: $extracted"
+            elif [ "$extracted" != "$FLUTTER_TREE_SHA256" ]; then
+              echo "::error::the verified archive extracts to tree digest $extracted, but ci.yml pins $FLUTTER_TREE_SHA256"
+              exit 1
+            elif [ "$CACHE_HIT" != true ]; then
+              save=true
+            fi
+          fi
+          echo "save=$save" >> "$GITHUB_OUTPUT"
+      - name: Set up Flutter
+        working-directory: ${{ runner.temp }}
+        run: |
+          echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
+          installed="$("${RUNNER_TEMP}/flutter/bin/flutter" --version --machine | jq -r .frameworkVersion)"
+          if [ "$installed" != "$FLUTTER_VERSION" ]; then
+            echo "::error::the Flutter SDK reports $installed, expected $FLUTTER_VERSION"
+            exit 1
+          fi
+          "${RUNNER_TEMP}/flutter/bin/flutter" --version
+      # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
+      # reuses an unpacked copy from the cache. The cache is filled by a plain
+      # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
+      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
+      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
+      - name: Restore pub cache
+        id: pub-cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ~/.pub-cache
+          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+      - name: Fetch pub packages
+        if: steps.pub-cache.outputs.cache-hit != 'true'
+        run: '"${SHIFA_FLUTTER_ROOT}/bin/flutter" pub get --enforce-lockfile'
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      # No `cache: pnpm`: setup-node saves the store after the job, once dependencies and tests
+      # have run, which breaks the cache rule (see the caches job); a clean install takes about 2 s.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version-file: .nvmrc

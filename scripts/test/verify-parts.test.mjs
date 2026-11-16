@@ -1,12 +1,10 @@
 // CI's split of `verify full` into parallel jobs (OD-34): `verify docs` plus the parts node,
-// dart and build run every full step; the Turborepo filters split the packages without a gap or
-// an overlap; ci.yml runs each part once and its `verify (full)` job fails unless all passed.
+// dart and build run every full step with the same arguments, and the Turborepo filters split
+// the packages without a gap or an overlap. ci.yml itself: ci-verify-jobs.test.mjs.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
-import { parse } from 'yaml';
 import { PARTS, verifySteps } from '../lib/verify-steps.mjs';
 import { dartWorkspacePackages } from '../lib/workspace.mjs';
 
@@ -48,8 +46,13 @@ describe('verify parts', () => {
         assert.deepEqual(step.args.slice(base.length), filters(step), `${p}:${step.name}`);
       }
     }
+    // CI's `checks` job runs `verify docs` in place of these full steps: same command, same args.
+    for (const step of verifySteps('docs')) {
+      assert.deepEqual([step.cmd, step.args], [full[step.name].cmd, full[step.name].args]);
+    }
     assert.ok(turboOf(part('node')).args.includes('--force'));
     assert.ok(turboOf(part('dart')).args.includes('--force'));
+    assert.ok(part('build')[0].args.includes('--force'));
   });
 
   it('splits Turborepo packages into the pub workspace and everything else', () => {
@@ -89,96 +92,5 @@ describe('verify parts', () => {
       assert.equal(r.status, 2, args.join(' '));
       assert.match(r.stderr, /expected "full --part/);
     }
-  });
-});
-
-describe('ci.yml verify jobs', () => {
-  const ci = parse(readFileSync(join(root, '.github', 'workflows', 'ci.yml'), 'utf8'));
-  const runsOf = (job) => (ci.jobs[job].steps ?? []).map((s) => s.run).filter(Boolean);
-
-  it('runs verify docs once and each part once, in its own job', () => {
-    const verifyRuns = Object.entries(ci.jobs).flatMap(([id, job]) =>
-      (job.steps ?? [])
-        .filter((s) => typeof s.run === 'string' && s.run.includes('scripts/verify.mjs'))
-        .map((s) => `${id}: ${s.run.trim()}`),
-    );
-    assert.deepEqual(verifyRuns.sort(), [
-      'build: node scripts/verify.mjs full --part build',
-      'checks: node scripts/verify.mjs docs',
-      'dart: node scripts/verify.mjs full --part dart',
-      'node: node scripts/verify.mjs full --part node',
-    ]);
-  });
-
-  it('runs the parts only in full mode, and checks in every mode', () => {
-    for (const job of ['node', 'build', 'dart']) {
-      assert.equal(ci.jobs[job].if, "needs.scope.outputs.mode == 'full'", job);
-      assert.equal(ci.jobs[job].needs, 'scope', job);
-      assert.equal(
-        ci.jobs[job].steps.some((s) => s['continue-on-error']),
-        false,
-        job,
-      );
-    }
-    assert.equal(ci.jobs.checks.if, undefined);
-    assert.ok(runsOf('dart').some((r) => r.includes('git diff --exit-code -- pubspec.lock')));
-  });
-
-  it('keeps the required check name on an aggregator that needs every part', () => {
-    const verify = ci.jobs.verify;
-    assert.equal(verify.name, 'verify (full)');
-    assert.equal(verify.if, 'always()');
-    assert.deepEqual([...verify.needs].sort(), ['build', 'checks', 'dart', 'node', 'scope']);
-    assert.deepEqual(verify.permissions, {});
-    const names = Object.values(ci.jobs).map((j) => j.name);
-    assert.equal(names.filter((n) => n === 'verify (full)').length, 1);
-  });
-
-  it('restores no Turborepo cache in any job', () => {
-    for (const [id, job] of Object.entries(ci.jobs)) {
-      for (const step of job.steps ?? []) {
-        const path = String(step.with?.path ?? '');
-        assert.ok(!/turbo/i.test(path), `${id}: caches ${path}`);
-        assert.ok(
-          !/TURBO_(TOKEN|TEAM|API|REMOTE)/.test(JSON.stringify(step)),
-          `${id}: remote cache`,
-        );
-      }
-    }
-  });
-});
-
-describe('verify (full) aggregator', () => {
-  const ci = parse(readFileSync(join(root, '.github', 'workflows', 'ci.yml'), 'utf8'));
-  const script = ci.jobs.verify.steps[0].run;
-  const bash = spawnSync('bash', ['-c', 'exit 0']);
-  const skip = bash.status === 0 ? false : 'bash is not available';
-
-  const decide = (env) =>
-    spawnSync('bash', ['-c', script], {
-      encoding: 'utf8',
-      env: { PATH: process.env.PATH, ...env },
-    }).status;
-  const all = (result) => ({ NODE: result, BUILD: result, DART: result });
-  const ok = { SCOPE: 'success', CHECKS: 'success' };
-
-  it('passes when every part passed in full mode', { skip }, () => {
-    assert.equal(decide({ MODE: 'full', ...ok, ...all('success') }), 0);
-  });
-
-  it('passes a docs-only pull request whose parts were skipped', { skip }, () => {
-    assert.equal(decide({ MODE: 'docs', ...ok, ...all('skipped') }), 0);
-  });
-
-  it('fails on any failed, cancelled or wrongly skipped part', { skip }, () => {
-    for (const bad of ['failure', 'cancelled', 'skipped']) {
-      for (const job of ['NODE', 'BUILD', 'DART']) {
-        assert.equal(decide({ MODE: 'full', ...ok, ...all('success'), [job]: bad }), 1);
-      }
-    }
-    assert.equal(decide({ MODE: 'docs', ...ok, ...all('skipped'), DART: 'success' }), 1);
-    assert.equal(decide({ MODE: 'full', ...ok, CHECKS: 'failure', ...all('success') }), 1);
-    assert.equal(decide({ MODE: 'full', ...ok, SCOPE: 'failure', ...all('success') }), 1);
-    assert.equal(decide({ MODE: '', ...ok, ...all('skipped') }), 1);
   });
 });
