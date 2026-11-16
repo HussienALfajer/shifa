@@ -174,12 +174,15 @@ class PsEngine implements ProbeEngine {
 
   @override
   Future<void> logout() async {
-    await _db?.disconnectAndClear();
-    await close();
-    for (final suffix in ['', '-wal', '-shm', '-journal']) {
-      final file = File('$databasePath$suffix');
-      if (file.existsSync()) await file.delete();
+    try {
+      await _db?.disconnectAndClear();
+      await close();
+    } finally {
+      for (final suffix in ['', '-wal', '-shm', '-journal']) {
+        final file = File('$databasePath$suffix');
+        if (file.existsSync()) await file.delete();
+      }
+      await config.keys.delete();
     }
-    await config.keys.delete();
   }
 }

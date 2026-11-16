@@ -46,7 +46,9 @@ interface ReporterEvent {
 async function writeSummary(exitCode: number): Promise<void> {
   const counts = { passed: 0, failed: 0, skipped: 0 };
   try {
-    for (const line of (await readFile(RAW, 'utf8')).split('\n')) {
+    // No file when Flutter failed before running a test (pub or compile error): zero counts.
+    const raw = await readFile(RAW, 'utf8').catch(() => '');
+    for (const line of raw.split('\n')) {
       if (!line.trim()) continue;
       const event = JSON.parse(line) as ReporterEvent;
       if (event.type !== 'testDone' || event.hidden === true) continue;

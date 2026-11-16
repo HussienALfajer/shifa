@@ -40,3 +40,11 @@ String passphraseOf(Uint8List key) =>
 /// `PRAGMA key` for a passphrase, quoted as an SQL string literal.
 String pragmaKey(String passphrase) =>
     "PRAGMA key = '${passphrase.replaceAll("'", "''")}'";
+
+/// The patient's last session token, so an app started offline can still
+/// open its encrypted cache (status then shows offline or needs-login).
+abstract interface class TokenStore {
+  Future<String?> read();
+  Future<void> write(String token);
+  Future<void> delete();
+}

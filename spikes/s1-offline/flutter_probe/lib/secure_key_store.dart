@@ -27,3 +27,20 @@ class SecureKeyStore implements KeyStore {
   @override
   Future<void> delete() => _storage.delete(key: _name);
 }
+
+class SecureTokenStore implements TokenStore {
+  new([FlutterSecureStorage? storage])
+    : _storage = storage ?? const FlutterSecureStorage();
+
+  static const _name = 's1_probe_session_token';
+  final FlutterSecureStorage _storage;
+
+  @override
+  Future<String?> read() => _storage.read(key: _name);
+
+  @override
+  Future<void> write(String token) => _storage.write(key: _name, value: token);
+
+  @override
+  Future<void> delete() => _storage.delete(key: _name);
+}

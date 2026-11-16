@@ -6,6 +6,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:s1_flutter_probe/engine.dart';
+import 'package:s1_flutter_probe/key_store.dart';
 import 'package:s1_flutter_probe/probe_screen.dart';
 import 'package:s1_flutter_probe/secure_key_store.dart';
 
@@ -35,21 +36,28 @@ Future<void> main() async {
     ProbeApp(
       engine: engine,
       login: () => patientLogin(Uri.parse(_server), _patient, _device),
+      tokens: SecureTokenStore(),
     ),
   );
 }
 
 class ProbeApp extends StatelessWidget {
-  const new({required this.engine, required this.login, super.key});
+  const new({
+    required this.engine,
+    required this.login,
+    required this.tokens,
+    super.key,
+  });
 
   final ProbeEngine engine;
   final Future<String> Function() login;
+  final TokenStore tokens;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
     title: 'شفاء — مسبار',
     builder: (context, child) =>
         Directionality(textDirection: TextDirection.rtl, child: child!),
-    home: ProbeScreen(engine: engine, login: login),
+    home: ProbeScreen(engine: engine, login: login, tokens: tokens),
   );
 }

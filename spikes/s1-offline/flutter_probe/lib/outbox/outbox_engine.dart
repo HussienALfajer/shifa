@@ -35,6 +35,7 @@ class OutboxEngine implements ProbeEngine {
   Timer? _timer;
   Future<void>? _running;
   ProbeStatus _status = ProbeStatus.offline;
+  bool _closing = false;
 
   @override
   String get databasePath => p.join(config.directory, 's1-outbox.db');
@@ -47,6 +48,8 @@ class OutboxEngine implements ProbeEngine {
   @override
   Future<void> open(String token) async {
     _token = token;
+    _status = ProbeStatus.offline;
+    _closing = false;
     final passphrase = encrypt
         ? passphraseOf(await loadOrCreateKey(config.keys))
         : null;
@@ -132,7 +135,9 @@ class OutboxEngine implements ProbeEngine {
 
   @override
   Future<void> syncNow() {
-    if (_db == null || _status == ProbeStatus.needsLogin) return Future.value();
+    if (_db == null || _closing || _status == ProbeStatus.needsLogin) {
+      return Future.value();
+    }
     return _running ??= _round().whenComplete(() => _running = null);
   }
 
@@ -143,8 +148,9 @@ class OutboxEngine implements ProbeEngine {
       _status = ProbeStatus.online;
     } on _Unauthorized {
       _status = ProbeStatus.needsLogin;
-    } on Exception {
-      // Network errors and timeouts: keep the queue, retry the same ids.
+    } on Object {
+      // Network errors, timeouts and unexpected answers: keep the queue and
+      // retry the same ids on the next round.
       _status = ProbeStatus.offline;
     }
   }
@@ -189,13 +195,17 @@ class OutboxEngine implements ProbeEngine {
                 },
               ))!
               as Map<String, dynamic>;
-      final answered = {
-        for (final r in (response['results'] as List<dynamic>))
-          (r as Map<String, dynamic>)['id'] as String,
-      };
+      final results = (response['results'] as List<dynamic>)
+          .cast<Map<String, dynamic>>();
+      final answered = {for (final r in results) r['id'] as String};
       // Applied, conflict or refused: the server has an answer, so the command
-      // leaves the queue; the next pull brings the server's state.
+      // leaves the queue. A command not applied leaves an optimistic row the
+      // cursor pull would not revisit, so the next pull is a full snapshot.
+      final undo = results.any((r) => r['status'] != 'applied');
       await _store.transaction(() async {
+        if (undo) {
+          await _store.customStatement("DELETE FROM meta WHERE key = 'cursor'");
+        }
         for (final r in queued) {
           final id = r.read<String>('id');
           if (answered.contains(id)) {
@@ -255,9 +265,10 @@ class OutboxEngine implements ProbeEngine {
 
   @override
   Future<void> close() async {
+    _closing = true;
     _timer?.cancel();
     _timer = null;
-    await _running;
+    await _running; // _round never throws (it catches Object).
     final db = _db;
     _db = null;
     await db?.close();
@@ -267,12 +278,15 @@ class OutboxEngine implements ProbeEngine {
 
   @override
   Future<void> logout() async {
-    await close();
-    for (final suffix in ['', '-wal', '-shm', '-journal']) {
-      final file = File('$databasePath$suffix');
-      if (file.existsSync()) await file.delete();
+    try {
+      await close();
+    } finally {
+      for (final suffix in ['', '-wal', '-shm', '-journal']) {
+        final file = File('$databasePath$suffix');
+        if (file.existsSync()) await file.delete();
+      }
+      await config.keys.delete();
+      _token = null;
     }
-    await config.keys.delete();
-    _token = null;
   }
 }

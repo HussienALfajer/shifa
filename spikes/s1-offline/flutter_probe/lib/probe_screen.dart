@@ -5,12 +5,19 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:s1_flutter_probe/engine.dart';
+import 'package:s1_flutter_probe/key_store.dart';
 
 class ProbeScreen extends StatefulWidget {
-  const new({required this.engine, required this.login, super.key});
+  const new({
+    required this.engine,
+    required this.login,
+    required this.tokens,
+    super.key,
+  });
 
   final ProbeEngine engine;
   final Future<String> Function() login;
+  final TokenStore tokens;
 
   @override
   State<ProbeScreen> createState() => _ProbeScreenState();
@@ -18,6 +25,7 @@ class ProbeScreen extends StatefulWidget {
 
 class _ProbeScreenState extends State<ProbeScreen> {
   bool _opened = false;
+  bool _noSession = false;
   int _pending = 0;
   ProbeStatus _status = ProbeStatus.offline;
   Timer? _poll;
@@ -31,11 +39,20 @@ class _ProbeScreenState extends State<ProbeScreen> {
   }
 
   Future<void> _start() async {
+    String? token;
     try {
-      await widget.engine.open(await widget.login());
-    } on Exception {
-      return; // No network at first start: nothing cached to show yet.
+      token = await widget.login();
+      await widget.tokens.write(token);
+    } on Object {
+      // Offline (or refused) at start: open the cache with the last session;
+      // the engine then reports offline or needs-login.
+      token = await widget.tokens.read();
     }
+    if (token == null) {
+      if (mounted) setState(() => _noSession = true);
+      return;
+    }
+    await widget.engine.open(token);
     if (!mounted) return;
     setState(() {
       _opened = true;
@@ -62,6 +79,7 @@ class _ProbeScreenState extends State<ProbeScreen> {
   Future<void> _logout() async {
     _poll?.cancel();
     await widget.engine.logout();
+    await widget.tokens.delete();
     if (mounted) setState(() => _opened = false);
   }
 
@@ -86,7 +104,11 @@ class _ProbeScreenState extends State<ProbeScreen> {
       ],
     ),
     body: !_opened
-        ? const Center(child: Text('جارٍ التحميل…'))
+        ? Center(
+            child: Text(
+              _noSession ? 'لا اتصال ولا بيانات محفوظة بعد' : 'جارٍ التحميل…',
+            ),
+          )
         : Column(
             children: [
               if (_status != ProbeStatus.online)
