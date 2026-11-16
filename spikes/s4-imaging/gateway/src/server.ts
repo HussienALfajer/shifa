@@ -151,16 +151,23 @@ export function buildServer(config: GatewayConfig): { app: FastifyInstance; metr
 
       let studyUid = match.studyUid;
       let buffered: string | undefined;
-      if (upstreamRes && match.route.routeClass === 'stow' && status < 400) {
-        buffered = await upstreamRes.body.text();
-        studyUid = stowStudyUid(buffered);
-      }
       // An empty search answers 204 No Content (PS3.18 allows it): another tenant's study and an
       // unknown study then look the same on every QIDO route, list or not.
       const length = Number(upstreamRes?.headers['content-length'] ?? Number.NaN);
-      if (upstreamRes && match.route.action === 'search' && status === 200 && length <= 16) {
-        buffered = await upstreamRes.body.text();
-        if (buffered.trim() === '[]') status = 204;
+      const smallSearch = match.route.action === 'search' && status === 200 && length <= 16;
+      const stowOk = match.route.routeClass === 'stow' && status < 400;
+      if (upstreamRes && (stowOk || smallSearch)) {
+        try {
+          buffered = await upstreamRes.body.text();
+          if (stowOk) studyUid = stowStudyUid(buffered);
+          else if (buffered.trim() === '[]') status = 204;
+        } catch {
+          // Orthanc dropped the connection after its headers: an upstream failure, still
+          // audited below (the STOW was already forwarded); the failed stream is not drained.
+          status = 502;
+          buffered = undefined;
+          upstreamRes = undefined;
+        }
       }
       try {
         await config.audit.write({

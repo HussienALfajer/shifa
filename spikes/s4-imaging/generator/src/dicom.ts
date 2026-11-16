@@ -274,11 +274,52 @@ const GENERATOR_HASH = (() => {
   return hash.digest('hex').slice(0, 12);
 })();
 
+/** The manifest of a published study whose files are all present at their sizes, or undefined. */
+async function intact(dir: string): Promise<Manifest | undefined> {
+  const manifestPath = join(dir, 'manifest.json');
+  if (!existsSync(manifestPath)) return undefined;
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest;
+  const sizes = await Promise.all(
+    manifest.files.map((f) =>
+      stat(join(dir, f.path)).then(
+        (s) => s.size,
+        () => -1,
+      ),
+    ),
+  );
+  return sizes.every((size, i) => size === manifest.files[i]?.bytes) ? manifest : undefined;
+}
+
+/** A lock shared by every process on this machine: an atomic mkdir; a stale one (30 min) is broken. */
+async function withLock<T>(path: string, work: () => Promise<T>): Promise<T> {
+  const lock = `${path}.lock`;
+  await mkdir(dirname(lock), { recursive: true });
+  for (;;) {
+    try {
+      await mkdir(lock);
+      break;
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code !== 'EEXIST') throw error;
+      const age = await stat(lock).then(
+        (s) => Date.now() - s.mtimeMs,
+        () => 0,
+      );
+      if (age > 30 * 60_000) await rm(lock, { recursive: true, force: true });
+      else await new Promise((resolve) => setTimeout(resolve, 500));
+    }
+  }
+  try {
+    return await work();
+  } finally {
+    await rm(lock, { recursive: true, force: true });
+  }
+}
+
 /**
  * The study under `.cache/s4/studies/<name>-<seed>-<generator hash>/`, generated once and
- * reused while every file is intact. A finished directory is never replaced, so a process that
- * reads it is safe from another one generating the same study; the loser of a race keeps the
- * winner's copy.
+ * reused while every file is intact. Checking, generating and publishing happen under a lock
+ * shared by all processes, and a published directory is only set aside after it was found
+ * damaged under that lock, so a reader of an intact study never loses it.
  */
 export function ensureStudy(
   name: StudyName,
@@ -290,38 +331,22 @@ export function ensureStudy(
   if (existing) return existing;
   const work = (async () => {
     const dir = cacheDir('studies', key);
-    const manifestPath = join(dir, 'manifest.json');
-    if (existsSync(manifestPath)) {
-      const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest;
-      const sizes = await Promise.all(
-        manifest.files.map((f) =>
-          stat(join(dir, f.path)).then(
-            (s) => s.size,
-            () => -1,
-          ),
-        ),
-      );
-      if (sizes.every((size, i) => size === manifest.files[i]?.bytes)) return { dir, manifest };
-    }
-    const temp = `${dir}.tmp-${String(process.pid)}`;
-    await rm(temp, { recursive: true, force: true });
-    await mkdir(temp, { recursive: true });
-    const manifest = await generateStudy(name, { outDir: temp, seed });
-    await writeFile(join(temp, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-    if (existsSync(dir)) {
-      // Damaged copy (a file missing or truncated): set it aside rather than delete in place.
-      await rename(dir, `${dir}.stale-${String(process.pid)}-${String(Date.now())}`).catch(
-        () => undefined,
-      );
-    }
-    try {
-      await rename(temp, dir);
-    } catch (error) {
-      // Another process finished the same study first: keep its copy.
+    const ready = await intact(dir);
+    if (ready) return { dir, manifest: ready };
+    return withLock(dir, async () => {
+      // Another process may have published it while this one waited for the lock.
+      const published = await intact(dir);
+      if (published) return { dir, manifest: published };
+      const temp = `${dir}.tmp-${String(process.pid)}`;
       await rm(temp, { recursive: true, force: true });
-      if (!existsSync(manifestPath)) throw error;
-    }
-    return { dir, manifest };
+      await mkdir(temp, { recursive: true });
+      const manifest = await generateStudy(name, { outDir: temp, seed });
+      await writeFile(join(temp, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
+      // Damaged (checked under the lock): set it aside rather than delete it in place.
+      if (existsSync(dir)) await rename(dir, `${dir}.stale-${String(Date.now())}`);
+      await rename(temp, dir);
+      return { dir, manifest };
+    });
   })();
   pending.set(key, work);
   // A failure is not cached: the next call tries again.

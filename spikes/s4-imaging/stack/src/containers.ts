@@ -1,8 +1,18 @@
 // Starting, inspecting and removing the run's containers and networks (docker CLI). Every
-// object carries the run label, so a teardown, or the next run after a crash, removes it all.
+// object carries the run label and its owner (host and process), so a teardown removes the run
+// and a later suite removes only runs whose owner process is gone.
+import { hostname } from 'node:os';
 import { docker } from './docker.ts';
 
 export const RUN_LABEL = 'shifa.s4.run';
+export const OWNER_LABEL = 'shifa.s4.owner';
+const OWNER = `${hostname()}:${String(process.pid)}`;
+const labels = (runId: string) => [
+  '--label',
+  `${RUN_LABEL}=${runId}`,
+  '--label',
+  `${OWNER_LABEL}=${OWNER}`,
+];
 
 export interface NetworkAttachment {
   network: string;
@@ -29,7 +39,7 @@ export interface ContainerSpec {
 }
 
 export async function runContainer(spec: ContainerSpec): Promise<string> {
-  const args = ['run', '-d', '--name', spec.name, '--label', `${RUN_LABEL}=${spec.runId}`];
+  const args = ['run', '-d', '--name', spec.name, ...labels(spec.runId)];
   for (const { network, aliases = [] } of spec.networks) {
     args.push('--network', [`name=${network}`, ...aliases.map((a) => `alias=${a}`)].join(','));
   }
@@ -60,15 +70,52 @@ export async function createNetwork(
   runId: string,
   options: { internal: boolean },
 ): Promise<string> {
-  const args = ['network', 'create', '--label', `${RUN_LABEL}=${runId}`];
+  const args = ['network', 'create', ...labels(runId)];
   if (options.internal) args.push('--internal');
   await docker([...args, name]);
   return name;
 }
 
-/** Removes every container and network of a run (pass '*' for every run). */
+/** Whether the process that started a run is still alive (another host's runs count as alive). */
+function ownerAlive(owner: string | undefined): boolean {
+  const [host, pid] = (owner ?? '').split(/:(?=\d+$)/);
+  if (!host || !pid) return false; // a run from before owner labels: leftover
+  if (host !== hostname()) return true; // another machine's run on a shared engine: not ours
+  try {
+    process.kill(Number(pid), 0);
+    return true;
+  } catch (error) {
+    return (error as NodeJS.ErrnoException).code === 'EPERM';
+  }
+}
+
+/**
+ * Removes runs left behind by processes that are gone (a timed-out beforeAll, Ctrl-C,
+ * S4_KEEP=1). Runs of live processes (another suite or worktree on this Docker host) stay.
+ */
+export async function removeStaleRuns(): Promise<void> {
+  const format = `{{.Label "${RUN_LABEL}"}} {{.Label "${OWNER_LABEL}"}}`;
+  const rows = [
+    ...(
+      await docker(['ps', '-a', '--filter', `label=${RUN_LABEL}`, '--format', format])
+    ).stdout.split('\n'),
+    ...(
+      await docker(['network', 'ls', '--filter', `label=${RUN_LABEL}`, '--format', format])
+    ).stdout.split('\n'),
+  ];
+  const owners = new Map<string, string | undefined>();
+  for (const row of rows.filter(Boolean)) {
+    const [runId, owner] = row.trim().split(' ');
+    if (runId) owners.set(runId, owner === '' ? undefined : owner);
+  }
+  for (const [runId, owner] of owners) {
+    if (!ownerAlive(owner)) await removeRun(runId);
+  }
+}
+
+/** Removes every container and network of a run. */
 export async function removeRun(runId: string): Promise<void> {
-  const filter = runId === '*' ? RUN_LABEL : `${RUN_LABEL}=${runId}`;
+  const filter = `${RUN_LABEL}=${runId}`;
   const ids = (await docker(['ps', '-aq', '--filter', `label=${filter}`])).stdout.split(/\s+/);
   const containers = ids.filter(Boolean);
   if (containers.length > 0) await docker(['rm', '-f', '-v', ...containers], { check: false });
