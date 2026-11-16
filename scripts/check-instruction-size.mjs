@@ -28,6 +28,8 @@ function* walk(dir) {
     if (SKIP.has(entry.name)) continue;
     if (dir === root && SKIP_TOP.has(entry.name)) continue;
     const full = join(dir, entry.name);
+    // Claude Code's git worktrees are other branches' checkouts, each checked in its own run.
+    if (relative(root, full) === join('.claude', 'worktrees')) continue;
     if (entry.isDirectory()) yield* walk(full);
     else yield full;
   }
