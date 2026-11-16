@@ -14,14 +14,13 @@ export const KEY_DIR = '/etc/orthanc-keys';
 const CONFIG_PATH = `${CONFIG_DIR}/s4.json`;
 const KEY_PATH = `${KEY_DIR}/master.key`;
 
-/** Official plugins this spike may switch on through the image's environment variables. */
-const ALLOWED_PLUGIN_ENV = new Set([
-  'DICOM_WEB_PLUGIN_ENABLED',
-  'POSTGRESQL_PLUGIN_ENABLED',
-  'AWS_S3_STORAGE_PLUGIN_ENABLED',
-  'TRANSFERS_PLUGIN_ENABLED',
-  'GDCM_PLUGIN_ENABLED',
-]);
+/** The harness's environment for every Orthanc (no secrets: those are in the JSON). */
+const ORTHANC_ENV = {
+  TRANSFERS_PLUGIN_ENABLED: 'true',
+  ORTHANC_EXPLORER_2_ENABLED: 'false',
+  VERBOSE_ENABLED: 'false',
+  VERBOSE_STARTUP: 'false',
+} as const;
 /** Root settings that load code or more plugins; refused in any mounted JSON. */
 const SCRIPTING_SETTINGS = /^(PythonScript|LuaScripts|Plugins|Python|Lua|LuaHeartBeatPeriod)$/i;
 
@@ -97,12 +96,7 @@ export async function startOrthanc(options: {
     runId: options.runId,
     image: IMAGES.orthanc,
     networks: [{ network: options.network, aliases: [`orthanc-${tenant.id}`] }],
-    env: {
-      TRANSFERS_PLUGIN_ENABLED: 'true',
-      ORTHANC_EXPLORER_2_ENABLED: 'false',
-      VERBOSE_ENABLED: 'false',
-      VERBOSE_STARTUP: 'false',
-    },
+    env: { ...ORTHANC_ENV },
     mounts: [
       [files.config, CONFIG_PATH],
       [files.key, KEY_PATH],
@@ -133,39 +127,58 @@ export async function waitOrthanc(name: string, password: string): Promise<void>
 /** The parts of `docker inspect` the licence check reads. */
 export interface InspectForLicence {
   Mounts: { Source: string; Destination: string; Type: string }[];
-  Config: { Env: string[]; Image: string };
+  Config: { Env: string[]; Image: string; Entrypoint?: string[] | null; Cmd?: string[] | null };
 }
+
+/**
+ * The only environment an Orthanc may run with: the pinned image's own variables and the
+ * harness's switches, with these exact values. Anything else (BEFORE_ORTHANC_STARTUP_SCRIPT,
+ * Python or Lua settings, ORTHANC_JSON, other plugins) breaks the boundary.
+ */
+const ALLOWED_ENV = new Set([
+  'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin',
+  'PYTHONUTF8=1',
+  'LANG=C.UTF-8',
+  'SSL_CERT_DIR=/etc/ssl/certs',
+  ...Object.entries(ORTHANC_ENV).map(([name, value]) => `${name}=${value}`),
+]);
+/** The pinned image's entrypoint and command; an override could run anything. */
+const ENTRYPOINT = JSON.stringify(['/docker-entrypoint.sh']);
+const CMD = JSON.stringify(['/tmp/orthanc.json']);
 
 /** Every reason the container breaks the licence boundary; empty when it holds. */
 export function licenceViolations(inspect: InspectForLicence): string[] {
   const problems: string[] = [];
-  if (inspect.Config.Image !== IMAGES.orthanc) problems.push(`image ${inspect.Config.Image}`);
+  const { Config: config } = inspect;
+  if (config.Image !== IMAGES.orthanc) problems.push(`image ${config.Image}`);
+  if (JSON.stringify(config.Entrypoint ?? null) !== ENTRYPOINT) problems.push('entrypoint');
+  if (JSON.stringify(config.Cmd ?? null) !== CMD) problems.push('command');
   for (const mount of inspect.Mounts) {
     const dest = mount.Destination;
     const isConfig = dest.startsWith(`${CONFIG_DIR}/`) && dest.endsWith('.json');
     const isKey = dest.startsWith(`${KEY_DIR}/`) && dest.endsWith('.key');
     if (mount.Type !== 'bind' || !(isConfig || isKey)) problems.push(`mount ${dest}`);
     if (/\.(py|lua|so|js)$/i.test(dest) || /plugin/i.test(dest)) problems.push(`code ${dest}`);
-    if (isConfig && existsSync(mount.Source)) {
-      const settings = JSON.parse(readFileSync(mount.Source, 'utf8')) as Record<string, unknown>;
-      for (const key of Object.keys(settings)) {
-        if (SCRIPTING_SETTINGS.test(key)) problems.push(`setting ${key} in ${dest}`);
-      }
-    }
+    if (isConfig) problems.push(...configProblems(mount.Source, dest));
   }
-  for (const entry of inspect.Config.Env) {
-    const [name = '', value = ''] = entry.split(/=(.*)/s);
-    // Orthanc's Python and Lua settings in any spelling (the image's own PYTHONUTF8 is not one).
-    const scripting = /^ORTHANC__PYTHON|PYTHON_SCRIPT|PYTHON_PLUGIN|LUA/i.test(name);
-    if (scripting || /^ORTHANC__PLUGINS/i.test(name) || name === 'ORTHANC_JSON') {
-      problems.push(`env ${name}`);
-    } else if (
-      name.endsWith('_PLUGIN_ENABLED') &&
-      value === 'true' &&
-      !ALLOWED_PLUGIN_ENV.has(name)
-    ) {
-      problems.push(`env ${name}`);
-    }
+  for (const entry of config.Env) {
+    if (!ALLOWED_ENV.has(entry)) problems.push(`env ${entry.split('=')[0] ?? ''}`);
   }
   return problems;
+}
+
+/** A mounted JSON must be readable, parse to an object and set no scripting or plugin key. */
+function configProblems(source: string, dest: string): string[] {
+  if (!existsSync(source)) return [`unreadable ${dest}`];
+  try {
+    const settings: unknown = JSON.parse(readFileSync(source, 'utf8'));
+    if (typeof settings !== 'object' || settings === null || Array.isArray(settings)) {
+      return [`not a settings object ${dest}`];
+    }
+    return Object.keys(settings)
+      .filter((key) => SCRIPTING_SETTINGS.test(key))
+      .map((key) => `setting ${key} in ${dest}`);
+  } catch {
+    return [`not JSON ${dest}`];
+  }
 }

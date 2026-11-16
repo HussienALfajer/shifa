@@ -16,7 +16,9 @@ const psql = async (container: string, database: string, sql: string) => {
     ['psql', '-U', 'postgres', '-d', database, '-v', 'ON_ERROR_STOP=1', '-q'],
     sql,
   );
-  if (result.code !== 0) throw new Error(`psql on ${database}: ${result.stderr.slice(0, 300)}`);
+  // psql echoes the failing statement, which may hold a per-run password: redact hex secrets.
+  const message = result.stderr.replace(/[0-9a-f]{32,}/g, '<redacted>').slice(0, 300);
+  if (result.code !== 0) throw new Error(`psql on ${database}: ${message}`);
 };
 
 export async function startPostgres(options: {

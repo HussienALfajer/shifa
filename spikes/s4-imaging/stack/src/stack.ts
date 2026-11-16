@@ -90,6 +90,8 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
       createNetwork(name('orthanc'), runId, { internal: true }),
     ]);
     const builds = Promise.all([gatewayImage(), linkImage()]);
+    // Awaited below; a handler now so an early build failure is not an unhandled rejection.
+    builds.catch(() => undefined);
 
     const superPassword = secret();
     const tenantSecrets = TENANTS.map((id) => ({ id, db: secret(), http: secret() }));

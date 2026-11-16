@@ -3,7 +3,7 @@
 // the panoramic as one DX image. Identity tags come from @shifa/testing's synthetic Arabic names
 // with the S4SYN marker; no birth date. Same seed, same bytes.
 import { createHash } from 'node:crypto';
-import { existsSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { createRandom, fullName, generatePersonName } from '@shifa/testing';
@@ -93,8 +93,9 @@ function identity(spec: StudySpec, seed: number) {
     PatientBirthDate: '',
     PatientSex: sex === 'female' ? 'F' : 'M',
     StudyInstanceUID: uid(seed, `${spec.name}:study`),
-    StudyDate: '20261116',
-    StudyTime: '090000',
+    // Dates stay empty (type 2): the PHI check counts any real-looking date.
+    StudyDate: '',
+    StudyTime: '',
     StudyID: '1',
     AccessionNumber: '',
     ReferringPhysicianName: '',
@@ -183,8 +184,8 @@ function* studyFiles(
       FrameOfReferenceUID: frameOfReference,
       PositionReferenceIndicator: '',
       InstanceNumber: 1,
-      ContentDate: '20261116',
-      ContentTime: '090000',
+      ContentDate: '',
+      ContentTime: '',
       NumberOfFrames: spec.frames,
       ...pixelModule(spec, true),
       SharedFunctionalGroupsSequence: [
@@ -264,13 +265,27 @@ export async function generateStudy(
 
 const pending = new Map<string, Promise<{ dir: string; manifest: Manifest }>>();
 
-/** The study under `.cache/s4/studies/`, generated once and reused while every file is intact. */
+/** Hash of the generator's own sources: a code change makes a new cache entry. */
+const GENERATOR_HASH = (() => {
+  const hash = createHash('sha256');
+  for (const file of ['dicom.ts', 'phantom.ts', 'studies.ts']) {
+    hash.update(readFileSync(new URL(`./${file}`, import.meta.url)));
+  }
+  return hash.digest('hex').slice(0, 12);
+})();
+
+/**
+ * The study under `.cache/s4/studies/<name>-<seed>-<generator hash>/`, generated once and
+ * reused while every file is intact. A finished directory is never replaced, so a process that
+ * reads it is safe from another one generating the same study; the loser of a race keeps the
+ * winner's copy.
+ */
 export function ensureStudy(
   name: StudyName,
   options: { seed?: number } = {},
 ): Promise<{ dir: string; manifest: Manifest }> {
   const seed = options.seed ?? 1;
-  const key = `${name}-${String(seed)}`;
+  const key = `${name}-${String(seed)}-${GENERATOR_HASH}`;
   const existing = pending.get(key);
   if (existing) return existing;
   const work = (async () => {
@@ -293,10 +308,23 @@ export function ensureStudy(
     await mkdir(temp, { recursive: true });
     const manifest = await generateStudy(name, { outDir: temp, seed });
     await writeFile(join(temp, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
-    await rm(dir, { recursive: true, force: true });
-    await rename(temp, dir);
+    if (existsSync(dir)) {
+      // Damaged copy (a file missing or truncated): set it aside rather than delete in place.
+      await rename(dir, `${dir}.stale-${String(process.pid)}-${String(Date.now())}`).catch(
+        () => undefined,
+      );
+    }
+    try {
+      await rename(temp, dir);
+    } catch (error) {
+      // Another process finished the same study first: keep its copy.
+      await rm(temp, { recursive: true, force: true });
+      if (!existsSync(manifestPath)) throw error;
+    }
     return { dir, manifest };
   })();
   pending.set(key, work);
+  // A failure is not cached: the next call tries again.
+  work.catch(() => pending.delete(key));
   return work;
 }

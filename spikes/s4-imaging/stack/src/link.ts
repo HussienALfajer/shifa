@@ -44,6 +44,10 @@ export async function createLink(options: {
   const downIf = await interfaceOn(container, options.clinicNetwork);
   const events: LinkEvent[] = [];
   let current: ProfileName | 'none' = 'none';
+  let cutting = false;
+  let cutInterrupted = false;
+  // Read through a function: TypeScript would otherwise narrow it to its value before the wait.
+  const wasInterrupted = () => cutInterrupted;
   const log = (event: LinkEvent['event'], detail: string) =>
     events.push({ at: new Date().toISOString(), event, detail });
   const apply = (profile: ProfileName | 'none', cut = false) =>
@@ -70,14 +74,27 @@ export async function createLink(options: {
     applyProfile: async (profile) => {
       await apply(profile);
       current = profile;
-      log('profile', profile);
+      // A profile change during a cut ends it now; the log says so (the report reads it).
+      if (cutting) cutInterrupted = true;
+      log('profile', cutInterrupted ? `${profile} (ended a cut)` : profile);
     },
     cut: async (seconds) => {
-      await apply(current, true);
-      log('cut-start', `${String(seconds)} s`);
-      await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
-      await apply(current);
-      log('cut-end', current);
+      if (cutting) throw new Error('a cut is already running');
+      cutting = true;
+      cutInterrupted = false;
+      try {
+        await apply(current, true);
+        log('cut-start', `${String(seconds)} s`);
+        await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
+        if (wasInterrupted()) {
+          log('cut-end', 'interrupted by a profile change');
+        } else {
+          await apply(current);
+          log('cut-end', current);
+        }
+      } finally {
+        cutting = false;
+      }
     },
     reset: async () => {
       await docker(['exec', container, 'pkill', '-x', 'haproxy']);
@@ -87,18 +104,27 @@ export async function createLink(options: {
     schedule: ({ everySeconds, cutSeconds, offsetSeconds }) => {
       let stopped = false;
       let timer: NodeJS.Timeout | undefined;
+      let running: Promise<void> = Promise.resolve();
       const next = (delay: number) => {
         timer = setTimeout(() => {
           if (stopped) return;
-          void link.cut(cutSeconds).then(() => {
-            if (!stopped) next((everySeconds - cutSeconds) * 1000);
-          });
+          // A failed cut (container gone at teardown) ends the schedule instead of rejecting.
+          running = link
+            .cut(cutSeconds)
+            .then(() => {
+              if (!stopped) next((everySeconds - cutSeconds) * 1000);
+            })
+            .catch(() => {
+              stopped = true;
+            });
         }, delay);
       };
       next(offsetSeconds * 1000);
-      return () => {
+      // Stopping waits for a cut in progress to end, so the link is back on its profile.
+      return async () => {
         stopped = true;
         clearTimeout(timer);
+        await running;
       };
     },
   };

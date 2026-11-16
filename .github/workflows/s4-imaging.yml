@@ -18,7 +18,7 @@ jobs:
   stack:
     name: stack, storage, link, gateway isolation, test data
     runs-on: ubuntu-24.04
-    timeout-minutes: 60
+    timeout-minutes: 120
     permissions:
       contents: read
     steps:
@@ -39,14 +39,17 @@ jobs:
           docker version --format 'docker {{.Server.Version}}, kernel {{.Server.KernelVersion}}'
           docker run --rm --cap-add NET_ADMIN alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf \
             sh -c 'apk add -q iproute2 >/dev/null && tc qdisc add dev eth0 root handle 1: tbf rate 1mbit burst 32kb latency 400ms && tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 40ms loss 1% && tc qdisc show dev eth0'
-      - name: Generator and public CBCT (sizes, determinism, DICOMDIR, SHA-256 pins, PHI check)
-        working-directory: spikes/s4-imaging/generator
-        run: pnpm run test:spike
       - name: Stack (pins, network boundary, licence boundary, Garage, encryption, buckets, link)
         working-directory: spikes/s4-imaging/stack
         run: pnpm run test:spike
       - name: Gateway (isolation, denylist, audit, no PHI in logs)
         working-directory: spikes/s4-imaging/gateway
+        run: pnpm run test:spike
+      # Last, as it depends on an outside server: the public case (268 MB) comes, in 32 MB ranges
+      # one after the other, from a server that gives about 170 KB/s and rate-limits; caches stay
+      # in ci.yml only (OD-35), hence the job's long timeout.
+      - name: Generator and public CBCT (sizes, determinism, DICOMDIR, SHA-256 pins, PHI check)
+        working-directory: spikes/s4-imaging/generator
         run: pnpm run test:spike
       - name: Upload .verify/s4
         if: always()

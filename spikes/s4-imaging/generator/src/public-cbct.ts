@@ -46,54 +46,94 @@ export const PUBLIC_CBCT_LOCK: PublicCbctLock = existsSync(LOCK_PATH)
       files: [],
     };
 
-async function range(url: string, start: number, end: number): Promise<Buffer> {
+/** A path inside the case folder: plain segments only, so nothing is written outside it. */
+const SAFE_PATH = /^(?!.*(^|\/)\.\.?(\/|$))[A-Za-z0-9._-]+(\/[A-Za-z0-9._-]+)*$/;
+function safe(path: string): string {
+  assertSafePath(path);
+  return path;
+}
+function assertSafePath(path: string): void {
+  if (!SAFE_PATH.test(path)) throw new Error('unsafe entry path in the ZIP or the lock');
+}
+
+/** Bytes start…end of the ZIP; refuses a ZIP whose total size is not `zipBytes`. */
+async function range(url: string, start: number, end: number, zipBytes: number): Promise<Buffer> {
   for (let attempt = 1; ; attempt += 1) {
     try {
-      const res = await fetch(url, { headers: { range: `bytes=${String(start)}-${String(end)}` } });
+      const res = await fetch(url, {
+        headers: { range: `bytes=${String(start)}-${String(end)}` },
+        // 32 MB at the server's ~170 KB/s takes about 3 minutes.
+        signal: AbortSignal.timeout(15 * 60_000),
+      });
       const total = /\/(\d+)$/.exec(res.headers.get('content-range') ?? '')?.[1];
       if (res.status !== 206) throw new Error(`range request: HTTP ${String(res.status)}`);
-      if (Number(total) !== PUBLIC_CBCT_LOCK.zipBytes && PUBLIC_CBCT_LOCK.zipBytes !== 0) {
+      if (Number(total) !== zipBytes) {
         throw new Error('the ZIP on the server is not the pinned one (size changed)');
       }
       return Buffer.from(await res.arrayBuffer());
     } catch (error) {
-      if (attempt >= 4 || String(error).includes('pinned')) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 2000 * attempt));
+      // The server rate-limits (HTTP 429): back off for minutes, not seconds.
+      if (attempt >= 8 || String(error).includes('pinned')) throw error;
+      const wait = String(error).includes('429') ? 60_000 * attempt : 5_000 * attempt;
+      await new Promise((resolve) => setTimeout(resolve, wait));
     }
   }
 }
 
-/** The bytes of one entry, read through its local header. */
-async function entry(url: string, file: Omit<PublicCbctFile, 'sha256' | 'path'>): Promise<Buffer> {
-  const header = await range(url, file.zipOffset, file.zipOffset + 29);
-  if (header.readUInt32LE(0) !== 0x04034b50) throw new Error('not a ZIP local header');
-  const dataStart = file.zipOffset + 30 + header.readUInt16LE(26) + header.readUInt16LE(28);
-  const data = await range(url, dataStart, dataStart + file.compressedBytes - 1);
-  const bytes = file.method === 8 ? inflateRawSync(data) : data;
-  if (bytes.byteLength !== file.bytes) throw new Error('entry size does not match');
-  return bytes;
+const CHUNK = 32 * 1024 * 1024;
+
+/**
+ * Every entry's bytes from one contiguous span of the ZIP, read in 32 MB ranges one after the
+ * other (a request per entry trips the server's rate limit). The case's entries sit together
+ * in the archive, so the span is barely larger than the case.
+ */
+async function entries(
+  url: string,
+  files: readonly Omit<PublicCbctFile, 'sha256' | 'path'>[],
+  zipBytes: number,
+): Promise<Buffer[]> {
+  const start = Math.min(...files.map((f) => f.zipOffset));
+  // Local headers may carry more extra bytes than the central directory: allow 64 KB.
+  const end = Math.max(...files.map((f) => f.zipOffset + f.compressedBytes)) + 65_536;
+  const parts: Buffer[] = [];
+  for (let from = start; from < end; from += CHUNK) {
+    parts.push(await range(url, from, Math.min(end, from + CHUNK) - 1, zipBytes));
+  }
+  const span = Buffer.concat(parts);
+  return files.map((file) => {
+    const at = file.zipOffset - start;
+    if (span.readUInt32LE(at) !== 0x04034b50) throw new Error('not a ZIP local header');
+    const dataStart = at + 30 + span.readUInt16LE(at + 26) + span.readUInt16LE(at + 28);
+    const data = span.subarray(dataStart, dataStart + file.compressedBytes);
+    const bytes = file.method === 8 ? inflateRawSync(data) : Buffer.from(data);
+    if (bytes.byteLength !== file.bytes) throw new Error('entry size does not match');
+    return bytes;
+  });
 }
 
 const sha256 = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
-
-async function inBatches<T>(items: readonly T[], size: number, work: (item: T) => Promise<void>) {
-  for (let i = 0; i < items.length; i += size)
-    await Promise.all(items.slice(i, i + size).map(work));
-}
 
 export async function fetchPublicCbct(options: { outDir?: string } = {}): Promise<{ dir: string }> {
   const lock = PUBLIC_CBCT_LOCK;
   if (lock.files.length === 0)
     throw new Error('public-cbct.lock.json has no files: run the pin first');
   const dir = options.outDir ?? cacheDir('public-cbct');
-  await inBatches(lock.files, 8, async (file) => {
+  const missing: PublicCbctFile[] = [];
+  for (const file of lock.files) {
+    assertSafePath(file.path);
     const target = join(dir, file.path);
-    if (existsSync(target) && sha256(await readFile(target)) === file.sha256) return;
-    const bytes = await entry(lock.url, file);
-    if (sha256(bytes) !== file.sha256) throw new Error(`SHA-256 mismatch: ${file.path}`);
-    await mkdir(dirname(target), { recursive: true });
-    await writeFile(target, bytes);
-  });
+    if (!existsSync(target) || sha256(await readFile(target)) !== file.sha256) missing.push(file);
+  }
+  if (missing.length > 0) {
+    const bytes = await entries(lock.url, missing, lock.zipBytes);
+    for (const [i, file] of missing.entries()) {
+      const data = bytes[i] ?? Buffer.alloc(0);
+      if (sha256(data) !== file.sha256) throw new Error(`SHA-256 mismatch: ${file.path}`);
+      const target = join(dir, file.path);
+      await mkdir(dirname(target), { recursive: true });
+      await writeFile(target, data);
+    }
+  }
   await writeFile(
     join(dir, 'SOURCE.md'),
     `# Public CBCT sample (never commit)\n\nDOI: https://doi.org/${lock.doi}\nLicence: ${lock.licence}\nCase: ${lock.case}\n\n${lock.attribution}\n`,
@@ -103,23 +143,23 @@ export async function fetchPublicCbct(options: { outDir?: string } = {}): Promis
 
 /**
  * Writes public-cbct.lock.json for one case: reads the ZIP's central directory (ZIP64), keeps
- * the case's entries, downloads each once and records its SHA-256. Run by hand, reviewed, and
+ * the case's entries, downloads them in one span and records each SHA-256. Run by hand, reviewed, and
  * committed; fetchPublicCbct then refuses anything else.
  */
 export async function pinPublicCbct(options: {
   url: string;
   casePrefix: string;
+  /** Total size of the ZIP, from the record page (the pin checks it on every range). */
+  zipBytes: number;
   attribution: string;
 }): Promise<PublicCbctLock> {
-  const head = await fetch(options.url, { headers: { range: 'bytes=0-0' } });
-  const zipBytes = Number(/\/(\d+)$/.exec(head.headers.get('content-range') ?? '')?.[1]);
-  await head.arrayBuffer();
-  const tail = await range(options.url, zipBytes - 65_536, zipBytes - 1);
+  const { zipBytes } = options;
+  const tail = await range(options.url, zipBytes - 65_536, zipBytes - 1, zipBytes);
   const eocd64 = tail.lastIndexOf(Buffer.from([0x50, 0x4b, 0x06, 0x06]));
   if (eocd64 === -1) throw new Error('ZIP64 end of central directory not found');
   const cdSize = Number(tail.readBigUInt64LE(eocd64 + 40));
   const cdOffset = Number(tail.readBigUInt64LE(eocd64 + 48));
-  const cd = await range(options.url, cdOffset, cdOffset + cdSize - 1);
+  const cd = await range(options.url, cdOffset, cdOffset + cdSize - 1, zipBytes);
   const files: PublicCbctFile[] = [];
   for (let p = 0; p + 46 <= cd.length && cd.readUInt32LE(p) === 0x02014b50; ) {
     const method = cd.readUInt16LE(p + 10);
@@ -144,7 +184,7 @@ export async function pinPublicCbct(options: {
     }
     if (name.startsWith(options.casePrefix) && !name.endsWith('/')) {
       files.push({
-        path: name.slice(options.casePrefix.length),
+        path: safe(name.slice(options.casePrefix.length)),
         sha256: '',
         bytes: size,
         zipOffset: offset,
@@ -155,9 +195,21 @@ export async function pinPublicCbct(options: {
     p += 46 + nameLength + extraLength + commentLength;
   }
   if (files.length === 0) throw new Error(`no entries under ${options.casePrefix}`);
-  await inBatches(files, 8, async (file) => {
-    file.sha256 = sha256(await entry(options.url, file));
-  });
+  // Kept in the cache while pinning, so the fetch that follows downloads nothing again.
+  const dir = cacheDir('public-cbct');
+  const span =
+    Math.max(...files.map((f) => f.zipOffset + f.compressedBytes)) -
+    Math.min(...files.map((f) => f.zipOffset));
+  const compressedTotal = files.reduce((sum, f) => sum + f.compressedBytes, 0);
+  if (span > compressedTotal * 1.1) throw new Error('the case is not contiguous in the ZIP');
+  const all = await entries(options.url, files, zipBytes);
+  for (const [i, file] of files.entries()) {
+    const bytes = all[i] ?? Buffer.alloc(0);
+    file.sha256 = sha256(bytes);
+    const target = join(dir, file.path);
+    await mkdir(dirname(target), { recursive: true });
+    await writeFile(target, bytes);
+  }
   files.sort((a, b) => a.path.localeCompare(b.path));
   const lock: PublicCbctLock = {
     doi: '10.57760/sciencedb.26465',

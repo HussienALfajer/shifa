@@ -61,12 +61,15 @@ export interface Link {
   /** Restarts HAProxy: every connection through the link dies. */
   reset(): Promise<void>;
   counters(): Promise<LinkCounters>;
-  /** P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`. Returns a stop. */
+  /**
+   * P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`. Returns a stop
+   * that waits for a cut in progress to end.
+   */
   schedule(options: {
     everySeconds: number;
     cutSeconds: number;
     offsetSeconds: number;
-  }): () => void;
+  }): () => Promise<void>;
   events: LinkEvent[];
   /** Host-side URL of the byte sink through the link (when started with `sink`). */
   sinkUrl?: string;
