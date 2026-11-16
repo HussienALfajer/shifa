@@ -78,7 +78,9 @@ export async function acquireLock(file, { waitMs = 0, pollMs = 500 } = {}) {
 /**
  * A counting semaphore: `slots` lock files `<base>.0` … `<base>.<slots - 1>`, each taken like
  * acquireLock (pid, atomic create, stale locks reclaimed). Takes the first free slot, polling for
- * up to `waitMs` while every slot is held by a live process.
+ * up to `waitMs` while every slot is held by a live process. When several processes reclaim the
+ * same dead slot at once, two can end up running on it, so the limit is a load cap, never a
+ * guarantee (the DB harness relies on it for nothing else).
  * @param {string} base
  * @param {{ slots: number, waitMs?: number, pollMs?: number }} options
  * @returns {Promise<() => void>} release; removes the slot file only if this process still owns it

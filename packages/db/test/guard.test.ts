@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import {
+  acquireAllDbTestSlots,
   acquireDbTestLock,
   assertTestTarget,
   DB_TEST_SLOTS,
@@ -114,6 +115,21 @@ describe('acquireDbTestLock', () => {
       /another database test run.*all 2 slots/i,
     );
     expect(Date.now() - started).toBeGreaterThanOrEqual(250);
+  });
+
+  it('acquireAllDbTestSlots holds every slot, and gives back what it took when it cannot', async () => {
+    const file = tempLockFile();
+    const releaseAll = await acquireAllDbTestSlots({ file, slots: 2, waitMs: 0, pollMs: 50 });
+    expect(readFileSync(`${file}.0`, 'utf8')).toBe(String(process.pid));
+    expect(readFileSync(`${file}.1`, 'utf8')).toBe(String(process.pid));
+    releaseAll();
+    expect(existsSync(`${file}.0`) || existsSync(`${file}.1`)).toBe(false);
+
+    writeFileSync(`${file}.1`, String(process.pid)); // another live run
+    await expect(
+      acquireAllDbTestSlots({ file, slots: 2, waitMs: 200, pollMs: 50 }),
+    ).rejects.toThrow(/runs alone/);
+    expect(existsSync(`${file}.0`)).toBe(false);
   });
 
   it('reclaims a slot left by a dead process', async () => {

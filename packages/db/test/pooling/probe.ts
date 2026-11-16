@@ -2,7 +2,7 @@
 // `pool_probe` is a test-only tenant table (FORCE RLS on current_tenant_id(), index led by
 // tenant_id), created by the owner with `create table if not exists`: never in migrations.
 // Failure output names tenant ids and row counts only.
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { mkdirSync, renameSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
 import { pgTable, text, uuid } from 'drizzle-orm/pg-core';
@@ -153,5 +153,9 @@ const FINDINGS_DIR = join(import.meta.dirname, '..', '..', '..', '..', '.verify'
 /** Writes what a test observed (pids, counts, timings) for the 0.3-S2c report. */
 export function recordFinding(name: string, data: unknown): void {
   mkdirSync(FINDINGS_DIR, { recursive: true });
-  writeFileSync(join(FINDINGS_DIR, `${name}.json`), `${JSON.stringify(data, null, 2)}\n`);
+  // Written whole and renamed: two DB test runs of this worktree may write at once (OD-33).
+  const file = join(FINDINGS_DIR, `${name}.json`);
+  const temp = `${file}.${String(process.pid)}.tmp`;
+  writeFileSync(temp, `${JSON.stringify(data, null, 2)}\n`);
+  renameSync(temp, file);
 }

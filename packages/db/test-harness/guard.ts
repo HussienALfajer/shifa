@@ -2,7 +2,7 @@
 // it created there. It never reads DATABASE_URL or any other URL from the environment.
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { acquireSlot, LockBusyError } from '../../../scripts/lib/lock.mjs';
+import { acquireLock, acquireSlot, LockBusyError } from '../../../scripts/lib/lock.mjs';
 
 export class UnsafeDatabaseError extends Error {
   override name = 'UnsafeDatabaseError';
@@ -80,11 +80,12 @@ const HELD = Symbol.for('shifa.db.testLock');
 const DEFAULT_LOCK = join(import.meta.dirname, '..', '..', '..', '.verify', 'db-test.lock');
 
 /**
- * DB test runs of one worktree that may run at once (OD-33). Each run (a Vitest process, the API
- * boot check, a script) starts its own PostgreSQL and PgBouncer containers on a new network, with
- * random passwords and Docker-assigned ports, and assertTestTarget admits only that run's own
- * addresses, so runs never share a server or a database; the limit only caps the Docker load.
- * `verify full` has at most three at once: @shifa/db, @shifa/api and the boot check.
+ * DB test processes of one worktree that may run at once (OD-33). A slot is one process (a Vitest
+ * run, the API boot check, a script); it starts one PostgreSQL + PgBouncer set per database
+ * project (`@shifa/api` has two), each on a new network with random passwords and Docker-assigned
+ * ports, and assertTestTarget admits only that run's own addresses, so runs never share a server
+ * or a database; the limit only caps the Docker load. Inside `verify full` only the `@shifa/db`
+ * and `@shifa/api` test processes overlap (boot waits for build, which waits for the tests).
  */
 export const DB_TEST_SLOTS = 3;
 
@@ -143,4 +144,44 @@ export async function acquireDbTestLock({
       { cause: err },
     );
   }
+}
+
+/**
+ * Takes every DB test slot of this worktree, in slot order (two such callers cannot deadlock),
+ * for scripts that must run alone as they did under the single lock: the RLS bench (other runs
+ * would skew its timings) and the observability smoke (its metric check cannot tell two runs
+ * apart). Waits up to `waitMs` in total; on failure it releases what it took.
+ */
+export async function acquireAllDbTestSlots({
+  file = DEFAULT_LOCK,
+  slots = DB_TEST_SLOTS,
+  waitMs = 5 * 60_000,
+  pollMs = 1000,
+}: {
+  file?: string;
+  slots?: number;
+  waitMs?: number;
+  pollMs?: number;
+} = {}): Promise<() => void> {
+  mkdirSync(dirname(file), { recursive: true });
+  const deadline = Date.now() + waitMs;
+  const releases: (() => void)[] = [];
+  const releaseAll = () => {
+    for (const release of releases.splice(0).reverse()) release();
+  };
+  try {
+    for (let i = 0; i < slots; i += 1) {
+      const left = Math.max(0, deadline - Date.now());
+      releases.push(await acquireLock(`${file}.${String(i)}`, { waitMs: left, pollMs }));
+    }
+  } catch (err) {
+    releaseAll();
+    if (!(err instanceof LockBusyError)) throw err;
+    throw new Error(
+      `A database test run holds a slot of ${file}.<n>; this script runs alone and waited ` +
+        `${String(Math.round(waitMs / 1000))} s. Let the other runs finish.`,
+      { cause: err },
+    );
+  }
+  return releaseAll;
 }

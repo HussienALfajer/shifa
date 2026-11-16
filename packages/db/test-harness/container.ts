@@ -21,7 +21,7 @@ import { explainStartFailure } from './docker.ts';
 import { POSTGRES_IMAGE, RYUK_IMAGE } from './image.ts';
 import { POOLING_DATABASE, POSTGRES_ALIAS, startPooler } from './pgbouncer.ts';
 
-export { acquireDbTestLock } from './guard.ts';
+export { acquireAllDbTestSlots, acquireDbTestLock } from './guard.ts';
 export type { HarnessInfo, HarnessRole, Via };
 
 /** The migrated database every harness user starts from. */
