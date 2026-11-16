@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-// One entry point for every check. Usage: node scripts/verify.mjs [fast|full|docs]
+// One entry point for every check. Usage: node scripts/verify.mjs [fast|full|docs] [--part P]
 //   fast — packages affected since main (cached); used after each layer and by hooks.
 //   full — everything, no affected filter, plus build and the API boot check; before a PR and in CI.
 //   docs — only the steps that read docs and repository scripts (no Flutter, no packages); CI uses
-//          it for pull requests that change nothing outside docs/.
+//          it for pull requests that change nothing outside docs/, and as one job of every run.
+//   full --part node|dart|build — one slice of full for a parallel CI job (lib/verify-steps.mjs
+//          PARTS); `docs` plus the three parts cover every full step. A part never records the
+//          tree as green.
 // Steps run in parallel where they do not conflict (lib/verify-steps.mjs lists the steps and
 // why some wait for others). Prints a short summary in the declared step order; full output of
 // each step is written to .verify/logs/<step>.log.
@@ -16,13 +19,24 @@ import { mkdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { recordGreen, treeState } from './lib/green-tree.mjs';
 import { acquireLock, LockBusyError } from './lib/lock.mjs';
-import { runSteps, verifySteps } from './lib/verify-steps.mjs';
+import { PARTS, runSteps, verifySteps } from './lib/verify-steps.mjs';
+import { dartWorkspacePackages } from './lib/workspace.mjs';
 
 const MODES = ['fast', 'full', 'docs'];
-const mode = process.argv[2] ?? 'fast';
+const [mode = 'fast', ...rest] = process.argv.slice(2);
 if (!MODES.includes(mode)) {
   process.stderr.write(`verify: unknown mode "${mode}" (use ${MODES.join(', ')})\n`);
   process.exit(2);
+}
+let part;
+if (rest.length > 0) {
+  if (rest.length !== 2 || rest[0] !== '--part' || mode !== 'full' || !PARTS.includes(rest[1])) {
+    process.stderr.write(
+      `verify: expected "full --part ${PARTS.join('|')}", got: ${rest.join(' ')}\n`,
+    );
+    process.exit(2);
+  }
+  part = rest[1];
 }
 
 const root = join(import.meta.dirname, '..');
@@ -69,18 +83,23 @@ for (const signal of ['SIGINT', 'SIGTERM']) {
 
 const hasMain = await run('git', ['rev-parse', '--verify', '--quiet', 'main'], null);
 const affected = mode === 'fast' && hasMain.code === 0 ? ['--affected'] : [];
-const treeBefore = mode === 'docs' ? null : treeState(root);
+// A part is a slice of full: it must never mark the tree green.
+const treeBefore = mode === 'docs' || part ? null : treeState(root);
+const steps = verifySteps(mode, {
+  affected,
+  part,
+  dartPackages: part ? dartWorkspacePackages(root) : [],
+});
 
 const logPathOf = (step) => join(logDir, `${step.name.replaceAll('+', '-')}.log`);
-const results = (
-  await runSteps(verifySteps(mode, { affected }), (step) =>
-    run(step.cmd, step.args, logPathOf(step)),
-  )
-).map((r) => ({ ...r, logPath: logPathOf(r) }));
+const results = (await runSteps(steps, (step) => run(step.cmd, step.args, logPathOf(step)))).map(
+  (r) => ({ ...r, logPath: logPathOf(r) }),
+);
 for (const r of results.filter((x) => x.skipped)) writeFileSync(r.logPath, r.output);
 
 let failed = 0;
-process.stdout.write(`verify (${mode}${affected.length ? ', affected' : ''})\n`);
+const label = [mode, affected.length ? 'affected' : null, part ? `part ${part}` : null];
+process.stdout.write(`verify (${label.filter(Boolean).join(', ')})\n`);
 for (const r of results) {
   const ok = r.code === 0;
   if (!ok) failed += 1;
