@@ -1,6 +1,6 @@
 # ADR-0021: Supporting services — Garage, Valkey, Gotenberg, ExcelJS, Postgres search with Arabic normalisation
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Amended by ADR-0034 (Proposed) · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 The platform needs S3-compatible storage (attachments, PDFs, DICOM), a cache, Arabic PDF generation, Excel export and Arabic name search — all self-hostable and portable because of hosting uncertainty ([ADR-0022](0022-deployment-portable-hosting.md)) and sanctions-era access [RN-16 §8–§12].
