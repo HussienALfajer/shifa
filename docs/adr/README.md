@@ -70,3 +70,4 @@ What we will do, stated precisely.
 | [0030](0030-pgbouncer-transaction-mode-tenant-context.md) | PgBouncer in transaction mode with transaction-scoped tenant context; `server_reset_query_always` and other required settings | Accepted |
 | [0031](0031-offline-sync-custom-outbox.md) | Offline sync with a custom outbox (command log, idempotency keys, pull endpoint); decides ADR-0014 | Proposed |
 | [0032](0032-slice-size-budget-4000-lines.md) | Slice and PR size budget about 4,000 hand-written lines (CI warns, never fails) | Accepted |
+| [0033](0033-pre-pr-fast-verify-ci-full-gate.md) | Before a PR, fast `verify` locally; CI's `verify (full)` is the full gate (full locally only for build/boot, DB harness, drift, CI) | Accepted |
