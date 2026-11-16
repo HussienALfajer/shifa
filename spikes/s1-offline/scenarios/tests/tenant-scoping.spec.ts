@@ -159,3 +159,101 @@ test('a tenant A device never receives tenant B rows, and forged writes are refu
     b.page.locator(`[data-ticket="${bTickets[0] ?? ''}"] [data-testid=ticket-status]`),
   ).toHaveText('ينتظر');
 });
+
+// Slice 0.3-S1e: a patient's token downloads only that patient's appointments and ticket, never
+// another patient's of the same tenant or anything of tenant B (pull and, with PowerSync, stream).
+test('a patient token downloads no other patient or tenant rows', async () => {
+  const day = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(new Date());
+  const seed = async (tenant: 'A' | 'B', patientId: string, hh: string) => {
+    const t = ids[tenant];
+    const practitionerId = t.practitioners.at(-1)?.id;
+    const appointmentId = randomUUID();
+    const ticketId = randomUUID();
+    const envelope = () => ({
+      id: randomUUID(),
+      deviceId: 'patient-seed',
+      offline: false,
+      clientTime: new Date().toISOString(),
+    });
+    const res = await fetch(`${server()}/commands`, {
+      method: 'POST',
+      headers: {
+        authorization: `Bearer ${await token(t.receptionist.username)}`,
+        'content-type': 'application/json',
+      },
+      body: JSON.stringify({
+        commands: [
+          {
+            ...envelope(),
+            type: 'appointment.book',
+            payload: {
+              appointmentId,
+              practitionerId,
+              patientId,
+              start: `${day}T${hh}:00:00+03:00`,
+              end: `${day}T${hh}:30:00+03:00`,
+            },
+          },
+          {
+            ...envelope(),
+            type: 'ticket.issue',
+            payload: {
+              ticketId,
+              practitionerId,
+              shiftDate: day,
+              provisionalNumber: 1,
+              walkInLabel: 'مراجع',
+              patientId,
+            },
+          },
+        ],
+      }),
+    });
+    const { results } = (await res.json()) as { results: { status: string }[] };
+    expect(results.map((r) => r.status)).toEqual(['applied', 'applied']);
+    return [appointmentId, ticketId];
+  };
+  const [a1, a2] = ids.A.patients;
+  const [b1] = ids.B.patients;
+  const own = await seed('A', a1?.id ?? '', '05');
+  const others = [
+    ...(await seed('A', a2?.id ?? '', '06')),
+    ...(await seed('B', b1?.id ?? '', '05')),
+  ];
+
+  const login = await fetch(`${server()}/auth/patient-login`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ patientId: a1?.id, deviceId: 'patient-a1' }),
+  });
+  const patientToken = ((await login.json()) as { token: string }).token;
+  const pull = await fetch(`${server()}/sync/pull`, {
+    headers: { authorization: `Bearer ${patientToken}` },
+  });
+  const pulled = JSON.stringify(await pull.json());
+  for (const id of own) expect(pulled, 'the patient pulls their own rows').toContain(id);
+  for (const id of others) expect(pulled, 'no other patient or tenant row').not.toContain(id);
+
+  expect(pulled, 'a patient never sees which device issued a row').not.toContain('patient-seed');
+
+  if (process.env['S1_ENGINE'] === 'powersync') {
+    const stream = await readStream(patientToken, 'patient-a1');
+    expect(stream.status).toBe(200);
+    for (const id of own) expect(stream.text, 'the stream sends own rows').toContain(id);
+    for (const id of others) expect(stream.text, 'the stream sends nothing else').not.toContain(id);
+
+    // Login lets a client name any device id: naming the seeding (reception) device must not
+    // stream that device's command results to a patient (security review M1).
+    const spoof = await fetch(`${server()}/auth/patient-login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ patientId: a1?.id, deviceId: 'patient-seed' }),
+    });
+    const spoofToken = ((await spoof.json()) as { token: string }).token;
+    const spoofed = await readStream(spoofToken, 'patient-seed');
+    expect(spoofed.status).toBe(200);
+    expect(spoofed.text, 'no command results of another principal').not.toContain(
+      'offline_command',
+    );
+  }
+});

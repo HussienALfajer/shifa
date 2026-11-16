@@ -47,9 +47,9 @@ async function issueTicket(ctx: RuleContext, p: Payload<'ticket.issue'>): Promis
   const real = rows[0]?.real ?? 1;
   await ctx.tx.execute(
     sql`insert into s1.queue_ticket (id, branch_id, practitioner_id, shift_date, provisional_number,
-                                     device_id, real_number, walk_in_label)
+                                     device_id, real_number, walk_in_label, patient_id)
         values (${p.ticketId}, ${branch}, ${p.practitionerId}, ${p.shiftDate}, ${p.provisionalNumber},
-                ${ctx.command.deviceId}, ${real}, ${p.walkInLabel})`,
+                ${ctx.command.deviceId}, ${real}, ${p.walkInLabel}, ${p.patientId ?? null})`,
   );
   return real === p.provisionalNumber
     ? {}

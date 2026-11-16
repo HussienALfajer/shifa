@@ -13,11 +13,16 @@ on:
         options: [outbox, powersync, both, none]
         default: both
       flutter:
-        description: Also run the Flutter probe (its job arrives with slice 0.3-S1e)
+        description: Also run the Flutter probe (slice 0.3-S1e) on the chosen engines
         type: boolean
         default: true
 
 permissions: {}
+
+# Flutter pins: the same values as ci.yml (the install step checks them against .fvmrc).
+env:
+  FLUTTER_VERSION: 3.47.9
+  FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
 
 jobs:
   # Server (Testcontainers PostgreSQL through the @shifa/db harness) and web (fake IndexedDB)
@@ -96,4 +101,83 @@ jobs:
           path: |
             spikes/s1-offline/scenarios/playwright-report
             spikes/s1-offline/scenarios/test-results/summary
+          retention-days: 30
+
+  # The Flutter probe (criterion 11): `flutter test` on the Linux host against the scenario stack
+  # (launcher scenarios/harness/probe.ts). No SDK or pub cache (OD-35): Flutter comes from Google's
+  # release storage, checksum-verified, and pub fetches by the probe's own lockfile.
+  flutter:
+    name: flutter probe (${{ matrix.engine }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [outbox, powersync]
+    steps:
+      - name: Skip engines not requested
+        id: pick
+        env:
+          WANTED: ${{ inputs.engine }}
+          ENGINE: ${{ matrix.engine }}
+          FLUTTER: ${{ inputs.flutter }}
+        run: |
+          if [ "$FLUTTER" = true ] && { [ "$WANTED" = both ] || [ "$WANTED" = "$ENGINE" ]; }; then
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        if: steps.pick.outputs.run == 'true'
+        with:
+          persist-credentials: false
+      - name: Install Flutter
+        if: steps.pick.outputs.run == 'true'
+        working-directory: ${{ runner.temp }}
+        env:
+          FVMRC: ${{ github.workspace }}/.fvmrc
+        run: |
+          export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+          pinned="$(jq -r .flutter "$FVMRC")"
+          if [ "$pinned" != "$FLUTTER_VERSION" ]; then
+            echo "::error::.fvmrc pins Flutter $pinned but s1-offline.yml installs $FLUTTER_VERSION"
+            exit 1
+          fi
+          archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+          curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+          echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm "$archive"
+          echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+        if: steps.pick.outputs.run == 'true'
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: steps.pick.outputs.run == 'true'
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - if: steps.pick.outputs.run == 'true'
+        run: pnpm install --frozen-lockfile
+      - name: Fetch the probe's pub packages
+        if: steps.pick.outputs.run == 'true'
+        working-directory: spikes/s1-offline/flutter_probe
+        run: node ../../../scripts/dart.mjs flutter pub get --enforce-lockfile
+      # The probe is outside the pub workspace, so verify does not analyze it.
+      - name: Analyze the probe
+        if: steps.pick.outputs.run == 'true'
+        working-directory: spikes/s1-offline/flutter_probe
+        run: node ../../../scripts/dart.mjs dart analyze --fatal-infos
+      - name: Run the Flutter probe
+        if: steps.pick.outputs.run == 'true'
+        working-directory: spikes/s1-offline/scenarios
+        env:
+          ENGINE: ${{ matrix.engine }}
+        run: pnpm probe
+      - name: Upload counts-only summary
+        if: always() && steps.pick.outputs.run == 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: s1-flutter-probe-${{ matrix.engine }}
+          path: spikes/s1-offline/scenarios/test-results/summary/*-flutter-probe.json
           retention-days: 30

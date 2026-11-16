@@ -27,6 +27,8 @@ const payloads = {
     shiftDate: day,
     provisionalNumber: z.int().positive().max(100_000),
     walkInLabel: z.string().min(1).max(40),
+    /** The patient the ticket is for (the patient app syncs it); walk-ins have none. */
+    patientId: uuid.optional(),
   }),
   'ticket.status': z.object({ ticketId: uuid, status: z.enum(TICKET_STATUSES) }),
   'appointment.book': z.object({

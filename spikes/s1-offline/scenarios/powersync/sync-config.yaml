@@ -49,7 +49,8 @@ streams:
 
   # Results of this device's own commands (remaps, conflicts, refusals). The device id comes from
   # the token (bound at login; the server refuses commands naming another device), never from
-  # a client-chosen parameter.
+  # a client-chosen parameter. Login lets a client name any device id, so results also match the
+  # token's user: a patient naming a reception device gets nothing (0.3-S1e security review M1).
   device_results:
     auto_subscribe: true
     query: >-
@@ -58,6 +59,7 @@ streams:
        WHERE tenant_id = auth.parameter('tenant_id')
          AND branch_id = auth.parameter('branch_id')
          AND device_id = auth.parameter('device_id')
+         AND user_id = auth.user_id()
 
   # A session left open from an earlier day stays usable (the outbox pull includes it too).
   reception_open_cash_sessions:
@@ -77,4 +79,15 @@ streams:
         FROM s1.appointment
        WHERE tenant_id = auth.parameter('tenant_id')
          AND patient_id = auth.user_id()
+         AND auth.parameter('role') = 'patient'
+
+  # The patient app's ticket of today (slice 0.3-S1e): only tickets issued for this patient.
+  patient_tickets:
+    auto_subscribe: true
+    query: >-
+      SELECT id, practitioner_id, shift_date, provisional_number, real_number, status, walk_in_label
+        FROM s1.queue_ticket
+       WHERE tenant_id = auth.parameter('tenant_id')
+         AND patient_id = auth.user_id()
+         AND shift_date = auth.parameter('day')
          AND auth.parameter('role') = 'patient'

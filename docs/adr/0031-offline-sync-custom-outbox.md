@@ -12,7 +12,7 @@ Status: Proposed (awaiting the owner's manual run and approval) · Date: 2026-11
   - Download is a snapshot plus changes since a cursor, read through `withTenant()`, limited to the branch and today (patients: their own rows). Phase A replaces the spike's time-overlap cursor with a commit-ordered change counter.
   - A network error keeps the queue and retries the same ids; a 401 keeps the queue and waits for a new login; logout deletes the local store.
 - The scenario suite (`spikes/s1-offline/scenarios`, workflow `s1-offline`) is kept and pointed at the real reception module in Phase A.
-- The patient-app half is confirmed by the Flutter probe (slice 0.3-S1e) before this ADR is accepted.
+- The patient-app half is confirmed by the Flutter probe (slice 0.3-S1e): both engines passed criterion 11 on Flutter 3.47.9 with about the same code size; the outbox uses drift (no code generation) on `sqlite3`'s SQLCipher build with a random per-install key, and logout deletes the key and the store. For Phase A: put `hooks.user_defines.sqlite3.source: sqlcipher` in the pub workspace root (elsewhere it is ignored and plain SQLite is linked), refuse to open a store when `PRAGMA cipher_version` is empty, keep the key in secure storage with a this-device-only accessibility and exclude the database from backups, and issue device ids per principal on the server. The probe's Linux CI dispatch runs after its merge.
 
 ## Consequences
 - No sync service to deploy or upgrade; every read that reaches a device passes RLS like any API read.

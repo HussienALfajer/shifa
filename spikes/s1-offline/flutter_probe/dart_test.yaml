@@ -1,0 +1,2 @@
+# Each test syncs against the real stack and cuts the link: allow minutes, not 30 s.
+timeout: 5m
