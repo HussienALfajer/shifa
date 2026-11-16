@@ -61,7 +61,8 @@ export async function startEdge(options: {
     publish: [8042],
   });
   await waitOrthanc(container, httpPassword);
-  const base = `http://${await hostPort(container, 8042)}`;
+  // A restart publishes the port again on a new random host port: re-read it then.
+  let base = `http://${await hostPort(container, 8042)}`;
   const auth = `Basic ${Buffer.from(`gateway:${httpPassword}`).toString('base64')}`;
   const rest = async <T>(path: string, init: RequestInit = {}): Promise<T> => {
     const res = await fetch(`${base}${path}`, {
@@ -72,6 +73,8 @@ export async function startEdge(options: {
     return (await res.json()) as T;
   };
   const dcmtk = await dcmtkImage();
+  /** Push jobs this harness started: job id → study, to push again a job lost on restart. */
+  const pushes = new Map<string, string>();
   const studyId = async (studyUid: string) => {
     const found = await rest<{ ID: string; Type: string }[]>('/tools/lookup', {
       method: 'POST',
@@ -136,9 +139,20 @@ export async function startEdge(options: {
           Peer: 'cloud',
         }),
       });
+      pushes.set(job.ID, studyUid);
       return job.ID;
     },
-    job: async (id) => rest<EdgeJob>(`/jobs/${id}`),
+    job: async (id) => {
+      const res = await fetch(`${base}/jobs/${id}`, { headers: { authorization: auth } });
+      // Orthanc 26.11 with Transfers 1.7 does not reload a push job after a restart, although
+      // SaveJobs is on (0.3-S4b finding): report it as failed, so the caller resubmits.
+      if (res.status === 404 && pushes.has(id)) {
+        await res.arrayBuffer();
+        return { ID: id, State: 'Failure', Progress: 0, ErrorDescription: 'lost on restart' };
+      }
+      if (!res.ok) throw new Error(`edge jobs: ${String(res.status)}`);
+      return (await res.json()) as EdgeJob;
+    },
     waitJob: async (id, timeoutMs) => {
       const deadline = Date.now() + timeoutMs;
       for (;;) {
@@ -150,12 +164,19 @@ export async function startEdge(options: {
       }
     },
     resubmit: async (id) => {
+      const lost = await fetch(`${base}/jobs/${id}`, { headers: { authorization: auth } });
+      await lost.arrayBuffer();
+      const studyUid = pushes.get(id);
+      // A job lost on restart is pushed again as a new job: the whole study goes again, and
+      // the cloud keeps one copy per SOP Instance UID.
+      if (lost.status === 404 && studyUid) return edge.push(studyUid);
       await rest<object>(`/jobs/${id}/resubmit`, { method: 'POST', body: '' });
       return id;
     },
     restart: async () => {
       await docker(['restart', container]);
       await waitOrthanc(container, httpPassword);
+      base = `http://${await hostPort(container, 8042)}`;
     },
   };
   // The dcmtk tools reach the edge's DICOM port by name: wait until it accepts associations.

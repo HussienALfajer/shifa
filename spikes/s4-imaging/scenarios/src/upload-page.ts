@@ -32,23 +32,13 @@ export interface UploadPage {
 }
 
 /**
- * Chromium on the clinic network. The gateway is plain HTTP inside the spike, so its origin is
- * marked trustworthy for this browser only: the viewer session cookie is `Secure`, which
- * Chromium otherwise refuses from an http origin. WebGL (OHIF's MPR) runs on SwiftShader.
+ * Chromium on the clinic network (launched by the stack with the gateway origin marked
+ * trustworthy, so the Secure viewer cookie survives the spike's plain HTTP).
  */
 export async function connectBrowser(stack: Stack): Promise<Browser> {
   const endpoint = stack.browser?.wsEndpoint;
   if (!endpoint) throw new Error('browser container not started');
-  const args = [
-    `--unsafely-treat-insecure-origin-as-secure=${stack.clinicGatewayUrl}`,
-    '--enable-unsafe-swiftshader',
-    '--use-angle=swiftshader',
-    '--ignore-gpu-blocklist',
-  ];
-  return chromium.connect(endpoint, {
-    timeout: 120_000,
-    headers: { 'x-playwright-launch-options': JSON.stringify({ args }) },
-  });
+  return chromium.connect(endpoint, { timeout: 120_000 });
 }
 
 export async function openUploadPage(

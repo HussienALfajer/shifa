@@ -274,14 +274,18 @@ const GENERATOR_HASH = (() => {
   return hash.digest('hex').slice(0, 12);
 })();
 
-/** The manifest of a published study whose files are all present at their sizes, or undefined. */
-async function intact(dir: string): Promise<Manifest | undefined> {
-  const manifestPath = join(dir, 'manifest.json');
+/**
+ * The manifest of a published study whose files are all present at their sizes, or undefined.
+ * The manifest sits beside the study folder, not in it: the folder is what a clinic would
+ * select for upload, and holds only the study's own files.
+ */
+async function intact(root: string): Promise<Manifest | undefined> {
+  const manifestPath = join(root, 'manifest.json');
   if (!existsSync(manifestPath)) return undefined;
   const manifest = JSON.parse(await readFile(manifestPath, 'utf8')) as Manifest;
   const sizes = await Promise.all(
     manifest.files.map((f) =>
-      stat(join(dir, f.path)).then(
+      stat(join(root, STUDY_DIR, f.path)).then(
         (s) => s.size,
         () => -1,
       ),
@@ -315,8 +319,11 @@ async function withLock<T>(path: string, work: () => Promise<T>): Promise<T> {
   }
 }
 
+const STUDY_DIR = 'study';
+
 /**
- * The study under `.cache/s4/studies/<name>-<seed>-<generator hash>/`, generated once and
+ * The study under `.cache/s4/studies/<name>-<seed>-<generator hash>/study/` (manifest beside
+ * it), generated once and
  * reused while every file is intact. Checking, generating and publishing happen under a lock
  * shared by all processes, and a published directory is only set aside after it was found
  * damaged under that lock, so a reader of an intact study never loses it.
@@ -330,21 +337,22 @@ export function ensureStudy(
   const existing = pending.get(key);
   if (existing) return existing;
   const work = (async () => {
-    const dir = cacheDir('studies', key);
-    const ready = await intact(dir);
+    const root = cacheDir('studies', key);
+    const dir = join(root, STUDY_DIR);
+    const ready = await intact(root);
     if (ready) return { dir, manifest: ready };
-    return withLock(dir, async () => {
+    return withLock(root, async () => {
       // Another process may have published it while this one waited for the lock.
-      const published = await intact(dir);
+      const published = await intact(root);
       if (published) return { dir, manifest: published };
-      const temp = `${dir}.tmp-${String(process.pid)}`;
+      const temp = `${root}.tmp-${String(process.pid)}`;
       await rm(temp, { recursive: true, force: true });
-      await mkdir(temp, { recursive: true });
-      const manifest = await generateStudy(name, { outDir: temp, seed });
+      await mkdir(join(temp, STUDY_DIR), { recursive: true });
+      const manifest = await generateStudy(name, { outDir: join(temp, STUDY_DIR), seed });
       await writeFile(join(temp, 'manifest.json'), `${JSON.stringify(manifest, null, 2)}\n`);
       // Damaged (checked under the lock): set it aside rather than delete it in place.
-      if (existsSync(dir)) await rename(dir, `${dir}.stale-${String(Date.now())}`);
-      await rename(temp, dir);
+      if (existsSync(root)) await rename(root, `${root}.stale-${String(Date.now())}`);
+      await rename(temp, root);
       return { dir, manifest };
     });
   })();

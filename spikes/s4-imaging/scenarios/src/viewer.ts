@@ -33,7 +33,8 @@ export async function openViewer(page: Page, stack: Stack, options: OpenOptions)
       { timeout: 120_000 },
     );
     if (!session || session.status() >= 400) throw new Error('viewer session refused');
-    base = `${stack.clinicGatewayUrl}/viewer`;
+    // OHIF is served at the gateway origin's root; its own route is /viewer.
+    base = stack.clinicGatewayUrl;
   } else {
     const url = stack.edge?.clinicViewerUrl;
     if (!url) throw new Error('edge viewer not started');

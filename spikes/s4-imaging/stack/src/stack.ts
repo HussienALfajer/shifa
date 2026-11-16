@@ -225,6 +225,27 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
 
     let browserHandle: Stack['browser'];
     if (browser) {
+      // One Chromium launched with the flags the scenarios need (a client cannot pass launch
+      // arguments to `run-server`): the gateway origin counts as trustworthy, so the Secure
+      // viewer cookie is kept over the spike's plain HTTP; WebGL runs on SwiftShader.
+      const browserConfig = join(runDir, 'browser.json');
+      await writeFile(
+        browserConfig,
+        JSON.stringify({
+          host: '0.0.0.0',
+          port: 3000,
+          wsPath: '/s4',
+          headless: true,
+          // Full Chromium in headless mode: the headless shell ignores the origin flag.
+          channel: 'chromium',
+          args: [
+            '--unsafely-treat-insecure-origin-as-secure=http://link:8080',
+            '--enable-unsafe-swiftshader',
+            '--use-angle=swiftshader',
+            '--ignore-gpu-blocklist',
+          ],
+        }),
+      );
       const container = started(
         await runContainer({
           name: name('browser'),
@@ -232,19 +253,20 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
           image: IMAGES.playwright,
           networks: [{ network: clinic, aliases: ['browser'] }],
           publish: [3000],
+          mounts: [[browserConfig, '/etc/s4/browser.json']],
           command: [
             'npx',
             '-y',
             'playwright@1.65.1',
-            'run-server',
-            '--port',
-            '3000',
-            '--host',
-            '0.0.0.0',
+            'launch-server',
+            '--browser',
+            'chromium',
+            '--config',
+            '/etc/s4/browser.json',
           ],
         }),
       );
-      const wsEndpoint = `ws://${await hostPort(container, 3000)}/`;
+      const wsEndpoint = `ws://${await hostPort(container, 3000)}/s4`;
       await waitFor(
         'playwright server',
         async () => (await fetch(wsEndpoint.replace('ws:', 'http:'))).status > 0,
