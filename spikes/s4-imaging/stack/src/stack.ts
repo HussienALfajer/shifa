@@ -308,6 +308,16 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
       ...(browserHandle ? { browser: browserHandle } : {}),
       networks: { clinic, cloud, orthanc: orthancNet },
       tokenKey,
+      secrets: () => [
+        superPassword,
+        gatewayDbPassword,
+        ...tenantSecrets.flatMap((t) => [t.db, t.http]),
+        ...[...orthancTenants.values()].map((t) => t.s3.secretAccessKey),
+        ...[...masterKeys.values()].flatMap((k) => [k.toString('base64'), k.toString('hex')]),
+        ...garage.secrets,
+        tokenKey.toString('base64'),
+        tokenKey.toString('hex'),
+      ],
       token: async ({ sub = 'spike-user', tenant, role, ttlSeconds = 300 }) => {
         const payload = {
           sub,

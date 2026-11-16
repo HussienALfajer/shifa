@@ -1,5 +1,6 @@
 // Criterion 4: the S3 plugin encrypts before the first write. No stored object holds the DICM
-// marker or a 64-byte pixel run of its source; an Orthanc restarted with a wrong master key
+// marker at offset 128, the 32-byte marker-and-file-meta run anywhere, or a 64-byte pixel run of
+// its source; an Orthanc restarted with a wrong master key
 // fails to read the instance (an error, not wrong bytes) and reads it again with the right key.
 import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -23,6 +24,10 @@ describe('encryption at rest', () => {
     }
     // A run from the end of each file: inside the noisy pixel data.
     const runs = sources.map((b) => b.subarray(b.length - 4096, b.length - 4096 + 64));
+    // The marker and the file meta group after it (32 bytes): random ciphertext matches the
+    // 4-byte marker somewhere in a large object by chance, never this run (0.3-S4a review).
+    const headers = sources.map((b) => b.subarray(128, 160));
+    expect(headers.every((h) => h.subarray(0, 4).toString('latin1') === 'DICM')).toBe(true);
 
     const keys = await listKeys(stack, tenant.s3, tenant.bucket);
     expect(keys.length).toBeGreaterThanOrEqual(manifest.files.length);
@@ -31,7 +36,9 @@ describe('encryption at rest', () => {
       const res = await s3(stack, tenant.s3, `/${tenant.bucket}/${encodeURIComponent(key)}`);
       expect(res.status).toBe(200);
       const object = Buffer.from(await res.arrayBuffer());
-      if (object.indexOf('DICM') !== -1) leaks.push(`${key}: DICM`);
+      // A plaintext object would hold the marker exactly after the 128-byte preamble.
+      if (object.subarray(128, 132).toString('latin1') === 'DICM') leaks.push(`${key}: DICM`);
+      if (headers.some((h) => object.indexOf(h) !== -1)) leaks.push(`${key}: file meta`);
       if (runs.some((run) => object.indexOf(run) !== -1)) leaks.push(`${key}: pixel run`);
     }
     expect(leaks).toEqual([]);

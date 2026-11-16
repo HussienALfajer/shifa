@@ -116,6 +116,11 @@ export interface Stack {
   token(claims: TokenClaims): Promise<string>;
   /** This run's token key (tests forge tokens with other keys and algorithms). */
   tokenKey: Uint8Array;
+  /**
+   * Every per-run secret, in each form it is written (passwords, Garage keys and tokens,
+   * storage master keys as base64 and hex, the token key): log scans only.
+   */
+  secrets(): string[];
   /** Recreates a tenant's Orthanc with the current or a wrong storage master key. */
   restartOrthanc(tenant: string, options: { masterKey: 'current' | 'wrong' }): Promise<void>;
   /** Container logs (stdout and stderr). */
