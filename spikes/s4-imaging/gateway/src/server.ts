@@ -47,7 +47,15 @@ export function buildServer(config: GatewayConfig): { app: FastifyInstance; metr
   const metrics: Metrics = { upstream: 0, refused: 0, audited: 0 };
   const tenants = new Set(Object.keys(config.upstreams));
   const log = config.log ?? ((line: string) => process.stdout.write(`${line}\n`));
-  const app = Fastify({ logger: false, return503OnClosing: true, requestTimeout: 0 });
+  const app = Fastify({
+    logger: false,
+    return503OnClosing: true,
+    // No total limit (a 300 MB STOW on a 1 Mbps uplink takes about 40 minutes), but a socket
+    // idle for two minutes is closed: longer than a P1 cut plus TCP backoff, short enough that
+    // idle clients cannot hold every connection.
+    requestTimeout: 0,
+    connectionTimeout: 120_000,
+  });
   app.removeAllContentTypeParsers();
   // Request bodies stay streams: STOW-RS is forwarded without buffering.
   app.addContentTypeParser('*', (_request, payload, done) => {
@@ -79,7 +87,9 @@ export function buildServer(config: GatewayConfig): { app: FastifyInstance; metr
   ) => {
     metrics.refused += 1;
     finish(reply, status, 'refused', tenant, start);
+    // A refused client does not keep its connection (nor trickle an unread body into it).
     return reply
+      .header('connection', 'close')
       .code(status)
       .type('application/json')
       .send({ error: ERROR_BODY[status] ?? 'refused' });

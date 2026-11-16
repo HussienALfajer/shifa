@@ -105,7 +105,11 @@ async function entries(
     if (span.readUInt32LE(at) !== 0x04034b50) throw new Error('not a ZIP local header');
     const dataStart = at + 30 + span.readUInt16LE(at + 26) + span.readUInt16LE(at + 28);
     const data = span.subarray(dataStart, dataStart + file.compressedBytes);
-    const bytes = file.method === 8 ? inflateRawSync(data) : Buffer.from(data);
+    // Capped at the pinned size: a hostile server cannot inflate past it.
+    const bytes =
+      file.method === 8
+        ? inflateRawSync(data, { maxOutputLength: Math.max(1, file.bytes) })
+        : Buffer.from(data);
     if (bytes.byteLength !== file.bytes) throw new Error('entry size does not match');
     return bytes;
   });

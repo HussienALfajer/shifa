@@ -11,13 +11,18 @@ const required = (name: string): string => {
   return value;
 };
 
+// A malformed limit would compare as NaN and switch the size check off: refuse to start.
+const maxStowBytes = Number(process.env['S4_MAX_STOW_BYTES'] ?? 400_000_000);
+if (!Number.isSafeInteger(maxStowBytes) || maxStowBytes <= 0) {
+  throw new Error('S4_MAX_STOW_BYTES must be a positive integer');
+}
 const audit = createAuditLog(required('S4_DATABASE_URL'));
 const { app, metrics } = buildServer({
   tokenKey: Buffer.from(required('S4_TOKEN_KEY'), 'base64'),
   upstreams: JSON.parse(required('S4_UPSTREAMS')) as Record<string, Upstream>,
   audit,
   // The largest generated instance is the 300 MB single-file CBCT; STOW sends it in one part.
-  maxStowBytes: Number(process.env['S4_MAX_STOW_BYTES'] ?? 400_000_000),
+  maxStowBytes,
 });
 
 await app.listen({ host: '0.0.0.0', port: Number(process.env['PORT'] ?? 8080) });

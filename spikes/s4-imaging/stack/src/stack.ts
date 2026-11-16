@@ -103,8 +103,12 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
         network: orthancNet,
         superPassword,
         roles: [
-          ...tenantSecrets.map((t) => ({ name: `orthanc_${t.id}`, password: t.db })),
-          { name: 's4_gateway', password: gatewayDbPassword },
+          ...tenantSecrets.map((t) => ({
+            name: `orthanc_${t.id}`,
+            password: t.db,
+            ownsDatabase: true,
+          })),
+          { name: 's4_gateway', password: gatewayDbPassword, ownsDatabase: false },
         ],
       }).then(started),
       startGarage({ name: name('garage'), runId, network: orthancNet, runDir }),

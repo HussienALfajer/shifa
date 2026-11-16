@@ -8,6 +8,8 @@ import { IMAGES } from './images.ts';
 export interface DatabaseRole {
   name: string;
   password: string;
+  /** Owner of its database (an Orthanc index); false for append-only roles. */
+  ownsDatabase: boolean;
 }
 
 const psql = async (container: string, database: string, sql: string) => {
@@ -44,12 +46,21 @@ export async function startPostgres(options: {
       (await execIn(container, ['pg_isready', '-h', '127.0.0.1', '-U', 'postgres'])).code === 0,
     120_000,
   );
-  // Role and database names are fixed identifiers; passwords are hex.
-  const statements = options.roles.flatMap((role) => [
-    `create role ${role.name} login password '${role.password}';`,
-    `create database ${role.name} owner ${role.name};`,
-    `revoke all on database ${role.name} from public;`,
-  ]);
+  // Role and database names are fixed identifiers; passwords are hex. Each Orthanc owns its
+  // database (it creates its index tables). The gateway's database is owned by the superuser:
+  // the role that appends audit rows never owns their table, schema or database, so it can
+  // neither delete nor drop them (security review, 0.3-S4a).
+  const statements = [
+    'revoke connect, temporary on database postgres, template1 from public;',
+    ...options.roles.flatMap((role) => [
+      `create role ${role.name} login password '${role.password}';`,
+      role.ownsDatabase
+        ? `create database ${role.name} owner ${role.name};`
+        : `create database ${role.name};`,
+      `revoke all on database ${role.name} from public;`,
+      `grant connect on database ${role.name} to ${role.name};`,
+    ]),
+  ];
   await psql(container, 'postgres', statements.join('\n'));
   const schema = await readFile(new URL('../../gateway/sql/schema.sql', import.meta.url), 'utf8');
   await psql(container, 's4_gateway', schema);
