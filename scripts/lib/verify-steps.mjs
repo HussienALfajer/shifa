@@ -30,11 +30,52 @@
  */
 
 /**
+ * CI splits `verify full` into parallel jobs (OD-34). Together with the `docs` mode (the
+ * repository-level steps) the parts cover every full step:
+ *   node  — Turborepo typecheck/lint/test of every package outside the pub workspace;
+ *   dart  — pub-get, drift and Turborepo typecheck/lint/test of the pub workspace packages;
+ *   build — build and the API boot check.
+ */
+export const PARTS = Object.freeze(['node', 'dart', 'build']);
+
+/**
  * @param {'fast' | 'full' | 'docs'} mode
- * @param {{ affected?: string[] }} [options] `['--affected']` when fast mode can compare to main
+ * @param {{ affected?: string[], part?: string, dartPackages?: string[] }} [options]
+ *   `affected`: `['--affected']` when fast mode can compare to main; `part`: one of PARTS (full
+ *   mode only), with `dartPackages` the Turborepo names of the pub workspace members
  * @returns {Step[]}
  */
-export function verifySteps(mode, { affected = [] } = {}) {
+export function verifySteps(mode, { affected = [], part, dartPackages = [] } = {}) {
+  const steps = allSteps(mode, affected);
+  if (part === undefined) return steps;
+  if (mode !== 'full') throw new Error(`verify: --part needs full mode, not ${mode}`);
+  if (!PARTS.includes(part)) throw new Error(`verify: unknown part "${part}"`);
+  if (dartPackages.length === 0) throw new Error('verify: no pub workspace packages to split by');
+  const byName = Object.fromEntries(steps.map((s) => [s.name, s]));
+  const turbo = byName['typecheck+lint+test'];
+  if (part === 'build') return [byName.build, byName.boot];
+  if (part === 'node') {
+    // No pub-get here: no task outside the pub workspace runs Dart.
+    const nodeTurbo = {
+      ...turbo,
+      args: [...turbo.args, ...dartPackages.map((p) => `--filter=!${p}`)],
+    };
+    delete nodeTurbo.requires;
+    return [nodeTurbo];
+  }
+  const dartTurbo = {
+    ...turbo,
+    args: [...turbo.args, ...dartPackages.map((p) => `--filter=${p}`)],
+  };
+  return [byName['pub-get'], byName.drift, dartTurbo];
+}
+
+/**
+ * @param {'fast' | 'full' | 'docs'} mode
+ * @param {string[]} affected
+ * @returns {Step[]}
+ */
+function allSteps(mode, affected) {
   /** @type {Step[]} */
   const all = [
     {
