@@ -1,7 +1,6 @@
 // Criterion 11: the local store is encrypted with SQLCipher. Without the key (or with a wrong one)
 // the file does not open, and its bytes hold no known synthetic value in plain text.
 import 'dart:convert';
-import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
