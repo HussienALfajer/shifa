@@ -62,7 +62,13 @@ export function verifySteps(mode, { affected = [] } = {}) {
         '.',
       ],
     },
-    { name: 'scripts-test', docs: true, cmd: 'node', args: ['scripts/run-script-tests.mjs'] },
+    // Fast mode leaves out the Docker suites unless their files changed (lib/script-tests.mjs).
+    {
+      name: 'scripts-test',
+      docs: true,
+      cmd: 'node',
+      args: ['scripts/run-script-tests.mjs', ...(mode === 'fast' ? ['--fast'] : [])],
+    },
     { name: 'file-length', docs: true, cmd: 'node', args: ['scripts/check-file-length.mjs'] },
     // Resolves the pub workspace from pubspec.lock without changing it (fast when up to date).
     {
