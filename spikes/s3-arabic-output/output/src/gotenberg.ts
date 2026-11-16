@@ -64,6 +64,12 @@ export async function startGotenberg({ network }: TestNetwork): Promise<Gotenber
       '--chromium-deny-list=^(?!file:///tmp/).*',
       '--api-timeout=60s',
       '--log-level=info',
+      // Only HTML conversion and screenshots: no server-side fetch, no webhooks, no other engines
+      // (the API has no authentication and its port is published while tests run).
+      '--webhook-disable',
+      '--api-disable-download-from',
+      '--libreoffice-disable-routes',
+      '--pdfengines-disable-routes',
     ])
     .withWaitStrategy(Wait.forHttp('/health', 3000))
     .start();

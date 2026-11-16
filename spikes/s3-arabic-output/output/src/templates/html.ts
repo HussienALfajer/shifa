@@ -14,6 +14,14 @@ const ENTITIES: Readonly<Record<string, string>> = {
 /** Escapes text for HTML content and attribute values. */
 export const esc = (text: string): string => text.replace(/[&<>"']/g, (ch) => ENTITIES[ch] ?? ch);
 
+/** Escapes text for a CSS string (page-margin `content`): every non-alphanumeric as a hex escape. */
+export function cssString(text: string): string {
+  const escaped = Array.from(text, (ch) =>
+    /[\p{L}\p{N} ]/u.test(ch) ? ch : `\\${(ch.codePointAt(0) ?? 0x20).toString(16)} `,
+  );
+  return `"${escaped.join('')}"`;
+}
+
 /** A left-to-right run (drug name, dose, phone) isolated inside an Arabic line. */
 export const ltr = (text: string): string => `<bdi dir="ltr">${esc(text)}</bdi>`;
 

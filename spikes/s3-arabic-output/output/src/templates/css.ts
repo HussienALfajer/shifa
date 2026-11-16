@@ -3,6 +3,7 @@
 // no generic fallback (a missing glyph shows as a fallback font in pdffonts, never hidden);
 // Latin runs in <bdi dir="ltr">; tabular digits; sizes in pt/mm so print and raster agree.
 import { TEMPLATE_FAMILY } from '../fonts.ts';
+import { esc } from './html.ts';
 
 export const BASE_CSS = `
 html { font-family: '${TEMPLATE_FAMILY}'; font-size: var(--base, 10pt); line-height: 1.5; color: #000; }
@@ -43,7 +44,7 @@ export const thermalCss = `html { zoom: ${THERMAL_ZOOM.toFixed(4)}; background: 
 export function page(css: string, body: string, title: string): string {
   return `<!doctype html>
 <html lang="ar" dir="rtl">
-<head><meta charset="utf-8"><title>${title}</title>
+<head><meta charset="utf-8"><title>${esc(title)}</title>
 <link rel="stylesheet" href="fonts.css">
 <style>${BASE_CSS}${css}</style>
 </head>

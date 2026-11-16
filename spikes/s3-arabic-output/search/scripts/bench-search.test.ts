@@ -88,6 +88,8 @@ it('measures search latency at the load volume and for one large tenant', async 
   // Recorded, not asserted: under RLS the planner did not use the trigram GIN index even for
   // one 50,000-patient tenant. pg_trgm's `%` is not LEAKPROOF, so it may not run in an index
   // scan ahead of the policy qual (report §5, ADR-0034).
+  // Check before writing: the workflow uploads .verify/s3 even when this test fails.
+  expect(JSON.stringify(scenarios)).not.toMatch(/[؀-ۿ]/u);
   const { rows } = await ownerDb().execute<{ server_version: string; trgm: string }>(
     sql`select current_setting('server_version') as server_version,
                (select extversion from pg_extension where extname = 'pg_trgm') as trgm`,
@@ -105,7 +107,6 @@ it('measures search latency at the load volume and for one large tenant', async 
     },
     scenarios,
   });
-  expect(JSON.stringify(scenarios)).not.toMatch(/[؀-ۿ]/u);
   process.stdout.write(`bench:search: ${JSON.stringify(scenarios, null, 2)}
 wrote ${path}
 `);

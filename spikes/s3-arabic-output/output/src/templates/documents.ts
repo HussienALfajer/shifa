@@ -18,7 +18,7 @@ import {
   TIME,
 } from '../fixtures.ts';
 import { page, rollCss } from './css.ts';
-import { esc, fill, ltr, money, qrSvg } from './html.ts';
+import { cssString, esc, fill, ltr, money, qrSvg } from './html.ts';
 
 /** Day, month and year of a date, each in the digit style. */
 const dateParts = (iso: string, digits: DigitStyle): string[] =>
@@ -109,7 +109,7 @@ export function report(digits: DigitStyle): Rendered {
   const css = `
 @page {
   size: A4; margin: 22mm 15mm 18mm;
-  @top-center { content: "${CLINIC} — ${REPORT_TITLE}"; font-family: 'Shifa Arabic'; font-size: 9pt; }
+  @top-center { content: ${cssString(`${CLINIC} — ${REPORT_TITLE}`)}; font-family: 'Shifa Arabic'; font-size: 9pt; }
   @bottom-center { content: "صفحة " counter(page, ${counter}) " من " counter(pages, ${counter}); font-family: 'Shifa Arabic'; font-size: 9pt; }
 }
 :root { --base: 10pt; }
