@@ -1,10 +1,10 @@
 // The outbox engine's local store: drift on package:sqlite3's SQLCipher
-// build. No code generation: four small tables in plain SQL, and drift's
-// table-update notifications drive the screen's streams.
+// build, four small tables in plain SQL (no code generation).
 import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
+import 'package:s1_flutter_probe/drift_base.dart';
 import 'package:s1_flutter_probe/key_store.dart';
 
 const _schema = [
@@ -25,7 +25,7 @@ const _schema = [
   'CREATE TABLE meta (key TEXT PRIMARY KEY, value TEXT NOT NULL)',
 ];
 
-class OutboxDb extends GeneratedDatabase {
+class OutboxDb extends ProbeDriftDb {
   new _(super.executor);
 
   /// Opens [file]; with a [passphrase], `PRAGMA key` runs before any other
@@ -43,15 +43,6 @@ class OutboxDb extends GeneratedDatabase {
   );
 
   @override
-  Iterable<TableInfo<Table, dynamic>> get allTables => const [];
-
-  @override
-  List<DatabaseSchemaEntity> get allSchemaEntities => const [];
-
-  @override
-  int get schemaVersion => 1;
-
-  @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (m) async {
       for (final statement in _schema) {
@@ -59,26 +50,4 @@ class OutboxDb extends GeneratedDatabase {
       }
     },
   );
-
-  /// Re-runs [query] whenever one of [tables] changes (first value at once).
-  Stream<T> watchTables<T>(Set<String> tables, Future<T> Function() query) =>
-      Stream<void>.value(null)
-          .followedBy(
-            tableUpdates(
-              TableUpdateQuery.allOf([
-                for (final t in tables) TableUpdateQuery.onTableName(t),
-              ]),
-            ),
-          )
-          .asyncMap((_) => query());
-
-  void changed(Set<String> tables) =>
-      notifyUpdates({for (final t in tables) TableUpdate(t)});
-}
-
-extension on Stream<void> {
-  Stream<void> followedBy(Stream<Object?> next) async* {
-    yield* this;
-    yield* next.map((_) {});
-  }
 }

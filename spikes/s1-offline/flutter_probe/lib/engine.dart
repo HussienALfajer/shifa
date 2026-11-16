@@ -5,6 +5,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:s1_flutter_probe/key_store.dart';
 import 'package:s1_flutter_probe/outbox/outbox_engine.dart';
+import 'package:s1_flutter_probe/powersync/ps_engine.dart';
 
 enum ProbeStatus { online, offline, needsLogin }
 
@@ -90,6 +91,7 @@ const engineNames = ['outbox', 'powersync', 'stub-plain', 'stub-drop'];
 
 ProbeEngine createEngine(String name, ProbeConfig config) => switch (name) {
   'outbox' => OutboxEngine(config),
+  'powersync' => PsEngine(config),
   'stub-plain' => OutboxEngine(config, encrypt: false),
   'stub-drop' => OutboxEngine(config, keepQueue: false),
   _ => throw ArgumentError.value(name, 'engine'),
