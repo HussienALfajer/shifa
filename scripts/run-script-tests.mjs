@@ -31,6 +31,10 @@ if (left.length > 0) {
   process.stdout.write(
     `scripts-test: fast mode leaves out ${left.length} Docker suite(s), run by verify full and CI: ${left.join(', ')}\n`,
   );
+  // verify.mjs shows this on the step's summary row, so a fast PASS says what it did not run.
+  process.stdout.write(
+    `verify-note: ${left.length} Docker suites left out (verify:full runs them)\n`,
+  );
 }
 if (run.length === 0) {
   process.stderr.write('scripts-test: no test files selected\n');

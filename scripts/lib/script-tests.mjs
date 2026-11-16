@@ -62,9 +62,17 @@ export function changedSinceMain(root) {
     const r = spawnSync('git', args, { cwd: root, encoding: 'utf8' });
     return r.status === 0 ? r.stdout.split('\0').filter(Boolean) : null;
   };
+  // The branch itself: a bare `main` would prefer a tag or refs/main of that name, and without
+  // `--` a file named like the revision would be read as a path.
+  const main = spawnSync(
+    'git',
+    ['rev-parse', '--verify', '--quiet', '--end-of-options', 'refs/heads/main^{commit}'],
+    { cwd: root, encoding: 'utf8' },
+  );
+  if (main.status !== 0) return null;
   const lists = [
-    git('diff', '--name-only', '--no-renames', '-z', 'main...HEAD'),
-    git('diff', '--name-only', '--no-renames', '-z', 'HEAD'),
+    git('diff', '--name-only', '--no-renames', '-z', `${main.stdout.trim()}...HEAD`, '--'),
+    git('diff', '--name-only', '--no-renames', '-z', 'HEAD', '--'),
     git('ls-files', '--others', '--exclude-standard', '-z'),
   ];
   if (lists.some((list) => list === null)) return null;

@@ -84,7 +84,11 @@ process.stdout.write(`verify (${mode}${affected.length ? ', affected' : ''})\n`)
 for (const r of results) {
   const ok = r.code === 0;
   if (!ok) failed += 1;
-  process.stdout.write(`  ${ok ? 'PASS' : 'FAIL'}  ${r.name.padEnd(22)} ${r.seconds}s\n`);
+  // A step may name what it did not run with a `verify-note: <text>` line (scripts-test in fast
+  // mode); the last one is shown on its row.
+  const note = [...r.output.matchAll(/^verify-note: (.+)$/gm)].at(-1)?.[1].trim();
+  const row = `  ${ok ? 'PASS' : 'FAIL'}  ${r.name.padEnd(22)} ${r.seconds}s`;
+  process.stdout.write(`${row}${note ? `  (${note})` : ''}\n`);
 }
 for (const r of results.filter((x) => x.code !== 0)) {
   const tail = r.output.trimEnd().split('\n').slice(-25).join('\n');

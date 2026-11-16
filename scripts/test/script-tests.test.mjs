@@ -114,6 +114,26 @@ describe('changedSinceMain', () => {
     ]);
   });
 
+  it('reads the main branch, not a tag named main or a file named like the revision', () => {
+    const repo = newRepo('main');
+    writeFileSync(join(repo, 'a.txt'), 'a');
+    git(repo, 'add', '.');
+    git(repo, 'commit', '-q', '-m', 'base');
+    git(repo, 'switch', '-q', '-c', 'work');
+    writeFileSync(join(repo, 'collector.yaml'), 'b');
+    git(repo, 'add', '.');
+    git(repo, 'commit', '-q', '-m', 'work');
+    git(repo, 'tag', 'main', 'HEAD'); // would hide the commit if `main` were resolved bare
+    assert.deepEqual(changedSinceMain(repo), ['collector.yaml']);
+
+    const noMain = newRepo('trunk');
+    writeFileSync(join(noMain, 'a.txt'), 'a');
+    git(noMain, 'add', '.');
+    git(noMain, 'commit', '-q', '-m', 'base');
+    writeFileSync(join(noMain, 'main...HEAD'), 'x'); // a path, not a revision
+    assert.equal(changedSinceMain(noMain), null);
+  });
+
   it('is null without a main branch or outside a work tree', () => {
     const repo = newRepo('trunk');
     writeFileSync(join(repo, 'a.txt'), 'a');
