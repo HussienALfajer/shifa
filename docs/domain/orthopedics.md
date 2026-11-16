@@ -1,6 +1,6 @@
 # Orthopedics Module
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-17 · Owner: product owner
 Sources: RN-08, RN-13, RN-14, RN-11
 
 Purpose: specifies the full orthopedic specialty pack approved for Release 1 — body/skeleton chart, region examinations, spine, fractures and casts, injections, procedures and surgery, outcome measures (PROMs), rehabilitation and reports. Build phase: **Phase C**. It builds on [clinical records](clinical-records.md) and [imaging](imaging.md).
@@ -125,5 +125,5 @@ Interactive anatomical atlas, AI scribe/ambient listening, AI-assisted AO/OTA su
 - Licence gating: with no `TenantInstrumentLicence`, licensed PROMs and the AO guided picker are absent from API responses and UI; adding a licence record enables them without a deploy.
 - Scoring: each PROM scoring algorithm tested against published worked examples; injection counters tested across the 12-month window boundary.
 - Classification content: self-authored definitions carry reviewer and date (OD-17); no AO text/illustration assets exist in the repository without a licence record.
-- Usability: scripted tasks with 3–5 local orthopedic surgeons (knee exam "normal except", fracture follow-up with cast removal booking, injection with counter warning) measured for time and errors.
+- Usability: the skeleton chart prototype is tested with 2 orthopedic surgeons in spike [0.3-S8](../specs/spikes/0.3-s8-charts.md) (OD-47); later, scripted tasks with 3–5 local orthopedic surgeons (knee exam "normal except", fracture follow-up with cast removal booking, injection with counter warning) measured for time and errors.
 - Tenant isolation: episode, procedure, PROM and implant-log queries return zero rows across tenants under the application role.

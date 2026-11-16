@@ -76,7 +76,7 @@ Nothing in Phase A starts before every item is done.
 | S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification; fake WAHA for automated tests plus one manual day on two owner numbers (OD-45) ([spec](specs/spikes/0.3-s5-whatsapp.md), approved) | ADR-0036 amending ADR-0016/0017; OD-12 (stays open), OD-45, OD-46; planned as 0.3-S5a to 0.3-S5c (owner, 2026-11-17; ADR-0032 budget, manual day in its own slice) |
 | S6 Voice | Listening test: Azure ar-SY vs Google vs SILMA with 5 receptionists; kiosk autoplay on cheap Android TV boxes | ADR-0020, OD-11 |
 | S7 Push | FCM delivery on common Android phones in Aleppo and Azaz | ADR-0017 |
-| S8 Charts | Figma prototypes of odontogram, perio entry and skeleton chart tested with 3–5 doctors | dental, orthopedics docs |
+| S8 Charts | Interactive prototypes of odontogram, perio entry and skeleton chart, designed in Claude Design instead of Figma (OD-47) and tested as a static build with 3 dentists and 2 orthopedic surgeons ([spec](specs/spikes/0.3-s8-charts.md), approved) | dental, orthopedics docs; OD-19 and OD-20 (input only) |
 
 ## Phase 0.3 slices
 
