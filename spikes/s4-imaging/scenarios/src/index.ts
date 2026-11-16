@@ -1,4 +1,4 @@
-export { cloudStudy, LONG, record, stowFiles } from './cloud.ts';
+export { cloudCount, cloudStudy, LONG, record, stowFiles } from './cloud.ts';
 export {
   connectBrowser,
   openUploadPage,

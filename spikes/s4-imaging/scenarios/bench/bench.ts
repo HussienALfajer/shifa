@@ -29,8 +29,8 @@ export interface TransferRow {
   outcome: 'done' | 'failed' | 'timeout';
   ms: number;
   files: number;
-  /** Instances the cloud holds afterwards (read back unshaped). */
-  storedInstances: number;
+  /** Instances the cloud lists afterwards (QIDO-RS, unshaped); null if that check failed. */
+  storedInstances: number | null;
   studyBytes: number;
   linkUpMbit: number;
   throughputMbit: number;

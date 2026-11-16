@@ -4,6 +4,7 @@
 import { ensureStudy, type StudyName } from '@shifa-spike/s4-generator';
 import { PROFILES, type ProfileName, type Stack, startStack } from '@shifa-spike/s4-stack';
 import {
+  cloudCount,
   cloudStudy,
   connectBrowser,
   firstImage,
@@ -72,12 +73,8 @@ export async function measureTransfer(plan: TransferPlan): Promise<TransferRow> 
     const peak = await memory();
     const after = await stack.link.counters();
     await stack.link.applyProfile('none');
-    const cloud = await cloudStudy(
-      stack,
-      'a',
-      manifest.studyInstanceUid,
-      edge ? 'dataset' : 'file',
-    ).catch(() => new Map<string, string>());
+    // Instances the cloud lists (QIDO-RS); null when the check itself failed.
+    const stored = await cloudCount(stack, 'a', manifest.studyInstanceUid).catch(() => null);
     const wireUpBytes = after.upBytes - before.upBytes;
     const upMbit = PROFILES[plan.profile].upMbit;
     return {
@@ -85,12 +82,12 @@ export async function measureTransfer(plan: TransferPlan): Promise<TransferRow> 
       profile: plan.profile,
       study: plan.study,
       method: plan.method,
-      chunkBytes: edge ? null : (plan.chunkBytes ?? 1024 * 1024),
+      chunkBytes: edge || plan.method === 'stow' ? null : (plan.chunkBytes ?? 1024 * 1024),
       bucketKb: edge ? (plan.bucketKb ?? 512) : null,
       outcome: sent.outcome,
       ms,
       files: manifest.files.length,
-      storedInstances: cloud.size,
+      storedInstances: stored,
       studyBytes,
       linkUpMbit: upMbit,
       throughputMbit: round(mbit(studyBytes, ms)),
