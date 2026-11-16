@@ -58,7 +58,7 @@ What we will do, stated precisely.
 | [0018](0018-money-three-currencies.md) | Money: SYP/TRY/USD, minor units, clinic rates, mixed-currency receipts, cash sessions | Accepted |
 | [0019](0019-imaging-orthanc-ohif.md) | Imaging: unmodified Orthanc per tenant behind our gateway; OHIF viewer | Accepted |
 | [0020](0020-voice-calling-voice-packs.md) | Voice calling with pre-generated TTS voice packs played locally | Accepted |
-| [0021](0021-supporting-services.md) | Garage, Valkey, Gotenberg, ExcelJS, Postgres Arabic search | Accepted |
+| [0021](0021-supporting-services.md) | Garage, Valkey, Gotenberg, ExcelJS, Postgres Arabic search | Accepted (amended by 0034) |
 | [0022](0022-deployment-portable-hosting.md) | Docker Compose + Kamal on portable hosting; location pending legal opinion | Proposed (OD-01) |
 | [0023](0023-no-real-patient-data-in-dev.md) | No real patient data in development or AI-agent environments | Accepted |
 | [0024](0024-licensed-clinical-content-gating.md) | Licensed clinical content gated per tenant until licences are signed | Accepted |
@@ -71,3 +71,4 @@ What we will do, stated precisely.
 | [0031](0031-offline-sync-custom-outbox.md) | Offline sync with a custom outbox (command log, idempotency keys, pull endpoint); decides ADR-0014 | Accepted |
 | [0032](0032-slice-size-budget-4000-lines.md) | Slice and PR size budget about 4,000 hand-written lines (CI warns, never fails) | Accepted |
 | [0033](0033-pre-pr-fast-verify-ci-full-gate.md) | Before a PR, fast `verify` locally; CI's `verify (full)` is the full gate (full locally only for build/boot, DB harness, drift, CI) | Accepted |
+| [0034](0034-arabic-output-and-name-search.md) | Arabic output and name search: Gotenberg 8 settings, Vazirmatn, roll-paper and thermal raster rules, one normaliser with shared vectors, stored key; amends 0021 | Proposed |
