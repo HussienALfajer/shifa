@@ -74,7 +74,8 @@ jobs:
         if: steps.pick.outputs.run == 'true'
         with:
           node-version-file: .nvmrc
-          cache: pnpm
+          # No `cache: pnpm`: setup-node would save the store after the scenarios ran (ci.yml rule).
+          package-manager-cache: false
       - if: steps.pick.outputs.run == 'true'
         run: pnpm install --frozen-lockfile
       - name: Install Chromium for Playwright
