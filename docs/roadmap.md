@@ -72,7 +72,7 @@ Nothing in Phase A starts before every item is done.
 | S1 Offline sync | PowerSync vs custom outbox under real network cuts, for queue, appointments and cash ([spec](specs/spikes/0.3-s1-offline-sync.md), approved) | ADR-0031 updating ADR-0014; OD-05 |
 | S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005; [result](spikes/s2-tenant-isolation.md): safe only with the PgBouncer settings in ADR-0030 (`server_reset_query_always = 1` among them); session state leaks without them |
 | S3 Arabic output | Arabic PDF (Gotenberg), thermal receipt rendering, Arabic name search normaliser ([spec](specs/spikes/0.3-s3-arabic-output.md), [result](spikes/s3-arabic-output.md)) | ADR-0034 (Accepted, owner 2026-11-16) amending ADR-0021; OD-39, OD-40, OD-41, OD-43 (closed), OD-42 (open) |
-| S4 Imaging | Garage + Orthanc + OHIF; upload a real CBCT over an Aleppo-like link | ADR-0019, OD-18 |
+| S4 Imaging | Garage + Orthanc + OHIF; upload a CBCT (generated and public de-identified, OD-44) over three Aleppo-like link profiles, from the browser and from an edge box ([spec](specs/spikes/0.3-s4-imaging.md), approved) | ADR-0035 amending ADR-0019; OD-18 |
 | S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification | ADR-0016/0017, OD-12 |
 | S6 Voice | Listening test: Azure ar-SY vs Google vs SILMA with 5 receptionists; kiosk autoplay on cheap Android TV boxes | ADR-0020, OD-11 |
 | S7 Push | FCM delivery on common Android phones in Aleppo and Azaz | ADR-0017 |
