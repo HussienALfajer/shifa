@@ -24,7 +24,8 @@ const docker = spawnSync('docker', ['info', '--format', '{{.ServerVersion}}'], {
   encoding: 'utf8',
   timeout: 20_000,
 });
-const skip = docker.status === 0 ? false : 'Docker is not reachable (runs in CI)';
+// CI must run it: there an unreachable Docker fails the suite instead of skipping it (OD-32).
+const skip = docker.status === 0 || process.env.CI ? false : 'Docker is not reachable (runs in CI)';
 if (skip) process.stdout.write(`obs-collector-run: skipped: ${skip}\n`);
 
 const value = (v) => {
