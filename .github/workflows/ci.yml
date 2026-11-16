@@ -10,12 +10,10 @@ on:
 
 permissions: {}
 
-# Flutter pins for the caches and dart jobs (one copy, so their cache keys cannot drift apart).
+# Flutter pins for the caches and dart jobs (one copy, so their pub cache keys cannot drift apart).
 env:
   FLUTTER_VERSION: 3.47.9
   FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
-  # Digest of the extracted archive (see "Install Flutter"); empty means no SDK caching.
-  FLUTTER_TREE_SHA256: a281bdcde4c195d1b0f4605a147eacfd7f44ceec82ea54f91f781434c9ccab8b
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -27,7 +25,7 @@ jobs:
   # format, instructions, root lint, script tests, file length); `node`, `dart` and `build`
   # run `verify full --part <name>`. Together they run every step of `verify full`
   # (scripts/test/verify-parts.test.mjs and ci-verify-jobs.test.mjs check the split). On pushes
-  # to main, `caches` saves the Flutter SDK and pub caches first. Pull requests that change only docs/
+  # to main, `caches` saves the pub cache first. Pull requests that change only docs/
   # run `checks` alone; every push to main runs everything. `verify docs` still executes
   # repository code (script tests, ESLint configs), so a docs-only pull request is not "no code
   # ran" and gets the same review. No job restores a Turborepo cache: a cached task result is an
@@ -71,9 +69,10 @@ jobs:
           echo "verify mode: $mode"
           echo "mode=$mode" >> "$GITHUB_OUTPUT"
 
-  # Saves the Flutter SDK and pub caches on pushes to main, before any job of the run executes
-  # repository or dependency code: every job that does (checks, node, build, dart) needs this one
-  # and starts only after it has finished (OD-30). Skipped on pull requests, which only restore.
+  # Saves the pub cache on pushes to main, before any job of the run executes repository or
+  # dependency code: every job that does (checks, node, build, dart) needs this one and starts
+  # only after it succeeded (OD-30). Skipped on pull requests, which only restore. The Flutter SDK
+  # is not cached (OD-35); this job installs it only to fill the pub cache.
   caches:
     name: CI caches
     needs: scope
@@ -86,39 +85,32 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Caches (Flutter SDK, pub packages) are saved only by pushes to main, right after the
-      # download is verified and before any repository dependency or test runs; pull requests
-      # only restore. That alone is not enough: any job on main can create a cache key that does
-      # not exist yet (for example the next Flutter version's), so a restored entry is only as
-      # trustworthy as the check run on it (OD-30).
-      - name: Restore Flutter SDK
-        id: flutter-cache
+      # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
+      # reuses an unpacked copy from the cache. The cache is filled by a plain
+      # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
+      # runs. Accepted risk (OD-30, OD-35): code already running on main could pre-create an
+      # entry (for an unmerged lockfile, the next Flutter version, or after forcing an eviction),
+      # and because a restore extracts with `tar -P` such an entry could also write outside
+      # ~/.pub-cache, i.e. run code in the dart job, until its key changes.
+      - name: Look up pub cache
+        id: pub-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
-          path: ${{ runner.temp }}/flutter
-          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
-      # Flutter from Google's release storage, checksum-verified, no third-party action. The
-      # version must match .fvmrc; the SHA-256 comes from Google's releases_linux.json for it.
-      # The cache holds the untouched extraction, and FLUTTER_TREE_SHA256 pins a digest of that
-      # tree (paths, types, modes, link targets, file contents). A restored tree that does not
-      # match is discarded and reinstalled from the archive, so a planted entry costs time, never
-      # integrity. On a version bump, set FLUTTER_TREE_SHA256 to the digest a run prints.
+          path: ~/.pub-cache
+          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
+          lookup-only: true
+      # Flutter from Google's release storage, checksum-verified, no third-party action, on every
+      # run: the SDK is never cached, because a restored cache entry can write outside its path
+      # (OD-35). The version must match .fvmrc; the SHA-256 comes from Google's
+      # releases_linux.json for it.
       - name: Install Flutter
-        id: flutter-install
+        if: steps.pub-cache.outputs.cache-hit != 'true'
         working-directory: ${{ runner.temp }}
         env:
-          CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
           FVMRC: ${{ github.workspace }}/.fvmrc
         run: |
-          # System tools only: a restored cache entry could place look-alikes (sha256sum, find,
-          # tar) in a directory that comes earlier on the runner's PATH (OD-35).
+          # System tools only (OD-35).
           export PATH=/usr/sbin:/usr/bin:/sbin:/bin
-          tree_digest() {
-            ( cd "$1" && {
-              find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
-              find . -type f -print0 | xargs -0 -r -P4 -n256 sha256sum | LC_ALL=C sort -k2
-            } | sha256sum | cut -d' ' -f1 )
-          }
           # Only known keys: FVM honours flutterUrl/cachePath in .fvmrc, which could point
           # every developer's `fvm install` at another repository.
           jq -e 'keys - ["flutter","updateGitIgnore","updateVscodeSettings"] == []' "$FVMRC" > /dev/null \
@@ -128,58 +120,13 @@ jobs:
             echo "::error::.fvmrc pins Flutter $pinned but CI installs $FLUTTER_VERSION; update ci.yml"
             exit 1
           fi
-          sdk="${RUNNER_TEMP}/flutter"
-          save=false
-          # Checked whenever anything is at the path: a restore that failed half-way reports
-          # no cache hit but leaves its files behind.
-          if [ -e "$sdk" ]; then
-            restored="$(tree_digest "$sdk")"
-            if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
-              echo "Restored Flutter SDK matches the pinned tree digest"
-            else
-              echo "::warning::restored Flutter SDK does not match FLUTTER_TREE_SHA256 ($restored); reinstalling from the archive"
-              rm -rf "$sdk"
-            fi
-          fi
-          if [ ! -d "$sdk" ]; then
-            archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-            curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
-            echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
-            tar -xJf "$archive" -C "$RUNNER_TEMP"
-            rm "$archive"
-            extracted="$(tree_digest "$sdk")"
-            echo "Flutter SDK tree digest: $extracted"
-            if [ -z "$FLUTTER_TREE_SHA256" ]; then
-              echo "::warning::FLUTTER_TREE_SHA256 is not set; the SDK is not cached. Pin: $extracted"
-            elif [ "$extracted" != "$FLUTTER_TREE_SHA256" ]; then
-              echo "::error::the verified archive extracts to tree digest $extracted, but ci.yml pins $FLUTTER_TREE_SHA256"
-              exit 1
-            elif [ "$CACHE_HIT" != true ]; then
-              save=true
-            fi
-          fi
-          echo "save=$save" >> "$GITHUB_OUTPUT"
-      # Saved before the first `flutter` call, which writes into the SDK (tool snapshot, caches).
-      - name: Save Flutter SDK
-        if: >-
-          github.event_name == 'push' &&
-          steps.flutter-install.outputs.save == 'true'
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ runner.temp }}/flutter
-          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
-      # actions/cache only warns when a save fails; a lookup proves the entry exists.
-      - name: Check Flutter SDK was saved
-        if: >-
-          github.event_name == 'push' &&
-          steps.flutter-install.outputs.save == 'true'
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ runner.temp }}/flutter
-          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
-          lookup-only: true
-          fail-on-cache-miss: true
+          archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+          curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+          echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm "$archive"
       - name: Set up Flutter
+        if: steps.pub-cache.outputs.cache-hit != 'true'
         working-directory: ${{ runner.temp }}
         run: |
           echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
@@ -190,17 +137,6 @@ jobs:
             exit 1
           fi
           "${RUNNER_TEMP}/flutter/bin/flutter" --version
-      # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
-      # reuses an unpacked copy from the cache. The cache is filled by a plain
-      # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
-      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
-      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
-      - name: Restore pub cache
-        id: pub-cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.pub-cache
-          key: ci-pub-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ hashFiles('pubspec.lock') }}
       - name: Fetch pub packages
         if: steps.pub-cache.outputs.cache-hit != 'true'
         run: '"${SHIFA_FLUTTER_ROOT}/bin/flutter" pub get --enforce-lockfile'
@@ -351,35 +287,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Restore only: the `caches` job saves on pushes to main (OD-30).
-      - name: Restore Flutter SDK
-        id: flutter-cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ runner.temp }}/flutter
-          key: ci-flutter-${{ runner.os }}-${{ env.FLUTTER_VERSION }}-${{ env.FLUTTER_SHA256 }}
-      # Flutter from Google's release storage, checksum-verified, no third-party action. The
-      # version must match .fvmrc; the SHA-256 comes from Google's releases_linux.json for it.
-      # The cache holds the untouched extraction, and FLUTTER_TREE_SHA256 pins a digest of that
-      # tree (paths, types, modes, link targets, file contents). A restored tree that does not
-      # match is discarded and reinstalled from the archive, so a planted entry costs time, never
-      # integrity. On a version bump, set FLUTTER_TREE_SHA256 to the digest a run prints.
+      # Flutter from Google's release storage, checksum-verified, no third-party action, on every
+      # run: the SDK is never cached, because a restored cache entry can write outside its path
+      # (OD-35). The version must match .fvmrc; the SHA-256 comes from Google's
+      # releases_linux.json for it.
       - name: Install Flutter
-        id: flutter-install
         working-directory: ${{ runner.temp }}
         env:
-          CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
           FVMRC: ${{ github.workspace }}/.fvmrc
         run: |
-          # System tools only: a restored cache entry could place look-alikes (sha256sum, find,
-          # tar) in a directory that comes earlier on the runner's PATH (OD-35).
+          # System tools only (OD-35).
           export PATH=/usr/sbin:/usr/bin:/sbin:/bin
-          tree_digest() {
-            ( cd "$1" && {
-              find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
-              find . -type f -print0 | xargs -0 -r -P4 -n256 sha256sum | LC_ALL=C sort -k2
-            } | sha256sum | cut -d' ' -f1 )
-          }
           # Only known keys: FVM honours flutterUrl/cachePath in .fvmrc, which could point
           # every developer's `fvm install` at another repository.
           jq -e 'keys - ["flutter","updateGitIgnore","updateVscodeSettings"] == []' "$FVMRC" > /dev/null \
@@ -389,37 +307,11 @@ jobs:
             echo "::error::.fvmrc pins Flutter $pinned but CI installs $FLUTTER_VERSION; update ci.yml"
             exit 1
           fi
-          sdk="${RUNNER_TEMP}/flutter"
-          save=false
-          # Checked whenever anything is at the path: a restore that failed half-way reports
-          # no cache hit but leaves its files behind.
-          if [ -e "$sdk" ]; then
-            restored="$(tree_digest "$sdk")"
-            if [ -n "$FLUTTER_TREE_SHA256" ] && [ "$restored" = "$FLUTTER_TREE_SHA256" ]; then
-              echo "Restored Flutter SDK matches the pinned tree digest"
-            else
-              echo "::warning::restored Flutter SDK does not match FLUTTER_TREE_SHA256 ($restored); reinstalling from the archive"
-              rm -rf "$sdk"
-            fi
-          fi
-          if [ ! -d "$sdk" ]; then
-            archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
-            curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
-            echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
-            tar -xJf "$archive" -C "$RUNNER_TEMP"
-            rm "$archive"
-            extracted="$(tree_digest "$sdk")"
-            echo "Flutter SDK tree digest: $extracted"
-            if [ -z "$FLUTTER_TREE_SHA256" ]; then
-              echo "::warning::FLUTTER_TREE_SHA256 is not set; the SDK is not cached. Pin: $extracted"
-            elif [ "$extracted" != "$FLUTTER_TREE_SHA256" ]; then
-              echo "::error::the verified archive extracts to tree digest $extracted, but ci.yml pins $FLUTTER_TREE_SHA256"
-              exit 1
-            elif [ "$CACHE_HIT" != true ]; then
-              save=true
-            fi
-          fi
-          echo "save=$save" >> "$GITHUB_OUTPUT"
+          archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+          curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+          echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm "$archive"
       - name: Set up Flutter
         working-directory: ${{ runner.temp }}
         run: |
@@ -434,8 +326,10 @@ jobs:
       # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
       # reuses an unpacked copy from the cache. The cache is filled by a plain
       # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
-      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
-      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
+      # runs. Accepted risk (OD-30, OD-35): code already running on main could pre-create an
+      # entry (for an unmerged lockfile, the next Flutter version, or after forcing an eviction),
+      # and because a restore extracts with `tar -P` such an entry could also write outside
+      # ~/.pub-cache, i.e. run code in the dart job, until its key changes.
       - name: Restore pub cache
         id: pub-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
