@@ -1,5 +1,6 @@
 # Spike 0.3-S1: offline sync scenario suite (Playwright + Toxiproxy + Testcontainers) per engine,
-# and the Flutter probe. Manual dispatch only; never part of PR CI. Kept for Phase A reuse.
+# the spike's server and web Vitest suites, and the Flutter probe. Manual dispatch only; never
+# part of PR CI. Kept for Phase A reuse.
 # Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
 name: s1-offline
 
@@ -7,9 +8,9 @@ on:
   workflow_dispatch:
     inputs:
       engine:
-        description: Sync engine to run the scenarios on
+        description: Sync engine to run the scenarios on (none = server and web tests only)
         type: choice
-        options: [outbox, powersync, both]
+        options: [outbox, powersync, both, none]
         default: both
       flutter:
         description: Also run the Flutter probe (its job arrives with slice 0.3-S1e)
@@ -19,6 +20,32 @@ on:
 permissions: {}
 
 jobs:
+  # Server (Testcontainers PostgreSQL through the @shifa/db harness) and web (fake IndexedDB)
+  # Vitest suites. They are `test:spike` scripts, not `test`, so `verify` and PR CI skip them
+  # (OD-31); typecheck and lint of these packages stay in `verify`. Runs on every dispatch.
+  unit:
+    name: server and web tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Server tests (PostgreSQL)
+        working-directory: spikes/s1-offline/server
+        run: pnpm run test:spike
+      - name: Web tests
+        working-directory: spikes/s1-offline/web
+        run: pnpm run test:spike
+
   scenarios:
     name: scenarios (${{ matrix.engine }})
     runs-on: ubuntu-24.04

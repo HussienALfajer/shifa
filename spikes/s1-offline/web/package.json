@@ -8,7 +8,7 @@
     "build": "vite build",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test:spike": "vitest run"
   },
   "dependencies": {
     "@journeyapps/wa-sqlite": "2.0.10",
