@@ -27,15 +27,19 @@ export function edgeConfig(httpPassword: string, edgeToken: string): object {
     StorageCompression: false,
     SaveJobs: true,
     JobsHistorySize: 100,
-    // Long enough for the cloud to commit a 1 GB push (review N5).
-    HttpTimeout: 1800,
+    // Room for the cloud to commit a large push (review N5), yet a request opened during a
+    // line drop fails within minutes so the job is retried: 1800 s left a job hanging 30 min.
+    // The 1 GB commit time is measured in 0.3-S4c.
+    HttpTimeout: 300,
     OrthancPeers: {
       cloud: {
         Url: 'http://link:8080/',
         HttpHeaders: { Authorization: `Bearer ${edgeToken}` },
       },
     },
-    Transfers: { MaxHttpRetries: 3, PeerConnectivityTimeout: 120 },
+    // 512 KB buckets, two at a time: on P1 (1 Mbit/s up) a 4 MB bucket, four in parallel, takes
+    // about two minutes and never arrives whole between line drops (0.3-S4b finding).
+    Transfers: { MaxHttpRetries: 3, PeerConnectivityTimeout: 120, BucketSize: 512, Threads: 2 },
     DicomWeb: { Enable: true, Root: '/dicom-web/', EnableWado: false },
   };
 }

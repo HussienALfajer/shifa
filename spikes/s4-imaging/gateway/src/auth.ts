@@ -20,8 +20,11 @@ export const MAX_TTL_SECONDS = 300;
 export const EDGE_MAX_TTL_SECONDS = 12 * 3600;
 export const CODE_MAX_TTL_SECONDS = 120;
 export const SESSION_TTL_SECONDS = 8 * 3600;
-/** `__Host-`: Secure, Path=/ and no Domain, so a sibling host cannot set it. */
-export const SESSION_COOKIE = '__Host-s4_viewer';
+/**
+ * Production: `__Host-s4_viewer` over TLS. Chromium refuses the `__Host-` prefix from the spike's
+ * plain-HTTP origin even when that origin is marked trustworthy, so the spike keeps a plain name.
+ */
+export const SESSION_COOKIE = 's4_viewer';
 const SKEW_SECONDS = 30;
 
 export type AuthResult = { ok: true; principal: Principal } | { ok: false; status: 401 | 403 };
