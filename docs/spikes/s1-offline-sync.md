@@ -1,6 +1,6 @@
 # Spike S1 result: offline sync engine — PowerSync vs custom outbox
 
-Status: Automated runs done (2026-11-16), Flutter probe (0.3-S1e) passed locally on both engines (Windows host); owner's manual run and the probe's CI dispatch pending · Spec: [0.3-S1](../specs/spikes/0.3-s1-offline-sync.md) · Slice: [0.3-S1](../slices/0.3-s1-offline-sync-spike.md) · Decision: [ADR-0031](../adr/0031-offline-sync-custom-outbox.md) (Proposed)
+Status: Automated runs done (2026-11-16), Flutter probe (0.3-S1e) passed on both engines locally (Windows host) and in CI ([run 43826128878](https://github.com/HussienALfajer/shifa/actions/runs/43826128878), 2026-11-16); owner's manual run deferred to Phase A (OD-37) · Spec: [0.3-S1](../specs/spikes/0.3-s1-offline-sync.md) · Slice: [0.3-S1](../slices/0.3-s1-offline-sync-spike.md) · Decision: [ADR-0031](../adr/0031-offline-sync-custom-outbox.md) (Accepted)
 
 ## Answer
 Both engines met every automated criterion on the reception scenarios with the same server command handler: no lost or duplicated command after two simulated hours offline, on a degraded link, across token expiry and across a browser restart. They differ in cost, not in correctness. The **custom outbox** is recommended for reception (web) and for the patient app (the Flutter probe, 0.3-S1e, passed on both engines with similar code size, so it does not change the choice): about one tenth of the web bundle, no extra service to run, and the database's row-level security stays the only tenant boundary. PowerSync would add a service with a replication role that bypasses RLS, so its sync-stream filters become a second tenant boundary to maintain. This is also the spec's default when the result is inconclusive.
@@ -27,7 +27,7 @@ Both engines met every automated criterion on the reception scenarios with the s
 | 8 | Banner: time offline and pending count → 0 | Pass | Pass | banner ≥ 1 h 57 min offline, pending back to 0 on both devices |
 | 9 | Token expires during the outage | Pass | Pass | `session-expiry.spec.ts`: 10 queued, 0 synced before re-login, 10 synced once after |
 | 10 | Tenant A never receives tenant B rows; forged commands refused and logged by id | Pass | Pass | `tenant-scoping.spec.ts` (local store and, for PowerSync, the raw sync stream read with A's token); `tenancy.test.ts` (log lines: tenant id, command id, code only) |
-| 11 | Flutter probe: cached reads offline, SQLCipher, offline cancel syncs once | Pass | Pass | [0.3-S1e](../slices/0.3-s1e-flutter-probe.md): `flutter_probe/test/` (4 tests per engine, `flutter test` on the Windows host against the scenario stack); CI dispatch on Linux pending |
+| 11 | Flutter probe: cached reads offline, SQLCipher, offline cancel syncs once | Pass | Pass | [0.3-S1e](../slices/0.3-s1e-flutter-probe.md): `flutter_probe/test/` (4 tests per engine, `flutter test` on the Windows host against the scenario stack); CI dispatch on Linux passed, 4/4 per engine ([run 43826128878](https://github.com/HussienALfajer/shifa/actions/runs/43826128878)) |
 | 12 | Owner's 2-hour manual run on two devices | Deferred | Deferred | owner, 2026-11-16 (OD-37): runs in Phase A on the real reception module, outbox only, before the first clinic pilot; [checklist](s1-manual-checklist.md) |
 | 13 | This report, ADR-0031 | Done (Accepted, owner 2026-11-16) | | reviewer and security-reviewer before the PR |
 
