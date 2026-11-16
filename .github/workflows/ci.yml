@@ -88,8 +88,10 @@ jobs:
       # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
       # reuses an unpacked copy from the cache. The cache is filled by a plain
       # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
-      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
-      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
+      # runs. Accepted risk (OD-30, OD-35): code already running on main could pre-create an
+      # entry (for an unmerged lockfile, the next Flutter version, or after forcing an eviction),
+      # and because a restore extracts with `tar -P` such an entry could also write outside
+      # ~/.pub-cache, i.e. run code in the dart job, until its key changes.
       - name: Look up pub cache
         id: pub-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
@@ -324,8 +326,10 @@ jobs:
       # pub checks a package's sha256 against pubspec.lock when it downloads it, not when it
       # reuses an unpacked copy from the cache. The cache is filled by a plain
       # `pub get --enforce-lockfile` on main (downloads verified) and saved before anything else
-      # runs. Accepted risk (OD-30): code already running on main could pre-create the entry
-      # for a lockfile that is not merged yet; such an entry lives only until the lockfile changes.
+      # runs. Accepted risk (OD-30, OD-35): code already running on main could pre-create an
+      # entry (for an unmerged lockfile, the next Flutter version, or after forcing an eviction),
+      # and because a restore extracts with `tar -P` such an entry could also write outside
+      # ~/.pub-cache, i.e. run code in the dart job, until its key changes.
       - name: Restore pub cache
         id: pub-cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

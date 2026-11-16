@@ -5,7 +5,7 @@
 // Turborepo cache.
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, it } from 'node:test';
 import { parse } from 'yaml';
@@ -177,23 +177,49 @@ describe('ci.yml caches (OD-30)', () => {
     }
   });
 
-  it('the Flutter SDK is never cached: both jobs download and verify it (OD-35)', () => {
-    for (const [id, job] of Object.entries(ci.jobs)) {
-      for (const step of job.steps ?? []) {
-        if (!/actions\/cache/.test(step.uses ?? '')) continue;
-        assert.equal(step.with.path, '~/.pub-cache', `${id}: caches ${step.with.path}`);
-        assert.match(step.with.key, /^ci-pub-/, `${id}: key ${step.with.key}`);
+  it('no workflow caches a Flutter SDK or uses a Flutter/Dart setup action (OD-35)', () => {
+    const dir = join(root, '.github', 'workflows');
+    for (const file of readdirSync(dir).filter((f) => /\.ya?ml$/.test(f))) {
+      const workflow = parse(readFileSync(join(dir, file), 'utf8'));
+      for (const [id, job] of Object.entries(workflow.jobs ?? {})) {
+        for (const step of job.steps ?? []) {
+          const where = `${file} ${id} "${step.name ?? step.uses}"`;
+          assert.ok(!/flutter|setup-dart/i.test(step.uses ?? ''), `${where}: Flutter action`);
+          if (/actions\/cache/.test(step.uses ?? '')) {
+            assert.equal(file, 'ci.yml', `${where}: cache outside ci.yml`);
+            assert.equal(step.with.path, '~/.pub-cache', `${where}: caches ${step.with.path}`);
+            assert.match(step.with.key, /^ci-pub-/, where);
+          } else if (!/actions\/setup-node@|pnpm\/action-setup@/.test(step.uses ?? '')) {
+            assert.equal(step.with?.cache, undefined, `${where}: cache input`);
+          }
+        }
       }
     }
+  });
+
+  it('both jobs download and verify Flutter the same way before restoring anything', () => {
     const script = (job) => stepNamed(job, 'Install Flutter').run;
     assert.equal(script('dart'), script('caches'));
-    assert.match(script('dart'), /sha256sum --check --strict/);
+    const lines = script('dart').split('\n');
+    const check = lines.indexOf(
+      'echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict',
+    );
+    const extract = lines.indexOf('tar -xJf "$archive" -C "$RUNNER_TEMP"');
+    assert.ok(check > 0 && extract > check, 'checksum before extraction');
     assert.match(script('dart'), /curl -fsSL -o "\$archive" "https:\/\/storage\.googleapis\.com\//);
+    assert.match(
+      script('dart'),
+      /jq -e 'keys - \["flutter","updateGitIgnore","updateVscodeSettings"\] == \[\]'/,
+    );
+    assert.match(script('dart'), /if \[ "\$pinned" != "\$FLUTTER_VERSION" \]; then/);
+    const setUp = (job) => stepNamed(job, 'Set up Flutter').run;
+    assert.equal(setUp('dart'), setUp('caches'));
+    assert.match(setUp('dart'), /if \[ "\$installed" != "\$FLUTTER_VERSION" \]; then/);
     assert.ok(/^[0-9a-f]{64}$/.test(ci.env.FLUTTER_SHA256));
     assert.equal(ci.env.FLUTTER_TREE_SHA256, undefined);
-    // In dart, Flutter is installed before anything is restored into the job.
-    const names = ci.jobs.dart.steps.map((s) => s.name);
-    assert.ok(names.indexOf('Install Flutter') < names.indexOf('Restore pub cache'));
+    const steps = ci.jobs.dart.steps;
+    const firstCache = steps.findIndex((s) => /actions\/cache/.test(s.uses ?? ''));
+    assert.ok(steps.findIndex((s) => s.name === 'Install Flutter') < firstCache);
   });
 
   it('the caches job runs no repository code', () => {
