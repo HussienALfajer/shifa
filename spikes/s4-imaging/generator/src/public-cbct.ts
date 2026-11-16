@@ -1,18 +1,23 @@
 // One public de-identified dental CBCT case (OD-44): Science Data Bank, DOI
 // 10.57760/sciencedb.26465, data licence CC BY 4.0. The DICOM comes in one 23.5 GB ZIP; the
 // server honours HTTP ranges, so only this case's entries are read (local header + data),
-// inflated and checked against the per-file SHA-256 pins in public-cbct.lock.json. Written to
+// inflated, checked against the per-file SHA-256 pins in public-cbct.lock.json, and their real
+// dates cleared (clearDates, owner decision 2026-11-16) before they are written to
 // the git-ignored .cache/s4/public-cbct/, never committed.
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { inflateRawSync } from 'node:zlib';
+import { clearDates } from './deidentify.ts';
 import { cacheDir } from './paths.ts';
 
 export interface PublicCbctFile {
   /** Path inside the case folder. */
   path: string;
+  /** SHA-256 of the entry as published (checked before anything is changed). */
+  sourceSha256: string;
+  /** SHA-256 of the file as written to the cache, after clearDates(). */
   sha256: string;
   bytes: number;
   /** Offset of the entry's local header in the ZIP. */
@@ -131,8 +136,10 @@ export async function fetchPublicCbct(options: { outDir?: string } = {}): Promis
   if (missing.length > 0) {
     const bytes = await entries(lock.url, missing, lock.zipBytes);
     for (const [i, file] of missing.entries()) {
-      const data = bytes[i] ?? Buffer.alloc(0);
-      if (sha256(data) !== file.sha256) throw new Error(`SHA-256 mismatch: ${file.path}`);
+      const source = bytes[i] ?? Buffer.alloc(0);
+      if (sha256(source) !== file.sourceSha256) throw new Error(`SHA-256 mismatch: ${file.path}`);
+      const data = clearDates(source);
+      if (sha256(data) !== file.sha256) throw new Error(`cleared SHA-256 mismatch: ${file.path}`);
       const target = join(dir, file.path);
       await mkdir(dirname(target), { recursive: true });
       await writeFile(target, data);
@@ -189,6 +196,7 @@ export async function pinPublicCbct(options: {
     if (name.startsWith(options.casePrefix) && !name.endsWith('/')) {
       files.push({
         path: safe(name.slice(options.casePrefix.length)),
+        sourceSha256: '',
         sha256: '',
         bytes: size,
         zipOffset: offset,
@@ -208,7 +216,9 @@ export async function pinPublicCbct(options: {
   if (span > compressedTotal * 1.1) throw new Error('the case is not contiguous in the ZIP');
   const all = await entries(options.url, files, zipBytes);
   for (const [i, file] of files.entries()) {
-    const bytes = all[i] ?? Buffer.alloc(0);
+    const source = all[i] ?? Buffer.alloc(0);
+    file.sourceSha256 = sha256(source);
+    const bytes = clearDates(source);
     file.sha256 = sha256(bytes);
     const target = join(dir, file.path);
     await mkdir(dirname(target), { recursive: true });

@@ -7,7 +7,7 @@ const URL_ZIP =
   'https://download.scidb.cn/download?fileId=8e263f7b3391e011251970d5a86c8e2a&dataSetType=personal&fileName=Dataset_repaired.zip';
 const CASE = 'Dataset/annotated/image/Newtom/N09/';
 const ATTRIBUTION =
-  "Lan Feng, Zhi Li, Qihang Gu, Yaqi Wang, Xiaoyang Yu. Adults' dental cone beam computed tomography images dataset for detecting and classifying missing teeth. V2. Science Data Bank, 2026. https://doi.org/10.57760/sciencedb.26465. Licensed CC BY 4.0. One case (NewTom N09) used unmodified as test data.";
+  "Lan Feng, Zhi Li, Qihang Gu, Yaqi Wang, Xiaoyang Yu. Adults' dental cone beam computed tomography images dataset for detecting and classifying missing teeth. V2. Science Data Bank, 2026. https://doi.org/10.57760/sciencedb.26465. Licensed CC BY 4.0. One case (NewTom N09) used as test data; its study, series, acquisition and content dates are replaced with 19000101, nothing else is changed.";
 
 if (process.argv.includes('--pin')) {
   const lock = await pinPublicCbct({
