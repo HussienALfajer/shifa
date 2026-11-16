@@ -62,7 +62,7 @@ Related: [voice calling](voice-calling.md) · [patient app](patient-app.md) · [
   - call patients through the local display (see [voice calling](voice-calling.md)).
 - SCH-32 Changes made offline are queued as idempotent commands and synced when the connection returns. Conflicts follow domain rules: the server's number sequence wins and provisional numbers are remapped visibly; payments are never dropped. Each conflict is shown to staff.
 - SCH-33 The offline banner shows how long the device has been offline and how many changes are pending.
-- SCH-34 The sync engine (PowerSync versus a custom outbox) will be chosen after the Phase 0 spike (OD-05).
+- SCH-34 Offline sync uses a custom outbox: commands with client idempotency keys in a local queue, one command endpoint, snapshot plus changes pulled through `withTenant()` ([ADR-0031](../adr/0031-offline-sync-custom-outbox.md), chosen by spike S1; OD-05 closed).
 
 ## Key entities
 
