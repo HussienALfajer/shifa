@@ -15,5 +15,11 @@ allowBuilds:
   protobufjs: false
   ssh2: false
 
+# dcmjs (0.3-S4 generator) declares adm-zip 0.5.17, which has high advisories (GHSA-xcpc-8h2w-3j85,
+# GHSA-7q85-xj36-vmfc, GHSA-rcw4-f5rp-g42v: memory exhaustion on crafted ZIPs). The generator
+# never reads a ZIP through dcmjs; force the fixed release.
+overrides:
+  adm-zip: 0.6.1
+
 # Supply-chain guard: never install a version published less than 24 hours ago.
 minimumReleaseAge: 1440
