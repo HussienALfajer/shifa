@@ -234,10 +234,26 @@ test('a patient token downloads no other patient or tenant rows', async () => {
   for (const id of own) expect(pulled, 'the patient pulls their own rows').toContain(id);
   for (const id of others) expect(pulled, 'no other patient or tenant row').not.toContain(id);
 
+  expect(pulled, 'a patient never sees which device issued a row').not.toContain('patient-seed');
+
   if (process.env['S1_ENGINE'] === 'powersync') {
     const stream = await readStream(patientToken, 'patient-a1');
     expect(stream.status).toBe(200);
     for (const id of own) expect(stream.text, 'the stream sends own rows').toContain(id);
     for (const id of others) expect(stream.text, 'the stream sends nothing else').not.toContain(id);
+
+    // Login lets a client name any device id: naming the seeding (reception) device must not
+    // stream that device's command results to a patient (security review M1).
+    const spoof = await fetch(`${server()}/auth/patient-login`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ patientId: a1?.id, deviceId: 'patient-seed' }),
+    });
+    const spoofToken = ((await spoof.json()) as { token: string }).token;
+    const spoofed = await readStream(spoofToken, 'patient-seed');
+    expect(spoofed.status).toBe(200);
+    expect(spoofed.text, 'no command results of another principal').not.toContain(
+      'offline_command',
+    );
   }
 });

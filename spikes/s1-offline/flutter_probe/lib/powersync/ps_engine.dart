@@ -6,7 +6,6 @@
 // `offline_command` row of this device.
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
 
 import 'package:drift/drift.dart' show TableUpdate;
 import 'package:drift_sqlite_async/drift_sqlite_async.dart';
@@ -174,15 +173,14 @@ class PsEngine implements ProbeEngine {
 
   @override
   Future<void> logout() async {
+    // The key goes first: without it the files are unreadable even if a
+    // delete below fails (a file still open on Windows, for example).
+    await config.keys.delete();
     try {
       await _db?.disconnectAndClear();
       await close();
     } finally {
-      for (final suffix in ['', '-wal', '-shm', '-journal']) {
-        final file = File('$databasePath$suffix');
-        if (file.existsSync()) await file.delete();
-      }
-      await config.keys.delete();
+      await deleteDatabaseFiles(databasePath);
     }
   }
 }

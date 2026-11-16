@@ -52,8 +52,8 @@ async function store(
   result: CommandResult,
 ): Promise<void> {
   await tx.execute(
-    sql`insert into s1.offline_command (id, branch_id, device_id, type, result, client_time)
-        values (${command.id}, ${principal.branchId}, ${command.deviceId}, ${command.type},
+    sql`insert into s1.offline_command (id, branch_id, device_id, user_id, type, result, client_time)
+        values (${command.id}, ${principal.branchId}, ${command.deviceId}, ${principal.sub}, ${command.type},
                 ${JSON.stringify(result)}::jsonb, ${command.clientTime}::timestamptz)`,
   );
 }

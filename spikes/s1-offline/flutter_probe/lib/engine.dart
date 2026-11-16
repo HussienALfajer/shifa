@@ -1,6 +1,7 @@
 // The probe's engine interface: what the patient screen and the tests need from either sync
 // engine (custom outbox or PowerSync). Rows are synthetic; nothing here is ever logged.
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:s1_flutter_probe/key_store.dart';
@@ -84,6 +85,20 @@ abstract interface class ProbeEngine {
 
   /// Closes, deletes the database files and deletes the key.
   Future<void> logout();
+}
+
+/// Deletes a database file and its journal companions (each one tried).
+Future<void> deleteDatabaseFiles(String path) async {
+  Object? failure;
+  for (final suffix in ['', '-wal', '-shm', '-journal']) {
+    try {
+      final file = File('$path$suffix');
+      if (file.existsSync()) await file.delete();
+    } on Object catch (e) {
+      failure ??= e;
+    }
+  }
+  if (failure != null) throw StateError('database files left: $failure');
 }
 
 /// Engine names accepted by [createEngine] (stubs exist for the red proof only).

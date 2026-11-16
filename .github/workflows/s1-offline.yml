@@ -163,6 +163,11 @@ jobs:
         if: steps.pick.outputs.run == 'true'
         working-directory: spikes/s1-offline/flutter_probe
         run: node ../../../scripts/dart.mjs flutter pub get --enforce-lockfile
+      # The probe is outside the pub workspace, so verify does not analyze it.
+      - name: Analyze the probe
+        if: steps.pick.outputs.run == 'true'
+        working-directory: spikes/s1-offline/flutter_probe
+        run: node ../../../scripts/dart.mjs dart analyze --fatal-infos
       - name: Run the Flutter probe
         if: steps.pick.outputs.run == 'true'
         working-directory: spikes/s1-offline/scenarios

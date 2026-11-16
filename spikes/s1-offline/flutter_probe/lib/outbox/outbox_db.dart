@@ -34,7 +34,14 @@ class OutboxDb extends ProbeDriftDb {
     NativeDatabase(
       file,
       setup: (db) {
-        if (passphrase != null) db.execute(pragmaKey(passphrase));
+        if (passphrase != null) {
+          // Plain SQLite ignores `PRAGMA key` and would write plain text:
+          // refuse to open unless the library is SQLCipher.
+          if (db.select('PRAGMA cipher_version').isEmpty) {
+            throw StateError('SQLCipher is not linked');
+          }
+          db.execute(pragmaKey(passphrase));
+        }
         db
           ..select('SELECT count(*) FROM sqlite_master')
           ..execute('PRAGMA journal_mode = WAL');

@@ -278,15 +278,14 @@ class OutboxEngine implements ProbeEngine {
 
   @override
   Future<void> logout() async {
+    // The key goes first: without it the files are unreadable even if a
+    // delete below fails (a file still open on Windows, for example).
+    await config.keys.delete();
+    _token = null;
     try {
       await close();
     } finally {
-      for (final suffix in ['', '-wal', '-shm', '-journal']) {
-        final file = File('$databasePath$suffix');
-        if (file.existsSync()) await file.delete();
-      }
-      await config.keys.delete();
-      _token = null;
+      await deleteDatabaseFiles(databasePath);
     }
   }
 }

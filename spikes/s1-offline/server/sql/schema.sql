@@ -103,6 +103,8 @@ CREATE TABLE IF NOT EXISTS s1.offline_command (
   id uuid NOT NULL,
   branch_id uuid NOT NULL,
   device_id text NOT NULL,
+  -- The principal that sent the command (token `sub`): PowerSync streams results to it only.
+  user_id text NOT NULL,
   type text NOT NULL,
   result jsonb NOT NULL,
   client_time timestamptz,

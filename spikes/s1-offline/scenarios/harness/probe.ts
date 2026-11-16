@@ -3,7 +3,8 @@
 // ticket, plus another patient's appointment and ticket that must never reach the device), runs
 // `flutter test` in ../flutter_probe against it and always stops the stack.
 //   ENGINE=outbox|powersync pnpm --filter @shifa-spike/s1-scenarios probe
-// Prints counts only; never tokens, ids or row values.
+// Its own output and the summary file are counts only; Flutter's console reporter prints
+// synthetic ids and labels when an assertion fails.
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';

@@ -78,8 +78,11 @@ class _ProbeScreenState extends State<ProbeScreen> {
 
   Future<void> _logout() async {
     _poll?.cancel();
-    await widget.engine.logout();
-    await widget.tokens.delete();
+    try {
+      await widget.engine.logout();
+    } finally {
+      await widget.tokens.delete();
+    }
     if (mounted) setState(() => _opened = false);
   }
 

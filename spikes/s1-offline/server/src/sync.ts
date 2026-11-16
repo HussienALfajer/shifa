@@ -45,7 +45,8 @@ export async function pullRows(tx: Tx, p: Principal, cursor: string | undefined)
   );
   const queue_ticket = await rowsOf(
     tx,
-    sql`select id, practitioner_id, shift_date::text as shift_date, provisional_number, device_id,
+    sql`select id, practitioner_id, shift_date::text as shift_date, provisional_number,
+               ${patient ? sql`null` : sql`device_id`} as device_id,
                real_number, status, walk_in_label, updated_at
           from s1.queue_ticket
          where branch_id = ${p.branchId} and shift_date = ${today} ${mine} ${since}
