@@ -102,6 +102,11 @@ jobs:
       - name: Search bench
         if: always()
         working-directory: spikes/s3-arabic-output/search
+        # The one-tenant scenario scans 50,000 rows per query (OD-42): 300 queries keep the job
+        # inside its timeout; the local run used the same numbers.
+        env:
+          BENCH_SEARCH_WARMUP: "30"
+          BENCH_SEARCH_ITERATIONS: "300"
         run: pnpm run bench:search
       - name: Upload .verify/s3
         if: always()

@@ -8,7 +8,11 @@ export default defineConfig({
       {
         test: {
           name: 's3-normaliser',
-          include: ['test/vectors.test.ts', 'test/parity-vectors.test.ts'],
+          include: [
+            'test/vectors.test.ts',
+            'test/parity-vectors.test.ts',
+            'test/od40-merges.test.ts',
+          ],
         },
       },
       dbTestProject({

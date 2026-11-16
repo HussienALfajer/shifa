@@ -93,7 +93,11 @@ export interface ReceiptTotals {
   rate: { currency: Currency; perUsd: number };
 }
 
-/** Fixed display figures for the BIL-30 lines; not computed by any money rule. */
+/**
+ * Fixed display figures for the BIL-30 lines, for layout only: they are not computed by any
+ * money rule and do not add up (tender, change and balance). Phase A replaces them with real
+ * billing output before the goldens are reused.
+ */
 export function receiptTotals(lines: readonly ReceiptLine[]): ReceiptTotals {
   const totalMinor = sum(lines);
   return {
