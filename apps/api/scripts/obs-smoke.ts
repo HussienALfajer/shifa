@@ -11,7 +11,7 @@
 // One line per check; exit code 1 on any miss or leak.
 import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
-import { acquireDbTestLock, startHarnessContainer } from '@shifa/db/harness';
+import { acquireAllDbTestSlots, startHarnessContainer } from '@shifa/db/harness';
 import {
   freePort,
   INSTRUMENT,
@@ -198,7 +198,9 @@ async function main(): Promise<boolean> {
   for (const file of [MAIN, INSTRUMENT]) {
     if (!existsSync(file)) throw new SmokeError(`${file} is missing; run the build first`);
   }
-  const release = await acquireDbTestLock();
+  // Every slot, so no other smoke of this worktree runs at once: the Prometheus check matches
+  // the route's metric, not this run's trace id.
+  const release = await acquireAllDbTestSlots();
   try {
     const harness = await startHarnessContainer();
     try {

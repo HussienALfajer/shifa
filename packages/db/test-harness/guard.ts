@@ -2,7 +2,7 @@
 // it created there. It never reads DATABASE_URL or any other URL from the environment.
 import { mkdirSync } from 'node:fs';
 import { dirname, join } from 'node:path';
-import { acquireLock, LockBusyError } from '../../../scripts/lib/lock.mjs';
+import { acquireLock, acquireSlot, LockBusyError } from '../../../scripts/lib/lock.mjs';
 
 export class UnsafeDatabaseError extends Error {
   override name = 'UnsafeDatabaseError';
@@ -80,21 +80,34 @@ const HELD = Symbol.for('shifa.db.testLock');
 const DEFAULT_LOCK = join(import.meta.dirname, '..', '..', '..', '.verify', 'db-test.lock');
 
 /**
- * One DB test run per worktree at a time. Waits up to `waitMs` (default 5 min) for another run,
- * then fails with a clear message. Locks of dead processes are reclaimed.
+ * DB test processes of one worktree that may run at once (OD-33). A slot is one process (a Vitest
+ * run, the API boot check, a script); it starts one PostgreSQL + PgBouncer set per database
+ * project (`@shifa/api` has two), each on a new network with random passwords and Docker-assigned
+ * ports, and assertTestTarget admits only that run's own addresses, so runs never share a server
+ * or a database; the limit only caps the Docker load. Inside `verify full` only the `@shifa/db`
+ * and `@shifa/api` test processes overlap (boot waits for build, which waits for the tests).
+ */
+export const DB_TEST_SLOTS = 3;
+
+/**
+ * Takes one of `slots` DB test slots of this worktree (lock files `<file>.0` …). Waits up to
+ * `waitMs` (default 5 min) while every slot is held, then fails with a clear message. Locks of
+ * dead processes are reclaimed.
  */
 export async function acquireDbTestLock({
   file = DEFAULT_LOCK,
+  slots = DB_TEST_SLOTS,
   waitMs = 5 * 60_000,
   pollMs = 1000,
 }: {
   file?: string;
+  slots?: number;
   waitMs?: number;
   pollMs?: number;
 } = {}): Promise<() => void> {
-  // Several DB projects in one Vitest process each run globalSetup: share this process's hold
-  // instead of waiting for ourselves. Kept on globalThis because each project may load its own
-  // copy of this module.
+  // Several DB projects in one Vitest process each run globalSetup: share this process's slot
+  // instead of taking more. Kept on globalThis because each project may load its own copy of
+  // this module.
   const registry = ((globalThis as Record<symbol, unknown>)[HELD] ??= new Map()) as Map<
     string,
     { count: number; release: () => void }
@@ -118,16 +131,57 @@ export async function acquireDbTestLock({
   }
   mkdirSync(dirname(file), { recursive: true });
   try {
-    const held = { count: 1, release: await acquireLock(file, { waitMs, pollMs }) };
+    const held = { count: 1, release: await acquireSlot(file, { slots, waitMs, pollMs }) };
     registry.set(file, held);
     return releaseShared(held);
   } catch (err) {
     if (!(err instanceof LockBusyError)) throw err;
     const holder = err.pid === null ? 'a starting process' : `pid ${String(err.pid)}`;
     throw new Error(
-      `Another database test run (${holder}) holds ${file}; waited ${String(Math.round(waitMs / 1000))} s. ` +
-        'Let it finish, or delete the lock file if that process is gone.',
+      `Another database test run (${holder}) holds a slot, and all ${String(slots)} slots ` +
+        `(${file}.<n>) are taken; waited ${String(Math.round(waitMs / 1000))} s. ` +
+        'Let a run finish, or delete the slot files of processes that are gone.',
       { cause: err },
     );
   }
+}
+
+/**
+ * Takes every DB test slot of this worktree, in slot order (two such callers cannot deadlock),
+ * for scripts that must run alone as they did under the single lock: the RLS bench (other runs
+ * would skew its timings) and the observability smoke (its metric check cannot tell two runs
+ * apart). Waits up to `waitMs` in total; on failure it releases what it took.
+ */
+export async function acquireAllDbTestSlots({
+  file = DEFAULT_LOCK,
+  slots = DB_TEST_SLOTS,
+  waitMs = 5 * 60_000,
+  pollMs = 1000,
+}: {
+  file?: string;
+  slots?: number;
+  waitMs?: number;
+  pollMs?: number;
+} = {}): Promise<() => void> {
+  mkdirSync(dirname(file), { recursive: true });
+  const deadline = Date.now() + waitMs;
+  const releases: (() => void)[] = [];
+  const releaseAll = () => {
+    for (const release of releases.splice(0).reverse()) release();
+  };
+  try {
+    for (let i = 0; i < slots; i += 1) {
+      const left = Math.max(0, deadline - Date.now());
+      releases.push(await acquireLock(`${file}.${String(i)}`, { waitMs: left, pollMs }));
+    }
+  } catch (err) {
+    releaseAll();
+    if (!(err instanceof LockBusyError)) throw err;
+    throw new Error(
+      `A database test run holds a slot of ${file}.<n>; this script runs alone and waited ` +
+        `${String(Math.round(waitMs / 1000))} s. Let the other runs finish.`,
+      { cause: err },
+    );
+  }
+  return releaseAll;
 }

@@ -1,5 +1,5 @@
 // The RLS bench (spec 0.3-S2 criterion 11, report only, no threshold). Run by
-// `pnpm --filter @shifa/db bench:rls`; needs Docker. Under the DB test lock it starts its own
+// `pnpm --filter @shifa/db bench:rls`; needs Docker. Holding every DB test slot it starts its own
 // harness (PostgreSQL + PgBouncer), clones the template into BENCH_DATABASE, fills the plan probe
 // with the `load` preset's volume, and times the same rows through PgBouncer:
 //   (a) as shifa_app, under RLS, with the application query that names no tenant (the policy
@@ -16,7 +16,7 @@ import { performance } from 'node:perf_hooks';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { type ClientBase, Pool } from 'pg';
 import {
-  acquireDbTestLock,
+  acquireAllDbTestSlots,
   type HarnessContainer,
   startHarnessContainer,
 } from '../test-harness/container.ts';
@@ -206,7 +206,8 @@ async function measure(container: HarnessContainer, bypassPassword: string): Pro
 }
 
 async function main(): Promise<void> {
-  const release = await acquireDbTestLock();
+  // Every slot: other DB test runs of this worktree would skew the timings.
+  const release = await acquireAllDbTestSlots();
   let container: HarnessContainer | undefined;
   try {
     const bypassPassword = randomBytes(16).toString('hex');

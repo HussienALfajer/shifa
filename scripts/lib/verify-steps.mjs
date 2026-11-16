@@ -15,13 +15,14 @@
 //   - drift waits for pub-get: in full mode the Dart client check resolves offline from the pub
 //     cache that pub-get fills, so the cache must be complete first.
 //   - typecheck+lint+test requires pub-get (below) and runs next to drift: drift generates into
-//     temp directories and node_modules/.cache only, and the DB tests serialise on
-//     .verify/db-test.lock themselves. Its `dart test`/`dart analyze` read the same pub cache as
-//     drift's offline `pub get` and build_runner; pub writes that cache atomically, and a clash
+//     temp directories and node_modules/.cache only, and each DB test run takes one of a few
+//     slots (.verify/db-test.lock.<n>) with containers of its own. Its `dart test` and
+//     `dart analyze` read the same pub cache as drift's offline `pub get` and build_runner;
+//     pub writes that cache atomically, and a clash
 //     would crash drift (exit 2), never pass it. If it ever flakes, make drift wait for it too.
 //   - build waits for typecheck+lint+test: two Turborepo runs at once would share .turbo/ and
-//     its daemon, and build rewrites dist/ under running tests. boot requires build and takes the
-//     DB test lock like the DB tests.
+//     its daemon, and build rewrites dist/ under running tests. boot requires build and takes a
+//     DB test slot like the DB tests.
 
 /**
  * @typedef {{ name: string, cmd: string, args: string[], docs?: boolean, full?: boolean,

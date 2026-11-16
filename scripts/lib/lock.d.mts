@@ -8,3 +8,8 @@ export declare function acquireLock(
   file: string,
   options?: { waitMs?: number; pollMs?: number },
 ): Promise<() => void>;
+
+export declare function acquireSlot(
+  base: string,
+  options: { slots: number; waitMs?: number; pollMs?: number },
+): Promise<() => void>;

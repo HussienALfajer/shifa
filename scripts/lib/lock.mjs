@@ -1,5 +1,6 @@
-// Advisory lock file shared by `verify` (.verify/lock) and the DB test harness
-// (.verify/db-test.lock). The file holds the owner's pid and is created atomically ('wx').
+// Advisory lock files: `verify` holds one (.verify/lock); the DB test harness takes one of a few
+// slots (.verify/db-test.lock.<n>, acquireSlot). A file holds the owner's pid and is created
+// atomically ('wx').
 // A lock of a dead process, or an empty/garbage lock older than a few seconds (a run killed while
 // writing it), is removed and the create retried.
 
@@ -71,6 +72,39 @@ export async function acquireLock(file, { waitMs = 0, pollMs = 500 } = {}) {
     if (Date.now() >= deadline) throw busy;
     await sleep(Math.min(pollMs, Math.max(1, deadline - Date.now())));
   }
+  return releaser(file);
+}
+
+/**
+ * A counting semaphore: `slots` lock files `<base>.0` … `<base>.<slots - 1>`, each taken like
+ * acquireLock (pid, atomic create, stale locks reclaimed). Takes the first free slot, polling for
+ * up to `waitMs` while every slot is held by a live process. When several processes reclaim the
+ * same dead slot at once, two can end up running on it, so the limit is a load cap, never a
+ * guarantee (the DB harness relies on it for nothing else).
+ * @param {string} base
+ * @param {{ slots: number, waitMs?: number, pollMs?: number }} options
+ * @returns {Promise<() => void>} release; removes the slot file only if this process still owns it
+ * @throws {LockBusyError} when every slot is still held after `waitMs` (pid of the first holder)
+ */
+export async function acquireSlot(base, { slots, waitMs = 0, pollMs = 500 }) {
+  if (!Number.isInteger(slots) || slots < 1) {
+    throw new RangeError(`slots must be a positive integer, got ${slots}`);
+  }
+  const deadline = Date.now() + waitMs;
+  for (;;) {
+    let busy = null;
+    for (let i = 0; i < slots; i += 1) {
+      const file = `${base}.${i}`;
+      const err = tryOnce(file);
+      if (!err) return releaser(file);
+      busy ??= err;
+    }
+    if (Date.now() >= deadline) throw busy;
+    await sleep(Math.min(pollMs, Math.max(1, deadline - Date.now())));
+  }
+}
+
+function releaser(file) {
   return () => {
     try {
       if (readFileSync(file, 'utf8').trim() === String(process.pid)) rmSync(file, { force: true });
