@@ -1,0 +1,36 @@
+{
+  "name": "@shifa-spike/s3-output",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run",
+    "goldens:update": "node scripts/goldens-update.ts",
+    "fonts:sheet": "node scripts/font-sheet.ts",
+    "bench:render": "node scripts/bench-render.ts"
+  },
+  "dependencies": {
+    "@fontsource/amiri": "5.3.0",
+    "@fontsource/cairo": "5.3.0",
+    "@fontsource/noto-naskh-arabic": "5.3.0",
+    "@fontsource/vazirmatn": "5.3.0",
+    "@shifa/testing": "workspace:*",
+    "pixelmatch": "8.0.0",
+    "pngjs": "7.0.0",
+    "qrcode": "1.5.4",
+    "testcontainers": "12.2.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/pngjs": "6.0.5",
+    "@types/qrcode": "1.5.6",
+    "eslint": "10.14.0",
+    "playwright": "1.65.1",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

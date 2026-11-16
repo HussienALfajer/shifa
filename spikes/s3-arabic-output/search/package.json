@@ -1,0 +1,30 @@
+{
+  "name": "@shifa-spike/s3-search",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/normalise.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run",
+    "bench:search": "vitest run --config vitest.bench.config.ts"
+  },
+  "dependencies": {
+    "@shifa/db": "workspace:*",
+    "@shifa/testing": "workspace:*",
+    "drizzle-orm": "1.0.0-rc.5",
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

@@ -1,0 +1,18 @@
+# Dart port of the spike 0.3-S3 Arabic name normaliser (criteria 7–8). Standalone: not in the
+# root pub workspace, no package.json (verify does not run it; the manual s3-arabic-output
+# workflow does). Run: node ../../../scripts/dart.mjs dart test
+name: s3_normaliser
+description: Throwaway Dart port of the Arabic name-search normaliser (synthetic data only).
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  # Dart core has no Unicode normalisation; NFC comes from this pure-Dart port of unorm.
+  unorm_dart: 0.3.3
+
+dev_dependencies:
+  test: 1.33.0
+  very_good_analysis: 11.0.0
