@@ -39,6 +39,8 @@ async function settle<T>(attempt: () => Promise<Response>): Promise<T> {
 }
 
 /** Hex digest → base64 (hash-wasm: WebCrypto needs a secure context, the spike is plain HTTP). */
+const MAX_FAILURES = 12;
+
 const b64 = (hex: string) =>
   btoa(String.fromCharCode(...(hex.match(/../g) ?? []).map((h) => Number.parseInt(h, 16))));
 
@@ -65,6 +67,8 @@ export async function uploadChunked(items: Item[], chunkOverride: number | null)
     /** The server's offset as last reported: acknowledged bytes are its increase. */
     let known = entry.received;
     let state: SessionFile['state'] = entry.state;
+    /** Failed PUTs in a row: backed off, and the upload gives up after too many. */
+    let failures = 0;
     while (state === 'pending') {
       if (offset >= item.size) {
         // Complete on the server but not stored yet (a STOW failed): send the last chunk again.
@@ -89,6 +93,7 @@ export async function uploadChunked(items: Item[], chunkOverride: number | null)
         res = null;
       }
       if (res?.status === 200) {
+        failures = 0;
         const answer = (await res.json()) as { received: number; state: SessionFile['state'] };
         stats.ackedBytes += Math.max(0, answer.received - known);
         known = Math.max(known, answer.received);
@@ -96,6 +101,11 @@ export async function uploadChunked(items: Item[], chunkOverride: number | null)
         state = answer.state;
       } else {
         interrupted(item.path);
+        failures += 1;
+        // A dropped line recovers in `settle`; an answer that keeps failing (Orthanc down, a
+        // file changed after the manifest) must not loop at full speed or forever.
+        if (failures > MAX_FAILURES) throw new Error('upload keeps failing');
+        if (res) await backoff(Math.min(failures, 6));
         // Ask the server where this file stands before sending anything again.
         const now = await settle<Session>(() => call(`/uploads/${session.uploadId}`));
         const current = now.files[entry.index];

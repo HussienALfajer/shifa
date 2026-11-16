@@ -149,6 +149,8 @@ async function dicomweb(ctx: Context, req: FastifyRequest, reply: FastifyReply) 
   }
 
   ctx.finish(reply, status, match.route.routeClass, principal.tenant, start);
+  // Patient data must not stay in a shared clinic PC's browser cache (security review M3).
+  reply.header('cache-control', 'no-store').header('x-content-type-options', 'nosniff');
   if (status === 204) return reply.code(204).send();
   if (!upstreamRes || status >= 400) {
     await upstreamRes?.body.dump();

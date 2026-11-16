@@ -335,6 +335,9 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
         ...[...masterKeys.values()].flatMap((k) => [k.toString('base64'), k.toString('hex')]),
         ...garage.secrets,
         edgePassword,
+        // The Basic credentials as they travel in headers (security review B1).
+        ...Object.values(upstreams).map((u) => u.authorization.slice('Basic '.length)),
+        Buffer.from(`gateway:${edgePassword}`).toString('base64'),
         tokenKey.toString('base64'),
         tokenKey.toString('hex'),
       ],

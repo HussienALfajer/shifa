@@ -78,13 +78,16 @@ export async function createLink(options: {
       if (cutting) cutInterrupted = true;
       log('profile', cutInterrupted ? `${profile} (ended a cut)` : profile);
     },
-    cut: async (seconds) => {
+    cut: async (seconds, options = {}) => {
       if (cutting) throw new Error('a cut is already running');
       cutting = true;
       cutInterrupted = false;
       try {
+        // A dropped line (a re-dial) also ends every open connection; a plain cut only stalls.
+        // Reset first, so the resets still reach the clients before every packet is dropped.
+        if (options.drop) await link.reset();
         await apply(current, true);
-        log('cut-start', `${String(seconds)} s`);
+        log('cut-start', `${String(seconds)} s${options.drop ? ', connections dropped' : ''}`);
         await new Promise((resolve) => setTimeout(resolve, seconds * 1000));
         if (wasInterrupted()) {
           log('cut-end', 'interrupted by a profile change');
@@ -110,7 +113,7 @@ export async function createLink(options: {
           if (stopped) return;
           // A failed cut (container gone at teardown) ends the schedule instead of rejecting.
           running = link
-            .cut(cutSeconds)
+            .cut(cutSeconds, { drop: true })
             .then(() => {
               if (!stopped) next((everySeconds - cutSeconds) * 1000);
             })

@@ -31,6 +31,9 @@ export function registerTransfers(app: FastifyInstance, ctx: Context): void {
       if ((id !== undefined && !TX.test(id)) || (n !== undefined && !BUCKET.test(n))) {
         return ctx.refuse(reply, 404, start);
       }
+      // A commit stores the whole study in Orthanc and a bucket may wait on a slow line: no
+      // idle timeout on these requests (review N5).
+      req.raw.socket.setTimeout(0);
       const auth = await ctx.bearer(req, reply, ['edge'], start);
       if (!auth.ok) return reply;
       const { tenant, actor } = auth.principal;

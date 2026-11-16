@@ -89,14 +89,17 @@ export interface Link {
   container: string;
   /** Applies a profile (or removes shaping with 'none'). */
   applyProfile(profile: ProfileName | 'none'): Promise<void>;
-  /** 100 % loss in both directions for `seconds`, then the profile again. */
-  cut(seconds: number): Promise<void>;
+  /**
+   * 100 % loss in both directions for `seconds`, then the profile again. With `drop`, open
+   * connections through the link die at the start too (a line drop, not a stall).
+   */
+  cut(seconds: number, options?: { drop?: boolean }): Promise<void>;
   /** Restarts HAProxy: every connection through the link dies. */
   reset(): Promise<void>;
   counters(): Promise<LinkCounters>;
   /**
-   * P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`. Returns a stop
-   * that waits for a cut in progress to end.
+   * P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`, each a line drop
+   * (open connections die; 0.3-S4b review). Returns a stop that waits for a cut to end.
    */
   schedule(options: {
     everySeconds: number;

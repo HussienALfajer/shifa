@@ -63,6 +63,8 @@ describe('STOW-RS per instance on P1', () => {
       await stack.link.applyProfile('none');
       const cloud = await cloudStudy(stack, 'a', manifest.studyInstanceUid);
       await stack.link.applyProfile('P1');
+      // The cuts drop the line: at least one request was interrupted (owner decision).
+      expect(sum.interrupted.length).toBeGreaterThan(0);
       if (mustFinish) {
         expect(outcome).toBe('done');
         expect(cloud).toEqual(new Map(manifest.files.map((f) => [f.sopInstanceUid, f.sha256])));

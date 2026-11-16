@@ -51,8 +51,11 @@ const edgeTemplate = (authorization: string) => `server {
   gzip_proxied expired no-cache no-store private auth;
   gunzip       on;
   listen \${PORT} default_server;
-  location /dicomweb/ {
-    proxy_pass http://edge-orthanc:8042/dicom-web/;
+  # Study reads only: the credential is the edge Orthanc's only user (security review M1).
+  location ~ ^/dicomweb/studies(/|$) {
+    limit_except GET { deny all; }
+    rewrite ^/dicomweb/(.*)$ /dicom-web/$1 break;
+    proxy_pass http://edge-orthanc:8042;
     proxy_set_header Authorization "${authorization}";
     proxy_read_timeout 600s;
   }

@@ -20,7 +20,8 @@ export const MAX_TTL_SECONDS = 300;
 export const EDGE_MAX_TTL_SECONDS = 12 * 3600;
 export const CODE_MAX_TTL_SECONDS = 120;
 export const SESSION_TTL_SECONDS = 8 * 3600;
-export const SESSION_COOKIE = 's4_viewer';
+/** `__Host-`: Secure, Path=/ and no Domain, so a sibling host cannot set it. */
+export const SESSION_COOKIE = '__Host-s4_viewer';
 const SKEW_SECONDS = 30;
 
 export type AuthResult = { ok: true; principal: Principal } | { ok: false; status: 401 | 403 };

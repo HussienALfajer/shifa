@@ -19,8 +19,20 @@ const maxStowBytes = Number(process.env['S4_MAX_STOW_BYTES'] ?? 400_000_000);
 if (!Number.isSafeInteger(maxStowBytes) || maxStowBytes <= 0) {
   throw new Error('S4_MAX_STOW_BYTES must be a positive integer');
 }
-const pool = new pg.Pool({ connectionString: required('S4_DATABASE_URL'), max: 16 });
-const audit = createAuditLog(pool);
+// Audit has its own pool, so long upload transactions cannot starve every tenant's audit rows;
+// no request waits more than 10 s for a connection (security review M2).
+const databaseUrl = required('S4_DATABASE_URL');
+const pool = new pg.Pool({
+  connectionString: databaseUrl,
+  max: 16,
+  connectionTimeoutMillis: 10_000,
+});
+const auditPool = new pg.Pool({
+  connectionString: databaseUrl,
+  max: 8,
+  connectionTimeoutMillis: 10_000,
+});
+const audit = createAuditLog(auditPool);
 const uploadDir = process.env['S4_UPLOAD_DIR'] ?? '/tmp/s4-uploads';
 await mkdir(uploadDir, { recursive: true });
 const uploadPageDir = new URL('../upload-web', import.meta.url).pathname;
@@ -44,7 +56,7 @@ createServer((_req, res) => {
 }).listen(Number(process.env['METRICS_PORT'] ?? 9091), '127.0.0.1');
 
 const shutdown = () => {
-  void app.close().then(() => pool.end());
+  void app.close().then(() => Promise.all([pool.end(), auditPool.end()]));
 };
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);

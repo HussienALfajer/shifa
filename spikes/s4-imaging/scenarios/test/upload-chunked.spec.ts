@@ -70,6 +70,9 @@ describe('chunked resumable upload on P1', () => {
       if (name === 'with-dicomdir') {
         expect(upload.loads.at(-1)?.skipped.sort()).toEqual([...manifest.extras].sort());
       }
+      // A cut ends open connections: the upload must have been interrupted and resumed
+      // (owner decision, 0.3-S4b review), so the bound below is never 0 ≤ 0.
+      expect(sum.interrupted.length).toBeGreaterThan(0);
       expect(sum.ackedBytes).toBe(studyBytes);
       expect(sum.sentBytes - studyBytes).toBeLessThanOrEqual(CHUNK * sum.interrupted.length);
       await expectCloudEquals('a', manifest);

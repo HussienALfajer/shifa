@@ -50,7 +50,7 @@ interface Entry {
 }
 
 /** Validates the manifest; returns the entries sorted by path or the refusal status. */
-function parseManifest(body: Buffer): Entry[] | 400 | 413 {
+function parseManifest(body: Buffer, maxFileBytes: number): Entry[] | 400 | 413 {
   let parsed: unknown;
   try {
     parsed = JSON.parse(body.toString('utf8'));
@@ -67,6 +67,8 @@ function parseManifest(body: Buffer): Entry[] | 400 | 413 {
     if (typeof path !== 'string' || path.length === 0 || path.length > 1024) return 400;
     if (typeof size !== 'number' || !Number.isSafeInteger(size) || size < 1) return 400;
     if (typeof sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(sha256)) return 400;
+    // A file goes to Orthanc in one STOW: the direct STOW's cap applies (security review L1).
+    if (size > maxFileBytes) return 413;
     total += size;
     entries.push({ path, size, sha256 });
   }
@@ -102,7 +104,7 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
     }
     const body = await readBody(req.body as Readable | undefined, MAX_MANIFEST_BYTES);
     if (!body) return ctx.refuse(reply, 413, start, tenant);
-    const entries = parseManifest(body);
+    const entries = parseManifest(body, config.maxStowBytes);
     if (typeof entries === 'number') return ctx.refuse(reply, entries, start, tenant);
     const manifestHash = createHash('sha256').update(JSON.stringify(entries)).digest('hex');
     const id = createHash('sha256').update(`${tenant}\n${manifestHash}`).digest('hex').slice(0, 32);
@@ -179,6 +181,9 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
       const digest = /^sha-256=([A-Za-z0-9+/]{43}=)$/.exec(String(req.headers['digest'] ?? ''));
       if (!range || !digest) return ctx.refuse(reply, 400, start, tenant);
       const [first, last, total] = [Number(range[1]), Number(range[2]), Number(range[3])];
+      // Completing a large file (hash, then STOW to Orthanc) can stay silent on the socket for
+      // minutes: no idle timeout on this request.
+      req.raw.socket.setTimeout(0);
       const body = await readBody(req.body as Readable | undefined, MAX_CHUNK_BYTES);
       if (!body) return ctx.refuse(reply, 413, start, tenant);
       if (body.length === 0 || last - first + 1 !== body.length) {
@@ -195,7 +200,7 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
           await db.query<FileRow>(
             `select f.idx, f.path, f.size, f.sha256, f.received, f.state
                from s4.upload_file f join s4.upload_session s on s.id = f.upload_id
-              where s.id = $1 and s.tenant_id = $2 and f.idx = $3 for update of f`,
+              where s.id = $1 and s.tenant_id = $2 and f.idx = $3 for update of f nowait`,
             [id, tenant, index],
           )
         ).rows[0];
@@ -213,9 +218,12 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
         let status = 200;
         if (state === 'pending' && first === received) {
           await mkdir(fileDir(id), { recursive: true });
-          const handle = await open(filePath(id, index), 'a');
+          // Written at the stored offset and cut there, never appended: bytes left on disk by a
+          // request whose transaction rolled back are overwritten, not doubled (review N1).
+          const handle = await open(filePath(id, index), received === 0 ? 'w' : 'r+');
           try {
-            await handle.write(body);
+            await handle.write(body, 0, body.length, received);
+            await handle.truncate(received + body.length);
             await handle.sync();
           } finally {
             await handle.close();
@@ -239,9 +247,12 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
             status = 422;
           } else if (outcome === 'unavailable') {
             status = 502;
+          } else if (outcome === 'unaudited') {
+            // Stored but not audited: stays pending, so a retry stores (Orthanc keeps one copy)
+            // and audits again.
+            status = 503;
           } else {
             state = outcome;
-            await rm(filePath(id, index), { force: true });
           }
           await db.query(
             'update s4.upload_file set received = $3, state = $4 where upload_id = $1 and idx = $2',
@@ -249,13 +260,23 @@ export function registerUploads(app: FastifyInstance, ctx: Context): void {
           );
         }
         await db.query('commit');
+        // The bytes go only once the state that no longer needs them is committed.
+        if (state !== 'pending') await rm(filePath(id, index), { force: true });
         ctx.finish(reply, status, 'upload-chunk', tenant, start);
-        if (status === 502) return await reply.code(502).send({ error: ERROR_BODY[502] });
+        if (status === 502 || status === 503) {
+          return await reply.code(status).send({ error: ERROR_BODY[status] });
+        }
         return await reply
           .code(status)
           .send({ received: state === 'pending' ? received : size, state });
       } catch (error) {
         await db.query('rollback').catch(() => undefined);
+        // Another request holds this file (a second tab, or a file being stored): answer at
+        // once instead of queueing on the lock and its pool connection (security review M2).
+        if ((error as { code?: string }).code === '55P03') {
+          ctx.finish(reply, 409, 'upload-chunk', tenant, start);
+          return await reply.code(409).send({ error: ERROR_BODY[409] });
+        }
         throw error;
       } finally {
         db.release();
@@ -271,7 +292,7 @@ async function complete(
   actor: string,
   path: string,
   expected: string,
-): Promise<'done' | 'skipped' | 'mismatch' | 'unavailable'> {
+): Promise<'done' | 'skipped' | 'mismatch' | 'unavailable' | 'unaudited'> {
   const hash = createHash('sha256');
   const preamble: Buffer[] = [];
   let seen = 0;
@@ -317,14 +338,18 @@ async function complete(
   if (status >= 500) return 'unavailable';
   const stored = status < 400 && text.includes('"00081199"');
   if (!stored) return 'skipped';
-  await ctx.config.audit.write({
-    actor,
-    tenant,
-    studyUid: stowStudyUid(text),
-    action: 'upload',
-    routeClass: 'upload-file',
-    status,
-  });
+  try {
+    await ctx.config.audit.write({
+      actor,
+      tenant,
+      studyUid: stowStudyUid(text),
+      action: 'upload',
+      routeClass: 'upload-file',
+      status,
+    });
+  } catch {
+    return 'unaudited';
+  }
   ctx.metrics.audited += 1;
   return 'done';
 }

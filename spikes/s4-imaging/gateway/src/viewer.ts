@@ -11,13 +11,7 @@ import { readFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import type { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { request } from 'undici';
-import {
-  authenticateCookie,
-  SESSION_COOKIE,
-  SESSION_TTL_SECONDS,
-  signSession,
-  verifyCode,
-} from './auth.ts';
+import { authenticateCookie, SESSION_COOKIE, signSession, verifyCode } from './auth.ts';
 import { type Context, unsafePath } from './context.ts';
 
 const SEGMENT = '[A-Za-z0-9_-][A-Za-z0-9_.-]{0,120}';
@@ -40,6 +34,8 @@ export function registerViewer(app: FastifyInstance, ctx: Context): void {
 
   app.get(
     '/viewer/session',
+    // No automatic HEAD route: a HEAD would spend the code too (security review L3).
+    { exposeHeadRoute: false },
     async (req: FastifyRequest<{ Querystring: { code?: string } }>, reply) => {
       const start = performance.now();
       const code = typeof req.query.code === 'string' ? req.query.code : undefined;
@@ -56,7 +52,7 @@ export function registerViewer(app: FastifyInstance, ctx: Context): void {
       return reply
         .header(
           'set-cookie',
-          `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=${String(SESSION_TTL_SECONDS)}`,
+          `${SESSION_COOKIE}=${session}; HttpOnly; Secure; SameSite=Strict; Path=/`,
         )
         .header('cache-control', 'no-store')
         .type('text/html; charset=utf-8')

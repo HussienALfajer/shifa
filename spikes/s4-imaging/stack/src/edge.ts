@@ -27,7 +27,8 @@ export function edgeConfig(httpPassword: string, edgeToken: string): object {
     StorageCompression: false,
     SaveJobs: true,
     JobsHistorySize: 100,
-    HttpTimeout: 120,
+    // Long enough for the cloud to commit a 1 GB push (review N5).
+    HttpTimeout: 1800,
     OrthancPeers: {
       cloud: {
         Url: 'http://link:8080/',
