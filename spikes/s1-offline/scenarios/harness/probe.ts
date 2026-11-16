@@ -6,6 +6,8 @@
 // Prints counts only; never tokens, ids or row values.
 import { spawn } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
+import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { syntheticIdentities } from '@shifa-spike/s1-server';
 import { pinTestcontainersHelpers } from './images.ts';
@@ -28,6 +30,41 @@ const TODAY = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).fo
 const at = (time: string) => `${TODAY}T${time}:00+03:00`;
 
 const out = (line: string) => process.stdout.write(`${line}\n`);
+
+// Flutter's JSON reporter output (it may hold failure messages) is reduced to counts and deleted.
+const SUMMARY = fileURLToPath(new URL('../test-results/summary/', import.meta.url));
+const RAW = join(SUMMARY, `.probe-${engine}.raw.json`);
+const started = Date.now();
+
+interface ReporterEvent {
+  type?: string;
+  result?: string;
+  hidden?: boolean;
+  skipped?: boolean;
+}
+
+async function writeSummary(exitCode: number): Promise<void> {
+  const counts = { passed: 0, failed: 0, skipped: 0 };
+  try {
+    for (const line of (await readFile(RAW, 'utf8')).split('\n')) {
+      if (!line.trim()) continue;
+      const event = JSON.parse(line) as ReporterEvent;
+      if (event.type !== 'testDone' || event.hidden === true) continue;
+      if (event.skipped === true) counts.skipped += 1;
+      else if (event.result === 'success') counts.passed += 1;
+      else counts.failed += 1;
+    }
+  } finally {
+    await rm(RAW, { force: true });
+  }
+  const seconds = Math.round((Date.now() - started) / 1000);
+  const body = { engine, at: new Date().toISOString(), exitCode, seconds, ...counts };
+  await writeFile(
+    join(SUMMARY, `${engine}-flutter-probe.json`),
+    `${JSON.stringify(body, null, 2)}\n`,
+  );
+  out(`Probe summary: ${String(counts.passed)} passed, ${String(counts.failed)} failed.`);
+}
 
 async function post(url: string, path: string, body: unknown, token?: string): Promise<unknown> {
   const res = await fetch(`${url}${path}`, {
@@ -107,6 +144,7 @@ async function seed(url: string): Promise<Seeded> {
   };
 }
 
+await mkdir(SUMMARY, { recursive: true });
 const stack = await startStack(stackEngine, { prototype: false, devices: [DEVICE] });
 let code: number;
 try {
@@ -130,6 +168,7 @@ try {
     'test',
     // The tests share one stack and one device: one file at a time.
     '--concurrency=1',
+    `--file-reporter=json:${RAW}`,
     ...Object.entries(defines).map(([k, v]) => `--dart-define=${k}=${v}`),
     ...process.argv.slice(2),
   ];
@@ -144,6 +183,7 @@ try {
       resolve(1);
     });
   });
+  await writeSummary(code);
 } finally {
   await stack.stop();
 }
