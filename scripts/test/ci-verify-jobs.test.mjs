@@ -70,7 +70,7 @@ describe('ci.yml verify jobs', () => {
     );
     assert.match(
       stepNamed('caches', 'Install Flutter').run,
-      /^# System tools only[^\n]*\n[^\n]*\nexport PATH=\/usr\/sbin:\/usr\/bin:\/sbin:\/bin\n/,
+      /^# System tools only[^\n]*\nexport PATH=\/usr\/sbin:\/usr\/bin:\/sbin:\/bin\n/,
     );
   });
 
@@ -141,25 +141,21 @@ describe('ci.yml caches (OD-30)', () => {
       caches.steps.map((s) => s.name ?? s.uses.split('@')[0]),
       [
         'actions/checkout',
-        'Restore Flutter SDK',
+        'Look up pub cache',
         'Install Flutter',
-        'Save Flutter SDK',
-        'Check Flutter SDK was saved',
         'Set up Flutter',
-        'Restore pub cache',
         'Fetch pub packages',
         'Save pub cache',
         'Check pub cache was saved',
       ],
     );
+    // Only a lookup: nothing is extracted into this job before the save.
+    assert.equal(stepNamed('caches', 'Look up pub cache').with['lookup-only'], true);
     for (const s of caches.steps.filter(isSave)) assert.match(s.if, /github\.event_name == 'push'/);
   });
 
   it('a save is followed by a lookup that fails on a miss (a failed save only warns)', () => {
-    for (const [save, check] of [
-      ['Save Flutter SDK', 'Check Flutter SDK was saved'],
-      ['Save pub cache', 'Check pub cache was saved'],
-    ]) {
+    for (const [save, check] of [['Save pub cache', 'Check pub cache was saved']]) {
       const s = stepNamed('caches', save);
       const c = stepNamed('caches', check);
       assert.match(c.uses, /^actions\/cache\/restore@/);
@@ -181,15 +177,23 @@ describe('ci.yml caches (OD-30)', () => {
     }
   });
 
-  it('the dart job checks the Flutter tree digest exactly as the caches job does', () => {
+  it('the Flutter SDK is never cached: both jobs download and verify it (OD-35)', () => {
+    for (const [id, job] of Object.entries(ci.jobs)) {
+      for (const step of job.steps ?? []) {
+        if (!/actions\/cache/.test(step.uses ?? '')) continue;
+        assert.equal(step.with.path, '~/.pub-cache', `${id}: caches ${step.with.path}`);
+        assert.match(step.with.key, /^ci-pub-/, `${id}: key ${step.with.key}`);
+      }
+    }
     const script = (job) => stepNamed(job, 'Install Flutter').run;
     assert.equal(script('dart'), script('caches'));
-    assert.match(
-      script('dart'),
-      /if \[ -e "\$sdk" \]; then\s+restored="\$\(tree_digest "\$sdk"\)"/,
-    );
-    assert.match(script('dart'), /\[ "\$restored" = "\$FLUTTER_TREE_SHA256" \]/);
-    assert.ok(/^[0-9a-f]{64}$/.test(ci.env.FLUTTER_TREE_SHA256));
+    assert.match(script('dart'), /sha256sum --check --strict/);
+    assert.match(script('dart'), /curl -fsSL -o "\$archive" "https:\/\/storage\.googleapis\.com\//);
+    assert.ok(/^[0-9a-f]{64}$/.test(ci.env.FLUTTER_SHA256));
+    assert.equal(ci.env.FLUTTER_TREE_SHA256, undefined);
+    // In dart, Flutter is installed before anything is restored into the job.
+    const names = ci.jobs.dart.steps.map((s) => s.name);
+    assert.ok(names.indexOf('Install Flutter') < names.indexOf('Restore pub cache'));
   });
 
   it('the caches job runs no repository code', () => {
