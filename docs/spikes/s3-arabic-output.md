@@ -1,6 +1,6 @@
 # Spike S3 result: Arabic output (PDF, thermal) and Arabic name search
 
-Date: 2026-11-16 (CI dispatch after merge) · Spec: [0.3-S3](../specs/spikes/0.3-s3-arabic-output.md) · Slice: [0.3-S3](../slices/0.3-s3-arabic-output-spike.md) · Decision: [ADR-0034](../adr/0034-arabic-output-and-name-search.md) (Proposed), amending [ADR-0021](../adr/0021-supporting-services.md) · Requirements: PLT-38, BIL-30, SCH-28, SCH-30, CLN-22, PAT-14, PLT-50; "Arabic-normalised search" ([Release 1 scope](../product/scope-release-1.md))
+Date: 2026-11-16 (local run; CI dispatch skipped, OD-43) · Spec: [0.3-S3](../specs/spikes/0.3-s3-arabic-output.md) · Slice: [0.3-S3](../slices/0.3-s3-arabic-output-spike.md) · Decision: [ADR-0034](../adr/0034-arabic-output-and-name-search.md) (Accepted, owner 2026-11-16), amending [ADR-0021](../adr/0021-supporting-services.md) · Requirements: PLT-38, BIL-30, SCH-28, SCH-30, CLN-22, PAT-14, PLT-50; "Arabic-normalised search" ([Release 1 scope](../product/scope-release-1.md))
 
 ## Answer
 **ADR-0021's output plan works, with four corrections. Its search plan works for the normaliser, but not yet for the index under RLS.**
@@ -18,7 +18,7 @@ Date: 2026-11-16 (CI dispatch after merge) · Spec: [0.3-S3](../specs/spikes/0.3
 Gotenberg 8.40.0 (`gotenberg/gotenberg:8.40.0@sha256:53073e79…`, Chromium 156, Skia/PDF m156; owner chose the last 8.x over 9.x, OD-41). Playwright Chromium 159.0.8154.6 (browser print). Fonts from `@fontsource/*` 5.3.0 (OFL): Vazirmatn (chosen), Cairo, Noto Naskh Arabic, Amiri; subsets arabic, latin and latin-ext at 400/700, uploaded with the HTML. PDF checks: poppler-utils 25.03.0 (Debian trixie) for `pdffonts`, `pdfinfo` and `pdftoppm`; PDFium 143.0.7483.0 (`pypdfium2` 5.0.0, pinned by hash) for text. PostgreSQL 18.6 with pg_trgm 1.6 and btree_gin. Dart port on the Flutter 3.47.9 SDK with `unorm_dart` 0.3.3 (Dart has no built-in NFC). Node 24.
 
 ## Evidence per criterion
-Test files are under `spikes/s3-arabic-output/`. Local run on Windows 11 + Docker Desktop (Intel Core i9-14900HX, 32 threads, 32 GB). The CI dispatch of `s3-arabic-output` runs after merge (the workflow must be on `main`).
+Test files are under `spikes/s3-arabic-output/`. Local run on Windows 11 + Docker Desktop (Intel Core i9-14900HX, 32 threads, 32 GB). The owner skipped the CI dispatch of `s3-arabic-output` (OD-43, 2026-11-16): the local run above is the evidence; the manual workflow stays on `main` for Phase A.
 
 | # | Result | Proof |
 |---|---|---|
@@ -33,7 +33,7 @@ Test files are under `spikes/s3-arabic-output/`. Local run on Windows 11 + Docke
 | 9 | 50,000 synthetic patients (`load` preset, 50 tenants) in `s3.patient_a` and `s3.patient_b` (FORCE RLS, policy on `current_tenant_id()`, GIN `(tenant_id, name_key gin_trgm_ops)`). For each of 8 rule variants, 25 sampled patients typed with that variant: 25/25 found in the top 5 inside `withTenant()` as `shifa_app`, on both tables. Searching tenant B's patient from tenant A returns only tenant A's rows. Limits: no digits or NFC variant in this test (the vectors cover them), the synthetic names hold no ؤ, and for `patient_a` a rule variant gives the identical key by construction, so `patient_b` (SQL key against TypeScript key) is the real evidence | `search/test/search.test.ts`, `schema.test.ts`, `od40-merges.test.ts`, `.verify/s3/search-quality.json`, `od40-merges.json` |
 | 10 | The SQL function gives the vector key for all 313 inputs, the same as TypeScript (no drift today); the generated column keeps `display_name` untouched | `key-drift.test.ts`. Comparison below |
 | 11 | Render: p50 0.32–0.40 s sequential, 0.78–1.0 s at 5 concurrent, peak 410–520 MiB. Search: 7.7 ms p50 at the `load` volume; 271 ms p50 for one 50,000-patient tenant (sequential scan, OD-42) | `bench:render`, `bench:search`; `.verify/s3/render-bench.json`, `search-bench.json` |
-| 12 | This report, [ADR-0034](../adr/0034-arabic-output-and-name-search.md) (Proposed), ADR-0021 status line, roadmap | — |
+| 12 | This report, [ADR-0034](../adr/0034-arabic-output-and-name-search.md) (Accepted, owner 2026-11-16), ADR-0021 status line, roadmap | — |
 
 ## PDF text layer (criterion 3)
 What the PDF shows is right in every font; what text extraction returns depends on the font and on the reader:
@@ -60,7 +60,7 @@ At 9 pt (owner's choice) every BIL-30 line of the 58 mm receipt fits on one line
 | ticket 80 mm | 328 / 635 | 1000 / 1855 | 438 |
 | ticket 58 mm | 315 / 408 | 782 / 881 | 416 |
 
-Plan a PDF worker for about 0.5 GB per Gotenberg container. One container gave about 2.5–3 PDFs per second one at a time and about 5–6 per second with 5 in flight (a round of 5 finished in about 0.8–1.0 s), so concurrency helps up to a point; more throughput then needs more containers. The p95 values vary between runs on this shared machine (an earlier run with n = 20 had receipt 58 mm at 530 / 1013 ms); the CI dispatch gives a second machine.
+Plan a PDF worker for about 0.5 GB per Gotenberg container. One container gave about 2.5–3 PDFs per second one at a time and about 5–6 per second with 5 in flight (a round of 5 finished in about 0.8–1.0 s), so concurrency helps up to a point; more throughput then needs more containers. The p95 values vary between runs on this shared machine (an earlier run with n = 20 had receipt 58 mm at 530 / 1013 ms); no second machine was measured (CI dispatch skipped, OD-43).
 
 ## Search (criteria 9–11)
 - **Quality** (`.verify/s3/search-quality.json`): every rule variant found 25/25 on both tables. Variants outside the rules, measured only: the family name without `ال` 25/25; given name and family name only 25/25, with 17 other patients ranked above the intended one over the 25 tries; two letters swapped 25/25; one letter missing 25/25 (trigram similarity ≥ 0.3).
