@@ -74,6 +74,12 @@ Related decisions: ADR-0019 (imaging stack: per-tenant Orthanc behind our gatewa
 - `ImagingShareLink` — expiring link with access log.
 - `EdgeDevice` — registered clinic edge box / capture bridge with last-seen and queue depth.
 
+## Spike tooling (0.3-S4, kept for Phase D)
+
+- **Link shaper** (`spikes/s4-imaging/link/`): an Alpine container with HAProxy (TCP mode) on the clinic and cloud Docker networks; `tc tbf` gives an aggregate rate per direction across all connections (egress on the cloud side is the clinic uplink), a `netem` child adds half the RTT, half the jitter and the loss rate per direction. Profiles in `profiles.json`: P1 fixed-poor 1/3 Mbps, 150 ms ±30, 1 %, a 30 s cut every 5 min; P2 fixed-normal 3/10 Mbps, 80 ms; P3 mobile 8/25 Mbps, 60 ms ±20. A cut is `netem loss 100%` (connections stall); a reset restarts HAProxy (connections die). Byte counters per direction come from the interfaces. Needs `NET_ADMIN` on that container only and `sch_tbf` + `sch_netem` in the host kernel.
+- **Synthetic studies** (`spikes/s4-imaging/generator/`): deterministic DICOM (same seed, same SHA-256) with `dcmjs`: CBCT as one CT file per slice or one Enhanced CT multi-frame file (16-bit signed phantom with seeded noise), a 16-bit DX panoramic, and a DICOMDIR variant (`dcmmkdir`) with one non-DICOM file. Names from `@shifa/testing` behind the `S4SYN^` marker; no birth date. Written to the git-ignored `.cache/s4/studies/` with a `manifest.json` (SHA-256 and SOP Instance UID per file).
+- **Public CBCT**: one de-identified case (NewTom N09, 510 slices) from Science Data Bank DOI 10.57760/sciencedb.26465 (data licence CC BY 4.0), read by HTTP ranges out of the dataset's ZIP and pinned file by file in `public-cbct.lock.json`; a PHI tag check gates it. Never committed.
+
 ## Verification notes
 
 - Tenant isolation: a token for tenant A cannot query (QIDO) or retrieve (WADO) any study of tenant B; gateway route allow-list tests include unknown and system routes.

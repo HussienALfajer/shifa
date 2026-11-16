@@ -1,0 +1,57 @@
+# Spike 0.3-S4: imaging (Garage + Orthanc + gateway + link shaper). Manual dispatch only; never
+# part of PR CI (OD-31). Job `stack` (0.3-S4a) runs the generator, stack and gateway suites
+# against Docker on the runner; 0.3-S4b adds upload, edge, OHIF and the bench. Uploads
+# `.verify/s4/` (bucket-layout result; counts and timings only, no image content).
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: s4-imaging
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: s4-imaging
+  cancel-in-progress: false
+
+jobs:
+  stack:
+    name: stack, storage, link, gateway isolation, test data
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      # The suites pull about 6 GB of images (Playwright, Orthanc, PostgreSQL) and write the
+      # small studies; the 300 MB and 1 GB studies are generated in 0.3-S4b's bench job only.
+      - name: Disk space and kernel shaping modules
+        run: |
+          df -h /
+          docker version --format 'docker {{.Server.Version}}, kernel {{.Server.KernelVersion}}'
+          docker run --rm --cap-add NET_ADMIN alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf \
+            sh -c 'apk add -q iproute2 >/dev/null && tc qdisc add dev eth0 root handle 1: tbf rate 1mbit burst 32kb latency 400ms && tc qdisc add dev eth0 parent 1:1 handle 10: netem delay 40ms loss 1% && tc qdisc show dev eth0'
+      - name: Generator and public CBCT (sizes, determinism, DICOMDIR, SHA-256 pins, PHI check)
+        working-directory: spikes/s4-imaging/generator
+        run: pnpm run test:spike
+      - name: Stack (pins, network boundary, licence boundary, Garage, encryption, buckets, link)
+        working-directory: spikes/s4-imaging/stack
+        run: pnpm run test:spike
+      - name: Gateway (isolation, denylist, audit, no PHI in logs)
+        working-directory: spikes/s4-imaging/gateway
+        run: pnpm run test:spike
+      - name: Upload .verify/s4
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: s4-stack
+          path: .verify/s4
+          retention-days: 30

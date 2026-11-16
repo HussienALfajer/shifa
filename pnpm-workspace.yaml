@@ -9,6 +9,8 @@ packages:
 # Install scripts are denied unless listed true. These three are optional native speed-ups of
 # testcontainers' Docker client (ssh2) and gRPC (protobufjs); the pure-JS fallbacks are used.
 allowBuilds:
+  # core-js-pure (via dcmjs, 0.3-S4) only prints a funding banner from its postinstall.
+  core-js-pure: false
   cpu-features: false
   protobufjs: false
   ssh2: false

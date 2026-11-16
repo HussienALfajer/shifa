@@ -38,3 +38,6 @@ Thumbs.db
 
 # Verify state and logs
 .verify/
+
+# Spike 0.3-S4 imaging: generated studies, the public CBCT case and per-run state (never committed)
+.cache/
