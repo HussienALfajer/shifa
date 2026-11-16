@@ -1,10 +1,15 @@
 // Unit tests for the harness guard and the DB test lock. No Docker needed.
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { acquireDbTestLock, assertTestTarget, UnsafeDatabaseError } from '../test-harness/guard.ts';
+import {
+  acquireDbTestLock,
+  assertTestTarget,
+  DB_TEST_SLOTS,
+  UnsafeDatabaseError,
+} from '../test-harness/guard.ts';
 
 const container = { host: 'localhost', port: 55432 };
 
@@ -83,22 +88,40 @@ function tempLockFile(): string {
 }
 
 describe('acquireDbTestLock', () => {
-  it('waits for a live holder, then fails with a clear message', async () => {
+  it('has a small fixed number of slots by default', () => {
+    expect(DB_TEST_SLOTS).toBeGreaterThanOrEqual(2);
+    expect(DB_TEST_SLOTS).toBeLessThanOrEqual(4);
+  });
+
+  it('takes a free slot next to another live run without waiting', async () => {
     const file = tempLockFile();
-    writeFileSync(file, String(process.pid));
+    writeFileSync(`${file}.0`, String(process.pid)); // another run holds slot 0
     const started = Date.now();
-    await expect(acquireDbTestLock({ file, waitMs: 300, pollMs: 50 })).rejects.toThrow(
-      /another database test run/i,
+    const release = await acquireDbTestLock({ file, slots: 2, waitMs: 0, pollMs: 50 });
+    expect(Date.now() - started).toBeLessThan(1000);
+    expect(readFileSync(`${file}.1`, 'utf8')).toBe(String(process.pid));
+    release();
+    expect(existsSync(`${file}.1`)).toBe(false);
+    expect(readFileSync(`${file}.0`, 'utf8')).toBe(String(process.pid));
+  });
+
+  it('waits while every slot is held by a live run, then fails with a clear message', async () => {
+    const file = tempLockFile();
+    writeFileSync(`${file}.0`, String(process.pid));
+    writeFileSync(`${file}.1`, String(process.pid));
+    const started = Date.now();
+    await expect(acquireDbTestLock({ file, slots: 2, waitMs: 300, pollMs: 50 })).rejects.toThrow(
+      /another database test run.*all 2 slots/i,
     );
     expect(Date.now() - started).toBeGreaterThanOrEqual(250);
   });
 
-  it('reclaims a lock left by a dead process', async () => {
+  it('reclaims a slot left by a dead process', async () => {
     const file = tempLockFile();
     const dead = spawnSync(process.execPath, ['-e', '0']).pid;
-    writeFileSync(file, String(dead));
-    const release = await acquireDbTestLock({ file, waitMs: 0, pollMs: 50 });
-    expect(readFileSync(file, 'utf8')).toBe(String(process.pid));
+    writeFileSync(`${file}.0`, String(dead));
+    const release = await acquireDbTestLock({ file, slots: 1, waitMs: 0, pollMs: 50 });
+    expect(readFileSync(`${file}.0`, 'utf8')).toBe(String(process.pid));
     release();
   });
 });

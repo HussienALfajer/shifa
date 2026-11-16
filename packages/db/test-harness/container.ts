@@ -75,7 +75,7 @@ export interface HarnessOptions {
 /**
  * Starts the pinned PostgreSQL image, applies roles.sql and test logins (random passwords),
  * creates `shifa_template` and migrates it as the owner, then starts PgBouncer in front of it.
- * The caller holds the DB test lock.
+ * The caller holds a DB test slot (acquireDbTestLock).
  */
 export async function startHarnessContainer(
   options: HarnessOptions = {},
