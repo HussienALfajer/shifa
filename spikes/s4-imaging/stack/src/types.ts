@@ -14,6 +14,39 @@ export interface StackOptions {
   browser?: boolean;
   /** Start the byte sink behind the link (link tests). Default false. */
   sink?: boolean;
+  /**
+   * Start the edge box for tenant `a` on the clinic network: an edge Orthanc (SQLite, DICOM
+   * server, Transfers peer `cloud` = the gateway through the link with a 12-hour edge
+   * credential), the dcmtk tools and an OHIF on the LAN pointing at the edge. Default false.
+   */
+  edge?: boolean;
+  /** Start OHIF behind the gateway (`/viewer/`). Default false. */
+  ohif?: boolean;
+}
+
+export interface EdgeJob {
+  ID: string;
+  State: 'Pending' | 'Running' | 'Success' | 'Failure' | 'Paused' | 'Retry';
+  Progress: number;
+  ErrorDescription: string;
+}
+
+export interface Edge {
+  container: string;
+  /** C-STORE of the given files (paths relative to `dir`) from the dcmtk container. */
+  storescu(dir: string, paths: readonly string[]): Promise<void>;
+  /** SOP Instance UID → SHA-256 of each stored file of the study on the edge. */
+  files(studyInstanceUid: string): Promise<Map<string, string>>;
+  /** Starts a Transfers push of the study to the cloud peer; returns the job id. */
+  push(studyInstanceUid: string): Promise<string>;
+  job(id: string): Promise<EdgeJob>;
+  waitJob(id: string, timeoutMs: number): Promise<EdgeJob>;
+  /** Resubmits a failed job; returns the id to follow (the same job in Orthanc). */
+  resubmit(id: string): Promise<string>;
+  /** `docker restart` of the edge Orthanc; waits until it answers again. */
+  restart(): Promise<void>;
+  /** OHIF on the clinic LAN (edge data source), as clinic containers see it. */
+  clinicViewerUrl: string;
 }
 
 export interface S3Credentials {
@@ -56,14 +89,17 @@ export interface Link {
   container: string;
   /** Applies a profile (or removes shaping with 'none'). */
   applyProfile(profile: ProfileName | 'none'): Promise<void>;
-  /** 100 % loss in both directions for `seconds`, then the profile again. */
-  cut(seconds: number): Promise<void>;
+  /**
+   * 100 % loss in both directions for `seconds`, then the profile again. With `drop`, open
+   * connections through the link die at the start too (a line drop, not a stall).
+   */
+  cut(seconds: number, options?: { drop?: boolean }): Promise<void>;
   /** Restarts HAProxy: every connection through the link dies. */
   reset(): Promise<void>;
   counters(): Promise<LinkCounters>;
   /**
-   * P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`. Returns a stop
-   * that waits for a cut in progress to end.
+   * P1 cuts: `cutSeconds` every `everySeconds`, first after `offsetSeconds`, each a line drop
+   * (open connections die; 0.3-S4b review). Returns a stop that waits for a cut to end.
    */
   schedule(options: {
     everySeconds: number;
@@ -81,6 +117,9 @@ export interface TokenClaims {
   role?: 'viewer' | 'uploader' | 'edge';
   /** Seconds until expiry (negative for an expired token). Default 300. */
   ttlSeconds?: number;
+  /** `viewer-code`: a one-time code for /viewer/session (with `jti`). */
+  typ?: 'viewer-code';
+  jti?: string;
 }
 
 export interface GatewayMetrics {
@@ -111,11 +150,17 @@ export interface Stack {
   gateway: { container: string; metrics(): Promise<GatewayMetrics> };
   link: Link;
   browser?: { container: string; wsEndpoint: string };
+  edge?: Edge;
   networks: { clinic: string; cloud: string; orthanc: string };
   /** Signs a gateway token with this run's key. */
   token(claims: TokenClaims): Promise<string>;
   /** This run's token key (tests forge tokens with other keys and algorithms). */
   tokenKey: Uint8Array;
+  /**
+   * Every per-run secret, in each form it is written (passwords, Garage keys and tokens,
+   * storage master keys as base64 and hex, the token key): log scans only.
+   */
+  secrets(): string[];
   /** Recreates a tenant's Orthanc with the current or a wrong storage master key. */
   restartOrthanc(tenant: string, options: { masterKey: 'current' | 'wrong' }): Promise<void>;
   /** Container logs (stdout and stderr). */

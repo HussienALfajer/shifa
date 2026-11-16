@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>رفع الصور (تجربة)</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 2rem; max-width: 48rem; }
+      #status { margin-block: 1rem; font-weight: 600; }
+      label { display: block; margin-block: 0.5rem; }
+    </style>
+  </head>
+  <body>
+    <h1>رفع الصور</h1>
+    <p>صفحة تجريبية لبيانات اصطناعية فقط.</p>
+    <label>المجلد <input id="folder" type="file" webkitdirectory multiple /></label>
+    <label>
+      الطريقة
+      <select id="mode">
+        <option value="chunked">رفع مجزأ قابل للاستئناف</option>
+        <option value="stow">STOW-RS لكل صورة</option>
+      </select>
+    </label>
+    <button id="start" type="button">ابدأ الرفع</button>
+    <div id="status" data-state="idle" aria-live="polite">جاهز</div>
+    <h2>ملفات لم تُرفع</h2>
+    <ul id="skipped"></ul>
+    <script type="module" src="./src/main.ts"></script>
+  </body>
+</html>

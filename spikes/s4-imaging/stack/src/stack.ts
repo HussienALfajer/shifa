@@ -10,71 +10,28 @@ import { SignJWT } from 'jose';
 import { gatewayImage, linkImage } from './build.ts';
 import { createNetwork, execIn, hostPort, removeRun, runContainer } from './containers.ts';
 import { docker, waitFor } from './docker.ts';
+import { startEdge } from './edge.ts';
 import { startGarage } from './garage.ts';
 import { IMAGES } from './images.ts';
 import { createLink } from './link.ts';
+import { startOhif } from './ohif.ts';
 import { type OrthancTenant, startOrthanc, waitOrthanc, writeOrthancFiles } from './orthanc.ts';
 import { startPostgres } from './postgres.ts';
+import { opsConfig, SINK } from './services.ts';
 import type { GatewayMetrics, Stack, StackOptions, TenantHandle } from './types.ts';
 
 const TENANTS = ['a', 'b'] as const;
 const secret = () => randomBytes(24).toString('hex');
 
-// Byte sink behind the link (link tests): counts uploads, serves downloads, answers pings.
-const SINK = `
-require('node:http').createServer((req, res) => {
-  const url = new URL(req.url, 'http://sink');
-  if (url.pathname === '/upload') {
-    let bytes = 0;
-    req.on('data', (c) => { bytes += c.length; });
-    req.on('end', () => res.end(JSON.stringify({ bytes })));
-  } else if (url.pathname === '/download') {
-    const total = Number(url.searchParams.get('bytes'));
-    const chunk = Buffer.alloc(65536, 7);
-    res.setHeader('content-length', String(total));
-    let sent = 0;
-    const pump = () => {
-      while (sent < total) {
-        const n = Math.min(chunk.length, total - sent);
-        sent += n;
-        if (!res.write(n === chunk.length ? chunk : chunk.subarray(0, n))) return res.once('drain', pump);
-      }
-      res.end();
-    };
-    pump();
-  } else res.end('ok');
-}).listen(9000);
-`;
-
-// Test access to the cloud side (ops): Orthanc REST, Garage S3 and PostgreSQL, 127.0.0.1 only.
-const opsConfig = () => `global
-  maxconn 1024
-resolvers docker
-  nameserver dns 127.0.0.11:53
-  hold valid 1s
-defaults
-  mode tcp
-  timeout connect 10s
-  timeout client 1h
-  timeout server 1h
-${[
-  ['orthanc-a', 8042, 18042],
-  ['orthanc-b', 8042, 18043],
-  ['garage', 3900, 13900],
-  ['postgres', 5432, 15432],
-]
-  .map(
-    ([host, port, local]) => `frontend f-${String(host)}
-  bind :${String(local)}
-  default_backend b-${String(host)}
-backend b-${String(host)}
-  server s ${String(host)}:${String(port)} resolvers docker init-addr last,libc,none`,
-  )
-  .join('\n')}
-`;
-
 export async function startStack(options: StackOptions = {}): Promise<Stack> {
-  const { profile = 'none', ops = true, browser = false, sink = false } = options;
+  const {
+    profile = 'none',
+    ops = true,
+    browser = false,
+    sink = false,
+    edge = false,
+    ohif = false,
+  } = options;
   const runId = randomBytes(4).toString('hex');
   const name = (role: string) => `s4-${runId}-${role}`;
   const runDir = await mkdtemp(join(tmpdir(), `s4-${runId}-`));
@@ -157,6 +114,9 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
         },
       ]),
     );
+    if (ohif) {
+      started(await startOhif({ name: name('ohif'), runId, network: cloud, alias: 'ohif' }));
+    }
     const gateway = started(
       await runContainer({
         name: name('gateway'),
@@ -166,7 +126,11 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
           { network: cloud, aliases: ['gateway'] },
           { network: orthancNet, aliases: ['gateway'] },
         ],
-        env: { PORT: '8080', METRICS_PORT: '9091' },
+        env: {
+          PORT: '8080',
+          METRICS_PORT: '9091',
+          ...(ohif ? { S4_OHIF_URL: 'http://ohif:8080' } : {}),
+        },
         secretEnv: {
           S4_TOKEN_KEY: tokenKey.toString('base64'),
           S4_UPSTREAMS: JSON.stringify(upstreams),
@@ -206,6 +170,38 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
       120_000,
     );
 
+    const edgePassword = secret();
+    let edgeHandle: Stack['edge'];
+    if (edge) {
+      const edgeToken = await new SignJWT({ sub: 'edge-a', tenant: 'a', role: 'edge' })
+        .setProtectedHeader({ alg: 'HS256' })
+        .setIssuedAt()
+        .setExpirationTime(Math.floor(Date.now() / 1000) + 12 * 3600 - 120)
+        .sign(tokenKey);
+      edgeHandle = await startEdge({
+        name,
+        runId,
+        runDir,
+        clinicNetwork: clinic,
+        httpPassword: edgePassword,
+        edgeToken,
+        clinicViewerUrl: 'http://edge-viewer:8080',
+      });
+      started(edgeHandle.container);
+      if (ohif) {
+        const authorization = `Basic ${Buffer.from(`gateway:${edgePassword}`).toString('base64')}`;
+        started(
+          await startOhif({
+            name: name('edge-viewer'),
+            runId,
+            network: clinic,
+            alias: 'edge-viewer',
+            edge: { runDir, authorization },
+          }),
+        );
+      }
+    }
+
     let opsBase = '';
     if (ops) {
       const opsNet = await createNetwork(name('ops'), runId, { internal: false });
@@ -229,6 +225,27 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
 
     let browserHandle: Stack['browser'];
     if (browser) {
+      // One Chromium launched with the flags the scenarios need (a client cannot pass launch
+      // arguments to `run-server`): the gateway origin counts as trustworthy, so the Secure
+      // viewer cookie is kept over the spike's plain HTTP; WebGL runs on SwiftShader.
+      const browserConfig = join(runDir, 'browser.json');
+      await writeFile(
+        browserConfig,
+        JSON.stringify({
+          host: '0.0.0.0',
+          port: 3000,
+          wsPath: '/s4',
+          headless: true,
+          // Full Chromium in headless mode: the headless shell ignores the origin flag.
+          channel: 'chromium',
+          args: [
+            '--unsafely-treat-insecure-origin-as-secure=http://link:8080',
+            '--enable-unsafe-swiftshader',
+            '--use-angle=swiftshader',
+            '--ignore-gpu-blocklist',
+          ],
+        }),
+      );
       const container = started(
         await runContainer({
           name: name('browser'),
@@ -236,19 +253,20 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
           image: IMAGES.playwright,
           networks: [{ network: clinic, aliases: ['browser'] }],
           publish: [3000],
+          mounts: [[browserConfig, '/etc/s4/browser.json']],
           command: [
             'npx',
             '-y',
             'playwright@1.65.1',
-            'run-server',
-            '--port',
-            '3000',
-            '--host',
-            '0.0.0.0',
+            'launch-server',
+            '--browser',
+            'chromium',
+            '--config',
+            '/etc/s4/browser.json',
           ],
         }),
       );
-      const wsEndpoint = `ws://${await hostPort(container, 3000)}/`;
+      const wsEndpoint = `ws://${await hostPort(container, 3000)}/s4`;
       await waitFor(
         'playwright server',
         async () => (await fetch(wsEndpoint.replace('ws:', 'http:'))).status > 0,
@@ -306,13 +324,30 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
       },
       link: linkHandle,
       ...(browserHandle ? { browser: browserHandle } : {}),
+      ...(edgeHandle ? { edge: edgeHandle } : {}),
       networks: { clinic, cloud, orthanc: orthancNet },
       tokenKey,
-      token: async ({ sub = 'spike-user', tenant, role, ttlSeconds = 300 }) => {
+      secrets: () => [
+        superPassword,
+        gatewayDbPassword,
+        ...tenantSecrets.flatMap((t) => [t.db, t.http]),
+        ...[...orthancTenants.values()].map((t) => t.s3.secretAccessKey),
+        ...[...masterKeys.values()].flatMap((k) => [k.toString('base64'), k.toString('hex')]),
+        ...garage.secrets,
+        edgePassword,
+        // The Basic credentials as they travel in headers (security review B1).
+        ...Object.values(upstreams).map((u) => u.authorization.slice('Basic '.length)),
+        Buffer.from(`gateway:${edgePassword}`).toString('base64'),
+        tokenKey.toString('base64'),
+        tokenKey.toString('hex'),
+      ],
+      token: async ({ sub = 'spike-user', tenant, role, ttlSeconds = 300, typ, jti }) => {
         const payload = {
           sub,
           ...(tenant === undefined ? {} : { tenant }),
           ...(role === undefined ? {} : { role }),
+          ...(typ === undefined ? {} : { typ }),
+          ...(jti === undefined ? {} : { jti }),
         };
         return new SignJWT(payload)
           .setProtectedHeader({ alg: 'HS256' })

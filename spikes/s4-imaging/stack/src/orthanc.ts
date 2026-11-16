@@ -15,7 +15,7 @@ const CONFIG_PATH = `${CONFIG_DIR}/s4.json`;
 const KEY_PATH = `${KEY_DIR}/master.key`;
 
 /** The harness's environment for every Orthanc (no secrets: those are in the JSON). */
-const ORTHANC_ENV = {
+export const ORTHANC_ENV = {
   TRANSFERS_PLUGIN_ENABLED: 'true',
   ORTHANC_EXPLORER_2_ENABLED: 'false',
   VERBOSE_ENABLED: 'false',

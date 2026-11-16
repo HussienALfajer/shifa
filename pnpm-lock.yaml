@@ -777,6 +777,36 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.8(@types/node@24.19.2)(yaml@2.9.1))
 
+  spikes/s4-imaging/scenarios:
+    devDependencies:
+      '@shifa-spike/s4-generator':
+        specifier: workspace:*
+        version: link:../generator
+      '@shifa-spike/s4-stack':
+        specifier: workspace:*
+        version: link:../stack
+      '@shifa/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@shifa/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/tsconfig
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
+      eslint:
+        specifier: 10.14.0
+        version: 10.14.0(supports-color@10.2.2)
+      playwright:
+        specifier: 1.65.1
+        version: 1.65.1
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.8(@types/node@24.19.2)(yaml@2.9.1))
+
   spikes/s4-imaging/stack:
     dependencies:
       '@shifa-spike/s4-generator':
@@ -816,6 +846,31 @@ importers:
       vitest:
         specifier: 5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.8(@types/node@24.19.2)(yaml@2.9.1))
+
+  spikes/s4-imaging/upload-web:
+    dependencies:
+      dicom-parser:
+        specifier: 1.8.21
+        version: 1.8.21
+      hash-wasm:
+        specifier: 4.13.0
+        version: 4.13.0
+    devDependencies:
+      '@shifa/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@shifa/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/tsconfig
+      eslint:
+        specifier: 10.14.0
+        version: 10.14.0(supports-color@10.2.2)
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vite:
+        specifier: 8.3.8
+        version: 8.3.8(@types/node@24.19.2)(yaml@2.9.1)
 
   tooling/eslint-config:
     dependencies:
@@ -2082,6 +2137,9 @@ packages:
     resolution: {integrity: sha512-Btj2BOOO83o3WyH59e8MgXsxEQVcarkUOpEYrubB0urwnN10yQ364rsiByU11nZlqWYZm05i/of7io4mzihBtQ==}
     engines: {node: '>=8'}
 
+  dicom-parser@1.8.21:
+    resolution: {integrity: sha512-lYCweHQDsC8UFpXErPlg86Px2A8bay0HiUY+wzoG3xv5GzgqVHU3lziwSc/Gzn7VV7y2KeP072SzCviuOoU02w==}
+
   dijkstrajs@1.0.3:
     resolution: {integrity: sha512-qiSlmBq9+BCdCA/L46dw8Uy93mloxsPSbwnm5yrKn2vMPiy8KyAskTF6zuV/j5BMsmOGZDPs7KjU+mjb670kfA==}
 
@@ -2489,6 +2547,9 @@ packages:
 
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
+
+  hash-wasm@4.13.0:
+    resolution: {integrity: sha512-GrWl7wsV46fKIXQZB5ebskLZLAmKL6d9RS0fspCxDeQyjoNu1AfTJTMLPOJyfzaQm0ldFiwFN21/w+sE/kgEFQ==}
 
   hashery@1.5.1:
     resolution: {integrity: sha512-iZyKG96/JwPz1N55vj2Ie2vXbhu440zfUfJvSwEqEbeLluk7NnapfGqa7LH0mOsnDxTF85Mx8/dyR6HfqcbmbQ==}
@@ -4713,6 +4774,8 @@ snapshots:
 
   detect-libc@2.1.2: {}
 
+  dicom-parser@1.8.21: {}
+
   dijkstrajs@1.0.3: {}
 
   docker-compose@1.5.0:
@@ -4994,6 +5057,8 @@ snapshots:
   globals@17.14.0: {}
 
   graceful-fs@4.2.11: {}
+
+  hash-wasm@4.13.0: {}
 
   hashery@1.5.1:
     dependencies:

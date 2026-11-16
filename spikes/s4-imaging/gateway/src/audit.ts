@@ -1,6 +1,6 @@
 // One audit row per allowed request (IMG-25), written before the response is sent: if the row
 // cannot be written, the request fails (503) rather than going unaudited.
-import pg from 'pg';
+import type pg from 'pg';
 import type { Action } from './routes.ts';
 
 export interface AuditEntry {
@@ -17,8 +17,7 @@ export interface AuditLog {
   close(): Promise<void>;
 }
 
-export function createAuditLog(connectionString: string): AuditLog {
-  const pool = new pg.Pool({ connectionString, max: 8 });
+export function createAuditLog(pool: pg.Pool): AuditLog {
   return {
     write: async (e) => {
       await pool.query(

@@ -15,6 +15,8 @@ export default defineConfig(
       'node_modules/**',
       '.turbo/**',
       '.verify/**',
+      // Generated, git-ignored: test data and image build contexts (0.3-S4 spike).
+      '.cache/**',
       '.claude/worktrees/**',
     ],
   },

@@ -1,4 +1,4 @@
-export { multipartParts, stowBody } from './dicomweb.ts';
+export { datasetSha256, multipartParts, stowBody } from './dicomweb.ts';
 export { docker, dockerJson } from './docker.ts';
 export { s3Client } from './garage.ts';
 export { IMAGES, type ImageKey, PINNED_IMAGE, REQUIRED_ORTHANC_PLUGINS } from './images.ts';

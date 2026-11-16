@@ -1,5 +1,5 @@
 // multipart/related helpers for STOW-RS bodies and WADO-RS responses (tests and the bench).
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 
 /** A STOW-RS request body and its Content-Type for the given DICOM files. */
 export function stowBody(files: readonly Uint8Array[]): { body: Buffer; contentType: string } {
@@ -15,6 +15,21 @@ export function stowBody(files: readonly Uint8Array[]): { body: Buffer; contentT
     body: Buffer.concat(parts),
     contentType: `multipart/related; type="application/dicom"; boundary=${boundary}`,
   };
+}
+
+/**
+ * SHA-256 of a Part 10 file's dataset, after the preamble, marker and file meta group (0002).
+ * A C-STORE hop rewrites the meta group (the receiver writes its own); the dataset arrives
+ * byte for byte (owner decision, 0.3-S4b).
+ */
+export function datasetSha256(file: Uint8Array): string {
+  const bytes = Buffer.from(file.buffer, file.byteOffset, file.byteLength);
+  if (bytes.subarray(128, 132).toString('latin1') !== 'DICM') throw new Error('not Part 10');
+  // (0002,0000) UL, explicit VR little endian: tag 4, VR 2, length 2, value 4.
+  const groupLength = bytes.readUInt32LE(140);
+  return createHash('sha256')
+    .update(bytes.subarray(144 + groupLength))
+    .digest('hex');
 }
 
 /** The part bodies of a multipart/related response. */

@@ -40,6 +40,8 @@ export function parseGarageKey(text: string): S3Credentials {
 
 export interface Garage {
   container: string;
+  /** The RPC secret and admin token (log scans only). */
+  secrets: string[];
   cli(...args: string[]): Promise<ExecResult>;
   /** Creates the bucket and a key allowed to read and write it only (not owner). */
   tenantBucket(bucket: string): Promise<S3Credentials>;
@@ -53,14 +55,16 @@ export async function startGarage(options: {
 }): Promise<Garage> {
   const config = join(options.runDir, 'garage.toml');
   await writeFile(config, CONFIG);
+  const rpcSecret = randomBytes(32).toString('hex');
+  const adminToken = randomBytes(32).toString('base64url');
   const container = await runContainer({
     name: options.name,
     runId: options.runId,
     image: IMAGES.garage,
     networks: [{ network: options.network, aliases: ['garage'] }],
     secretEnv: {
-      GARAGE_RPC_SECRET: randomBytes(32).toString('hex'),
-      GARAGE_ADMIN_TOKEN: randomBytes(32).toString('base64url'),
+      GARAGE_RPC_SECRET: rpcSecret,
+      GARAGE_ADMIN_TOKEN: adminToken,
     },
     mounts: [[config, '/etc/garage.toml']],
     tmpfs: ['/var/lib/garage/meta', '/var/lib/garage/data'],
@@ -80,6 +84,7 @@ export async function startGarage(options: {
   await must('layout', 'apply', '--version', '1');
   return {
     container,
+    secrets: [rpcSecret, adminToken],
     cli,
     tenantBucket: async (bucket) => {
       await must('bucket', 'create', bucket);
