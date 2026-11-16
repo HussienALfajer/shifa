@@ -4,7 +4,7 @@
 // outright, never normalised.
 
 export type Role = 'viewer' | 'uploader' | 'edge';
-export type Action = 'search' | 'retrieve' | 'store';
+export type Action = 'search' | 'retrieve' | 'store' | 'upload' | 'push';
 
 export interface Route {
   routeClass: string;

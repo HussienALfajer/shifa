@@ -777,6 +777,36 @@ importers:
         specifier: 5.1.0
         version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.8(@types/node@24.19.2)(yaml@2.9.1))
 
+  spikes/s4-imaging/scenarios:
+    devDependencies:
+      '@shifa-spike/s4-generator':
+        specifier: workspace:*
+        version: link:../generator
+      '@shifa-spike/s4-stack':
+        specifier: workspace:*
+        version: link:../stack
+      '@shifa/eslint-config':
+        specifier: workspace:*
+        version: link:../../../tooling/eslint-config
+      '@shifa/tsconfig':
+        specifier: workspace:*
+        version: link:../../../tooling/tsconfig
+      '@types/node':
+        specifier: 24.19.2
+        version: 24.19.2
+      eslint:
+        specifier: 10.14.0
+        version: 10.14.0(supports-color@10.2.2)
+      playwright:
+        specifier: 1.65.1
+        version: 1.65.1
+      typescript:
+        specifier: 6.0.3
+        version: 6.0.3
+      vitest:
+        specifier: 5.1.0
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(vite@8.3.8(@types/node@24.19.2)(yaml@2.9.1))
+
   spikes/s4-imaging/stack:
     dependencies:
       '@shifa-spike/s4-generator':

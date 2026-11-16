@@ -318,11 +318,13 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
         tokenKey.toString('base64'),
         tokenKey.toString('hex'),
       ],
-      token: async ({ sub = 'spike-user', tenant, role, ttlSeconds = 300 }) => {
+      token: async ({ sub = 'spike-user', tenant, role, ttlSeconds = 300, typ, jti }) => {
         const payload = {
           sub,
           ...(tenant === undefined ? {} : { tenant }),
           ...(role === undefined ? {} : { role }),
+          ...(typ === undefined ? {} : { typ }),
+          ...(jti === undefined ? {} : { jti }),
         };
         return new SignJWT(payload)
           .setProtectedHeader({ alg: 'HS256' })

@@ -14,6 +14,37 @@ export interface StackOptions {
   browser?: boolean;
   /** Start the byte sink behind the link (link tests). Default false. */
   sink?: boolean;
+  /**
+   * Start the edge box for tenant `a` on the clinic network: an edge Orthanc (SQLite, DICOM
+   * server, Transfers peer `cloud` = the gateway through the link with a 12-hour edge
+   * credential), the dcmtk tools and an OHIF on the LAN pointing at the edge. Default false.
+   */
+  edge?: boolean;
+  /** Start OHIF behind the gateway (`/viewer/`). Default false. */
+  ohif?: boolean;
+}
+
+export interface EdgeJob {
+  ID: string;
+  State: 'Pending' | 'Running' | 'Success' | 'Failure' | 'Paused' | 'Retry';
+  Progress: number;
+  ErrorDescription: string;
+}
+
+export interface Edge {
+  container: string;
+  /** C-STORE of the given files (paths relative to `dir`) from the dcmtk container. */
+  storescu(dir: string, paths: readonly string[]): Promise<void>;
+  /** Starts a Transfers push of the study to the cloud peer; returns the job id. */
+  push(studyInstanceUid: string): Promise<string>;
+  job(id: string): Promise<EdgeJob>;
+  waitJob(id: string, timeoutMs: number): Promise<EdgeJob>;
+  /** Resubmits a failed job; returns the id to follow (the same job in Orthanc). */
+  resubmit(id: string): Promise<string>;
+  /** `docker restart` of the edge Orthanc; waits until it answers again. */
+  restart(): Promise<void>;
+  /** OHIF on the clinic LAN (edge data source), as clinic containers see it. */
+  clinicViewerUrl: string;
 }
 
 export interface S3Credentials {
@@ -81,6 +112,9 @@ export interface TokenClaims {
   role?: 'viewer' | 'uploader' | 'edge';
   /** Seconds until expiry (negative for an expired token). Default 300. */
   ttlSeconds?: number;
+  /** `viewer-code`: a one-time code for /viewer/session (with `jti`). */
+  typ?: 'viewer-code';
+  jti?: string;
 }
 
 export interface GatewayMetrics {
@@ -111,6 +145,7 @@ export interface Stack {
   gateway: { container: string; metrics(): Promise<GatewayMetrics> };
   link: Link;
   browser?: { container: string; wsEndpoint: string };
+  edge?: Edge;
   networks: { clinic: string; cloud: string; orthanc: string };
   /** Signs a gateway token with this run's key. */
   token(claims: TokenClaims): Promise<string>;
