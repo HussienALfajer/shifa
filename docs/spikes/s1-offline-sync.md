@@ -28,8 +28,8 @@ Both engines met every automated criterion on the reception scenarios with the s
 | 9 | Token expires during the outage | Pass | Pass | `session-expiry.spec.ts`: 10 queued, 0 synced before re-login, 10 synced once after |
 | 10 | Tenant A never receives tenant B rows; forged commands refused and logged by id | Pass | Pass | `tenant-scoping.spec.ts` (local store and, for PowerSync, the raw sync stream read with A's token); `tenancy.test.ts` (log lines: tenant id, command id, code only) |
 | 11 | Flutter probe: cached reads offline, SQLCipher, offline cancel syncs once | Pass | Pass | [0.3-S1e](../slices/0.3-s1e-flutter-probe.md): `flutter_probe/test/` (4 tests per engine, `flutter test` on the Windows host against the scenario stack); CI dispatch on Linux pending |
-| 12 | Owner's 2-hour manual run on two devices | Pending | Pending | [checklist](s1-manual-checklist.md) |
-| 13 | This report, ADR-0031 | Done (Proposed) | | reviewer and security-reviewer before the PR |
+| 12 | Owner's 2-hour manual run on two devices | Deferred | Deferred | owner, 2026-11-16 (OD-37): runs in Phase A on the real reception module, outbox only, before the first clinic pilot; [checklist](s1-manual-checklist.md) |
+| 13 | This report, ADR-0031 | Done (Accepted, owner 2026-11-16) | | reviewer and security-reviewer before the PR |
 
 Red proof: two deliberately broken engines fail the suite. One drops every tenth command: 142 of 157 received in the two-hours run, 151 of 158 on the degraded link, 9 of 10 after re-login. The other replays each batch without idempotency keys: 20 of 10 after re-login, and the two-hours run never settles.
 
@@ -71,9 +71,9 @@ Survival on tab close / browser restart (edge case): a persistent Chromium profi
 - **Not measured:** real mobile networks (the owner's manual run covers a LAN), eviction, battery.
 
 ## Owner's manual run (criterion 12)
-Pending: [checklist](s1-manual-checklist.md), once per engine.
+Deferred by the owner (2026-11-16, OD-37). The automated scenarios (criteria 6–10) already perform every scripted action of the checklist on both engines, through real network cuts; what the manual run adds is real hardware (Wi-Fi off, sleep, a real browser restart) and the owner's judgement of the screens, which is worth more on the real reception module than on this throwaway prototype. It runs in Phase A with the same [checklist](s1-manual-checklist.md), outbox engine only, before the first clinic pilot. Until then, real Wi-Fi loss and device sleep remain untested.
 
 ## Next
-1. Owner: manual run (both engines), then approve or change ADR-0031.
-2. 0.3-S1e: done locally on both engines (confirms the patient-app half of ADR-0031); dispatch `s1-offline` with `flutter=true` after the merge for the Linux run.
-3. On approval: ADR-0031 Accepted, ADR-0014 `Status:` line, OD-05 closed, SCH-34 updated.
+1. Done (owner, 2026-11-16): ADR-0031 Accepted, ADR-0014 `Status:` line, OD-05 closed, SCH-34 updated; manual run deferred (OD-37).
+2. 0.3-S1e merged (#55): dispatch `s1-offline` with `flutter=true` for the Linux run.
+3. Phase A: the manual run on the real reception module (outbox only) before the first clinic pilot.

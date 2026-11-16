@@ -1,6 +1,6 @@
 # ADR-0014: Offline-capable reception and patient app; sync engine chosen by spike
 
-Status: Proposed (blocked by OD-05) · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted (engine chosen by spike S1: custom outbox, [ADR-0031](0031-offline-sync-custom-outbox.md); OD-05 closed 2026-11-16) · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 Aleppo and Azaz suffer power and internet cuts [RN-03 §5]. A clinic that cannot register walk-ins or take cash during an outage will abandon the product. Candidate engines differ in maturity: PowerSync's self-hosted service moved to Apache 2.0 on 2026-11-03 and supports offline writes on web and mobile [RN-16 §4], but its web SDK 2.0 broke compatibility in 2026 [RN-17 §5] and its Flutter drift integration and free self-hosted edition are labelled alpha/beta [RN-19 §B5]. ElectricSQL is read-only sync; Zero 1.0 has no offline writes [RN-16 §4].
