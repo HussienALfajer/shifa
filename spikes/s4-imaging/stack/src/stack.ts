@@ -31,6 +31,8 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
     sink = false,
     edge = false,
     ohif = false,
+    storageEncryption = {},
+    edgeTransfers,
   } = options;
   const runId = randomBytes(4).toString('hex');
   const name = (role: string) => `s4-${runId}-${role}`;
@@ -85,6 +87,7 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
           httpPassword: t.http,
           bucket,
           s3: await garage.tenantBucket(bucket),
+          encrypted: storageEncryption[t.id] !== false,
         };
         const key = randomBytes(32);
         masterKeys.set(t.id, key);
@@ -186,6 +189,7 @@ export async function startStack(options: StackOptions = {}): Promise<Stack> {
         httpPassword: edgePassword,
         edgeToken,
         clinicViewerUrl: 'http://edge-viewer:8080',
+        ...(edgeTransfers ? { transfers: edgeTransfers } : {}),
       });
       started(edgeHandle.container);
       if (ohif) {

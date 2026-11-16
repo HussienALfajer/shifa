@@ -5,12 +5,12 @@ Sources: RN-14, RN-12, RN-13, RN-08, RN-07, RN-16, RN-17
 
 Purpose: specifies the shared imaging module used by dentistry and orthopedics — viewing, ingest, storage, measurements, dental mounts, serial comparison, sharing and the clinic-side edge components. Build phase: **Phase D**. Simple photo/PDF attachments (no DICOM) are part of [clinical records](clinical-records.md) in Phase A; specialty views are in [dental](dental.md) and [orthopedics](orthopedics.md).
 
-Related decisions: ADR-0019 (imaging stack: per-tenant Orthanc behind our gateway, OHIF viewer), ADR-0023 (no real patient data in dev). Open questions: OD-18 (edge box hardware, bandwidth, CBCT feasibility). See the [ADR index](../adr/README.md).
+Related decisions: ADR-0019 (imaging stack: per-tenant Orthanc behind our gateway, OHIF viewer), ADR-0035 (storage, browser upload and edge push; amends ADR-0019), ADR-0023 (no real patient data in dev). Open questions: OD-18 (edge box hardware, bandwidth, CBCT feasibility). See the [ADR index](../adr/README.md).
 
 ## Architecture rules
 
 - IMG-01 The archive is the official, unmodified Orthanc image (PostgreSQL index plugin, S3-compatible object storage plugin with encryption, DICOMweb, authorization and GDCM plugins); it is never reachable from the internet. [RN-14 §8]
-- IMG-02 One Orthanc instance per tenant, provisioned on demand only when the tenant's imaging entitlement is enabled; shared PostgreSQL server with a separate database per tenant and per-tenant bucket prefix. This avoids cross-tenant merging of identical studies (same UIDs uploaded by two clinics). [RN-14 §2] (per-tenant choice is an inference to validate at scale)
+- IMG-02 One Orthanc instance per tenant, provisioned on demand only when the tenant's imaging entitlement is enabled; shared PostgreSQL server with a separate database per tenant; one Garage bucket and one key per tenant (not a prefix: Garage grants per bucket, so a shared bucket lets one tenant's key read another's objects), objects encrypted with a per-tenant master key from the first write (ADR-0035, spike S4). This avoids cross-tenant merging of identical studies (same UIDs uploaded by two clinics). [RN-14 §2] (per-tenant choice is an inference to validate at scale)
 - IMG-03 All viewer and API traffic passes through our imaging gateway, which issues short-lived viewer tokens, maps tenant → Orthanc upstream, allow-lists DICOMweb routes (QIDO-RS, WADO-RS, WADO-URI, STOW-RS), audits every access and handles resumable uploads. Unknown routes are rejected (the Orthanc authorization plugin treats unknown URIs as "system"). [RN-14 §2]
 - IMG-04 AGPL boundary: no custom code runs inside the Orthanc process (no Python/Lua plugins). Our code talks to Orthanc only over REST/DICOM, keeping proprietary code licence-clean. [RN-14 §3]
 - IMG-05 An imaging worker (our code, out of process) consumes Orthanc change events, extracts metadata into the application DB (patient match, modality, tooth numbers, body part, side), and generates thumbnails/previews.
@@ -28,10 +28,10 @@ Related decisions: ADR-0019 (imaging stack: per-tenant Orthanc behind our gatewa
 
 ## Ingest
 
-- IMG-14 Browser upload of DICOM files and folders, including patient CDs/DVDs (DICOMDIR), with client-side validation and resumable chunked upload that survives connection drops. [RN-14 §4]
+- IMG-14 Browser upload of DICOM files and folders, including patient CDs/DVDs (DICOMDIR), with client-side validation and resumable chunked upload that survives connection drops. Protocol (ADR-0035): a session keyed by the folder's manifest (path, size, SHA-256 per file), chunks appended at the server's offset after a digest check, resume after a drop, a reload or in a second tab, the complete file stored by STOW-RS from the gateway; not STOW-RS per instance from the browser, which cannot finish a large single file between line drops. [RN-14 §4]
 - IMG-15 Phone photos of films/screens are stored as JPEG attachments flagged "non-diagnostic", optionally wrapped as DICOM Secondary Capture.
 - IMG-16 Each new study is matched to a patient (demographics + staff confirmation); unmatched studies land in a tenant "unassigned" inbox.
-- IMG-17 Clinic edge box (optional per clinic with panoramic/CBCT/CR devices): mini-PC + UPS running Orthanc (SQLite) that receives C-STORE from modalities, keeps recent months locally for LAN viewing, and pushes to the tenant's cloud instance via the Orthanc Transfers accelerator (HTTPS, compression, retry) when internet is available. [RN-14 §8]
+- IMG-17 Clinic edge box (optional per clinic with panoramic/CBCT/CR devices): mini-PC + UPS running Orthanc (SQLite) that receives C-STORE from modalities, keeps recent months locally for LAN viewing, and pushes to the tenant's cloud instance via the Orthanc Transfers accelerator (HTTPS, compression, retry) when internet is available. Path (ADR-0035): through our gateway, which allows only the Transfers push routes and only for an edge credential (client certificate bound to the box); 512 KB buckets; an edge agent keeps its own queue and pushes again after a restart, because Orthanc loses a Transfers push job on restart. [RN-14 §8]
 - IMG-18 Windows capture bridge agent for intraoral sensors and cameras: folder-watch and DICOM/JPEG import first, then TWAIN; offline queue; launched from the web app by deep link. [RN-14 §4]
 
 ## Dental-specific

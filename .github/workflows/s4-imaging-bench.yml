@@ -1,0 +1,73 @@
+# Spike 0.3-S4c, criterion 11: the imaging bench (`bench:s4`) on the chosen profiles × studies ×
+# methods, then the viewer on those profiles and the edge LAN, encryption on against off, and the
+# chunk (256 KiB, 4 MiB) and Transfers bucket (4 MB) variants on P3. Manual dispatch only; never
+# part of PR CI (OD-31). A workflow of its own, beside `s4-imaging`, because that one's suites
+# must run unconditionally (scripts/test/spike-tests.test.mjs). P1 × 1 GB takes about 2.5 hours
+# per method: dispatch P1 and P3 separately when the matrix is large. Uploads `.verify/s4/`
+# (counts, bytes and times only; no tags, names or image content).
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: s4-imaging-bench
+
+on:
+  workflow_dispatch:
+    inputs:
+      profiles:
+        description: Profiles (comma-separated, P1–P3)
+        type: string
+        default: P1,P3
+      studies:
+        description: Studies (comma-separated)
+        type: string
+        default: cbct-300-multi,cbct-1g-multi
+      methods:
+        description: Methods (chunked, chunked-par3, stow, edge)
+        type: string
+        default: chunked,stow,edge
+
+permissions: {}
+
+concurrency:
+  group: s4-imaging-bench
+  cancel-in-progress: false
+
+jobs:
+  bench:
+    name: bench (${{ inputs.profiles }} × ${{ inputs.studies }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Disk space and kernel
+        run: |
+          df -h /
+          docker version --format 'docker {{.Server.Version}}, kernel {{.Server.KernelVersion}}'
+      # Inputs reach the script through the environment only, checked against a strict pattern
+      # (no expression is expanded into the shell).
+      - name: Bench
+        working-directory: spikes/s4-imaging/scenarios
+        env:
+          PROFILES: ${{ inputs.profiles }}
+          STUDIES: ${{ inputs.studies }}
+          METHODS: ${{ inputs.methods }}
+        run: |
+          for v in "$PROFILES" "$STUDIES" "$METHODS"; do
+            printf '%s' "$v" | grep -Eq '^[A-Za-z0-9,-]+$' || { echo "bad input"; exit 2; }
+          done
+          pnpm run bench:s4 --profiles "$PROFILES" --studies "$STUDIES" --methods "$METHODS"
+      - name: Upload .verify/s4
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: s4-bench
+          path: .verify/s4
+          retention-days: 90
