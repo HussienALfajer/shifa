@@ -54,6 +54,26 @@ describe('ci.yml verify jobs', () => {
     }
   });
 
+  it('the tool-only jobs stay tool-only: no package install and no repository script', () => {
+    assert.deepEqual(runs(ci.jobs.audit).filter(Boolean), ['pnpm audit --audit-level high']);
+    for (const id of ['scope', 'caches', 'secrets', 'workflows']) {
+      for (const r of runs(ci.jobs[id])) {
+        assert.ok(
+          !/\bpnpm\b|\bnpm\b|\bnode\b|\bnpx\b|scripts\/|\bdart\b|\bbash\b/.test(r),
+          `${id}: ${r}`,
+        );
+      }
+    }
+    assert.equal(
+      stepNamed('caches', 'Fetch pub packages').run,
+      '"${SHIFA_FLUTTER_ROOT}/bin/flutter" pub get --enforce-lockfile',
+    );
+    assert.match(
+      stepNamed('caches', 'Install Flutter').run,
+      /^# System tools only[^\n]*\n[^\n]*\nexport PATH=\/usr\/sbin:\/usr\/bin:\/sbin:\/bin\n/,
+    );
+  });
+
   it('cannot switch a verify step off: no if, shell or continue-on-error on it or its job', () => {
     for (const id of [...CODE_JOBS, 'caches', 'verify']) {
       const job = ci.jobs[id];

@@ -110,6 +110,9 @@ jobs:
           CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
           FVMRC: ${{ github.workspace }}/.fvmrc
         run: |
+          # System tools only: a restored cache entry could place look-alikes (sha256sum, find,
+          # tar) in a directory that comes earlier on the runner's PATH (OD-35).
+          export PATH=/usr/sbin:/usr/bin:/sbin:/bin
           tree_digest() {
             ( cd "$1" && {
               find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
@@ -368,6 +371,9 @@ jobs:
           CACHE_HIT: ${{ steps.flutter-cache.outputs.cache-hit }}
           FVMRC: ${{ github.workspace }}/.fvmrc
         run: |
+          # System tools only: a restored cache entry could place look-alikes (sha256sum, find,
+          # tar) in a directory that comes earlier on the runner's PATH (OD-35).
+          export PATH=/usr/sbin:/usr/bin:/sbin:/bin
           tree_digest() {
             ( cd "$1" && {
               find . -printf '%y %m %p -> %l\n' | LC_ALL=C sort
