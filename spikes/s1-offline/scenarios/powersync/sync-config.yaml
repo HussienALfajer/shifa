@@ -78,3 +78,14 @@ streams:
        WHERE tenant_id = auth.parameter('tenant_id')
          AND patient_id = auth.user_id()
          AND auth.parameter('role') = 'patient'
+
+  # The patient app's ticket of today (slice 0.3-S1e): only tickets issued for this patient.
+  patient_tickets:
+    auto_subscribe: true
+    query: >-
+      SELECT id, practitioner_id, shift_date, provisional_number, real_number, status, walk_in_label
+        FROM s1.queue_ticket
+       WHERE tenant_id = auth.parameter('tenant_id')
+         AND patient_id = auth.user_id()
+         AND shift_date = auth.parameter('day')
+         AND auth.parameter('role') = 'patient'

@@ -20,8 +20,12 @@ export type ReasonCode = keyof typeof MESSAGES;
 
 /** Raised by a rule to refuse a command; the handler stores it as the command's result. */
 export class Refusal extends Error {
-  constructor(readonly code: ReasonCode) {
+  // A plain field, not a parameter property: Node's type stripping runs this file directly.
+  readonly code: ReasonCode;
+
+  constructor(code: ReasonCode) {
     super(code);
+    this.code = code;
     this.name = 'Refusal';
   }
 }

@@ -7,7 +7,8 @@
     "scenario": "playwright test",
     "serve": "node harness/serve.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "probe": "node harness/probe.ts"
   },
   "devDependencies": {
     "@playwright/test": "1.65.1",

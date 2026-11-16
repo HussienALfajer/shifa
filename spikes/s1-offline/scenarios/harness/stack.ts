@@ -117,7 +117,7 @@ export async function startPostgres(
 async function listen(
   db: ShifaDb,
   ttl: number,
-  staticDir: string,
+  staticDir: string | undefined,
   keys: SigningKeys,
 ): Promise<FastifyInstance> {
   const app = await buildServer({
@@ -125,7 +125,7 @@ async function listen(
     identities: syntheticIdentities(),
     tokenTtlSeconds: ttl,
     log: () => undefined,
-    staticDir,
+    ...(staticDir ? { staticDir } : {}),
     keys,
   });
   await app.listen({ port: 0, host: '0.0.0.0' });
@@ -135,8 +135,24 @@ async function listen(
 const envKey = (prefix: string, device: string) =>
   `${prefix}_${device.replace('-', '_').toUpperCase()}`;
 
-export async function startStack(engine: Engine): Promise<Stack> {
-  const staticDir = buildPrototype(engine);
+export interface StackOptions {
+  /** Build and serve the web prototype (default true; the Flutter probe needs none). */
+  prototype?: boolean;
+  /** Toxiproxy devices (default: the scenario suite's devices). */
+  devices?: readonly string[];
+}
+
+/** The prototype directory to serve, or undefined when the stack runs without one. */
+export function prototypeDir(
+  engine: Engine,
+  options: StackOptions,
+  build: (engine: Engine) => string = buildPrototype,
+): string | undefined {
+  return options.prototype === false ? undefined : build(engine);
+}
+
+export async function startStack(engine: Engine, options: StackOptions = {}): Promise<Stack> {
+  const staticDir = prototypeDir(engine, options);
   const network = await new Network().start();
   const { pg, urls } = await startPostgres(network);
   const db = createDb(urls.app);
@@ -167,7 +183,7 @@ export async function startStack(engine: Engine): Promise<Stack> {
   if (powersync)
     env['S1_POWERSYNC_URL'] =
       `http://${powersync.getHost()}:${String(powersync.getMappedPort(8080))}`;
-  for (const device of [...DEVICES, EXPIRY_DEVICE]) {
+  for (const device of options.devices ?? [...DEVICES, EXPIRY_DEVICE]) {
     const upstream = device === EXPIRY_DEVICE ? port(short) : port(normal);
     const proxy = await toxi.createProxy({
       name: device,
