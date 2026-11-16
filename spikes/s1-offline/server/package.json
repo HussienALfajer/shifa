@@ -12,7 +12,7 @@
     "start": "node src/main.ts",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test:spike": "vitest run"
   },
   "dependencies": {
     "@fastify/static": "10.1.11",
