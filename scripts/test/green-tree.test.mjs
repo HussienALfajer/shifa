@@ -17,6 +17,8 @@ function repoWithCodeChange() {
   git('config', 'user.email', 'test@example.invalid');
   git('config', 'user.name', 'test');
   git('config', 'core.autocrlf', 'false');
+  // Hermetic: a machine-wide commit.gpgsign (cloud sessions sign commits) must not apply here.
+  git('config', 'commit.gpgsign', 'false');
   mkdirSync(join(dir, 'apps'));
   // As in the real repository: the record itself must not change the tree it describes.
   writeFileSync(join(dir, '.gitignore'), '.claude/state/\n');

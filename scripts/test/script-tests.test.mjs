@@ -90,6 +90,8 @@ describe('changedSinceMain', () => {
     git(repo, 'config', 'user.email', 'test@example.invalid');
     git(repo, 'config', 'user.name', 'test');
     git(repo, 'config', 'core.autocrlf', 'false');
+    // Hermetic: a machine-wide commit.gpgsign (cloud sessions sign commits) must not apply here.
+    git(repo, 'config', 'commit.gpgsign', 'false');
     return repo;
   };
 
