@@ -1,6 +1,6 @@
 # Shifa documentation
 
-Status: Living · Last updated: 2026-11-08 · Owner: product owner
+Status: Living · Last updated: 2026-11-17 · Owner: product owner
 
 Map of the documentation. Each kind of information has exactly one home; link to it instead of repeating it.
 
@@ -13,6 +13,7 @@ Map of the documentation. Each kind of information has exactly one home; link to
 | Questions waiting for the owner | [open-decisions.md](open-decisions.md) |
 | How we build (Claude Code workflow, tiers, definition of done) | [process/development-workflow.md](process/development-workflow.md) |
 | Set up the development machine (WSL2, `pnpm env:check`) | [process/wsl2-setup.md](process/wsl2-setup.md) |
+| Work in a Claude Code cloud session (what runs there, PRs without `gh`) | [process/cloud-sessions.md](process/cloud-sessions.md) |
 | Traces, logs, metrics and errors locally (`pnpm obs:*`, PLT-52 scrubbing) | [process/observability.md](process/observability.md) |
 | Backups, point-in-time restore and the restore drill (`pnpm backup:*`, PLT-51) | [process/backup-restore.md](process/backup-restore.md) |
 | System shape and technology | [architecture/overview.md](architecture/overview.md) |
