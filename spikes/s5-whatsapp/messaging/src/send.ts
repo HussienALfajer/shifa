@@ -108,9 +108,9 @@ export async function enqueue(
   const inserted = await rows<{ seq: string }>(
     client,
     `insert into s5.delivery_attempt
-       (id, clinic_id, patient_id, session, template_key, variant, body, confirmation, status, created_at, updated_at)
-     values ($1, $2, $3, $4, $5, $6, $7, $8, 'queued', $9, $9) returning seq`,
-    [id, clinicId, patientId, t.session, templateKey, variant, body, confirmation, now],
+       (id, clinic_id, patient_id, phone, session, template_key, variant, body, confirmation, status, created_at, updated_at)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'queued', $10, $10) returning seq`,
+    [id, clinicId, patientId, t.phone, t.session, templateKey, variant, body, confirmation, now],
   );
   ctx.log('queued', { clinicId, templateKey, session: t.session, seq: Number(inserted[0]?.seq) });
   return { status: 'queued', attemptId: id, session: t.session };

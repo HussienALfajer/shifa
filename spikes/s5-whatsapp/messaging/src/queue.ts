@@ -52,11 +52,26 @@ export async function startQueue(
   if (mode === 'worker') {
     await boss.work<{ session: string }>(
       TICK,
-      { pollingIntervalSeconds: 0.5, batchSize: 1 },
+      // A tick may wait inline for its gap (up to inlineWaitMaxMs): one handler per session at
+      // a time, so sessions never queue behind each other inside one worker (MSG-10).
+      {
+        pollingIntervalSeconds: 0.5,
+        batchSize: 1,
+        localConcurrency: Math.max(4, config.sessions.length),
+      },
       async (jobs) => {
         for (const job of jobs) {
           const session = job.data.session;
-          const result = await tick(ctx, session);
+          let result: Awaited<ReturnType<typeof tick>>;
+          try {
+            result = await tick(ctx, session);
+          } catch {
+            // A failed tick must not stall the session: try again shortly (the next tick
+            // turns a row left in `sending` into "maybe sent").
+            ctx.log('tick_error', { session });
+            await kick(session, ctx.deps.now() + 5_000);
+            continue;
+          }
           // Kicks sent while this job is active take the one queued slot (stately).
           if (result === 'sent' || result === 'progress') await kick(session);
           if (result === 'busy') await kick(session, ctx.deps.now() + 500);

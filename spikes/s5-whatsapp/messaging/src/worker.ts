@@ -7,6 +7,8 @@ import { createMessaging } from './service.ts';
 type Serialised = Omit<MessagingConfig, 'allowlist'> & { allowlist: string[] };
 const raw = process.env['S5_WORKER_CONFIG'];
 if (!raw) throw new Error('S5_WORKER_CONFIG is not set');
+// The config holds per-run keys: keep it out of the environment of any child process.
+delete process.env['S5_WORKER_CONFIG'];
 const parsed = JSON.parse(raw) as Serialised;
 const messaging = await createMessaging({
   ...parsed,

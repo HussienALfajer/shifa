@@ -11,19 +11,14 @@ interface AttemptRow {
   clinic_id: string;
   patient_id: string;
   body: string;
+  /** The number the message was queued for (the one that opted in). */
+  phone: string;
 }
 
 /** Moves the given attempts (already in their final status) to inbox + manual task. */
 async function addFallback(ctx: Ctx, client: Client, attempts: AttemptRow[], maybeSent: boolean) {
   for (const a of attempts) {
-    const phone = (
-      await rows<{ phone: string }>(
-        client,
-        'select phone from s5.patient where clinic_id = $1 and patient_id = $2',
-        [a.clinic_id, a.patient_id],
-      )
-    )[0]?.phone;
-    const link = `https://wa.me/${(phone ?? '').replace(/^\+/, '')}?text=${encodeURIComponent(a.body)}`;
+    const link = `https://wa.me/${a.phone.replace(/^\+/, '')}?text=${encodeURIComponent(a.body)}`;
     await client.query(
       `insert into s5.inbox (clinic_id, patient_id, attempt_id, created_at) values ($1, $2, $3, $4)
        on conflict (attempt_id) do nothing`,
@@ -48,7 +43,7 @@ export async function fallbackQueued(ctx: Ctx, client: Client, session: string, 
     client,
     `update s5.delivery_attempt set status = 'fallback', reason = $2, updated_at = $3
      where session = $1 and status = 'queued'
-     returning id, seq, clinic_id, patient_id, body`,
+     returning id, seq, clinic_id, patient_id, body, phone`,
     [session, reason, ts(ctx)],
   );
   moved.sort((a, b) => Number(a.seq) - Number(b.seq));
@@ -67,7 +62,7 @@ export async function settleAttempt(
   const settled = await rows<AttemptRow>(
     client,
     `update s5.delivery_attempt set status = $2, reason = $3, updated_at = $4
-     where id = $1 and status = any($5) returning id, seq, clinic_id, patient_id, body`,
+     where id = $1 and status = any($5) returning id, seq, clinic_id, patient_id, body, phone`,
     [id, outcome, reason, ts(ctx), fromStatuses],
   );
   await addFallback(ctx, client, settled, outcome === 'unknown');

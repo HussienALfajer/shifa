@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-16 · Owner: product owner
+Status: Living · Last updated: 2026-11-17 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -93,3 +93,15 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Bench checks** (0.3-S4c security review N8, N9): the encryption overhead run does not confirm that tenant a's objects are encrypted and tenant b's are not (a silent switch failure would skew the figure), and `encryption.test.ts` checks tenant a only; `bench.test.ts` looks for one Study Instance UID, not for any UID-shaped string or a strict schema of `bench.json`.
 - **PHI check scope** (0.3-S4a security review): flag non-empty private tags and use the PS3.15 Annex E Basic Profile list (`PatientAge`, `StudyTime`, `StationName`, `IssuerOfPatientID`, `PatientComments`, `BurnedInAnnotation`, …).
 - **Link and dcmtk images** (0.3-S4a security review): `apk`/`apt` packages are not version-pinned (bases pinned by digest).
+- **Breaker on a standing warning** (0.3-S5a review N2, settle in 0.3-S5c): WAHA keeps `cappingStatus` at FIRST_WARNING for the whole cycle, so the next `session.status` after an admin resume trips the breaker again; a ban signal during a pause does not extend `paused_until`. Store the last warning value, trip only when it changes, and extend with `greatest(paused_until, now + 24 h)`; ask the owner whether a standing warning should block resumption.
+- **Ordering of `session.status` events** (0.3-S5a review N6): a late `FAILED` delivered after `WORKING` sends the queue to fallback and raises a false "down" alert until the next health run. Store the envelope timestamp per session and apply only newer events.
+- **ERROR ack before a reordered DEVICE ack** (0.3-S5a review N7): a delivered message can be marked failed with a "not sent" manual task, so the patient may get it twice. 0.3-S5c checks whether GOWS can reorder these; if so, treat ERROR after any delivery evidence as "maybe sent".
+- **Scheduler-day assertions that the gap already implies** (0.3-S5a review N8): "at most 15 before 08:05" and "at most 30 in 10 minutes" follow from the 20 s gap alone; only the 08:00–08:15 first-send bound proves the spread. Replace them in the Phase A scheduler tests with a check on the spread of the first sends after 08:00.
+- **Webhook replay window** (0.3-S5a security review 4): replay protection rests on the unbounded `webhook_seen` table. Phase A: refuse signed envelopes older than about 10 minutes (the `timestamp` is inside the signed body) and prune the table after that window.
+- **Admin resume per clinic** (0.3-S5a security review 2, in 0.3-S5b): one global token resumes any session. Check the caller's clinic against `session.clinic_id`, and keep the platform session to platform admins.
+- **WAHA container runtime hardening** (0.3-S5a security review 6, before 0.3-S5c real traffic): `--cap-drop ALL`, `--security-opt no-new-privileges`, read-only root with tmpfs, non-root user if the image allows, pids and memory limits.
+- **WAHA roles across containers** (0.3-S5a security review 7): both WAHA roles share one PostgreSQL, and PUBLIC CONNECT lets each reach the other's `waha_*` databases (tables stay owner-only). Revoke CONNECT from PUBLIC after WAHA creates its databases or give each WAHA container its own PostgreSQL; add a platform-versus-clinics test (MSG-09).
+- **Template variable bounds** (0.3-S5a security review 8): placeholders accept any text, which weakens "no free-form bulk". Phase A templates validate each placeholder (name length, date and time formats, no URLs).
+- **Message body in the manual-send link** (0.3-S5a security review 9): `wa.me/<phone>?text=<body>` puts the message in a URL (browser history). By design for MSG-16; Phase A decides whether reception copies the text instead.
+- **Allowlist from the environment** (0.3-S5a review N9, in 0.3-S5b tooling): the allowlist is a `Set` in config; the manual-run tooling reads it from an untracked env file.
+

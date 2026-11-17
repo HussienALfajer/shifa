@@ -46,5 +46,9 @@ export async function runHealth(ctx: Ctx): Promise<void> {
       }
     });
   }
-  for (const name of resumed) await ctx.kick(name);
+  // Also a backstop for a stalled queue: every session with work left gets a tick.
+  const pending = await ctx.db.query<{ session: string }>(
+    "select distinct session from s5.delivery_attempt where status in ('queued', 'sending')",
+  );
+  for (const name of new Set([...resumed, ...pending.map((r) => r.session)])) await ctx.kick(name);
 }

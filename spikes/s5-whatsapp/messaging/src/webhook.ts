@@ -63,7 +63,9 @@ function dedupeKey(event: string, envelope: Envelope): string {
 export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
   app.post<{ Params: { container: string } }>('/webhooks/:container', async (request, reply) => {
     const container = request.params.container;
-    const conf = ctx.config.containers[container];
+    const conf = Object.hasOwn(ctx.config.containers, container)
+      ? ctx.config.containers[container]
+      : undefined;
     const raw = request.body as Buffer;
     if (!conf) {
       ctx.log('webhook_refused', { reason: 'unknown_container' });
@@ -99,6 +101,13 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
             undefined,
             ctx.config.sendTimeoutMs,
           );
+          // A lookup that failed (timeout, cut connection, 5xx) is not an answer: refuse without
+          // recording the event, so WAHA's webhook retries deliver it again (an opt-out must
+          // not be lost). Only "answered, no phone number" is unresolvable (fails closed).
+          if (res.kind !== 'ok' && !(res.kind === 'http' && res.status < 500)) {
+            ctx.log('lid_lookup_failed', { session: name, reason: res.kind });
+            return reply.code(503).send({ error: 'lid lookup failed' });
+          }
           chat = res.kind === 'ok' && typeof res.json['pn'] === 'string' ? res.json['pn'] : null;
           if (!chat) ctx.log('lid_unresolved', { session: name });
         }

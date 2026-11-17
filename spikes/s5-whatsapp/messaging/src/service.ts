@@ -42,6 +42,12 @@ export async function createMessaging(
   config: MessagingConfig,
   deps: Partial<Deps> = {},
 ): Promise<Messaging> {
+  // Short or empty keys would make the admin token or webhook signatures guessable.
+  const keys = [
+    config.adminToken,
+    ...Object.values(config.containers).flatMap((c) => [c.apiKey, c.hmacKey]),
+  ];
+  if (keys.some((k) => k.length < 16)) throw new Error('every key and token needs 16+ characters');
   const allDeps: Deps = { ...defaultDeps, ...deps };
   const db = new Db(config.databaseUrl);
   await db.migrate();
@@ -91,11 +97,25 @@ export async function createMessaging(
     sendWhatsApp: (clinicId, patientId, templateKey, vars) =>
       sendWhatsApp(ctx, clinicId, patientId, templateKey, vars),
     async registerPatient(clinicId, patientId, phone) {
-      await db.query(
-        `insert into s5.patient (clinic_id, patient_id, phone) values ($1, $2, $3)
-         on conflict (clinic_id, patient_id) do update set phone = excluded.phone`,
-        [clinicId, patientId, phone],
-      );
+      await db.tx(async (client) => {
+        const before = await client.query<{ phone: string }>(
+          'select phone from s5.patient where clinic_id = $1 and patient_id = $2 for update',
+          [clinicId, patientId],
+        );
+        await client.query(
+          `insert into s5.patient (clinic_id, patient_id, phone) values ($1, $2, $3)
+           on conflict (clinic_id, patient_id) do update set phone = excluded.phone`,
+          [clinicId, patientId, phone],
+        );
+        // Opt-in belongs to the number that wrote (MSG-13): a new number starts without it.
+        const old = before.rows[0]?.phone;
+        if (old !== undefined && old !== phone) {
+          await client.query('delete from s5.optin where clinic_id = $1 and patient_id = $2', [
+            clinicId,
+            patientId,
+          ]);
+        }
+      });
     },
     tick: (session) => tick(ctx, session),
     runHealth: health,

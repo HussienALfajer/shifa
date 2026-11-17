@@ -43,6 +43,9 @@ create table if not exists s5.delivery_attempt (
   seq bigserial unique,
   clinic_id text not null,
   patient_id text not null,
+  -- The number the message was queued for; the send goes there only if it is still the
+  -- patient's number and on the allowlist.
+  phone text not null,
   session text not null references s5.session (name),
   template_key text not null,
   variant int not null,

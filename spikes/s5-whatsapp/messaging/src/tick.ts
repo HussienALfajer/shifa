@@ -9,6 +9,7 @@ import { type Ctx, loadSession, sendable, ts } from './context.ts';
 import { type Client, rows } from './db.ts';
 import { fallbackQueued, markGatewayDown, settleAttempt } from './fallback.ts';
 import { nextSendAt, typingMs } from './scheduler.ts';
+import { isAllowlisted } from './send.ts';
 import { banCode, chatOfPhone, type WahaResult, wahaCall } from './waha.ts';
 
 export type TickResult = 'idle' | 'deferred' | 'sent' | 'progress' | 'busy';
@@ -20,12 +21,16 @@ interface Head {
   patient_id: string;
   body: string;
   confirmation: boolean;
+  /** The number the message was queued for. */
   phone: string;
+  /** The patient's number now (it may have changed since). */
+  current_phone: string;
   opted_out: boolean | null;
 }
 
 const HEAD_SQL = `
-  select a.id, a.seq, a.clinic_id, a.patient_id, a.body, a.confirmation, p.phone, o.opted_out
+  select a.id, a.seq, a.clinic_id, a.patient_id, a.body, a.confirmation, a.phone,
+    p.phone as current_phone, o.opted_out
   from s5.delivery_attempt a
   join s5.patient p on p.clinic_id = a.clinic_id and p.patient_id = a.patient_id
   left join s5.optin o on o.clinic_id = a.clinic_id and o.patient_id = a.patient_id
@@ -33,6 +38,29 @@ const HEAD_SQL = `
   order by a.seq limit 1`;
 
 /** Marks rows left in `sending` by a dead handler as unknown (lock held: nobody else sends). */
+/**
+ * Why the head must not go out (MSG-13, MSG-32): opted out, the number changed since it was
+ * queued (the opt-in belonged to the old number), or the number is off the allowlist.
+ */
+function undeliverable(ctx: Ctx, head: Head): string | null {
+  if (!head.confirmation && head.opted_out === true) return 'opted_out';
+  if (head.phone !== head.current_phone) return 'phone_changed';
+  if (!isAllowlisted(ctx, head.phone)) return 'allowlist';
+  return null;
+}
+
+async function drop(ctx: Ctx, client: Client, head: Head, reason: string) {
+  await client.query(
+    "update s5.delivery_attempt set status = 'dropped', reason = $3, updated_at = $2 where id = $1",
+    [head.id, ts(ctx), reason],
+  );
+  ctx.log(reason === 'allowlist' ? 'allowlist_drop' : 'send_dropped', {
+    clinicId: head.clinic_id,
+    seq: Number(head.seq),
+    reason,
+  });
+}
+
 async function sweepOrphans(ctx: Ctx, client: Client, session: string) {
   const orphans = await rows<{ id: string; seq: string }>(
     client,
@@ -40,6 +68,11 @@ async function sweepOrphans(ctx: Ctx, client: Client, session: string) {
     [session],
   );
   for (const o of orphans) {
+    // It may have been sent: count it for the gap and the rolling cap.
+    await client.query(
+      'update s5.delivery_attempt set send_called_at = coalesce(send_called_at, sending_at) where id = $1',
+      [o.id],
+    );
     await settleAttempt(ctx, client, o.id, 'unknown', 'handler_lost', ['sending']);
     ctx.log('orphan_unknown', { session, seq: Number(o.seq) });
   }
@@ -95,11 +128,9 @@ async function tickLocked(ctx: Ctx, name: string): Promise<TickResult> {
     }
     const head = (await rows<Head>(client, HEAD_SQL, [name]))[0];
     if (!head) return 'idle' as const;
-    if (!head.confirmation && head.opted_out === true) {
-      await client.query(
-        "update s5.delivery_attempt set status = 'dropped', reason = 'opted_out', updated_at = $2 where id = $1",
-        [head.id, ts(ctx)],
-      );
+    const reason = undeliverable(ctx, head);
+    if (reason) {
+      await drop(ctx, client, head, reason);
       return 'progress' as const;
     }
     const typing = typingMs(head.body.length, config.pacing);
@@ -127,7 +158,12 @@ async function tickLocked(ctx: Ctx, name: string): Promise<TickResult> {
     const s = await loadSession(client, name, true);
     if (!s || !sendable(s)) return false;
     const fresh = (await rows<Head>(client, HEAD_SQL, [name]))[0];
-    if (fresh?.id !== head.id || (!fresh.confirmation && fresh.opted_out === true)) return false;
+    if (fresh?.id !== head.id) return false;
+    const reason = undeliverable(ctx, fresh);
+    if (reason) {
+      await drop(ctx, client, fresh, reason);
+      return false;
+    }
     await client.query(
       "update s5.delivery_attempt set status = 'sending', sending_at = $2, worker = $3, updated_at = $2 where id = $1",
       [head.id, ts(ctx), String(process.pid)],
@@ -162,6 +198,16 @@ async function send(
   let result: WahaResult = pre;
   let calledAt: number | null = null;
   if (pre.kind === 'ok') {
+    // If the lock connection was lost, another tick may already have marked this row
+    // "maybe sent": then it must not go out.
+    const still = await ctx.db.query<{ status: string }>(
+      'select status from s5.delivery_attempt where id = $1',
+      [head.id],
+    );
+    if (still[0]?.status !== 'sending') {
+      ctx.log('send_abandoned', { session: name, seq: Number(head.seq) });
+      return 'progress';
+    }
     calledAt = ctx.deps.now();
     result = await call('/api/sendText', { text: head.body, linkPreview: false });
   }
