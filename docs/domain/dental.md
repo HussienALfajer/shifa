@@ -130,7 +130,7 @@ Usability evidence: new users completed only 43% of charting tasks correctly in 
 
 - Chart logic is a pure TypeScript package with unit tests: surface alias resolution per tooth, dentition mode transitions, bridge group integrity, status transitions, "as of date" reconstruction from events.
 - Perio: CAL = PD + GM sign convention tests; index calculations (BOP %, O'Leary %) against hand-computed fixtures; staging assistant fixtures from published examples (reviewed by the advisor, OD-17).
-- Usability: interactive prototype (spike [0.3-S8](../specs/spikes/0.3-s8-charts.md), OD-47) then coded chart tested with 3–5 local dentists on scripted tasks (record missing vs extracted, chart MOD composite, plan a 3-unit bridge, enter a full perio chart); target task success well above the 43% legacy baseline.
+- Usability: interactive prototype (spike 0.3-S8, OD-47) then coded chart tested with 3–5 local dentists on scripted tasks (record missing vs extracted, chart MOD composite, plan a 3-unit bridge, enter a full perio chart); target task success well above the 43% legacy baseline.
 - Money: completing a plan item produces exactly one charge in the snapshotted currency; installment schedule totals equal accepted plan totals after discounts.
 - Visual regression: chart rendering snapshots in RTL layout for permanent, primary and mixed dentitions.
 - Tenant isolation: chart, perio, lab and ortho queries return zero rows across tenants under the application role.
