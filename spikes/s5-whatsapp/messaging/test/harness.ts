@@ -14,6 +14,9 @@ import {
   type SessionConfig,
 } from '../src/index.ts';
 
+/** The fake's first own number (`9639900` + counter), a synthetic Syrian mobile. */
+export const PLATFORM_NUMBER = '+963990000001';
+
 export const START = Date.parse('2026-11-17T10:00:00+03:00');
 
 export class ManualClock {
@@ -74,6 +77,8 @@ export interface EnvOptions {
   pacing?: PacingConfig;
   sendTimeoutMs?: number;
   sessions?: SessionConfig[];
+  /** Raw webhook capture folder (manual-run tooling, 0.3-S5b). */
+  rawCaptureDir?: string;
 }
 
 /** One fake per container; the default sessions use `clinics` and `platform`. */
@@ -81,6 +86,8 @@ export type Fakes = Record<string, FakeWaha> & { clinics?: FakeWaha; platform?: 
 
 export interface Env {
   messaging: Messaging;
+  /** Base URL of the service on 127.0.0.1. */
+  url: string;
   config: MessagingConfig;
   fakes: Fakes;
   clock: ManualClock;
@@ -155,6 +162,9 @@ export async function newEnv(db: MessagingDb, options: EnvOptions = {}): Promise
     sendTimeoutMs: options.sendTimeoutMs ?? 2_000,
     adminToken: secret(),
     queue: 'off',
+    // The platform fake's only session gets the fake's first own number.
+    verify: { platformNumber: PLATFORM_NUMBER, serverKey: secret() },
+    ...(options.rawCaptureDir ? { rawCaptureDir: options.rawCaptureDir } : {}),
   };
   const messaging = await createMessaging(config, {
     now: clock.now,
@@ -174,6 +184,7 @@ export async function newEnv(db: MessagingDb, options: EnvOptions = {}): Promise
   let patientCount = 0;
   return {
     messaging,
+    url,
     config,
     fakes,
     clock,

@@ -37,6 +37,9 @@ jobs:
       - name: Fake WAHA (OpenAPI parity)
         working-directory: spikes/s5-whatsapp/fake-waha
         run: pnpm run test:spike
-      - name: Messaging (webhooks, allowlist, opt-in, pacing, queue, breaker, health, acks, logs)
+      - name: Messaging (webhooks, allowlist, opt-in, pacing, queue, breaker, health, acks, verification, separation, scrubber, logs)
         working-directory: spikes/s5-whatsapp/messaging
         run: pnpm run test:spike
+      - name: Committed fixtures hold only synthetic numbers (0.3-S5b)
+        working-directory: spikes/s5-whatsapp/messaging
+        run: node scripts/check-fixtures.ts

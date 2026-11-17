@@ -14,7 +14,7 @@ import {
   type SessionConfig,
 } from '../src/index.ts';
 import { spawnWorker, type WorkerProcess } from '../src/spawn.ts';
-import { useDatabase } from './harness.ts';
+import { PLATFORM_NUMBER, useDatabase } from './harness.ts';
 
 const pg = useDatabase();
 const secret = () => randomBytes(18).toString('base64url');
@@ -85,6 +85,7 @@ describe('per-session queue through pg-boss', () => {
       pacing,
       sendTimeoutMs: 3_000,
       adminToken: secret(),
+      verify: { platformNumber: PLATFORM_NUMBER, serverKey: secret() },
       queue: 'producer',
     };
     const random = createRandom(5);
