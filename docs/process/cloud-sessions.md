@@ -12,6 +12,7 @@ Cloud sessions run in the owner's personal cloud environment named `shifa`, atta
 - installs Node 24 (`.nvmrc`) ahead of the image's Node on every shell's PATH; pnpm 12 comes from `packageManager`;
 - installs `bubblewrap` and `socat`, which `pnpm env:check` expects;
 - downloads the Flutter SDK pinned in `.github/workflows/ci.yml` (`FLUTTER_VERSION`, checked against `FLUTTER_SHA256`) to `/opt/flutter` and links it as the git-ignored `.fvm/flutter_sdk`, so `node scripts/dart.mjs` finds it without FVM;
+- makes `/opt/flutter` owned by root (`chown -R root:root`) and creates `/root/.dart-tool`, so sandboxed Flutter commands can write there (section 3);
 - points Docker at the `mirror.gcr.io` registry mirror (Docker Hub refuses anonymous pulls from the cloud) and starts `dockerd` in login shells;
 - runs `pnpm install --frozen-lockfile` and `flutter pub get --enforce-lockfile`, as CI does.
 
@@ -33,7 +34,7 @@ Expected in a cloud session (checked 2026-11-17):
 | `env:check`: `node`, `pnpm`, `flutter`, `git autocrlf`, `line endings`, `repo location`, `bwrap`, `socat` | `ok` | Toolchain installed |
 | `env:check`: `docker` | `fail` (Docker daemon not reachable) | Expected: `env:check` runs `docker` from Node, which stays sandboxed. A `docker` command typed directly works (OD-49). See section 3 |
 | `verify`: script tests, format, lint, file length, drift, instructions | pass | Node side ready |
-| `verify`: `pub-get`, then `typecheck+lint+test` skipped | `fail` (`Permission denied` under `/opt/flutter/bin/cache`) | Until the setup script makes `/opt/flutter` owned by root. See section 3 |
+| `verify`: `pub-get`, `typecheck+lint+test` | pass once the container is built with the current setup script; `fail` (`Permission denied` under `/opt/flutter/bin/cache`, then `typecheck+lint+test` skipped) in a container built before it | See section 3 |
 
 Any other `fail` means the setup script did not finish; read the fix `env:check` prints, or start a new session so the container is rebuilt.
 
@@ -44,7 +45,17 @@ Bash commands in a cloud session run in a sandbox (bubblewrap) built from the se
 - `excludedCommands: ["docker *"]`: a command that **starts with** `docker` (`docker info`, `docker compose ps`, `docker logs ...`) runs outside the sandbox, with the daemon's root access. The bare `"docker"` did not match `docker info`; the ` *` is needed. Docker started by another program does not match: `pnpm env:check`, the database tests (Testcontainers), the Docker script suites (OD-32), `obs:*` and `backup:*` all start it from Node, so they still meet the sandbox (`permission denied ... docker.sock`) and run in CI.
 - `filesystem.allowWrite: ["//opt/flutter/bin/cache", "~/.dart-tool"]`: Flutter rewrites `bin/cache/engine.stamp` in its SDK on every run and creates `~/.dart-tool`. In WSL2 the FVM SDK lives under `~/fvm`, so the `/opt/flutter` entry only matters in the cloud.
 
-The Flutter exception is not enough on its own yet (checked 2026-11-17): the setup script unpacks the SDK with the archive's owner (`nobody`), and root inside the sandbox has no override, so writes to `/opt/flutter/bin/cache` are still refused (`Permission denied`); `~/.dart-tool` must also exist before a sandboxed command can write to it. The environment's setup script needs, after the Flutter step, `chown -R root:root /opt/flutter` and `mkdir -p /root/.dart-tool` (owner edits it in the environment settings). Until a container built with that change confirms `pnpm verify` passes, treat `pub-get` and the tasks behind it (the TypeScript typecheck, lint and tests, which `verify` skips once `pub-get` fails) as CI-only. A copy of the SDK inside the repository is no way out: ESLint then scans it and runs out of memory.
+The exception is not enough on its own: the SDK archive unpacks with its owner (`nobody`), and root inside the sandbox has no override, so writes to files it does not own are refused (`Permission denied`); a sandboxed command also cannot create `~/.dart-tool`, only write inside it once it exists. The setup script therefore runs, after the Flutter step, `chown -R root:root /opt/flutter` and `mkdir -p /root/.dart-tool`; a sandboxed command cannot do either itself (`Operation not permitted`, `Read-only file system`).
+
+Checked 2026-11-17 against a root-owned copy of the SDK and a HOME with an empty `.dart-tool`: `flutter pub get --enforce-lockfile` and the whole of `pnpm verify` pass inside the sandbox. Flutter writes only these paths on a run:
+
+- `/opt/flutter/bin/cache` (`engine.stamp`, `engine.realm`, `lockfile`, `*.stamp`);
+- `~/.dart-tool` (analytics state: `CLIENT_ID`, `dart-flutter-telemetry*`);
+- inside the repository (`.dart_tool/`), which the sandbox allows.
+
+`~/.pub-cache` and `~/.config/flutter` are only read, because the setup script's `pub get` fills the cache; a lockfile change that needs a new package still downloads into `~/.pub-cache` and is refused until the next fresh container. Flutter's analytics calls to `www.google-analytics.com` are refused by the network proxy; that is noise in the sandbox log, not a failure. One SDK file (`bin/cache/artifacts/material_fonts/codepoints`, mode `640`) cannot be read in the sandbox; `pub get` and `verify` do not use it.
+
+A container built before this setup-script change still fails `pub-get`; start a new session to get one built with it. A copy of the SDK inside the repository is no way out: ESLint then scans it and runs out of memory.
 
 So in a cloud session the gate is CI: `verify (full)` on every PR (ADR-0033). Say so in the report, as `CLAUDE.md` "Finishing a task" step 4 asks, and read the PR's CI result before calling the work done. Docs-only changes are unaffected: CI runs `verify docs`.
 
