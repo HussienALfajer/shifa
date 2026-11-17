@@ -64,7 +64,7 @@ describe('platform never initiates', () => {
     await send(env, seen, chatOf(phoneA), a.text);
     const b = await issue(env, 'device-1002', phoneB);
     await send(env, seen, chatOf(phoneA), b.text);
-    await send(env, seen, chatOf(phoneB), 'رمز: ZZZZZZ');
+    await send(env, seen, chatOf(phoneB), 'رمز التحقق في شفاء: ZZZZZZ');
     await send(env, seen, chatOf(phoneB), 'مرحبا');
     // Expired: no reply.
     const late = await issue(env, 'device-1003', phoneB);

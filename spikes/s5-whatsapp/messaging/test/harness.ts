@@ -79,6 +79,8 @@ export interface EnvOptions {
   sessions?: SessionConfig[];
   /** Raw webhook capture folder (manual-run tooling, 0.3-S5b). */
   rawCaptureDir?: string;
+  /** Sessions the fakes do not know yet (as on a fresh WAHA container). */
+  unlinked?: string[];
 }
 
 /** One fake per container; the default sessions use `clinics` and `platform`. */
@@ -179,7 +181,9 @@ export async function newEnv(db: MessagingDb, options: EnvOptions = {}): Promise
   for (const container of containers) {
     fakes[container]?.setWebhookUrl(`${url}/webhooks/${container}`);
   }
-  for (const s of sessions) await fakes[s.container]?.addWorkingSession(s.name);
+  for (const s of sessions) {
+    if (!options.unlinked?.includes(s.name)) await fakes[s.container]?.addWorkingSession(s.name);
+  }
 
   let patientCount = 0;
   return {

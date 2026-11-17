@@ -113,12 +113,13 @@ describe('raw capture and scrubber', () => {
     expect(checkFixtures(dir)).toEqual([]);
     writeFileSync(
       join(dir, 'bad.json'),
-      JSON.stringify({ body: { payload: { note: 'call +963991234567 later' } } }),
+      // +999 is not an assigned country code: a well-formed, non-synthetic number nobody owns.
+      JSON.stringify({ body: { payload: { note: 'call +999123456789 later' } } }),
     );
     const problems = checkFixtures(dir);
     expect(problems).toHaveLength(1);
     expect(problems[0]).toContain('bad.json');
-    expect(problems[0]).not.toContain('991234567');
+    expect(problems[0]).not.toContain('123456789');
     writeFileSync(join(dir, 'bad.json'), JSON.stringify({ x: '204011500700888@lid' }));
     expect(checkFixtures(dir)).toHaveLength(1);
   });
