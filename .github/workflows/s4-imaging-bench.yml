@@ -1,0 +1,82 @@
+# Spike 0.3-S4c, criterion 11: the imaging bench (`bench:s4`) on the chosen profiles × studies ×
+# methods, then the viewer on those profiles and the edge LAN, encryption on against off, and the
+# chunk (256 KiB, 4 MiB) and Transfers bucket (4 MB) variants on P3. Manual dispatch only; never
+# part of PR CI (OD-31). A workflow of its own, beside `s4-imaging`, because that one's suites
+# must run unconditionally (scripts/test/spike-tests.test.mjs). The bench saves after every row,
+# so a run cut by the timeout still uploads what it measured. Uploads `.verify/s4/`
+# (counts, bytes and times only; no tags, names or image content).
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: s4-imaging-bench
+
+on:
+  workflow_dispatch:
+    inputs:
+      # The defaults fit the 6-hour job (P3). For P1 dispatch one study and one or two methods
+      # at a time with extras off (P1 × 1 GB is about 2.5 hours per method).
+      profiles:
+        description: Profiles (comma-separated, P1–P3)
+        type: string
+        default: P3
+      studies:
+        description: Studies (comma-separated)
+        type: string
+        default: cbct-300-multi,cbct-1g-multi
+      methods:
+        description: Methods (chunked, chunked-par3, stow, edge)
+        type: string
+        default: chunked-par3,stow,edge
+      extras:
+        description: Also the viewer, encryption on/off and the chunk and bucket variants
+        type: boolean
+        default: true
+
+permissions: {}
+
+concurrency:
+  group: s4-imaging-bench
+  cancel-in-progress: false
+
+jobs:
+  bench:
+    name: bench (${{ inputs.profiles }} × ${{ inputs.studies }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Disk space and kernel
+        run: |
+          df -h /
+          docker version --format 'docker {{.Server.Version}}, kernel {{.Server.KernelVersion}}'
+      # Inputs reach the script through the environment only, checked against a strict pattern
+      # (no expression is expanded into the shell).
+      - name: Bench
+        working-directory: spikes/s4-imaging/scenarios
+        env:
+          PROFILES: ${{ inputs.profiles }}
+          STUDIES: ${{ inputs.studies }}
+          METHODS: ${{ inputs.methods }}
+          EXTRAS: ${{ inputs.extras }}
+        run: |
+          for v in "$PROFILES" "$STUDIES" "$METHODS"; do
+            [[ "$v" =~ ^[A-Za-z0-9,-]+$ ]] || { echo "bad input"; exit 2; }
+          done
+          extra=()
+          [ "$EXTRAS" = true ] || extra=(--no-viewer --no-encryption --no-variants)
+          pnpm run bench:s4 --profiles "$PROFILES" --studies "$STUDIES" --methods "$METHODS" "${extra[@]}"
+      - name: Upload .verify/s4
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: s4-bench
+          path: .verify/s4
+          retention-days: 90

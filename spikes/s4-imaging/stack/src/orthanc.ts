@@ -32,6 +32,8 @@ export interface OrthancTenant {
   httpPassword: string;
   bucket: string;
   s3: S3Credentials;
+  /** Storage encryption (criterion 4). Off only in the bench's overhead comparison. */
+  encrypted?: boolean;
 }
 
 export function orthancConfig(t: OrthancTenant): object {
@@ -64,7 +66,11 @@ export function orthancConfig(t: OrthancTenant): object {
       VirtualAddressing: false,
       StorageStructure: 'flat',
       // Encryption is on from the first write (criterion 4).
-      StorageEncryption: { Enable: true, MasterKey: [1, KEY_PATH], MaxConcurrentInputSize: 1024 },
+      StorageEncryption: {
+        Enable: t.encrypted !== false,
+        MasterKey: [1, KEY_PATH],
+        MaxConcurrentInputSize: 1024,
+      },
     },
     DicomWeb: { Enable: true, Root: '/dicom-web/', EnableWado: false },
   };

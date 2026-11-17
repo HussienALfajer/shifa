@@ -44,7 +44,7 @@ export async function connectBrowser(stack: Stack): Promise<Browser> {
 export async function openUploadPage(
   browser: Browser,
   stack: Stack,
-  options: { tenant: 'a' | 'b'; mode: UploadMode; chunkSize?: number },
+  options: { tenant: 'a' | 'b'; mode: UploadMode; chunkSize?: number; parallel?: number },
 ): Promise<UploadPage> {
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -61,6 +61,7 @@ export async function openUploadPage(
   });
   const query = new URLSearchParams({ mode: options.mode });
   if (options.chunkSize) query.set('chunk', String(options.chunkSize));
+  if (options.parallel) query.set('parallel', String(options.parallel));
   await page.goto(`${stack.clinicGatewayUrl}/upload/?${query.toString()}`, { timeout: 300_000 });
   return { page, loads };
 }

@@ -54,6 +54,23 @@ export async function cloudStudy(
   return found;
 }
 
+/** Number of instances of the study the tenant lists (QIDO-RS only, nothing downloaded). */
+export async function cloudCount(
+  stack: Stack,
+  tenant: 'a' | 'b',
+  studyUid: string,
+): Promise<number> {
+  const list = await asViewer(
+    stack,
+    tenant,
+    `/dicomweb/studies/${studyUid}/instances`,
+    'application/dicom+json',
+  );
+  if (list.status === 204 || list.status === 404) return 0;
+  if (list.status !== 200) throw new Error(`QIDO ${String(list.status)}`);
+  return ((await list.json()) as unknown[]).length;
+}
+
 /** Stores files into a tenant by STOW-RS through the gateway (setup for viewing tests). */
 export async function stowFiles(
   stack: Stack,

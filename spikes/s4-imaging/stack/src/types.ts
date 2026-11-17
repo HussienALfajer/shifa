@@ -22,6 +22,13 @@ export interface StackOptions {
   edge?: boolean;
   /** Start OHIF behind the gateway (`/viewer/`). Default false. */
   ohif?: boolean;
+  /**
+   * Bench only (0.3-S4c, encryption overhead): storage encryption per tenant. Default on for
+   * both; every suite keeps the default.
+   */
+  storageEncryption?: { a?: boolean; b?: boolean };
+  /** Bench only: the edge's Transfers bucket size (KB) and threads. Default 512 KB, 2. */
+  edgeTransfers?: { bucketKb: number; threads: number };
 }
 
 export interface EdgeJob {

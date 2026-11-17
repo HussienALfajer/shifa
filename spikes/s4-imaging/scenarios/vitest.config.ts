@@ -4,7 +4,7 @@ import { defineConfig } from 'vitest/config';
 // clinic network and no ops tunnel. One file at a time; P1 runs are long.
 export default defineConfig({
   test: {
-    include: ['test/**/*.spec.ts'],
+    include: ['test/**/*.spec.ts', 'bench/**/*.test.ts'],
     globalSetup: ['../stack/test/global-setup.ts'],
     fileParallelism: false,
     hookTimeout: 1_800_000,

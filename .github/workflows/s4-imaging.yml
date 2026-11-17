@@ -1,6 +1,7 @@
 # Spike 0.3-S4: imaging (Garage + Orthanc + gateway + link shaper). Manual dispatch only; never
 # part of PR CI (OD-31). Job `stack` (0.3-S4a) runs the generator, stack and gateway suites
-# against Docker on the runner; 0.3-S4b adds upload, edge, OHIF and the bench. Uploads
+# against Docker on the runner; 0.3-S4b adds upload, edge and OHIF; the bench (0.3-S4c) is
+# `s4-imaging-bench.yml`. Uploads
 # `.verify/s4/` (bucket-layout result; counts and timings only, no image content).
 # Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
 name: s4-imaging
@@ -32,7 +33,7 @@ jobs:
           package-manager-cache: false
       - run: pnpm install --frozen-lockfile
       # The suites pull about 6 GB of images (Playwright, Orthanc, PostgreSQL) and write the
-      # small studies; the 300 MB and 1 GB studies are generated in 0.3-S4b's bench job only.
+      # small studies; the 300 MB and 1 GB studies are generated in the bench workflow only.
       - name: Disk space and kernel shaping modules
         run: |
           df -h /

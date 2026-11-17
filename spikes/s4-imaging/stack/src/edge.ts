@@ -15,7 +15,11 @@ import type { Edge, EdgeJob } from './types.ts';
 
 export const EDGE_AET = 'S4EDGE';
 
-export function edgeConfig(httpPassword: string, edgeToken: string): object {
+export function edgeConfig(
+  httpPassword: string,
+  edgeToken: string,
+  transfers = { bucketKb: 512, threads: 2 },
+): object {
   return {
     Name: 's4-edge',
     RemoteAccessAllowed: true,
@@ -39,7 +43,13 @@ export function edgeConfig(httpPassword: string, edgeToken: string): object {
     },
     // 512 KB buckets, two at a time: on P1 (1 Mbit/s up) a 4 MB bucket, four in parallel, takes
     // about two minutes and never arrives whole between line drops (0.3-S4b finding).
-    Transfers: { MaxHttpRetries: 3, PeerConnectivityTimeout: 120, BucketSize: 512, Threads: 2 },
+    // The bench (0.3-S4c) compares other bucket sizes through `transfers`.
+    Transfers: {
+      MaxHttpRetries: 3,
+      PeerConnectivityTimeout: 120,
+      BucketSize: transfers.bucketKb,
+      Threads: transfers.threads,
+    },
     DicomWeb: { Enable: true, Root: '/dicom-web/', EnableWado: false },
   };
 }
@@ -52,10 +62,14 @@ export async function startEdge(options: {
   httpPassword: string;
   edgeToken: string;
   clinicViewerUrl: string;
+  transfers?: { bucketKb: number; threads: number };
 }): Promise<Edge> {
   const { name, runId, clinicNetwork, httpPassword } = options;
   const config = join(options.runDir, 'orthanc-edge.json');
-  await writeFile(config, JSON.stringify(edgeConfig(httpPassword, options.edgeToken), null, 2));
+  await writeFile(
+    config,
+    JSON.stringify(edgeConfig(httpPassword, options.edgeToken, options.transfers), null, 2),
+  );
   const container = await runContainer({
     name: name('edge'),
     runId,

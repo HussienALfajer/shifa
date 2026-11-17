@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test:spike": "vitest run",
-    "test:spike:long": "node scripts/long.ts"
+    "test:spike:long": "node scripts/long.ts",
+    "bench:s4": "node bench/run.ts"
   },
   "devDependencies": {
     "@shifa-spike/s4-generator": "workspace:*",

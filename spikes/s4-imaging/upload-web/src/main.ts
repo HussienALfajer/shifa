@@ -1,6 +1,6 @@
 // Throwaway upload page (0.3-S4b, criterion 8): pick a study folder, upload it through the
 // gateway by the chunked resumable protocol or by STOW-RS per instance. Mode and chunk size
-// come from the query (?mode=chunked|stow&chunk=bytes); the token comes from the application.
+// come from the query (?mode=chunked|stow&chunk=bytes&parallel=files); the token comes from the application.
 import { uploadChunked } from './chunked.ts';
 import { buildManifest } from './manifest.ts';
 import { type Mode, report, stats } from './stats.ts';
@@ -22,6 +22,8 @@ const queryMode = query.get('mode');
 if (queryMode === 'chunked' || queryMode === 'stow') modeSelect.value = queryMode;
 const chunkParam = Number(query.get('chunk'));
 const chunk = Number.isSafeInteger(chunkParam) && chunkParam > 0 ? chunkParam : null;
+// Files uploaded at once by the chunked protocol (bench: 3); 1 to 6, default 1.
+const parallel = Math.min(6, Math.max(1, Number.parseInt(query.get('parallel') ?? '1', 10) || 1));
 
 const show = (state: 'idle' | 'running' | 'done' | 'failed', text: string) => {
   status.dataset['state'] = state;
@@ -42,7 +44,7 @@ start.addEventListener('click', () => {
       stats.skipped.push(...skipped);
       show('running', `جارٍ رفع ${String(items.length)} ملفًا…`);
       let ok = true;
-      if (mode === 'chunked') await uploadChunked(items, chunk);
+      if (mode === 'chunked') await uploadChunked(items, chunk, parallel);
       else ok = await uploadStow(items);
       stats.skipped = [...new Set(stats.skipped)];
       for (const path of stats.skipped) {

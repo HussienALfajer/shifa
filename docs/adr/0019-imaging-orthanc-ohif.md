@@ -1,6 +1,6 @@
 # ADR-0019: Medical imaging — unmodified Orthanc per tenant behind our DICOMweb gateway; OHIF viewer
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude) · Amended by ADR-0035
 
 ## Context
 Release 1 includes a professional DICOM viewer for dental and orthopedic clinics. Orthanc's core is GPLv3 and its DICOMweb, PostgreSQL, object-storage and authorization plugins are AGPL; proprietary code that talks to Orthanc over REST/DICOM stays closed, but code running inside Orthanc alongside AGPL plugins does not [RN-14 §3]. OHIF v3 and Cornerstone3D are MIT [RN-14 §1]. Two tenants uploading the same study to one shared Orthanc would share one resource [RN-14 §2]. Links in Syria are slow (CBCT 300 MB ≈ 13 min at 3 Mbps) [RN-14 §5].

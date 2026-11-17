@@ -44,7 +44,11 @@ const MAX_FAILURES = 12;
 const b64 = (hex: string) =>
   btoa(String.fromCharCode(...(hex.match(/../g) ?? []).map((h) => Number.parseInt(h, 16))));
 
-export async function uploadChunked(items: Item[], chunkOverride: number | null): Promise<void> {
+export async function uploadChunked(
+  items: Item[],
+  chunkOverride: number | null,
+  parallel = 1,
+): Promise<void> {
   const manifest = { files: items.map(({ path, size, sha256 }) => ({ path, size, sha256 })) };
   const open = () =>
     call('/uploads', {
@@ -59,8 +63,7 @@ export async function uploadChunked(items: Item[], chunkOverride: number | null)
   const byPath = new Map(items.map((i) => [i.path, i]));
   await report();
 
-  for (const entry of session.files) {
-    if (entry.state !== 'pending') continue;
+  const sendFile = async (entry: SessionFile): Promise<void> => {
     const item = byPath.get(entry.path);
     if (!item) throw new Error('manifest mismatch');
     let offset = entry.received;
@@ -118,7 +121,20 @@ export async function uploadChunked(items: Item[], chunkOverride: number | null)
       }
       await report();
     }
-  }
+  };
+  // Files go one at a time by default; `parallel` workers (bench, 0.3-S4c) each take the next
+  // pending file, so a few connections share the link as STOW-RS's requests do.
+  const pending = session.files.filter((f) => f.state === 'pending');
+  const worker = async () => {
+    try {
+      for (let entry = pending.shift(); entry; entry = pending.shift()) await sendFile(entry);
+    } catch (error) {
+      // One file gave up: the others stop taking new files, so nothing runs after "failed".
+      pending.length = 0;
+      throw error;
+    }
+  };
+  await Promise.all(Array.from({ length: Math.max(1, parallel) }, worker));
   const finished = await settle<{ done: number; skipped: string[] }>(() =>
     call(`/uploads/${session.uploadId}/finish`, { method: 'POST' }),
   );
