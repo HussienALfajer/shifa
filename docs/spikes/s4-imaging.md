@@ -1,6 +1,6 @@
 # Spike S4 result: imaging storage, upload, edge push and viewing
 
-Date: 2026-11-16/17 (local runs; CI bench dispatch after merge) · Spec: [0.3-S4](../specs/spikes/0.3-s4-imaging.md) · Slices: [0.3-S4a](../slices/0.3-s4a-imaging-stack-and-gateway.md), [0.3-S4b](../slices/0.3-s4b-imaging-upload-viewing-result.md), [0.3-S4c](../slices/0.3-s4c-imaging-bench-and-result.md) · Decision: [ADR-0035](../adr/0035-imaging-storage-upload-and-edge-push.md) (Proposed), amending [ADR-0019](../adr/0019-imaging-orthanc-ohif.md) · Requirements: IMG-02, IMG-03, IMG-04, IMG-06, IMG-14, IMG-17, IMG-25 · Open: OD-18
+Date: 2026-11-16/17 (local runs; CI bench dispatch after merge) · Spec: [0.3-S4](../specs/spikes/0.3-s4-imaging.md) · Slices: [0.3-S4a](../slices/0.3-s4a-imaging-stack-and-gateway.md), [0.3-S4b](../slices/0.3-s4b-imaging-upload-viewing-result.md), [0.3-S4c](../slices/0.3-s4c-imaging-bench-and-result.md) · Decision: [ADR-0035](../adr/0035-imaging-storage-upload-and-edge-push.md) (Accepted, owner 2026-11-17), amending [ADR-0019](../adr/0019-imaging-orthanc-ohif.md) · Requirements: IMG-02, IMG-03, IMG-04, IMG-06, IMG-14, IMG-17, IMG-25 · Open: OD-18
 
 ## Answer
 **ADR-0019's plan works with Garage, a bucket per tenant and our own chunked upload. Browser upload is acceptable for a 300 MB CBCT on every profile. On a 1 Mbit/s uplink with line drops a 1 GB CBCT takes about three hours by either path, so clinics with a CBCT need the edge box for unattended sending, and its push must resume instead of starting over.**
@@ -33,7 +33,7 @@ Test files are under `spikes/s4-imaging/`. Local runs on the machine above, 2026
 | 9 | **Met.** Long P1 run: 300 MB pushed through drops and an edge restart at 40 % in 38.4 min; the job was lost on restart and pushed again (wire ratio 0.79); the cloud equals the edge copy byte for byte and the source by dataset SHA-256 | `scenarios/test/edge.spec.ts` |
 | 10 | **Met.** The panoramic and the 300 MB CBCT render, the CBCT with three MPR viewports, through the gateway on P1, P2, P3 and on the edge LAN (long run and bench) | `scenarios/test/viewer.spec.ts`, bench viewer rows |
 | 11 | Bench below; 1 GB on P1 and P3 (and P2 for viewing) | `scenarios/bench/` (`bench:s4`), `.verify/s4/bench-*.json` |
-| 12 | This report, ADR-0035 (Proposed), ADR-0019 status line, OD-18, roadmap, `docs/domain/imaging.md` | — |
+| 12 | This report, ADR-0035 (Accepted, owner 2026-11-17), ADR-0019 status line, OD-18, roadmap, `docs/domain/imaging.md` | — |
 
 ## Bench (criterion 11)
 `pnpm --dir spikes/s4-imaging/scenarios run bench:s4 …`, one fresh stack per transfer row; P1 rows with the spec's line drops. In brackets: efficiency, i.e. study bytes over wall time over the profile's uplink rate (above 1 for the edge box because of gzip); "wire" is uplink bytes at the shaper over study bytes. Local runs were split over several invocations (`bench-p3`, `-p2`, `-p2b`, `-p2c`, `-p1`, `-p1c`, `-extra`, `-extra3`), because app restarts stopped earlier ones.

@@ -56,7 +56,7 @@ What we will do, stated precisely.
 | [0016](0016-identity-better-auth-reverse-whatsapp.md) | Better Auth; reverse WhatsApp phone verification; no SMS | Accepted |
 | [0017](0017-notifications-push-whatsapp.md) | Push + in-app inbox primary; WhatsApp via self-hosted WAHA secondary | Accepted |
 | [0018](0018-money-three-currencies.md) | Money: SYP/TRY/USD, minor units, clinic rates, mixed-currency receipts, cash sessions | Accepted |
-| [0019](0019-imaging-orthanc-ohif.md) | Imaging: unmodified Orthanc per tenant behind our gateway; OHIF viewer | Accepted (amended by 0035, Proposed) |
+| [0019](0019-imaging-orthanc-ohif.md) | Imaging: unmodified Orthanc per tenant behind our gateway; OHIF viewer | Accepted (amended by 0035) |
 | [0020](0020-voice-calling-voice-packs.md) | Voice calling with pre-generated TTS voice packs played locally | Accepted |
 | [0021](0021-supporting-services.md) | Garage, Valkey, Gotenberg, ExcelJS, Postgres Arabic search | Accepted (amended by 0034) |
 | [0022](0022-deployment-portable-hosting.md) | Docker Compose + Kamal on portable hosting; location pending legal opinion | Proposed (OD-01) |
@@ -72,4 +72,4 @@ What we will do, stated precisely.
 | [0032](0032-slice-size-budget-4000-lines.md) | Slice and PR size budget about 4,000 hand-written lines (CI warns, never fails) | Accepted |
 | [0033](0033-pre-pr-fast-verify-ci-full-gate.md) | Before a PR, fast `verify` locally; CI's `verify (full)` is the full gate (full locally only for build/boot, DB harness, drift, CI) | Accepted |
 | [0034](0034-arabic-output-and-name-search.md) | Arabic output and name search: Gotenberg 8 settings, Vazirmatn, roll-paper and thermal raster rules, one normaliser with shared vectors, stored key; amends 0021 | Accepted |
-| [0035](0035-imaging-storage-upload-and-edge-push.md) | Imaging storage, upload and edge push: Garage bucket and key per tenant, encrypted objects, own chunked resumable upload, Transfers through the gateway with an edge queue; amends 0019 | Proposed |
+| [0035](0035-imaging-storage-upload-and-edge-push.md) | Imaging storage, upload and edge push: Garage bucket and key per tenant, encrypted objects, own chunked resumable upload, Transfers through the gateway with an edge queue; amends 0019 | Accepted |

@@ -1,6 +1,6 @@
 # ADR-0035: Imaging storage, browser upload and edge push — Garage bucket per tenant, encrypted objects, chunked upload, Transfers through the gateway
 
-Status: Proposed · Date: 2026-11-16 · Deciders: product owner (with Claude) · Amends: [ADR-0019](0019-imaging-orthanc-ohif.md) (ADR-0019's status line already names this ADR, as the spec asks; if the owner rejects it, that line goes back)
+Status: Accepted (owner, 2026-11-17) · Date: 2026-11-16 · Deciders: product owner (with Claude) · Amends: [ADR-0019](0019-imaging-orthanc-ohif.md)
 
 ## Context
 [ADR-0019](0019-imaging-orthanc-ohif.md) chose an unmodified Orthanc per tenant behind our DICOMweb gateway, OHIF as the viewer, browser upload with resume, and an edge box for clinics with X-ray devices. It left open whether Orthanc's S3 plugin works with Garage ([ADR-0021](0021-supporting-services.md)), how buckets are laid out, how the browser uploads, how the edge box pushes, and whether a CBCT can be viewed over a Syrian link. Spike S4 ([spec](../specs/spikes/0.3-s4-imaging.md), [result](../spikes/s4-imaging.md)) ran the official Orthanc image with Garage, PostgreSQL 18 and OHIF behind a throwaway gateway, on synthetic CBCT studies of real size and one public de-identified case, over three link profiles (P1 1/3 Mbit/s with line drops, P2 3/10, P3 8/25). The spike's gateway was throwaway code; the rules below are what the Phase D gateway and edge agent must meet.
