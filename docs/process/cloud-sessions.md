@@ -1,7 +1,7 @@
 # Cloud sessions (Claude Code on the web)
 
 Status: Living · Last updated: 2026-11-17 · Owner: product owner
-Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
+Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, OD-49, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
 
 Purpose: how to work on Shifa in a Claude Code cloud session (claude.ai/code or the Claude app), what the cloud container gives you, and what differs from the WSL2 machine ([setup guide](wsl2-setup.md)), which stays the primary environment. The rules of `CLAUDE.md` apply unchanged; only the mechanics below differ.
 
@@ -31,22 +31,22 @@ Expected in a cloud session (checked 2026-11-17):
 | Check | Cloud result | Meaning |
 |---|---|---|
 | `env:check`: `node`, `pnpm`, `flutter`, `git autocrlf`, `line endings`, `repo location`, `bwrap`, `socat` | `ok` | Toolchain installed |
-| `env:check`: `docker` | `fail` (Docker daemon not reachable) | Expected: `dockerd` runs, but the Bash sandbox refuses its socket. See section 3 |
+| `env:check`: `docker` | `fail` (Docker daemon not reachable) | Expected: `env:check` runs `docker` from Node, which stays sandboxed. A `docker` command typed directly works (OD-49). See section 3 |
 | `verify`: script tests, format, lint, file length, drift, instructions | pass | Node side ready |
-| `verify`: `pub-get`, then `typecheck+lint+test` skipped | `fail` (`Read-only file system` under `/opt/flutter/bin/cache` and `~/.dart-tool`) | Expected: Flutter writes into its SDK and the home folder on every run, and the Bash sandbox allows writes only in the repository and the temp folder. See section 3 |
+| `verify`: `pub-get`, then `typecheck+lint+test` skipped | `fail` (`Permission denied` under `/opt/flutter/bin/cache`) | Until the setup script makes `/opt/flutter` owned by root. See section 3 |
 
 Any other `fail` means the setup script did not finish; read the fix `env:check` prints, or start a new session so the container is rebuilt.
 
 ## 3. What runs only in CI
 
-Bash commands in a cloud session run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). Two kinds of check cannot run there:
+Bash commands in a cloud session run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed two exceptions (OD-49), pinned by `scripts/test/sandbox-policy.test.mjs`:
 
-- **Docker-backed:** the database tests (Testcontainers), the Docker script suites (OD-32), `obs:*` and `backup:*`. The sandbox refuses `/var/run/docker.sock` (`permission denied`).
-- **Flutter and Dart:** `pub-get` and every task behind it in `verify` (the TypeScript typecheck, lint and tests included, since `verify` skips them once `pub-get` fails). Flutter rewrites `bin/cache/engine.stamp` in its SDK on each run and creates `~/.dart-tool`; both are outside the sandbox's writable paths. A copy of the SDK inside the repository is no way out: ESLint then scans it and runs out of memory.
+- `excludedCommands: ["docker *"]`: a command that **starts with** `docker` (`docker info`, `docker compose ps`, `docker logs ...`) runs outside the sandbox, with the daemon's root access. The bare `"docker"` did not match `docker info`; the ` *` is needed. Docker started by another program does not match: `pnpm env:check`, the database tests (Testcontainers), the Docker script suites (OD-32), `obs:*` and `backup:*` all start it from Node, so they still meet the sandbox (`permission denied ... docker.sock`) and run in CI.
+- `filesystem.allowWrite: ["//opt/flutter/bin/cache", "~/.dart-tool"]`: Flutter rewrites `bin/cache/engine.stamp` in its SDK on every run and creates `~/.dart-tool`. In WSL2 the FVM SDK lives under `~/fvm`, so the `/opt/flutter` entry only matters in the cloud.
 
-So in a cloud session `pnpm verify` ends red on those steps, and the gate is CI: `verify (full)` on every PR (ADR-0033). Say so in the report, as `CLAUDE.md` "Finishing a task" step 4 asks, and read the PR's CI result before calling the work done. Making them run in the session would mean widening the sandbox (`sandbox.filesystem.allowWrite` for the Flutter paths, or `sandbox.excludedCommands` for `docker`), which is an owner decision, not something a session changes on its own.
+The Flutter exception is not enough on its own yet (checked 2026-11-17): the setup script unpacks the SDK with the archive's owner (`nobody`), and root inside the sandbox has no override, so writes to `/opt/flutter/bin/cache` are still refused (`Permission denied`); `~/.dart-tool` must also exist before a sandboxed command can write to it. The environment's setup script needs, after the Flutter step, `chown -R root:root /opt/flutter` and `mkdir -p /root/.dart-tool` (owner edits it in the environment settings). Until a container built with that change confirms `pnpm verify` passes, treat `pub-get` and the tasks behind it (the TypeScript typecheck, lint and tests, which `verify` skips once `pub-get` fails) as CI-only. A copy of the SDK inside the repository is no way out: ESLint then scans it and runs out of memory.
 
-Docs-only changes are unaffected: CI runs `verify docs`.
+So in a cloud session the gate is CI: `verify (full)` on every PR (ADR-0033). Say so in the report, as `CLAUDE.md` "Finishing a task" step 4 asks, and read the PR's CI result before calling the work done. Docs-only changes are unaffected: CI runs `verify docs`.
 
 ## 4. GitHub: commits and PRs without `gh`
 
