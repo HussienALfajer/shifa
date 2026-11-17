@@ -1,6 +1,6 @@
 # Roadmap
 
-Status: Living document — the single source of project status · Last updated: 2026-11-16 · Owner: product owner
+Status: Living document — the single source of project status · Last updated: 2026-11-17 · Owner: product owner
 
 Release 1 is built in phases. Each phase is split into slices (one slice = one session = one small PR, see [development-workflow](process/development-workflow.md)). Slice details and hand-over notes live in [docs/slices](slices/README.md); this file only tracks phases and slice status.
 
@@ -73,10 +73,10 @@ Nothing in Phase A starts before every item is done.
 | S2 Tenant isolation | Drizzle + RLS + PgBouncer transaction mode; leak tests ([spec](specs/spikes/0.3-s2-tenant-isolation.md), approved) | ADR-0030 amending ADR-0004/0005; [result](spikes/s2-tenant-isolation.md): safe only with the PgBouncer settings in ADR-0030 (`server_reset_query_always = 1` among them); session state leaks without them |
 | S3 Arabic output | Arabic PDF (Gotenberg), thermal receipt rendering, Arabic name search normaliser ([spec](specs/spikes/0.3-s3-arabic-output.md), [result](spikes/s3-arabic-output.md)) | ADR-0034 (Accepted, owner 2026-11-16) amending ADR-0021; OD-39, OD-40, OD-41, OD-43 (closed), OD-42 (open) |
 | S4 Imaging | Garage + Orthanc + OHIF; upload a CBCT (generated and public de-identified, OD-44) over three Aleppo-like link profiles, from the browser and from an edge box ([spec](specs/spikes/0.3-s4-imaging.md), approved) | ADR-0035 (Proposed) amending ADR-0019; OD-18 (bandwidth evidence, stays open); [result](spikes/s4-imaging.md): bucket per tenant, own chunked upload, edge box with a resuming queue for CBCT clinics; 0.3-S4a done (#65), 0.3-S4b done (#67), 0.3-S4c in review |
-| S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification | ADR-0016/0017, OD-12 |
+| S5 WhatsApp | WAHA (GOWS) with linked numbers, throttling, opt-in, reverse verification; fake WAHA for automated tests plus one manual day on two owner numbers (OD-45) ([spec](specs/spikes/0.3-s5-whatsapp.md), approved) | ADR-0036 amending ADR-0016/0017; OD-12 (stays open), OD-45, OD-46; planned as 0.3-S5a to 0.3-S5c (owner, 2026-11-17; ADR-0032 budget, manual day in its own slice) |
 | S6 Voice | Listening test: Azure ar-SY vs Google vs SILMA with 5 receptionists; kiosk autoplay on cheap Android TV boxes | ADR-0020, OD-11 |
 | S7 Push | FCM delivery on common Android phones in Aleppo and Azaz | ADR-0017 |
-| S8 Charts | Figma prototypes of odontogram, perio entry and skeleton chart tested with 3–5 doctors | dental, orthopedics docs |
+| S8 Charts | Interactive prototypes of odontogram, perio entry and skeleton chart, designed in Claude Design instead of Figma (OD-47) and tested as a static build with 3 dentists and 2 orthopedic surgeons; the spec and the 0.3-S8a to 0.3-S8d plan were removed by the owner (2026-11-17), so the spike needs a new spec before any work | dental, orthopedics docs; OD-19 and OD-20 (input only) |
 
 ## Phase 0.3 slices
 
@@ -91,6 +91,9 @@ Nothing in Phase A starts before every item is done.
 | 0.3-S4a | Imaging spike, part 1: pinned stack (official Orthanc with PostgreSQL index, S3, DICOMweb, Transfers, GDCM; Garage; PostgreSQL 18), Orthanc unreachable from the clinic side and licence-boundary mount check; encrypted Garage storage with round-trip SHA-256, wrong-key and bucket-per-tenant tests; `tc netem` link container with profiles P1–P3; synthetic CBCT/panoramic generator and the pinned public CBCT (Science Data Bank, CC BY 4.0) with PHI check; gateway allowlist, tokens, tenant isolation and audit (manual CI `s4-imaging`) ([slice](slices/0.3-s4a-imaging-stack-and-gateway.md)); criteria 1–7; ~3,600 lines | T0 | Done (#65) |
 | 0.3-S4b | Imaging spike, part 2: chunked resumable browser upload vs STOW-RS on P1 (line drops, reload, two tabs, DICOMDIR); edge Orthanc push with Transfers through the gateway (line drops, restart); unmodified OHIF through the gateway on P1–P3 and the edge LAN (first image, MPR); fast suite in the manual CI `scenarios` job ([slice](slices/0.3-s4b-imaging-upload-viewing-result.md)); criteria 8–10 (300 MB evidence in 0.3-S4c); after 0.3-S4a; ~3,600 lines | T0 | Done (#67) |
 | 0.3-S4c | Imaging spike, part 3: long P1 runs on the 300 MB studies, bench (`bench:s4`, 1 GB on P1 and P3), report and ADR-0035 amending ADR-0019 ([slice](slices/0.3-s4c-imaging-bench-and-result.md)); criteria 8–12 evidence; split from 0.3-S4b (line budget), ~1,400 lines | T0 | Built (in review): result, ADR-0035 Proposed |
+| 0.3-S5a | WhatsApp spike, part 1: pinned WAHA (GOWS, PostgreSQL session storage, API key, HMAC webhooks; platform and clinic containers, no session started); fake WAHA with fault injection and OpenAPI parity against the pinned image; `sendWhatsApp` with allowlist, opt-in/opt-out, pg-boss per-session pacing (gap, hourly cap, quiet hours, variants), at-most-once sends, circuit breaker and fallbacks, health job, acks (manual CI `s5-whatsapp`) ([slice](slices/0.3-s5a-whatsapp-stack-and-sending.md)); criteria 1–8; ~3,900 lines | T0 | Planned |
+| 0.3-S5b | WhatsApp spike, part 2: reverse WhatsApp verification (HMAC-keyed codes, device-bound nonces with a device secret, rate limits, platform replies only on success), tenant and role separation by container and session, manual-run admin page, paced-batch script, fixture capture and scrub, owner checklist ([slice](slices/0.3-s5b-whatsapp-verification-and-tooling.md)); criteria 9–11 (tooling); after 0.3-S5a; ~2,300 lines | T0 | Planned |
+| 0.3-S5c | WhatsApp spike, part 3: the owner's one-day run on two dedicated numbers (OD-45), WAHA log check, fixture replay against the fake and real signing, measurements, report and ADR-0036 amending ADR-0016/0017 ([slice](slices/0.3-s5c-whatsapp-manual-day-and-result.md)); criteria 1–2 (real evidence), 7, 11–13; after 0.3-S5b; ~1,100 lines | T0 | Planned |
 
 ## Phase A slices
 
