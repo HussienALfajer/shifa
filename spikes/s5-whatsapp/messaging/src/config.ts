@@ -39,6 +39,13 @@ export interface ContainerConfig {
   hmacKey: string;
 }
 
+export interface VerifyConfig {
+  /** The platform session's own number (E.164): the `wa.me` link's target. */
+  platformNumber: string;
+  /** Key of the HMACs that stand for codes and numbers in the database (16+ characters). */
+  serverKey: string;
+}
+
 export interface MessagingConfig {
   databaseUrl: string;
   containers: Record<string, ContainerConfig> & {
@@ -57,6 +64,13 @@ export interface MessagingConfig {
   queue: 'off' | 'producer' | 'worker';
   /** Override of the tick job's expiry (tests of expiry mid-send). */
   tickExpireSeconds?: number;
+  /** Reverse verification on the platform session (criterion 9). */
+  verify: VerifyConfig;
+  /**
+   * Manual run only: every webhook body and its signature headers are written here (a
+   * git-ignored folder, `.cache/s5/raw/`) for the scrubber. Never set in CI.
+   */
+  rawCaptureDir?: string;
 }
 
 export interface Deps {
