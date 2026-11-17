@@ -1,0 +1,27 @@
+{
+  "name": "@shifa-spike/s5-fake-waha",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "start": "node src/main.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "fastify": "5.12.8"
+  },
+  "devDependencies": {
+    "@shifa-spike/s5-stack": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
