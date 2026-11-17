@@ -140,7 +140,10 @@ describe('circuit breaker on ban signals', () => {
     for (const file of readdirSync(dir)) {
       const text = readFileSync(join(dir, file), 'utf8');
       expect(text, file).not.toMatch(/\/(start|restart|logout)['`]|auth\/qr|request-code/);
+      // The owner-driven admin page (tools/, 0.3-S5b) is reachable only through its re-export.
+      if (file !== 'admin-page.ts') expect(text, file).not.toMatch(/['"]\.\.\/tools\//);
     }
+    expect(readFileSync(join(dir, 'index.ts'), 'utf8')).not.toMatch(/admin-page/);
   });
 });
 

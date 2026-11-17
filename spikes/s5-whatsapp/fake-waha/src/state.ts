@@ -27,6 +27,8 @@ export interface FakeCall {
   session?: string;
   chatId?: string;
   text?: string;
+  /** `reply_to` of a sendText: the message it quotes. */
+  replyTo?: string;
   /** Id returned by a successful sendText. */
   messageId?: string;
 }

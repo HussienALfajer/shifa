@@ -16,3 +16,7 @@ b9216c76fbb2bc8c900c7a73740fa9610296c0f9:scripts/test/fixtures/obs/denied-keys.m
 # 0.2-09c: Garage access key *id* (GK…, public identifier, not the secret) of a throw-away
 # local stack, used as fake `garage key create` output; the stack was reset and no longer exists.
 b80138af4feda858256d6e4cedb933e4b052703b:scripts/test/backup-env.test.mjs:generic-api-key:61
+
+# 0.3-S5b: synthetic WhatsApp message key ("3EB0C1D2E3F4A5B6C7D8", hex, WAHA id format) in a
+# scrubber test; proves bare message keys are mapped to placeholders. Not a credential.
+53bf63a149b8340d764d5ac2261be113680b5082:spikes/s5-whatsapp/messaging/test/review-fixes.test.ts:generic-api-key:40

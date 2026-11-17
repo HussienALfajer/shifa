@@ -6,7 +6,7 @@ import { type FakeWaha, startFakeWaha } from '@shifa-spike/s5-fake-waha';
 import { afterAll, describe, expect, it } from 'vitest';
 import { createMessaging, type Messaging, type MessagingConfig } from '../src/index.ts';
 import { spawnWorker, type WorkerProcess } from '../src/spawn.ts';
-import { INSTANT_PACING, useDatabase } from './harness.ts';
+import { INSTANT_PACING, PLATFORM_NUMBER, useDatabase } from './harness.ts';
 
 const pg = useDatabase();
 const secret = () => randomBytes(18).toString('base64url');
@@ -50,6 +50,7 @@ describe('one worker, two sessions', () => {
       pacing: { ...INSTANT_PACING, minGapMs: 4_000, maxGapMs: 4_000, inlineWaitMaxMs: 10_000 },
       sendTimeoutMs: 3_000,
       adminToken: secret(),
+      verify: { platformNumber: PLATFORM_NUMBER, serverKey: secret() },
       queue: 'producer',
     };
     const random = createRandom(9);

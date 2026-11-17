@@ -108,3 +108,56 @@ create table if not exists s5.refusal (
   reason text not null,
   created_at timestamptz not null
 );
+
+-- Reverse verification (0.3-S5b, criterion 9). A nonce is bound to a device and the claimed
+-- number; the code and the number are stored only as HMAC(serverKey, ...) keys, the device secret
+-- only as its SHA-256. Attempts carry keys, never numbers.
+create table if not exists s5.verify_nonce (
+  id text primary key,
+  device_id text not null,
+  phone_key text not null,
+  code_hash text not null unique,
+  secret_hash text not null,
+  created_at timestamptz not null,
+  expires_at timestamptz not null,
+  verified_at timestamptz
+);
+create index if not exists verify_nonce_device on s5.verify_nonce (device_id, created_at);
+create index if not exists verify_nonce_phone on s5.verify_nonce (phone_key, created_at);
+
+create table if not exists s5.verify_attempt (
+  id bigserial primary key,
+  nonce_id text references s5.verify_nonce (id),
+  device_id text,
+  sender_key text,
+  claimed_key text,
+  outcome text not null check (
+    outcome in ('verified', 'expired', 'wrong_device', 'sender_mismatch', 'reused', 'rate_limited', 'lid_unresolved', 'no_match')
+  ),
+  created_at timestamptz not null
+);
+create index if not exists verify_attempt_time on s5.verify_attempt (created_at);
+
+-- Inbound messages on the platform session: the only thing a platform message may reply to
+-- (MSG-22). chat_id is where the reply goes (the chat that wrote, possibly an @lid).
+create table if not exists s5.platform_inbound (
+  message_id text primary key,
+  session text not null references s5.session (name),
+  chat_id text not null,
+  phone text,
+  received_at timestamptz not null
+);
+
+-- Every platform send, one per inbound at most.
+create table if not exists s5.platform_outbound (
+  id bigserial primary key,
+  session text not null references s5.session (name),
+  reply_to text not null references s5.platform_inbound (message_id),
+  status text not null check (status in ('sending', 'sent', 'failed', 'unknown', 'refused')),
+  reason text,
+  wa_message_id text,
+  created_at timestamptz not null,
+  updated_at timestamptz not null
+);
+create unique index if not exists platform_outbound_once
+  on s5.platform_outbound (reply_to) where status <> 'refused';

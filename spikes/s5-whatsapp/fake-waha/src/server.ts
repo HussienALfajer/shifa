@@ -24,6 +24,7 @@ interface ChatBody {
   session?: string;
   chatId?: string;
   text?: string;
+  reply_to?: string;
 }
 
 export function buildServer({ apiKey, state, control }: ServerOptions) {
@@ -53,6 +54,7 @@ export function buildServer({ apiKey, state, control }: ServerOptions) {
     if (body.session) call.session = body.session;
     if (body.chatId) call.chatId = body.chatId;
     if (body.text !== undefined) call.text = body.text;
+    if (body.reply_to !== undefined) call.replyTo = body.reply_to;
     state.calls.push(call);
     return call;
   };
