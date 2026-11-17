@@ -10,12 +10,20 @@ import { runHealth } from './health.ts';
 import { type Queue, startQueue } from './queue.ts';
 import { type SendResult, sendWhatsApp } from './send.ts';
 import { type TickResult, tick } from './tick.ts';
+import { validateTopology } from './topology.ts';
+import { registerVerify } from './verify.ts';
+import { E164 } from './verify-code.ts';
 import { registerWebhooks } from './webhook.ts';
 
 export interface Messaging {
   app: FastifyInstance;
-  /** Listens on 127.0.0.1 and returns the base URL. */
-  listen(port?: number): Promise<string>;
+  /** The shared context (tests and the local admin page). */
+  ctx: Ctx;
+  /**
+   * Listens on 127.0.0.1 (or the given host: the manual run binds the address its WAHA
+   * containers reach, never 0.0.0.0) and returns the base URL.
+   */
+  listen(port?: number, host?: string): Promise<string>;
   sendWhatsApp(
     clinicId: string,
     patientId: string,
@@ -25,6 +33,8 @@ export interface Messaging {
   registerPatient(clinicId: string, patientId: string, phone: string): Promise<void>;
   /** One queue step for a session (the pg-boss worker runs the same). */
   tick(session: string): Promise<TickResult>;
+  /** The clinic admin's "resume" after a breaker pause (OD-46). */
+  resume(session: string): ReturnType<typeof resume>;
   /** The 5-minute health job's handler. */
   runHealth(): Promise<void>;
   query<T = Record<string, unknown>>(sql: string, params?: unknown[]): Promise<T[]>;
@@ -42,9 +52,12 @@ export async function createMessaging(
   config: MessagingConfig,
   deps: Partial<Deps> = {},
 ): Promise<Messaging> {
-  // Short or empty keys would make the admin token or webhook signatures guessable.
+  validateTopology(config.sessions);
+  if (!E164.test(config.verify.platformNumber)) throw new Error('platform number must be E.164');
+  // Short or empty keys would make the admin token, webhook signatures or code hashes guessable.
   const keys = [
     config.adminToken,
+    config.verify.serverKey,
     ...Object.values(config.containers).flatMap((c) => [c.apiKey, c.hmacKey]),
   ];
   if (keys.some((k) => k.length < 16)) throw new Error('every key and token needs 16+ characters');
@@ -77,6 +90,7 @@ export async function createMessaging(
     done(null, body);
   });
   registerWebhooks(app, ctx);
+  registerVerify(app, ctx);
   app.post<{ Params: { session: string } }>(
     '/admin/sessions/:session/resume',
     async (req, reply) => {
@@ -91,8 +105,11 @@ export async function createMessaging(
 
   return {
     app,
-    async listen(port = 0) {
-      return app.listen({ host: '127.0.0.1', port });
+    ctx,
+    resume: (session) => resume(ctx, session),
+    async listen(port = 0, host = '127.0.0.1') {
+      if (host === '0.0.0.0' || host === '::') throw new Error('bind a specific address');
+      return app.listen({ host, port });
     },
     sendWhatsApp: (clinicId, patientId, templateKey, vars) =>
       sendWhatsApp(ctx, clinicId, patientId, templateKey, vars),

@@ -10,6 +10,8 @@ import { tripBreaker, warningOf } from './breaker.ts';
 import { type Ctx, loadSession, ts } from './context.ts';
 import { setWahaStatus } from './fallback.ts';
 import { type Inbound, recordInbound } from './optin.ts';
+import { captureRaw } from './raw-capture.ts';
+import { handlePlatformMessage, type PlatformMessage, platformReply } from './verify.ts';
 import { isGroupOrBroadcast, phoneOfChat, wahaCall } from './waha.ts';
 
 interface Envelope {
@@ -71,6 +73,9 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
       ctx.log('webhook_refused', { reason: 'unknown_container' });
       return reply.code(404).send({ error: 'unknown container' });
     }
+    if (ctx.config.rawCaptureDir && Buffer.isBuffer(raw)) {
+      captureRaw(ctx.config.rawCaptureDir, container, request.headers, raw, ctx.deps.now());
+    }
     if (
       !Buffer.isBuffer(raw) ||
       !signatureOk(raw, request.headers['x-webhook-hmac'], conf.hmacKey)
@@ -87,8 +92,11 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
       return reply.code(403).send({ error: 'session' });
     }
 
-    // Network work (LID lookup) before the transaction.
+    // Network work (LID lookup) before the transaction. (container, session) alone decides the
+    // role: platform messages go to verification only, clinic messages to that clinic's opt-in
+    // only (MSG-09).
     let inbound: Inbound | null = null;
+    let platformMessage: PlatformMessage | null = null;
     if (INBOUND_EVENTS.has(event)) {
       const parts = inboundParts(event, envelope);
       if (!parts.fromMe && !isGroupOrBroadcast(parts.from) && parts.from !== '') {
@@ -112,21 +120,32 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
           if (!chat) ctx.log('lid_unresolved', { session: name });
         }
         const phone = chat ? phoneOfChat(chat) : null;
-        if (phone) inbound = { phone, timestamp: parts.timestamp, keywordText: parts.text };
+        const messageId = envelope.payload?.['id'];
+        if (session.role === 'platform') {
+          // Only plain messages can carry a code; edits, revokes and reactions never do.
+          if (event === 'message' && typeof messageId === 'string') {
+            platformMessage = { messageId, chatId: parts.from, phone, text: parts.text ?? '' };
+          }
+        } else if (phone) {
+          inbound = { phone, timestamp: parts.timestamp, keywordText: parts.text };
+        }
       }
     }
 
-    const kicks = await ctx.db.tx(async (client) => {
+    const { kicks, replyTo } = await ctx.db.tx(async (client) => {
       const seen = await client.query(
         'insert into s5.webhook_seen (container, key, seen_at) values ($1, $2, $3) on conflict do nothing',
         [container, dedupeKey(event, envelope), ts(ctx)],
       );
       if (seen.rowCount === 0) {
         ctx.log('webhook_duplicate', { container, session: name, reason: event });
-        return [] as string[];
+        return { kicks: [] as string[], replyTo: null };
       }
       const out: string[] = [];
-      if (inbound) {
+      let answer: string | null = null;
+      if (platformMessage) {
+        answer = await handlePlatformMessage(ctx, client, session, platformMessage);
+      } else if (inbound) {
         const kick = await recordInbound(ctx, client, session, inbound);
         if (kick) out.push(kick);
       } else if (event === 'message.ack') {
@@ -138,9 +157,10 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
         if (typeof status === 'string') await setWahaStatus(ctx, client, name, status, true);
         if (status === 'WORKING') out.push(name);
       }
-      return out;
+      return { kicks: out, replyTo: answer };
     });
     for (const s of kicks) await ctx.kick(s);
+    if (replyTo) await platformReply(ctx, { session: name, replyTo });
     return reply.code(200).send({ ok: true });
   });
 }
