@@ -21,9 +21,16 @@ const ALLOWED_DOMAINS = [
   'storage.googleapis.com', // Flutter engine artifacts, pub package archives
 ];
 
+/** Commands that run outside the sandbox (OD-49): the docker CLI only, typed directly. */
+const EXCLUDED_COMMANDS = ['docker *'];
+
+/** Writable paths outside the project (OD-49): Flutter rewrites its cache and ~/.dart-tool. */
+const ALLOWED_WRITES = ['//opt/flutter/bin/cache', '~/.dart-tool'];
+
 const SANDBOX_KEYS = new Set([
   'enabled',
   'allowUnsandboxedCommands',
+  'excludedCommands',
   'failIfUnavailable',
   'network',
   'filesystem',
@@ -32,7 +39,6 @@ const SANDBOX_KEYS = new Set([
 const NETWORK_KEYS = new Set(['allowedDomains', 'deniedDomains']);
 /** Keys that weaken isolation; each needs an owner decision and an edit here. */
 const FORBIDDEN = [
-  'excludedCommands',
   'ignoreViolations',
   'enableWeakerNestedSandbox',
   'enableWeakerNetworkIsolation',
@@ -68,6 +74,14 @@ describe('sandbox policy', () => {
     for (const path of ['~/.ssh', '~/.claude/.credentials.json', '//mnt/c', '//mnt/d']) {
       assert.ok(denied.includes(path), `denyRead lacks ${path}`);
     }
+  });
+
+  it('excludes exactly the listed commands (OD-49)', () => {
+    assert.deepEqual(sandbox.excludedCommands ?? [], EXCLUDED_COMMANDS);
+  });
+
+  it('allows writes to exactly the listed paths (OD-49)', () => {
+    assert.deepEqual(sandbox.filesystem?.allowWrite ?? [], ALLOWED_WRITES);
   });
 
   it('allows exactly the listed domains', () => {

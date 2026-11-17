@@ -25,8 +25,10 @@
   "sandbox": {
     "enabled": true,
     "allowUnsandboxedCommands": false,
+    "excludedCommands": ["docker *"],
     "filesystem": {
-      "denyRead": ["~/.ssh", "~/.claude/.credentials.json", "//mnt/c", "//mnt/d"]
+      "denyRead": ["~/.ssh", "~/.claude/.credentials.json", "//mnt/c", "//mnt/d"],
+      "allowWrite": ["//opt/flutter/bin/cache", "~/.dart-tool"]
     },
     "network": {
       "allowedDomains": [

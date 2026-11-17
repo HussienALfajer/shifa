@@ -21,8 +21,8 @@ describe('.claude/settings.json sandbox', () => {
     }
   });
 
-  it('has no excluded commands', () => {
-    assert.equal(settings.sandbox?.excludedCommands, undefined);
+  it('excludes only the docker CLI (OD-49)', () => {
+    assert.deepEqual(settings.sandbox?.excludedCommands, ['docker *']);
   });
 });
 
