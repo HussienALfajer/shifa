@@ -77,11 +77,14 @@ async function recordAttempt(
   ctx.log('verify_attempt', { reason: outcome });
 }
 
-/** Failed matches in the last hour against this sender, the claimed number or the device. */
+/**
+ * Failed matches in the last hour against this sender, the claimed number or the device.
+ * `rate_limited` itself does not count, so a refused retry does not extend the lock.
+ */
 async function recentFailures(
   ctx: Ctx,
   client: Client,
-  senderKey: string | null,
+  senderKey: string,
   nonce: NonceRow | undefined,
 ): Promise<number> {
   const since = ts(ctx, ctx.deps.now() - LIMIT_WINDOW_MS);
@@ -89,7 +92,7 @@ async function recentFailures(
   const counts = await rows<{ n: number }>(
     client,
     `select count(*)::int as n from s5.verify_attempt
-     where outcome <> 'verified' and created_at > $1
+     where outcome not in ('verified', 'rate_limited') and created_at > $1
        and (sender_key = any($2) or claimed_key = any($2) or device_id = $3)`,
     [since, keys, nonce?.device_id ?? null],
   );
@@ -119,17 +122,21 @@ export async function handlePlatformMessage(
   if (!code) return null;
   const key = ctx.config.verify.serverKey;
   const senderKey = msg.phone ? phoneKey(key, msg.phone) : null;
+  // A sender without a resolved number (unresolvable @lid) is limited by its chat instead.
+  const limitKey = senderKey ?? phoneKey(key, `chat:${msg.chatId}`);
   const nonce = (
     await rows<NonceRow>(client, 'select * from s5.verify_nonce where code_hash = $1 for update', [
       codeKey(key, code),
     ])
   )[0];
   const keys = {
-    senderKey,
+    senderKey: limitKey,
     ...(nonce ? { nonceId: nonce.id, deviceId: nonce.device_id, claimedKey: nonce.phone_key } : {}),
   };
+  // Serialises matches per sender, so concurrent webhooks cannot each see fewer than LIMIT.
+  await client.query('select pg_advisory_xact_lock(hashtext($1))', [`sender:${limitKey}`]);
   let outcome: Outcome;
-  if ((await recentFailures(ctx, client, senderKey, nonce)) >= LIMIT) outcome = 'rate_limited';
+  if ((await recentFailures(ctx, client, limitKey, nonce)) >= LIMIT) outcome = 'rate_limited';
   else if (!nonce) outcome = 'no_match';
   else if (nonce.verified_at) outcome = 'reused';
   else if (ctx.deps.now() > Date.parse(nonce.expires_at)) outcome = 'expired';

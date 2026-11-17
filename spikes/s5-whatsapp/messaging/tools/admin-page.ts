@@ -71,6 +71,13 @@ export async function startAdminPage(
     attempts: await messaging.query(
       'select status, count(*)::int as n from s5.delivery_attempt group by status order by status',
     ),
+    optins: await messaging.query(
+      `select clinic_id, (last_inbound_at is not null) as wrote, opted_out from s5.optin
+       order by clinic_id`,
+    ),
+    alerts: await messaging.query(
+      'select session, kind, count(*)::int as n from s5.admin_alert group by session, kind order by session, kind',
+    ),
   }));
   app.get<{ Params: { session: string } }>('/api/sessions/:session/qr', async (req, reply) => {
     const found = session(req.params.session, reply);
@@ -102,7 +109,13 @@ export async function startAdminPage(
         const found = session(req.params.session, reply);
         if (!found) return reply;
         const path = `/api/sessions/${encodeURIComponent(found.s.name)}/${action}`;
-        const res = await wahaCall(found.conf, 'POST', path, {}, config.sendTimeoutMs);
+        let res = await wahaCall(found.conf, 'POST', path, {}, config.sendTimeoutMs);
+        // WAHA starts only a session that exists; the first start of the day creates it (the
+        // container's global webhook settings apply to it).
+        if (action === 'start' && res.kind === 'http' && res.status === 404) {
+          const body = { name: found.s.name, start: true };
+          res = await wahaCall(found.conf, 'POST', '/api/sessions', body, config.sendTimeoutMs);
+        }
         return reply.code(res.kind === 'ok' ? 200 : 502).send({ result: res.kind });
       },
     );

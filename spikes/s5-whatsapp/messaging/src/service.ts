@@ -61,6 +61,8 @@ export async function createMessaging(
     ...Object.values(config.containers).flatMap((c) => [c.apiKey, c.hmacKey]),
   ];
   if (keys.some((k) => k.length < 16)) throw new Error('every key and token needs 16+ characters');
+  // A key shared by two containers would let one sign events for the other's sessions (MSG-09).
+  if (new Set(keys).size !== keys.length) throw new Error('every key and token must be distinct');
   const allDeps: Deps = { ...defaultDeps, ...deps };
   const db = new Db(config.databaseUrl);
   await db.migrate();
@@ -80,6 +82,17 @@ export async function createMessaging(
        values ($1, $2, $3, $4, $5, $6) on conflict (name) do nothing`,
       [s.name, s.container, s.clinicId, s.role, s.timeZone, ts(ctx)],
     );
+    // Routing reads the stored row: a database kept from a run with another topology must not
+    // route by stale container, role or clinic (MSG-09).
+    const stored = await db.query<{ container: string; role: string; clinic_id: string | null }>(
+      'select container, role, clinic_id from s5.session where name = $1',
+      [s.name],
+    );
+    const row = stored[0];
+    if (row?.container !== s.container || row.role !== s.role || row.clinic_id !== s.clinicId) {
+      await db.close();
+      throw new Error(`session ${s.name} in the database differs from the configuration`);
+    }
   }
   const health = () => runHealth(ctx);
   if (config.queue !== 'off') queue = await startQueue(ctx, config.queue, health);
@@ -108,7 +121,10 @@ export async function createMessaging(
     ctx,
     resume: (session) => resume(ctx, session),
     async listen(port = 0, host = '127.0.0.1') {
-      if (host === '0.0.0.0' || host === '::') throw new Error('bind a specific address');
+      // An empty or unspecified address binds every interface: refuse it.
+      if (['', '0', '0.0.0.0', '::', '::0', '[::]'].includes(host.trim())) {
+        throw new Error('bind a specific address');
+      }
       return app.listen({ host, port });
     },
     sendWhatsApp: (clinicId, patientId, templateKey, vars) =>

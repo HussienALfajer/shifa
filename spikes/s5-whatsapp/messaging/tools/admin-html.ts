@@ -25,6 +25,8 @@ export const ADMIN_HTML = `<!doctype html>
 <div id="qr"></div>
 <h2>نتائج التحقق</h2><ul id="verify"></ul>
 <h2>محاولات الإرسال</h2><ul id="attempts"></ul>
+<h2>الاشتراك (opt-in)</h2><ul id="optins"></ul>
+<h2>التنبيهات</h2><ul id="alerts"></ul>
 <p id="msg" class="muted"></p>
 <script>
 const token = new URLSearchParams(location.hash.slice(1)).get('t') || '';
@@ -67,6 +69,8 @@ async function refresh() {
   }
   document.getElementById('verify').replaceChildren(...data.verifyOutcomes.map((r) => el('li', r.outcome + ': ' + r.n)));
   document.getElementById('attempts').replaceChildren(...data.attempts.map((r) => el('li', r.status + ': ' + r.n)));
+  document.getElementById('optins').replaceChildren(...data.optins.map((r) => el('li', r.clinic_id + ': ' + (r.opted_out ? 'متوقف (إيقاف)' : r.wrote ? 'مشترك' : 'لم يكتب بعد'))));
+  document.getElementById('alerts').replaceChildren(...data.alerts.map((r) => el('li', r.session + ' ' + r.kind + ': ' + r.n)));
 }
 refresh();
 setInterval(refresh, 10000);

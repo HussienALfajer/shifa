@@ -74,7 +74,11 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
       return reply.code(404).send({ error: 'unknown container' });
     }
     if (ctx.config.rawCaptureDir && Buffer.isBuffer(raw)) {
-      captureRaw(ctx.config.rawCaptureDir, container, request.headers, raw, ctx.deps.now());
+      try {
+        captureRaw(ctx.config.rawCaptureDir, container, request.headers, raw, ctx.deps.now());
+      } catch {
+        ctx.log('raw_capture_failed', { container });
+      }
     }
     if (
       !Buffer.isBuffer(raw) ||

@@ -12,8 +12,12 @@ const [command, arg] = process.argv.slice(2);
 const env = readEnvLocal();
 const config = runConfig(env);
 
+// P is the run's only patient; it must exist before P's first message, or the opt-in is dropped.
+const P = { clinicId: 'c-run', patientId: 'p-owner', phone: env['S5_NUMBER_P'] ?? '' };
+
 if (command === 'serve') {
   const messaging = await createMessaging(config);
+  await messaging.registerPatient(P.clinicId, P.patientId, P.phone);
   const url = await messaging.listen(
     Number(env['S5_LISTEN_PORT'] ?? 3105),
     env['S5_LISTEN_HOST'] ?? '127.0.0.1',
@@ -34,10 +38,10 @@ if (command === 'serve') {
   if (!Number.isInteger(count) || count < 1 || count > 60) throw new Error('batch <1..60>');
   // The batch only queues: no webhooks reach this process, so no raw capture either.
   const messaging = await createMessaging({ ...config, queue: 'producer', rawCaptureDir: '' });
-  await messaging.registerPatient('c-run', 'p-owner', env['S5_NUMBER_P'] ?? '');
+  await messaging.registerPatient(P.clinicId, P.patientId, P.phone);
   const results: Record<string, number> = {};
   for (let i = 0; i < count; i++) {
-    const r = await messaging.sendWhatsApp('c-run', 'p-owner', 'appointment_reminder', {
+    const r = await messaging.sendWhatsApp(P.clinicId, P.patientId, 'appointment_reminder', {
       name: 'المالك',
       date: '2026-11-20',
       time: `${String(9 + (i % 8))}:30`,

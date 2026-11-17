@@ -18,7 +18,9 @@ export function readEnvLocal(file = ENV_FILE): Record<string, string> {
   const out: Record<string, string> = {};
   for (const line of readFileSync(file, 'utf8').split(/\r?\n/)) {
     const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/.exec(line);
-    if (m?.[1] && m[2] !== undefined) out[m[1]] = m[2].replace(/^(['"])(.*)\1$/, '$2');
+    const value = m?.[2]?.replace(/^(['"])(.*)\1$/, '$2');
+    // An empty value counts as unset (an empty listen host would otherwise bind every interface).
+    if (m?.[1] && value) out[m[1]] = value;
   }
   return out;
 }

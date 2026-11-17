@@ -1,7 +1,8 @@
 // Reverse-verification code (criterion 9): 6 characters from an alphabet without look-alikes
-// (no 0/O, 1/I/L), after a fixed Arabic phrase that names Shifa and the action. Matching takes the
-// first code-shaped token after folding (Arabic-Indic digits, case), so extra text passes. Codes,
-// numbers and device secrets reach the database only as keyed hashes.
+// (no 0/O, 1/I/L), after a fixed Arabic phrase that names Shifa and the action. Matching requires
+// the phrase right before the code (after folding Arabic-Indic digits, case and tashkeel), so
+// extra text around it passes but a bare code does not. Codes, numbers and device secrets reach
+// the database only as keyed hashes.
 import { createHash, createHmac, randomInt, timingSafeEqual } from 'node:crypto';
 import { foldText } from './keywords.ts';
 
@@ -21,11 +22,22 @@ const isCode = (token: string) =>
   // Tokens come from splitting on anything but [0-9A-Z]: ASCII only, so per-character is safe.
   token.length === CODE_LENGTH && token.split('').every((ch) => CODE_ALPHABET.includes(ch));
 
-/** The first code-shaped token of a message, upper-cased; null when there is none. */
+/** The phrase without its colon, folded like the message. */
+const PHRASE_CORE = foldText(PHRASE.replace(/:$/, ''));
+
+/**
+ * The code that directly follows the fixed phrase (after folding: case, Arabic-Indic digits,
+ * tashkeel), upper-cased; null when the phrase or a code right after it is missing. Extra text
+ * before and after passes; a bare code does not, so a disguised message ("confirm my booking
+ * K7Q4MX") cannot verify a device (forwarded-link risk, ADR-0036).
+ */
 export function extractCode(text: string): string | null {
-  const folded = foldText(text).toUpperCase();
-  for (const token of folded.split(/[^0-9A-Z]+/)) if (isCode(token)) return token;
-  return null;
+  const folded = foldText(text);
+  const at = folded.indexOf(PHRASE_CORE);
+  if (at < 0) return null;
+  const rest = folded.slice(at + PHRASE_CORE.length).toUpperCase();
+  const match = /^[\s:\u061B\u060C,.-]*([0-9A-Z]{6})(?![0-9A-Z])/.exec(rest);
+  return match?.[1] && isCode(match[1]) ? match[1] : null;
 }
 
 const hmac = (key: string, value: string) => createHmac('sha256', key).update(value).digest('hex');

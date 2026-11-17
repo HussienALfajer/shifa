@@ -8,7 +8,9 @@ import { rows } from './db.ts';
 import { wahaCall } from './waha.ts';
 
 export const REPLY_WINDOW_MS = 600_000;
-export const VERIFIED_REPLY = 'تم التحقق من رقمك في شفاء. يمكنك العودة إلى التطبيق.';
+// Names the action, and tells a patient who did not ask for it what to do (forwarded-link risk).
+export const VERIFIED_REPLY =
+  'تم التحقق من رقمك لتسجيل الدخول إلى تطبيق شفاء. إن لم تطلب ذلك بنفسك فتواصل مع العيادة فوراً.';
 
 export interface PlatformReply {
   session: string;
