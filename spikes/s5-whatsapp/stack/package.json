@@ -1,0 +1,26 @@
+{
+  "name": "@shifa-spike/s5-stack",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "pg": "8.23.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
