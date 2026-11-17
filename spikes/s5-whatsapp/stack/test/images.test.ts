@@ -1,8 +1,8 @@
 // Criterion 1: the WAHA and PostgreSQL images are pinned by version and digest, and the running
 // WAHA is the pinned version with the GOWS engine and the hardening the slice asks for.
 import { describe, expect, it } from 'vitest';
-import { IMAGES, PINNED_IMAGE, WAHA_VERSION } from '../src/images.ts';
 import { inspectEnv } from '../src/containers.ts';
+import { IMAGES, PINNED_IMAGE, WAHA_VERSION } from '../src/images.ts';
 import { useStack } from './use-stack.ts';
 
 describe('image pins', () => {

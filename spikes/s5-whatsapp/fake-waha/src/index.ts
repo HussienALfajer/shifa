@@ -2,19 +2,19 @@
 // the spike uses and emits signed webhooks; every fault the spec names can be injected, from
 // the test process (methods below) or over HTTP (POST /__fake/<method> {"args": [...]}).
 import {
+  ackPayload,
   envelope,
   type InboundInput,
   inboundPayload,
-  ackPayload,
   type SessionStatus,
 } from './events.ts';
 import { buildServer } from './server.ts';
 import { type FakeCall, FakeState, type SendMode } from './state.ts';
 import { type Delivery, type DeliveryOptions, WebhookEmitter } from './webhooks.ts';
 
+export type { InboundInput } from './events.ts';
 export type { FakeCall, SendMode } from './state.ts';
 export type { Delivery, DeliveryOptions } from './webhooks.ts';
-export type { InboundInput } from './events.ts';
 
 export interface FakeWahaOptions {
   /** Logical container name (`platform`, `clinics`, ...). */
@@ -98,7 +98,9 @@ export async function startFakeWaha(options: FakeWahaOptions): Promise<FakeWaha>
       return Promise.resolve();
     },
     inbound(session, input, deliveryOptions) {
-      const s = need(session);
+      // Any session name may be posted: a container naming a session it does not run is a
+      // routing fault the service must refuse (webhook tests).
+      const s = state.session(session) ?? state.create(session, false);
       const { event, payload } = inboundPayload(input, s.me.id, Math.floor(now() / 1000));
       return emitter.deliver(envelope(event, session, s.me, payload, now()), deliveryOptions);
     },

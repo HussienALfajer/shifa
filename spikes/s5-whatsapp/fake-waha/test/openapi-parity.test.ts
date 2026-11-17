@@ -3,8 +3,8 @@
 import { readFileSync } from 'node:fs';
 import { IMAGES } from '@shifa-spike/s5-stack';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { OPENAPI_DOCUMENT, OPENAPI_SOURCE } from '../src/openapi.ts';
 import { type FakeWaha, startFakeWaha } from '../src/index.ts';
+import { OPENAPI_DOCUMENT, OPENAPI_SOURCE } from '../src/openapi.ts';
 
 interface OpenApi {
   info: { version: string };
