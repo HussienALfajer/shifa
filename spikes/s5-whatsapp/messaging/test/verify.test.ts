@@ -61,8 +61,19 @@ describe('reverse verification', () => {
     const env = await setup();
     const n = await issue(env, 'device-0002', phoneA);
     const mangled = toArabicIndic(n.code.toLowerCase());
-    await sendToPlatform(env, chatOf(phoneA), `مرحبا، هذا رمزي ${mangled} شكراً`);
+    await sendToPlatform(env, chatOf(phoneA), `مرحبا، رمز التحقّق في شفاء: ${mangled} شكراً`);
     expect(await status(env, n.nonceId, 'device-0002', n.deviceSecret)).toBe('verified');
+  });
+
+  it('ignores a code without the fixed phrase (a disguised message never verifies)', async () => {
+    const env = await setup();
+    const n = await issue(env, 'device-0017', phoneA);
+    await sendToPlatform(env, chatOf(phoneA), `أؤكد موعدي رقم ${n.code}`);
+    await sendToPlatform(env, chatOf(phoneA), n.code);
+    await sendToPlatform(env, chatOf(phoneA), `رمز التحقق في شفاء: كلمة ${n.code}`);
+    expect(await status(env, n.nonceId, 'device-0017', n.deviceSecret)).toBe('pending');
+    expect(await outcomes(env)).toEqual([]);
+    expect(platformSends(env)).toEqual([]);
   });
 
   it('refuses an expired nonce', async () => {
@@ -174,7 +185,9 @@ describe('reverse verification', () => {
   it('rate-limits the sixth failed match in an hour per sender number', async () => {
     const env = await setup();
     const n = await issue(env, 'device-0011', phoneA);
-    for (let i = 0; i < 5; i++) await sendToPlatform(env, chatOf(phoneA), 'رمز: ZZZZZZ');
+    for (let i = 0; i < 5; i++) {
+      await sendToPlatform(env, chatOf(phoneA), 'رمز التحقق في شفاء: ZZZZZZ');
+    }
     // The right code now comes too late: the number is blocked for the hour.
     await sendToPlatform(env, chatOf(phoneA), n.text);
     expect(await status(env, n.nonceId, 'device-0011', n.deviceSecret)).toBe('pending');
