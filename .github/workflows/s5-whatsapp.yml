@@ -1,0 +1,42 @@
+# Spike 0.3-S5: WhatsApp (WAHA GOWS). Manual dispatch only; never part of PR CI (OD-31). Job
+# `fake` (0.3-S5a) runs every `test:spike` suite: the pinned WAHA stack (no session is ever
+# started: the WAHA network has no route out, OD-45) and the messaging service against the fake
+# WAHA. CI never touches real WhatsApp and uses no secrets: every key is generated per run.
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: s5-whatsapp
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: s5-whatsapp
+  cancel-in-progress: false
+
+jobs:
+  fake:
+    name: pinned WAHA stack, fake WAHA, sending controls
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Stack (pins, hardening, network and storage boundary)
+        working-directory: spikes/s5-whatsapp/stack
+        run: pnpm run test:spike
+      - name: Fake WAHA (OpenAPI parity)
+        working-directory: spikes/s5-whatsapp/fake-waha
+        run: pnpm run test:spike
+      - name: Messaging (webhooks, allowlist, opt-in, pacing, queue, breaker, health, acks, logs)
+        working-directory: spikes/s5-whatsapp/messaging
+        run: pnpm run test:spike
