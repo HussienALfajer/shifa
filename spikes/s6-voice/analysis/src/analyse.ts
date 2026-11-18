@@ -49,6 +49,10 @@ function decisionText(d: Decision): string {
       if (d.excluded) parts.push(`Passed over for a wrong number: ${d.excluded.join(', ')}.`);
       return parts.join(' ');
     }
+    case 'accepted':
+      return `**Accepted: ${d.voiceId}** (OD-51: ${d.reason}).`;
+    case 'not-accepted':
+      return `**Not accepted: ${d.voiceId}** (OD-51: ${d.reason}).${d.wrongNumbers.length > 0 ? `\nWrong numbers: ${d.wrongNumbers.join(', ')}` : ''}`;
     case 'tie':
       return `**Tie** between ${d.voiceIds.join(', ')}: same mean naturalness (within 0.05) and same number of wrong names. The owner decides.`;
     case 'no-eligible-winner':

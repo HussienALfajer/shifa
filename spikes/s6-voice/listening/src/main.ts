@@ -80,10 +80,20 @@ function skip(set: FullSet, p: Progress): void {
   if (item) {
     p.ratings = Object.fromEntries(Object.entries(p.ratings).filter(([c]) => c !== item.code));
   }
+  advance(set, p);
+}
+
+/** Next clip; after the last one the pairs, or the finish when there are none (one voice). */
+function advance(set: FullSet, p: Progress): void {
   p.index += 1;
   if (p.index >= set.items.length) {
     p.index = set.items.length;
-    p.phase = 'pairs';
+    if (set.pairs.length > 0) {
+      p.phase = 'pairs';
+    } else {
+      p.phase = 'done';
+      p.finishedAt = new Date().toISOString();
+    }
   }
   save();
   render();
@@ -99,14 +109,7 @@ function canAdvance(set: FullSet, p: Progress): boolean {
 
 function next(set: FullSet, p: Progress): void {
   if (!canAdvance(set, p)) return;
-  p.index += 1;
-  if (p.index >= set.items.length) {
-    p.index = set.items.length;
-    p.phase = 'pairs';
-  }
-  save();
-  render();
-  if (p.phase === 'rating') playCurrent(set, p);
+  advance(set, p);
 }
 
 function renderRating(set: FullSet, p: Progress): HTMLElement {

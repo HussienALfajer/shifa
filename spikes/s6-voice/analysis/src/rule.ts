@@ -57,6 +57,14 @@ export type Decision =
       tieBrokenBy?: 'fewer wrong names';
     }
   | { kind: 'tie'; voiceIds: string[] }
+  | {
+      /** One voice (OD-51): an absolute bar instead of a comparison. */
+      kind: 'accepted' | 'not-accepted';
+      voiceId: string;
+      mean: number;
+      wrongNumbers: string[];
+      reason: string;
+    }
   | { kind: 'no-eligible-winner'; wrongNumbers: { voiceId: string; clipIds: string[] }[] };
 
 /** A difference in mean naturalness under this is a tie (OD-50). */
@@ -163,7 +171,35 @@ export function summarise(results: ListeningResults, key: ListeningKey): Summary
   };
 }
 
+/** OD-51: a single voice is accepted with no wrong number and at least this mean naturalness. */
+export const ACCEPT_MEAN = 3.5;
+
+function acceptance(v: VoiceSummary): Decision {
+  const mean = v.naturalness.all.mean;
+  const wrongNumbers = v.wrongNumbers.map((w) => w.clipId);
+  const reasons: string[] = [];
+  if (wrongNumbers.length > 0) {
+    reasons.push(
+      `${String(wrongNumbers.length)} wrong number(s): regenerate with a corrected text the owner confirms, then listen again`,
+    );
+  }
+  if (mean < ACCEPT_MEAN)
+    reasons.push(`mean naturalness ${mean.toFixed(2)} is below ${String(ACCEPT_MEAN)}`);
+  return {
+    kind: reasons.length === 0 ? 'accepted' : 'not-accepted',
+    voiceId: v.voiceId,
+    mean,
+    wrongNumbers,
+    reason:
+      reasons.length === 0
+        ? `no wrong number and mean naturalness ${mean.toFixed(2)} ≥ ${String(ACCEPT_MEAN)}`
+        : reasons.join('; '),
+  };
+}
+
 export function decide(voices: VoiceSummary[]): Decision {
+  const [only] = voices;
+  if (voices.length === 1 && only) return acceptance(only);
   const eligible = voices.filter((v) => v.wrongNumbers.length === 0);
   const excluded = voices.filter((v) => v.wrongNumbers.length > 0).map((v) => v.voiceId);
   if (eligible.length === 0) {

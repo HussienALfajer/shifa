@@ -123,7 +123,9 @@ export function hashSet(set: Omit<ListeningSet, 'setHash'>): string {
 const voiceIdOf = (m: Manifest) => `${m.header.provider}/${m.header.voice}`;
 
 function checkInputs(inputs: ListeningInput[], mode: 'full' | 'pre-round'): void {
-  if (inputs.length < 2) throw new Error('at least two voices are needed');
+  // One voice is a rating-only run (OD-51: SILMA alone, no pairs); the pre-round compares voices.
+  const least = mode === 'pre-round' ? 2 : 1;
+  if (inputs.length < least) throw new Error(`at least ${String(least)} voice(s) are needed`);
   const ids = new Set<string>();
   for (const { manifest } of inputs) {
     const id = voiceIdOf(manifest);
@@ -222,11 +224,15 @@ export function buildListeningSet(opts: BuildOptions): BuiltListeningSet {
 
   const announcements = opts.inputs[0]?.manifest.announcements ?? [];
   const byVoice = new Map(opts.inputs.map((i) => [voiceIdOf(i.manifest), i]));
-  const plan = planPairs(
-    announcements.map((a) => a.id),
-    voices.map((v) => v.voiceId),
-    rnd,
-  );
+  // Pairs compare voices: none with a single voice.
+  const plan =
+    voices.length < 2
+      ? []
+      : planPairs(
+          announcements.map((a) => a.id),
+          voices.map((v) => v.voiceId),
+          rnd,
+        );
   const keyPairs: ListeningKey['pairs'] = [];
   const pairs = plan.map((p, i) => {
     const id = `p${String(i + 1).padStart(2, '0')}`;
