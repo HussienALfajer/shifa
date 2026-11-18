@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>شاشة الانتظار (تجربة الصوت)</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family: system-ui, 'Noto Sans Arabic', sans-serif;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      main {
+        padding: 2rem;
+      }
+      h1 {
+        font-size: 2rem;
+        margin: 0 0 1rem;
+      }
+      #status {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        direction: ltr;
+        text-align: right;
+      }
+      #log {
+        font-size: 0.75rem;
+        color: #64748b;
+        direction: ltr;
+        text-align: left;
+        max-height: 40vh;
+        overflow: auto;
+      }
+      .overlay {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        border: 0;
+        margin: 0;
+        width: 100%;
+      }
+      .overlay[hidden] {
+        display: none;
+      }
+      #gate {
+        background: #1e293b;
+        color: #f8fafc;
+        font: inherit;
+        font-size: 3rem;
+        cursor: pointer;
+        z-index: 2;
+      }
+      #flash {
+        background: #fbbf24;
+        color: #0f172a;
+        z-index: 1;
+      }
+      .flash-number {
+        font-size: 22vh;
+        font-weight: 700;
+        line-height: 1;
+      }
+      .flash-room {
+        font-size: 8vh;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>شاشة الانتظار</h1>
+      <p id="status" data-testid="status">pack: loading</p>
+      <ol id="log"></ol>
+    </main>
+    <div id="flash" class="overlay" data-testid="flash" role="status" hidden>
+      <div class="flash-number"></div>
+      <div class="flash-room"></div>
+    </div>
+    <button id="gate" class="overlay" type="button" hidden>اضغط لتفعيل الصوت</button>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

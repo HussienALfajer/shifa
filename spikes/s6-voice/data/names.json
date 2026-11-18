@@ -1,0 +1,1005 @@
+{
+  "description": "S6 test-set names (criterion 4): 100 first names (50 male, 50 female), Arabic, Kurdish and Turkmen names common in Azaz, and hard cases (hamza, shadda, long vowels, foreign origin). Compiled by Claude from the public lists cited per entry, never from patients (ADR-0023). Tashkeel for Kurdish and Turkmen names follows their usual Syrian pronunciation; the owner reviews every entry before any real generation (checkpoint B). alsoPlain marks the 20 names also generated undiacritised.",
+  "names": [
+    {
+      "id": "m01",
+      "diacritised": "مُحَمَّد",
+      "plain": "محمد",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m02",
+      "diacritised": "أَحْمَد",
+      "plain": "أحمد",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m03",
+      "diacritised": "إِبْرَاهِيم",
+      "plain": "إبراهيم",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m04",
+      "diacritised": "عَلِيّ",
+      "plain": "علي",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m05",
+      "diacritised": "حَسَن",
+      "plain": "حسن",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m06",
+      "diacritised": "حُسَيْن",
+      "plain": "حسين",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m07",
+      "diacritised": "خَالِد",
+      "plain": "خالد",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m08",
+      "diacritised": "عُمَر",
+      "plain": "عمر",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m09",
+      "diacritised": "يُوسُف",
+      "plain": "يوسف",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m10",
+      "diacritised": "مُصْطَفَى",
+      "plain": "مصطفى",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m11",
+      "diacritised": "عَبْد الرَّحْمٰن",
+      "plain": "عبد الرحمن",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m12",
+      "diacritised": "بَشَّار",
+      "plain": "بشار",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m13",
+      "diacritised": "غَسَّان",
+      "plain": "غسان",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m14",
+      "diacritised": "عَمَّار",
+      "plain": "عمار",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m15",
+      "diacritised": "لُؤَيّ",
+      "plain": "لؤي",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "shadda"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m16",
+      "diacritised": "مُؤْمِن",
+      "plain": "مؤمن",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m17",
+      "diacritised": "عَلَاء",
+      "plain": "علاء",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m18",
+      "diacritised": "ضِيَاء",
+      "plain": "ضياء",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m19",
+      "diacritised": "بَهَاء",
+      "plain": "بهاء",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m20",
+      "diacritised": "أُسَامَة",
+      "plain": "أسامة",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m21",
+      "diacritised": "أَنَس",
+      "plain": "أنس",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m22",
+      "diacritised": "زَكَرِيَّا",
+      "plain": "زكريا",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m23",
+      "diacritised": "يَحْيَى",
+      "plain": "يحيى",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m24",
+      "diacritised": "سَامِي",
+      "plain": "سامي",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m25",
+      "diacritised": "مَأْمُون",
+      "plain": "مأمون",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m26",
+      "diacritised": "جُورْج",
+      "plain": "جورج",
+      "gender": "male",
+      "origin": "other",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wikipedia.org/wiki/George_(given_name)"
+    },
+    {
+      "id": "m27",
+      "diacritised": "إِلْيَاس",
+      "plain": "إلياس",
+      "gender": "male",
+      "origin": "other",
+      "hard": ["hamza", "foreign", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wikipedia.org/wiki/Elias"
+    },
+    {
+      "id": "m28",
+      "diacritised": "رَيَّان",
+      "plain": "ريان",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["shadda", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m29",
+      "diacritised": "هَيْثَم",
+      "plain": "هيثم",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m30",
+      "diacritised": "مُعْتَصِم",
+      "plain": "معتصم",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m31",
+      "diacritised": "آزَاد",
+      "plain": "آزاد",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m32",
+      "diacritised": "بَهُوز",
+      "plain": "بهوز",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m33",
+      "diacritised": "بِيرْزَان",
+      "plain": "بيرزان",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m34",
+      "diacritised": "بَارَان",
+      "plain": "باران",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m35",
+      "diacritised": "آدَار",
+      "plain": "آدار",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m36",
+      "diacritised": "أَرْمَانْج",
+      "plain": "أرمانج",
+      "gender": "male",
+      "origin": "kurdish",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_male_given_names"
+    },
+    {
+      "id": "m37",
+      "diacritised": "أَرْسْلَان",
+      "plain": "أرسلان",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m38",
+      "diacritised": "تُورْغُوت",
+      "plain": "تورغوت",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m39",
+      "diacritised": "أَيْدِن",
+      "plain": "أيدن",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m40",
+      "diacritised": "أُوغُوز",
+      "plain": "أوغوز",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m41",
+      "diacritised": "يِلْمَاز",
+      "plain": "يلماز",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m42",
+      "diacritised": "أَرْطُغْرُل",
+      "plain": "أرطغرل",
+      "gender": "male",
+      "origin": "turkmen",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_male_given_names"
+    },
+    {
+      "id": "m43",
+      "diacritised": "طَارِق",
+      "plain": "طارق",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m44",
+      "diacritised": "وَائِل",
+      "plain": "وائل",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m45",
+      "diacritised": "سُهَيْل",
+      "plain": "سهيل",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m46",
+      "diacritised": "صُهَيْب",
+      "plain": "صهيب",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m47",
+      "diacritised": "عُثْمَان",
+      "plain": "عثمان",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m48",
+      "diacritised": "مَاهِر",
+      "plain": "ماهر",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m49",
+      "diacritised": "رَامِي",
+      "plain": "رامي",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "m50",
+      "diacritised": "عِيسَى",
+      "plain": "عيسى",
+      "gender": "male",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_male_given_names"
+    },
+    {
+      "id": "f01",
+      "diacritised": "فَاطِمَة",
+      "plain": "فاطمة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f02",
+      "diacritised": "عَائِشَة",
+      "plain": "عائشة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f03",
+      "diacritised": "آمِنَة",
+      "plain": "آمنة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f04",
+      "diacritised": "أَسْمَاء",
+      "plain": "أسماء",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f05",
+      "diacritised": "مَرْيَم",
+      "plain": "مريم",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f06",
+      "diacritised": "زَيْنَب",
+      "plain": "زينب",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f07",
+      "diacritised": "خَدِيجَة",
+      "plain": "خديجة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f08",
+      "diacritised": "رُؤَى",
+      "plain": "رؤى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f09",
+      "diacritised": "سَنَاء",
+      "plain": "سناء",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f10",
+      "diacritised": "دُعَاء",
+      "plain": "دعاء",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f11",
+      "diacritised": "رَجَاء",
+      "plain": "رجاء",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f12",
+      "diacritised": "هِبَة",
+      "plain": "هبة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f13",
+      "diacritised": "رَنَا",
+      "plain": "رنا",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f14",
+      "diacritised": "عَزَّة",
+      "plain": "عزة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["shadda"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f15",
+      "diacritised": "لَيْلَى",
+      "plain": "ليلى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f16",
+      "diacritised": "سَلْمَى",
+      "plain": "سلمى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f17",
+      "diacritised": "هُدَى",
+      "plain": "هدى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f18",
+      "diacritised": "نُور",
+      "plain": "نور",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f19",
+      "diacritised": "إِيمَان",
+      "plain": "إيمان",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f20",
+      "diacritised": "شَهْد",
+      "plain": "شهد",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f21",
+      "diacritised": "بَتُول",
+      "plain": "بتول",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f22",
+      "diacritised": "رَهَف",
+      "plain": "رهف",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f23",
+      "diacritised": "يَاسَمِين",
+      "plain": "ياسمين",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f24",
+      "diacritised": "نَسْرِين",
+      "plain": "نسرين",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f25",
+      "diacritised": "لَارَا",
+      "plain": "لارا",
+      "gender": "female",
+      "origin": "other",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wikipedia.org/wiki/Lara_(given_name)"
+    },
+    {
+      "id": "f26",
+      "diacritised": "أَلِيس",
+      "plain": "أليس",
+      "gender": "female",
+      "origin": "other",
+      "hard": ["hamza", "foreign", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f27",
+      "diacritised": "فَيْرُوز",
+      "plain": "فيروز",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["foreign", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f28",
+      "diacritised": "رُبَى",
+      "plain": "ربى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f29",
+      "diacritised": "لُجَيْن",
+      "plain": "لجين",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f30",
+      "diacritised": "غِنَى",
+      "plain": "غنى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f31",
+      "diacritised": "تَسْنِيم",
+      "plain": "تسنيم",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f32",
+      "diacritised": "آلَاء",
+      "plain": "آلاء",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f33",
+      "diacritised": "مَلَك",
+      "plain": "ملك",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f34",
+      "diacritised": "جُودِي",
+      "plain": "جودي",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f35",
+      "diacritised": "رُوجِين",
+      "plain": "روجين",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f36",
+      "diacritised": "بِيرِيفَان",
+      "plain": "بيريفان",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f37",
+      "diacritised": "زُوزَان",
+      "plain": "زوزان",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f38",
+      "diacritised": "هِيلِين",
+      "plain": "هيلين",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f39",
+      "diacritised": "أَفِين",
+      "plain": "أفين",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f40",
+      "diacritised": "بِيرْفِين",
+      "plain": "بيرفين",
+      "gender": "female",
+      "origin": "kurdish",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Northern_Kurdish_female_given_names"
+    },
+    {
+      "id": "f41",
+      "diacritised": "آيْلِين",
+      "plain": "آيلين",
+      "gender": "female",
+      "origin": "turkmen",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": true,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_female_given_names"
+    },
+    {
+      "id": "f42",
+      "diacritised": "دِيلَك",
+      "plain": "ديلك",
+      "gender": "female",
+      "origin": "turkmen",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_female_given_names"
+    },
+    {
+      "id": "f43",
+      "diacritised": "أَيْتَن",
+      "plain": "أيتن",
+      "gender": "female",
+      "origin": "turkmen",
+      "hard": ["hamza"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_female_given_names"
+    },
+    {
+      "id": "f44",
+      "diacritised": "نُورْجَان",
+      "plain": "نورجان",
+      "gender": "female",
+      "origin": "turkmen",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_female_given_names"
+    },
+    {
+      "id": "f45",
+      "diacritised": "أُوزْلَم",
+      "plain": "أوزلم",
+      "gender": "female",
+      "origin": "turkmen",
+      "hard": ["hamza", "long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Turkish_female_given_names"
+    },
+    {
+      "id": "f46",
+      "diacritised": "رَشَا",
+      "plain": "رشا",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f47",
+      "diacritised": "سَوْسَن",
+      "plain": "سوسن",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f48",
+      "diacritised": "لَمَى",
+      "plain": "لمى",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f49",
+      "diacritised": "وَعْد",
+      "plain": "وعد",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": [],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    },
+    {
+      "id": "f50",
+      "diacritised": "جُمَانَة",
+      "plain": "جمانة",
+      "gender": "female",
+      "origin": "arabic",
+      "hard": ["long-vowel"],
+      "alsoPlain": false,
+      "source": "https://en.wiktionary.org/wiki/Category:Arabic_female_given_names"
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "name": "@shifa-spike/s6-display",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "pack:test": "node scripts/make-test-pack.ts",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json && tsc -p src/sw/tsconfig.json",
+    "lint": "eslint .",
+    "test:e2e": "node scripts/make-test-pack.ts && vite build && playwright test",
+    "test:spike": "vitest run"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@shifa-spike/s6-tts": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

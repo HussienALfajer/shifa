@@ -1,0 +1,4 @@
+# The official SILMA TTS v1 inference package (MIT code, Apache-2.0 weights). lock.sh turns this
+# into requirements.txt with a hash for every package. Expected hash of the 1.0.5 wheel (PyPI,
+# checked 2026-11-18): sha256:8e771c6c80bfa8d891d4f18bc1d6fd065c92def0763d526ad7d1f5f5e34d9a9f
+silma-tts==1.0.5
