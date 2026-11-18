@@ -1,0 +1,76 @@
+# Spike 0.3-S6: voice. Manual dispatch only; never part of PR CI (OD-31). CI never calls a TTS
+# vendor and uses no secrets: `generate` runs the generator suites against the fake provider and
+# local mock servers (SILMA's live test is skipped; it runs on the owner's machine only, OD-50),
+# then the key-leak check; `display` runs the kiosk page's Playwright suite in Chromium, default
+# autoplay policy and kiosk setting. Third-party actions are pinned to full commit SHAs.
+name: s6-voice
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: s6-voice
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    name: generator (fake provider, mock vendors, budget, retries, key check)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Generator suites
+        working-directory: spikes/s6-voice/tts
+        run: pnpm run test:spike
+      - name: Fake run through the CLI (one command per provider)
+        working-directory: spikes/s6-voice/tts
+        run: |
+          pnpm run generate --provider fake
+          pnpm run generate --provider azure --dry-run
+          pnpm run generate --provider google --set pre-round --dry-run
+          node scripts/check-no-keys.ts
+
+  display:
+    name: kiosk display page (Playwright, Chromium)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Install Chromium for Playwright
+        working-directory: spikes/s6-voice/display
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Queue unit tests (fake clock)
+        working-directory: spikes/s6-voice/display
+        run: pnpm run test:spike
+      - name: Test pack, build, Playwright (default and kiosk projects)
+        working-directory: spikes/s6-voice/display
+        run: pnpm run test:e2e
+      - name: Upload report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: s6-voice-display
+          path: spikes/s6-voice/display/playwright-report
+          retention-days: 30

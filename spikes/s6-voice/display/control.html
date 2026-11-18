@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>لوحة النداء (تجربة الصوت)</title>
+    <style>
+      body {
+        font-family: system-ui, 'Noto Sans Arabic', sans-serif;
+        margin: 2rem;
+        background: #f8fafc;
+        color: #0f172a;
+      }
+      form {
+        display: grid;
+        gap: 0.75rem;
+        max-width: 24rem;
+      }
+      label {
+        display: grid;
+        gap: 0.25rem;
+      }
+      input,
+      button {
+        font: inherit;
+        padding: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>لوحة النداء</h1>
+    <p>ترسل النداء إلى شاشة الانتظار المفتوحة في المتصفح نفسه (للتجربة اليدوية فقط).</p>
+    <form id="call-form">
+      <label>الرقم <input name="number" type="number" min="1" max="999" value="21" required /></label>
+      <label>العيادة <input name="room" type="number" min="1" max="5" value="1" required /></label>
+      <label>معرّف مقطع الاسم (اختياري) <input name="name" placeholder="name-m01" /></label>
+      <button type="submit">التالي</button>
+    </form>
+    <p id="sent"></p>
+    <script type="module" src="/src/control.ts"></script>
+  </body>
+</html>
