@@ -14,6 +14,8 @@ export type RetryResult<T> =
   | { ok: true; value: T; attempts: number }
   | { ok: false; error: unknown; attempts: number };
 
+export const MAX_RETRY_AFTER_MS = 60_000;
+
 export const realSleep = (ms: number) =>
   new Promise<void>((resolve) => {
     setTimeout(resolve, ms);
@@ -30,7 +32,11 @@ export async function withRetry<T>(
       const retryable = error instanceof ProviderError && error.retryable;
       if (!retryable || attempt >= maxAttempts) return { ok: false, error, attempts: attempt };
       const backoff = Math.min(capMs, baseMs * 2 ** (attempt - 1));
-      const wait = error.retryAfterMs ?? Math.round(backoff * (0.5 + 0.5 * random()));
+      // Retry-After is honoured up to a minute; a longer wait ends as a recorded failure instead.
+      const wait =
+        error.retryAfterMs === undefined
+          ? Math.round(backoff * (0.5 + 0.5 * random()))
+          : Math.min(error.retryAfterMs, MAX_RETRY_AFTER_MS);
       await sleep(wait);
     }
   }

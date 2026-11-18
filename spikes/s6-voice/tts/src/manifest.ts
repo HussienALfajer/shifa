@@ -51,6 +51,14 @@ export function sha256Hex(bytes: Uint8Array): string {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
+/**
+ * One manifest per set, so the pre-round and the full run of the same voice (the two Chirp voices
+ * the owner picks) never overwrite each other. Clip ids of the two sets never collide.
+ */
+export function manifestFileName(set: 'full' | 'pre-round'): string {
+  return set === 'full' ? 'manifest.json' : 'manifest.pre-round.json';
+}
+
 export function readManifest(file: string): Manifest {
   return manifestSchema.parse(JSON.parse(readFileSync(file, 'utf8')));
 }

@@ -52,7 +52,15 @@ async function cacheFirst(request: Request): Promise<Response> {
     ignoreVary: true,
   });
   if (hit) return hit;
-  return fetch(request);
+  const res = await fetch(request);
+  // A pack clip the install-time precache missed (a network blip) is stored now, so the pack
+  // still becomes complete offline without a new service worker.
+  const path = new URL(request.url).pathname;
+  if (res.ok && path.startsWith(`/${packDir}/`) && path.endsWith('.wav')) {
+    const packCache = (await caches.keys()).find((k) => k.startsWith(PACK_PREFIX));
+    if (packCache) await (await caches.open(packCache)).put(request, res.clone());
+  }
+  return res;
 }
 
 self.addEventListener('fetch', (event) => {

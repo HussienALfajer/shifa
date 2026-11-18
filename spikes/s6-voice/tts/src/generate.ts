@@ -10,6 +10,7 @@ import {
   MANIFEST_SCHEMA_VERSION,
   type Manifest,
   type ManifestClip,
+  manifestFileName,
   readManifest,
   sha256Hex,
   writeManifest,
@@ -53,7 +54,7 @@ export interface GenerateResult {
 
 /** Clips of an earlier run that are still good: status ok, same text, file present and intact. */
 function reusableClips(runDir: string, set: SetKind): Map<string, ManifestClip> {
-  const file = join(runDir, 'manifest.json');
+  const file = join(runDir, manifestFileName(set));
   const keep = new Map<string, ManifestClip>();
   if (!existsSync(file)) return keep;
   const previous = readManifest(file);
@@ -184,7 +185,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
     clips,
     announcements: testSet.announcements,
   };
-  writeManifest(join(runDir, 'manifest.json'), manifest);
+  writeManifest(join(runDir, manifestFileName(opts.set)), manifest);
   const failed = clips.filter((c) => c.status === 'failed').length;
   log(
     `${label}: ${String(clips.length - failed)} ok, ${String(failed)} failed, ${String(calls)} calls`,

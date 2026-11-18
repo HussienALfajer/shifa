@@ -9,15 +9,17 @@ export interface KeyFinding {
 }
 
 const PATTERNS: [KeyFinding['kind'], RegExp][] = [
-  ['azure-key', /\b[0-9a-fA-F]{32}\b/gu],
+  // Azure AI Speech keys: the older 32-hex form and the newer 84-character form.
+  ['azure-key', /\b[0-9a-fA-F]{32}\b|\b[0-9A-Za-z]{84}\b/gu],
   ['google-api-key', /AIza[0-9A-Za-z_-]{35}/gu],
   [
     'service-account',
     /"type"\s*:\s*"service_account"|"private_key"\s*:|-----BEGIN (?:RSA )?PRIVATE KEY-----/gu,
   ],
   [
+    // No leading word boundary: S6_AZURE_KEY=…, "apiKey": "…", "ocp-apim-subscription-key":"…".
     'generic-key',
-    /\b(?:api[_-]?key|subscription[_-]?key|access[_-]?key|secret|key)\s*[=:]\s*["']?[A-Za-z0-9_\-+/]{16,}/giu,
+    /(?:api[_-]?key|subscription[_-]?key|access[_-]?key|secret|key)["']?\s*[=:]\s*["']?[A-Za-z0-9_\-+/]{16,}/giu,
   ],
 ];
 

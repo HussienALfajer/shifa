@@ -22,13 +22,13 @@ export interface SeenStore {
   add(callId: string): void;
 }
 
-const SEEN_KEY = 's6-seen-call-ids';
+const SEEN_ITEM = 's6-seen-call-ids';
 const SEEN_MAX = 500;
 
 export function createSeenStore(storage: KeyValueStorage): SeenStore {
   const read = (): string[] => {
     try {
-      const parsed: unknown = JSON.parse(storage.getItem(SEEN_KEY) ?? '[]');
+      const parsed: unknown = JSON.parse(storage.getItem(SEEN_ITEM) ?? '[]');
       return Array.isArray(parsed) ? parsed.filter((x): x is string => typeof x === 'string') : [];
     } catch {
       return [];
@@ -39,7 +39,7 @@ export function createSeenStore(storage: KeyValueStorage): SeenStore {
     add: (id) => {
       const ids = read();
       if (!ids.includes(id)) ids.push(id);
-      storage.setItem(SEEN_KEY, JSON.stringify(ids.slice(-SEEN_MAX)));
+      storage.setItem(SEEN_ITEM, JSON.stringify(ids.slice(-SEEN_MAX)));
     },
   };
 }

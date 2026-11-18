@@ -12,7 +12,11 @@ form?.addEventListener('submit', (event) => {
   const raw = data.get('name');
   const name = typeof raw === 'string' ? raw.trim() : '';
   const call: Call = {
-    callId: crypto.randomUUID(),
+    // randomUUID needs a secure context; the fallback keeps the page usable on a plain-HTTP host.
+    callId:
+      'randomUUID' in crypto
+        ? crypto.randomUUID()
+        : `${String(Date.now())}-${String(Math.random()).slice(2)}`,
     number: Number(data.get('number')),
     room: Number(data.get('room')),
     issuedAt: Date.now(),

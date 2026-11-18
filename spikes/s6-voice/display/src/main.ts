@@ -4,7 +4,14 @@
 import { flash } from './flash.ts';
 import { startGate } from './gate.ts';
 import { events, logEvent } from './log.ts';
-import { diffManifests, loadPack, networkManifest, type Pack, type PackDiff } from './pack.ts';
+import {
+  cachedClipCount,
+  diffManifests,
+  loadPack,
+  networkManifest,
+  type Pack,
+  type PackDiff,
+} from './pack.ts';
 import { chooseClips, renderOffline, scheduleClips } from './player.ts';
 import { type Call, CallQueue, createSeenStore } from './queue.ts';
 import { startWakeLock } from './wakelock.ts';
@@ -19,6 +26,7 @@ let pack: Pack | null = null;
 let packDiff: PackDiff | null = null;
 const latency = { loadToReadyMs: null as number | null, callToStartMs: null as number | null };
 const arrivals = new Map<string, number>();
+let cachedClips: number | null = null;
 
 const queue = new CallQueue({ now: () => Date.now(), seen: createSeenStore(sessionStorage) });
 const gate = startGate(ctx, () => {
@@ -36,6 +44,7 @@ function state() {
     gate: gate.shown(),
     packVersion: pack?.manifest.packVersion ?? null,
     clipCount: pack?.buffers.size ?? 0,
+    cachedClips,
     queued: queue.length,
     playing: queue.current?.callId ?? null,
     latency: { ...latency },
@@ -51,6 +60,7 @@ function render(): void {
   const ms = (v: number | null) => (v === null ? '–' : `${String(Math.round(v))} ms`);
   el.textContent = [
     `pack: ${status}${pack ? ` ${pack.manifest.packVersion}` : ''}`,
+    `clips decoded/cached: ${String(pack?.buffers.size ?? 0)}/${cachedClips === null ? '–' : String(cachedClips)}`,
     `audio: ${ctx.state}`,
     `Wake Lock: ${wl}`,
     `load→ready: ${ms(latency.loadToReadyMs)}`,
@@ -89,16 +99,24 @@ function pump(): void {
 }
 
 function receive(call: Call): void {
-  arrivals.set(call.callId, performance.now());
+  const arrivedAt = performance.now();
   const result = queue.offer(call);
-  if (result.accepted) logEvent('queued', { callId: call.callId });
-  else logEvent('dropped', { callId: call.callId, reason: result.reason });
+  if (result.accepted) {
+    arrivals.set(call.callId, arrivedAt);
+    logEvent('queued', { callId: call.callId });
+  } else {
+    logEvent('dropped', { callId: call.callId, reason: result.reason });
+  }
   render();
   pump();
 }
 
 async function registerServiceWorker(): Promise<void> {
-  if (!('serviceWorker' in navigator)) return;
+  if (!('serviceWorker' in navigator)) {
+    // Not a secure context (e.g. http://10.0.2.2 from an emulator): no cache, no Wake Lock.
+    logEvent('sw-unavailable', { secureContext: window.isSecureContext });
+    return;
+  }
   try {
     await navigator.serviceWorker.register(`/sw.js?pack=${encodeURIComponent(packDir)}`);
     await Promise.race([
@@ -132,6 +150,10 @@ async function start(): Promise<void> {
   });
   render();
   pump();
+  if (pack) {
+    cachedClips = await cachedClipCount(pack.manifest).catch(() => 0);
+    render();
+  }
   if (pack && navigator.onLine) {
     const network = await networkManifest(packDir);
     if (network) {

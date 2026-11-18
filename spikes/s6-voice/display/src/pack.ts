@@ -36,9 +36,14 @@ export async function loadPack(ctx: BaseAudioContext, packDir: string): Promise<
     manifest.clips
       .filter((c) => c.status === 'ok')
       .map(async (clip) => {
-        const audio = await fetch(`/${packDir}/${clip.file}`).catch(() => null);
-        if (!audio?.ok) return; // a missing clip falls back at play time
-        buffers.set(clip.clipId, await ctx.decodeAudioData(await audio.arrayBuffer()));
+        // A clip that is missing or will not decode is skipped; it falls back at play time.
+        try {
+          const audio = await fetch(`/${packDir}/${clip.file}`);
+          if (!audio.ok) return;
+          buffers.set(clip.clipId, await ctx.decodeAudioData(await audio.arrayBuffer()));
+        } catch {
+          // skipped
+        }
       }),
   );
   return { manifest, buffers };
@@ -52,6 +57,14 @@ export function diffManifests(cached: PackManifest, network: PackManifest): Pack
     removed: [...a.keys()].filter((id) => !b.has(id)),
     changed: [...b].filter(([id, sha]) => a.has(id) && a.get(id) !== sha).map(([id]) => id),
   };
+}
+
+/** How many clips of the pack sit in Cache Storage (what survives a restart with no network). */
+export async function cachedClipCount(manifest: PackManifest): Promise<number> {
+  if (!('caches' in window)) return 0;
+  const cache = await caches.open(`s6-pack-${manifest.packVersion}`);
+  const keys = await cache.keys();
+  return keys.filter((r) => r.url.endsWith('.wav')).length;
 }
 
 /** The network copy of the manifest, past the service worker; null when offline. */

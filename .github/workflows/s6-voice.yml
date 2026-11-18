@@ -31,7 +31,7 @@ jobs:
           node-version-file: .nvmrc
           package-manager-cache: false
       - run: pnpm install --frozen-lockfile
-      - name: Generator suites and key check
+      - name: Generator suites
         working-directory: spikes/s6-voice/tts
         run: pnpm run test:spike
       - name: Fake run through the CLI (one command per provider)
@@ -61,9 +61,12 @@ jobs:
       - name: Install Chromium for Playwright
         working-directory: spikes/s6-voice/display
         run: pnpm exec playwright install --with-deps chromium
-      - name: Queue unit tests, test pack, build, Playwright (default and kiosk projects)
+      - name: Queue unit tests (fake clock)
         working-directory: spikes/s6-voice/display
         run: pnpm run test:spike
+      - name: Test pack, build, Playwright (default and kiosk projects)
+        working-directory: spikes/s6-voice/display
+        run: pnpm run test:e2e
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
