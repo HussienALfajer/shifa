@@ -17,6 +17,8 @@ const player = createPlayer();
 let phase: Phase = 'loading';
 let progress: Progress | null = null;
 let fullSet: FullSet | null = null;
+/** Code of the clip on screen that failed to load, if any. */
+let loadError: string | null = null;
 
 const CATEGORY: Record<string, string> = {
   number: 'رقم',
@@ -52,13 +54,38 @@ function save(): void {
 function playCurrent(set: FullSet, p: Progress): void {
   const item = set.items[p.index];
   if (!item) return;
-  void player.play([item.code], [item.file]).then(() => {
-    if (p.index >= 0 && set.items[p.index]?.code === item.code) {
-      rating(p, item.code).heard = true;
-      save();
+  loadError = null;
+  // Shown with the start button until the browser lets audio start.
+  if (player.suspended()) render();
+  player.play([item.code], [item.file]).then(
+    (completed) => {
+      // A clip counts as heard only when it played to its end.
+      if (completed && set.items[p.index]?.code === item.code) {
+        rating(p, item.code).heard = true;
+        save();
+        render();
+      }
+    },
+    () => {
+      if (set.items[p.index]?.code !== item.code) return;
+      loadError = item.code;
       render();
-    }
-  });
+    },
+  );
+}
+
+/** A clip that will not load or decode: move on without a rating for it. */
+function skip(set: FullSet, p: Progress): void {
+  const item = set.items[p.index];
+  if (item) delete p.ratings[item.code];
+  p.index += 1;
+  if (p.index >= set.items.length) {
+    p.index = set.items.length;
+    p.phase = 'pairs';
+  }
+  save();
+  render();
+  if (p.phase === 'rating') playCurrent(set, p);
 }
 
 function canAdvance(set: FullSet, p: Progress): boolean {
@@ -133,6 +160,26 @@ function renderRating(set: FullSet, p: Progress): HTMLElement {
     judged
       ? h('p', { class: 'text', 'data-testid': 'text' }, item.text ?? '')
       : h('p', { class: 'text', 'data-testid': 'text', hidden: true }),
+    player.suspended() && !heard
+      ? button(
+          'ابدأ: تفعيل الصوت',
+          'start',
+          () => {
+            playCurrent(set, p);
+          },
+          { className: 'primary' },
+        )
+      : null,
+    loadError === item.code
+      ? h(
+          'p',
+          { role: 'alert' },
+          'تعذّر تحميل هذا المقطع. ',
+          button('تخطَّ المقطع (لا يُسجَّل له تقييم)', 'skip', () => {
+            skip(set, p);
+          }),
+        )
+      : null,
     button('أعد الاستماع (مسافة)', 'replay', () => {
       playCurrent(set, p);
     }),
@@ -290,6 +337,13 @@ function render(): void {
         : renderDone(set, p);
   root.replaceChildren(
     h('h1', {}, 'اختبار الاستماع (أعمى)'),
+    document.body.dataset['storage'] === 'failed'
+      ? h(
+          'p',
+          { role: 'alert', class: 'warn' },
+          'تعذّر حفظ التقدّم في المتصفح: لا تُعِد تحميل الصفحة، وأكمل حتى تنزيل النتائج.',
+        )
+      : null,
     view,
     h(
       'p',

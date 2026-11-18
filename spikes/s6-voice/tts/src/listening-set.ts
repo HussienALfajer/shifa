@@ -240,7 +240,8 @@ export function buildListeningSet(opts: BuildOptions): BuiltListeningSet {
     return { id, a: side(p.a), b: side(p.b) };
   });
 
-  const body = { schemaVersion: 1 as const, kind: 'full' as const, seed: opts.seed, items, pairs };
+  // The seed stays in the key only: with the public builder it would reveal each item's voice.
+  const body = { schemaVersion: 1 as const, kind: 'full' as const, items, pairs };
   const setHash = hashSet(body);
   const set = listeningSetSchema.parse({ ...body, setHash });
   const key = listeningKeySchema.parse({
@@ -289,7 +290,6 @@ function buildPreRound(
   const body = {
     schemaVersion: 1 as const,
     kind: 'pre-round' as const,
-    seed: opts.seed,
     phrases,
     voices: setVoices,
   };

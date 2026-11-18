@@ -2,7 +2,7 @@
 // emulator's output captured on the host). A gap is a run of samples below the threshold with sound
 // on both sides; leading and trailing silence are not gaps. 16-bit PCM or 32-bit float WAV, any
 // channel count (the loudest channel counts).
-// CLI: node scripts/measure-gaps.ts <recording.wav> [--threshold-db -50] [--min-gap-ms 1]
+// CLI: node scripts/measure-gaps.ts <recording.wav> [--threshold-db=-50] [--min-gap-ms=1]
 import { readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
 
@@ -119,10 +119,15 @@ if (import.meta.main) {
     },
   });
   const file = positionals[0];
-  if (!file) throw new Error('usage: measure-gaps <recording.wav> [--threshold-db -50]');
-  const report = measureGaps(new Uint8Array(readFileSync(file)), {
-    thresholdDb: Number(values['threshold-db']),
-    minGapMs: Number(values['min-gap-ms']),
-  });
+  if (!file) throw new Error('usage: measure-gaps <recording.wav> [--threshold-db=-50]');
+  const thresholdDb = Number(values['threshold-db']);
+  const minGapMs = Number(values['min-gap-ms']);
+  if (!Number.isFinite(thresholdDb) || thresholdDb >= 0) {
+    throw new Error('--threshold-db must be a negative number, e.g. --threshold-db=-50');
+  }
+  if (!Number.isFinite(minGapMs) || minGapMs <= 0) {
+    throw new Error('--min-gap-ms must be a positive number');
+  }
+  const report = measureGaps(new Uint8Array(readFileSync(file)), { thresholdDb, minGapMs });
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
 }

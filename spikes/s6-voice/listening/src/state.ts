@@ -42,7 +42,7 @@ function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(PREFIX + key, JSON.stringify(value));
   } catch {
-    // Storage full or blocked: the run continues; the owner is warned on the page.
+    // Storage full or blocked: the run continues; render() shows a warning at the top.
     document.body.dataset['storage'] = 'failed';
   }
 }

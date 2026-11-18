@@ -186,7 +186,8 @@ export function decide(voices: VoiceSummary[]): Decision {
     kind: 'winner' as const,
     voiceId: w.voiceId,
     ...(runnerUp ? { runnerUp: runnerUp.voiceId } : {}),
-    margin: runnerUp ? round4(w.naturalness.all.mean - runnerUp.naturalness.all.mean) : 0,
+    // After a tie-break the winner may be up to 0.05 behind on naturalness: report the size only.
+    margin: runnerUp ? round4(Math.abs(w.naturalness.all.mean - runnerUp.naturalness.all.mean)) : 0,
     reason: tieBroken
       ? 'mean naturalness tied within 0.05; fewer wrong names'
       : 'highest mean naturalness among voices with no wrong number',

@@ -16,7 +16,7 @@ Checkpoints C–E of [0.3-S6b](../slices/0.3-s6b-voice-listening-and-result.md),
 | C1 | Create the vendor resources on the free tiers: Azure AI Speech **F0** in a region of your choice; a Google Cloud project with Text-to-Speech enabled and an API key restricted to that API | (vendor consoles) | region name; "done" |
 | C2 | Copy `spikes/s6-voice/.env.example` to `.env.local` and fill `S6_AZURE_KEY`, `S6_AZURE_REGION`, `S6_GOOGLE_KEY` | (editor) | "done" (never the values) |
 | C3 | Key check on the clean tree | `pnpm --filter @shifa-spike/s6-tts check-no-keys` | the last line |
-| C4 | Dry-run counts for every planned run | `pnpm --filter @shifa-spike/s6-tts generate --provider google --set pre-round --dry-run` then `--provider azure --dry-run` and `--provider google --dry-run` | the character counts |
+| C4 | Dry-run counts for every planned run. The full Google count without `--voice` covers all six Chirp voices: the real run (two voices) is a third of it | `pnpm --filter @shifa-spike/s6-tts generate --provider google --set pre-round --dry-run` then `--provider azure --dry-run` and `--provider google --dry-run` | the character counts |
 | C5 | **(yes)** Approve the counts against the free limits | — | yes / no |
 | C6 | Pre-round audio: six Chirp 3 HD voices × five phrases | `pnpm --filter @shifa-spike/s6-tts generate --provider google --set pre-round` | the summary line per voice |
 | C7 | Build the pre-round page (a new random seed is printed; keep it) | `node spikes/s6-voice/tts/scripts/build-listening-set.ts --pre-round spikes/s6-voice/.out/google/*/manifest.pre-round.json` | the printed `set … (seed …)` line |
@@ -32,7 +32,7 @@ Checkpoints C–E of [0.3-S6b](../slices/0.3-s6b-voice-listening-and-result.md),
 | # | Step | Command | Send back |
 |---|---|---|---|
 | D1 | Build the listening set (885 clips, 20 pairs; a new seed is printed) | `node spikes/s6-voice/tts/scripts/build-listening-set.ts spikes/s6-voice/.out/azure/*/manifest.json spikes/s6-voice/.out/google/<male>/manifest.json spikes/s6-voice/.out/google/<female>/manifest.json spikes/s6-voice/.out/silma/default/manifest.json` | the `set … (seed …)` line |
-| D2 | Serve the page; listen with headphones in a quiet room. Keys: ١–٥ (or 1–5) for naturalness, ص / خ for correct / wrong, space to replay, Enter for next. Breaks are fine: progress is saved in the browser | `pnpm --filter @shifa-spike/s6-listening build` then `… preview`; open `http://localhost:4173/` | how long it took, in sittings |
+| D2 | Serve the page; press **ابدأ: تفعيل الصوت** (Chrome needs one click before sound); listen with headphones in a quiet room. A clip can be scored once it has played to its end. Keys: ١–٥ (or 1–5) for naturalness, ص / خ for correct / wrong, space to replay, Enter for next. Breaks are fine: progress is saved in the browser | `pnpm --filter @shifa-spike/s6-listening build` then `… preview`; open `http://localhost:4173/` | how long it took, in sittings |
 | D3 | After the 20 pairs, **تنزيل النتائج** saves `s6-results-<hash>.json`; move it to `spikes/s6-voice/results/` | — | "done" |
 | D4 | Run the analysis | `node spikes/s6-voice/analysis/src/analyse.ts --results spikes/s6-voice/results/s6-results-<hash>.json --key spikes/s6-voice/.out/listening/listening-key.json --out spikes/s6-voice/results` | the printed decision |
 | D5 | If the analysis says **no eligible winner**: Claude proposes a corrected text for the listed numbers; **(yes)** the owner confirms; regenerate those clips only and listen again to them | (Claude prepares the commands) | yes / no; the result |
@@ -49,7 +49,7 @@ Checkpoints C–E of [0.3-S6b](../slices/0.3-s6b-voice-listening-and-result.md),
 | E5 | Per runtime (Fully free; the emulator's browser or a WebView shell if the image has one): open `http://localhost:4173/?pack=voice`. Record: plays a call from the control page (`/control.html` on the host) **without a tap**? | (control page) | yes / no per runtime; Fully settings changed |
 | E6 | Cache: wait for `ready`, then stop `preview`, turn the emulator network off (Extended controls → Cellular/Wi-Fi off), restart the emulator, open the page | — | plays from cache? clips cached (status line) |
 | E7 | Wake Lock: set the display timeout to 1 minute; leave the page 5 minutes | — | screen stayed on? `wakeLock` in the status line |
-| E8 | Gaps: record the host's audio output during 5 calls (Audacity → Windows WASAPI → loopback of the output the emulator uses → 48 kHz, 16-bit WAV); measure | `node spikes/s6-voice/tts/scripts/measure-gaps.ts <recording.wav>` | the JSON; compare with `__s6.renderOffline` in the page (the gaps inside the clips themselves) |
+| E8 | Gaps: record the host's audio output during 5 calls (Audacity → Windows WASAPI → loopback of the output the emulator uses → 48 kHz, 16-bit WAV); measure | `node spikes/s6-voice/tts/scripts/measure-gaps.ts <recording.wav> --threshold-db=-50` | the JSON; compare with `__s6.renderOffline` in the page (the gaps inside the clips themselves) |
 | E9 | First-call latency: reload, send a call at once; read `latency` in the status line | — | `loadToReadyMs`, `callToStartMs` |
 
 ## F. Numbers for the report (Claude)

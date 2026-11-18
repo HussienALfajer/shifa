@@ -19,7 +19,6 @@ const fullSetSchema = z
     schemaVersion: z.literal(1),
     kind: z.literal('full'),
     setHash,
-    seed: z.number().int(),
     items: z.array(setItemSchema),
     pairs: z.array(z.object({ id: z.string(), a: z.array(code), b: z.array(code) }).strict()),
   })
@@ -38,7 +37,6 @@ const preRoundSetSchema = z
     schemaVersion: z.literal(1),
     kind: z.literal('pre-round'),
     setHash,
-    seed: z.number().int(),
     phrases: z.array(z.string()),
     voices: z.array(preRoundVoiceSchema),
   })

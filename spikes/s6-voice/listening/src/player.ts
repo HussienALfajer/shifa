@@ -10,9 +10,11 @@ export interface PlayEvent {
 }
 
 export interface Player {
-  play: (codes: string[], files: string[]) => Promise<void>;
+  play: (codes: string[], files: string[]) => Promise<boolean>;
   stop: () => void;
   events: PlayEvent[];
+  /** True until a user gesture lets audio start (Chrome's default autoplay policy). */
+  suspended: () => boolean;
 }
 
 export function createPlayer(): Player {
@@ -48,16 +50,18 @@ export function createPlayer(): Player {
     sources = [];
   };
 
-  const play = async (codes: string[], files: string[]) => {
+  /** Resolves true when the last clip ended, false when a later play or stop cut it short. */
+  const play = async (codes: string[], files: string[]): Promise<boolean> => {
     generation += 1;
     const mine = generation;
     stop();
     if (ctx.state !== 'running') await ctx.resume();
     const decoded = await Promise.all(codes.map((code, i) => load(code, files[i] ?? '')));
     // A later play superseded this one while it was loading.
-    if (mine !== generation) return;
+    if (mine !== generation) return false;
     const starts: number[] = [];
     let t = ctx.currentTime + 0.05;
+    let last: AudioBufferSourceNode | undefined;
     for (const buffer of decoded) {
       const source = ctx.createBufferSource();
       source.buffer = buffer;
@@ -65,10 +69,27 @@ export function createPlayer(): Player {
       source.start(t);
       starts.push(t);
       sources.push(source);
+      last = source;
       t += buffer.duration;
     }
     events.push({ type: 'play', codes, starts, durations: decoded.map((b) => b.duration) });
+    if (!last) return true;
+    const node = last;
+    await new Promise<void>((resolve) => {
+      node.addEventListener('ended', () => {
+        resolve();
+      });
+    });
+    return mine === generation && sources.includes(node);
   };
 
-  return { play, stop, events };
+  return {
+    play,
+    stop: () => {
+      generation += 1;
+      stop();
+    },
+    events,
+    suspended: () => ctx.state !== 'running',
+  };
 }
