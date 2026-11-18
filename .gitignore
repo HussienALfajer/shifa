@@ -45,6 +45,7 @@ Thumbs.db
 # Spike 0.3-S6 voice: generated audio, ledger and logs, the test pack and Playwright output
 spikes/s6-voice/.out/
 spikes/s6-voice/display/public/pack/
+spikes/s6-voice/display/public/voice/
 spikes/s6-voice/display/playwright-report/
 spikes/s6-voice/display/test-results/
 spikes/s6-voice/listening/test-set/
