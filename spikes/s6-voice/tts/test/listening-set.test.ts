@@ -65,9 +65,13 @@ describe('listening set builder', () => {
   it('writes a served set with no provider, voice, clip id or source file name', () => {
     const built = buildListeningSet({ inputs, seed: 7 });
     const text = JSON.stringify(listeningSetSchema.parse(built.set));
-    for (const word of ['provider', 'voice', 'clipId', 'fake', 'manifest', '.wav"', 'number-0']) {
+    for (const word of ['provider', 'voice', 'clipId', 'fake', 'manifest', 'number-0']) {
       expect(text).not.toContain(word);
     }
+    // No source file name (number-011.wav, name-m01.wav, chime.wav): only clips/<code>.wav.
+    const sourceFiles = inputs[0]?.manifest.clips.map((c) => c.file) ?? [];
+    expect(sourceFiles.length).toBeGreaterThan(0);
+    for (const file of sourceFiles) expect(text).not.toContain(file);
     if (built.set.kind !== 'full') throw new Error('full set expected');
     for (const item of built.set.items) {
       expect(Object.keys(item).sort()).toEqual(
