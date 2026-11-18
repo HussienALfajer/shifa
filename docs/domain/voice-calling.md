@@ -65,6 +65,8 @@ Related: [scheduling and queue](scheduling-queue.md) · [patient app](patient-ap
 3. A native-speaker review of the Turkish template.
 4. Test autoplay, service-worker caching and Wake Lock on 2–3 cheap Android TV boxes sold locally.
 
+Spike 0.3-S6 ([spec](../specs/spikes/0.3-s6-voice.md)) narrows this (OD-50): the owner is the only listener and decides vendor and voice; playback is tested in Chromium and an Android TV emulator. Item 3 stays open in OD-11, and item 4 on a real box must pass before the first pilot.
+
 ## Key entities
 
 - `voice_pack`: language, voice, version, manifest of clip hashes.
