@@ -77,7 +77,9 @@ function playCurrent(set: FullSet, p: Progress): void {
 /** A clip that will not load or decode: move on without a rating for it. */
 function skip(set: FullSet, p: Progress): void {
   const item = set.items[p.index];
-  if (item) delete p.ratings[item.code];
+  if (item) {
+    p.ratings = Object.fromEntries(Object.entries(p.ratings).filter(([c]) => c !== item.code));
+  }
   p.index += 1;
   if (p.index >= set.items.length) {
     p.index = set.items.length;
@@ -335,15 +337,19 @@ function render(): void {
       : p.phase === 'pairs'
         ? renderPair(set, p)
         : renderDone(set, p);
+  const storageWarning =
+    document.body.dataset['storage'] === 'failed'
+      ? [
+          h(
+            'p',
+            { role: 'alert', class: 'warn' },
+            'تعذّر حفظ التقدّم في المتصفح: لا تُعِد تحميل الصفحة، وأكمل حتى تنزيل النتائج.',
+          ),
+        ]
+      : [];
   root.replaceChildren(
     h('h1', {}, 'اختبار الاستماع (أعمى)'),
-    document.body.dataset['storage'] === 'failed'
-      ? h(
-          'p',
-          { role: 'alert', class: 'warn' },
-          'تعذّر حفظ التقدّم في المتصفح: لا تُعِد تحميل الصفحة، وأكمل حتى تنزيل النتائج.',
-        )
-      : null,
+    ...storageWarning,
     view,
     h(
       'p',
