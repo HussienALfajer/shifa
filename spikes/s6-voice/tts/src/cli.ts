@@ -2,26 +2,15 @@
 //      [--dry-run] [--out <dir>]
 // Without --voice, every voice of the provider is generated in turn. Keys come from the
 // git-ignored spikes/s6-voice/.env.local (ADR-0026); never from the command line.
-import { existsSync, readFileSync } from 'node:fs';
 import { parseArgs } from 'node:util';
+import { readEnvLocal } from './env.ts';
 import { generate } from './generate.ts';
-import { ENV_FILE, OUT_DIR } from './paths.ts';
+import { OUT_DIR } from './paths.ts';
 import { type ProviderName, type TtsProvider, VOICES } from './provider.ts';
 import { createAzureProvider } from './providers/azure.ts';
 import { createFakeProvider } from './providers/fake.ts';
 import { createGoogleProvider } from './providers/google.ts';
 import { createSilmaProvider } from './providers/silma.ts';
-
-export function readEnvLocal(file = ENV_FILE): Record<string, string> {
-  const out: Record<string, string> = {};
-  if (!existsSync(file)) return out;
-  for (const line of readFileSync(file, 'utf8').split(/\r?\n/u)) {
-    const m = /^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/u.exec(line);
-    const value = m?.[2]?.replace(/^(['"])(.*)\1$/u, '$2');
-    if (m?.[1] && value) out[m[1]] = value;
-  }
-  return out;
-}
 
 function need(env: Record<string, string>, name: string): string {
   const value = env[name];

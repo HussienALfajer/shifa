@@ -6,7 +6,9 @@
 declare const self: ServiceWorkerGlobalScope;
 
 const PACK_PREFIX = 's6-pack-';
-const packDir = new URL(self.location.href).searchParams.get('pack') ?? 'pack';
+const packParam = new URL(self.location.href).searchParams.get('pack') ?? 'pack';
+// Same-origin folder names only (the page applies the same rule).
+const packDir = /^[a-z0-9-]{1,40}$/u.test(packParam) ? packParam : 'invalid-pack';
 
 interface PackManifest {
   packVersion: string;

@@ -32,6 +32,11 @@ export function azureSsml(text: string, voice: string): string {
 }
 
 export function createAzureProvider(config: AzureConfig): TtsProvider {
+  // A region is a bare word (westeurope); anything else, such as a pasted key or a host, would
+  // put a secret into DNS or send the key header elsewhere.
+  if (config.endpoint === undefined && !/^[a-z0-9]{2,40}$/u.test(config.region ?? '')) {
+    throw new Error('S6_AZURE_REGION must be a bare Azure region name such as westeurope');
+  }
   const base = config.endpoint ?? `https://${config.region ?? ''}.tts.speech.microsoft.com`;
   return {
     name: 'azure',

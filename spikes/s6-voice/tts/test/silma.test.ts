@@ -21,14 +21,26 @@ describe('SILMA image pins', () => {
   it('pins the package version and the weights by commit and SHA-256', () => {
     expect(silmaFile('requirements.in')).toMatch(/^silma-tts==1\.0\.5$/mu);
     const fetch = silmaFile('fetch.py');
-    expect(fetch).toMatch(/^REVISION = "[0-9a-f]{40}"$/mu);
-    expect(fetch).toMatch(/^MODEL_SHA256 = "[0-9a-f]{64}"$/mu);
+    // SILMA weights and the Vocos vocoder: a commit each, every weight file with a SHA-256.
+    expect(fetch.match(/^ {8}"[0-9a-f]{40}",$/gmu)).toHaveLength(2);
+    expect(fetch).toContain('"model.pt": "f43256d0');
+    expect(fetch).toMatch(/"pytorch_model\.bin": "[0-9a-f]{64}"/u);
+    expect(fetch).toMatch(/"config\.yaml": "[0-9a-f]{64}"/u);
+    expect(silmaFile('prefetch_root.py')).toMatch(/^SHA256 = "[0-9a-f]{64}"$/mu);
+    // The warm-up runs only after the Hub is switched off.
+    const dockerfile = silmaFile('Dockerfile');
+    expect(dockerfile.indexOf('ENV HF_HUB_OFFLINE=1')).toBeLessThan(
+      dockerfile.indexOf('RUN python /opt/silma/warmup.py'),
+    );
   });
 
-  it('keeps the wrapper on its two routes with bounded input', () => {
+  it('keeps the wrapper on its two routes with bounded, JSON-only, loopback input', () => {
     const server = silmaFile('server.py');
     expect(server).toContain('"/synthesize"');
     expect(server).toContain('MAX_TEXT = 500');
+    expect(server).toContain('"application/json"');
+    expect(server).toContain('redirect_stdout');
+    expect(server).toMatch(/^ {4}timeout = \d+$/mu);
   });
 });
 

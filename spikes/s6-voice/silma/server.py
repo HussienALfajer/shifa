@@ -1,8 +1,11 @@
 """A small HTTP wrapper around SILMA TTS v1 (spike 0.3-S6): POST /synthesize {"text": "..."}
-returns audio/wav (16-bit PCM). GET /health answers "ok". Default reference voice only: the Arabic
-sample shipped inside the silma-tts package, never a recording of a real person we chose
-(no cloning). Bound to 127.0.0.1 by `docker run -p 127.0.0.1:8088:8088`."""
+(Content-Type application/json) returns audio/wav (16-bit PCM). GET /health answers "ok".
+Default reference voice only: the Arabic sample shipped inside the silma-tts package, never a
+recording of a real person we chose (no cloning). Bound to 127.0.0.1 by
+`docker run -p 127.0.0.1:8088:8088`. Logs method, path and status only: the package prints the
+input text, so its output is swallowed during synthesis."""
 
+import contextlib
 import io
 import json
 import os
@@ -12,6 +15,7 @@ from importlib.resources import files
 
 MAX_BODY = 4096
 MAX_TEXT = 500
+ALLOWED_HOSTS = {"127.0.0.1:8088", "localhost:8088"}
 # Transcript of the package's bundled reference sample (from the official model card).
 REF_TEXT = (
     "ويدقق النظر في القرآن الكريم وسائر الكتب السماوية ويتبع مسالك الرسل العظام عليهم الصلاة والسلام."
@@ -29,7 +33,10 @@ class Synthesizer:
     def synthesize(self, text: str) -> bytes:
         import soundfile as sf
 
-        with tempfile.TemporaryDirectory() as tmp:
+        sink = io.StringIO()
+        with tempfile.TemporaryDirectory() as tmp, contextlib.redirect_stdout(
+            sink
+        ), contextlib.redirect_stderr(sink):
             wav, sr, _ = self.tts.infer(
                 ref_file=self.ref,
                 ref_text=REF_TEXT,
@@ -46,7 +53,26 @@ class Synthesizer:
 SYNTH: "Synthesizer | None" = None
 
 
+def parse_text(handler: BaseHTTPRequestHandler) -> "str | None":
+    """The request text, or None for anything but a small JSON body from a loopback page."""
+    try:
+        if handler.headers.get("Host") not in ALLOWED_HOSTS:
+            return None
+        if (handler.headers.get("Content-Type") or "").split(";")[0].strip() != "application/json":
+            return None
+        length = int(handler.headers.get("Content-Length") or "0")
+        if not 0 < length <= MAX_BODY:
+            return None
+        text = json.loads(handler.rfile.read(length))["text"]
+        return text if isinstance(text, str) and 0 < len(text) <= MAX_TEXT else None
+    except Exception:  # noqa: BLE001 - any malformed request is a 400
+        return None
+
+
 class Handler(BaseHTTPRequestHandler):
+    # A slow or short body cannot hold the single-threaded server.
+    timeout = 10
+
     def _send(self, status: int, body: bytes, mime: str) -> None:
         self.send_response(status)
         self.send_header("Content-Type", mime)
@@ -64,15 +90,8 @@ class Handler(BaseHTTPRequestHandler):
         if self.path != "/synthesize":
             self._send(404, b"", "text/plain")
             return
-        length = int(self.headers.get("Content-Length") or 0)
-        if length <= 0 or length > MAX_BODY:
-            self._send(413, b"", "text/plain")
-            return
-        try:
-            text = json.loads(self.rfile.read(length))["text"]
-            if not isinstance(text, str) or not 0 < len(text) <= MAX_TEXT:
-                raise ValueError
-        except (ValueError, KeyError, TypeError):
+        text = parse_text(self)
+        if text is None:
             self._send(400, b"", "text/plain")
             return
         try:

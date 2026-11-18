@@ -10,4 +10,9 @@ docker run --rm -v "$PWD:/w" -w /w \
     && pip-compile --quiet --generate-hashes --allow-unsafe --strip-extras \
        -o requirements.txt requirements.in'
 grep -q 'sha256:8e771c6c80bfa8d891d4f18bc1d6fd065c92def0763d526ad7d1f5f5e34d9a9f' requirements.txt
+# Packages come from PyPI only: no other index, no local or URL source.
+if grep -Eq -- '--(extra-)?index-url|--find-links|-f |file:|git\+|https?://' requirements.txt; then
+  echo "requirements.txt names a source other than PyPI" >&2
+  exit 1
+fi
 echo "requirements.txt locked"

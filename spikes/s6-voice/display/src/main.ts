@@ -17,7 +17,9 @@ import { type Call, CallQueue, createSeenStore } from './queue.ts';
 import { startWakeLock } from './wakelock.ts';
 
 const params = new URLSearchParams(location.search);
-const packDir = params.get('pack') ?? 'pack';
+// A pack is a folder name on this origin only (`?pack=/evil.example/x` would load another site).
+const packParam = params.get('pack') ?? 'pack';
+const packDir = /^[a-z0-9-]{1,40}$/u.test(packParam) ? packParam : 'invalid-pack';
 const delayPackMs = Number(params.get('delayPackMs') ?? '0');
 
 const ctx = new AudioContext();

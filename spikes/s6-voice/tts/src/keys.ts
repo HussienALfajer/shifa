@@ -5,7 +5,7 @@ import { extname, join } from 'node:path';
 export interface KeyFinding {
   file: string;
   line: number;
-  kind: 'azure-key' | 'google-api-key' | 'service-account' | 'generic-key';
+  kind: 'azure-key' | 'google-api-key' | 'service-account' | 'generic-key' | 'local-secret';
 }
 
 const PATTERNS: [KeyFinding['kind'], RegExp][] = [
@@ -51,12 +51,34 @@ function skipFile(file: string): boolean {
   return statSync(file).size > MAX_BYTES;
 }
 
-export function scanForKeys(paths: string[]): KeyFinding[] {
+/** UTF-8, or UTF-16 LE with a byte-order mark (Windows PowerShell 5.1 redirection writes it). */
+function readText(file: string): string {
+  const bytes = readFileSync(file);
+  return bytes[0] === 0xff && bytes[1] === 0xfe
+    ? bytes.subarray(2).toString('utf16le')
+    : bytes.toString('utf8');
+}
+
+/**
+ * `secrets` are the owner's real key values (from .env.local): found as literal strings, so a key
+ * of a shape no pattern knows is still caught.
+ */
+export function scanForKeys(paths: string[], secrets: readonly string[] = []): KeyFinding[] {
   const findings: KeyFinding[] = [];
   for (const root of paths) {
     for (const file of files(root)) {
       if (skipFile(file)) continue;
-      const text = readFileSync(file, 'utf8');
+      const text = readText(file);
+      for (const secret of secrets) {
+        const index = text.indexOf(secret);
+        if (index >= 0) {
+          findings.push({
+            file,
+            line: text.slice(0, index).split('\n').length,
+            kind: 'local-secret',
+          });
+        }
+      }
       for (const [kind, re] of PATTERNS) {
         for (const m of text.matchAll(re)) {
           const line = text.slice(0, m.index).split('\n').length;

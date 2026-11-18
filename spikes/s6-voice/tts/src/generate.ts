@@ -5,6 +5,7 @@ import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } fr
 import { join } from 'node:path';
 import { checkBudget, ledgerFile, monthKey, recordUsage } from './budget.ts';
 import { makeChime } from './chime.ts';
+import { localSecrets } from './env.ts';
 import { scanForKeys } from './keys.ts';
 import {
   MANIFEST_SCHEMA_VERSION,
@@ -191,7 +192,7 @@ export async function generate(opts: GenerateOptions): Promise<GenerateResult> {
     `${label}: ${String(clips.length - failed)} ok, ${String(failed)} failed, ${String(calls)} calls`,
   );
 
-  const leaks = scanForKeys([outDir]);
+  const leaks = scanForKeys([outDir], localSecrets());
   if (leaks.length > 0) {
     log(
       `key check failed: ${leaks.map((f) => `${f.file}:${String(f.line)} ${f.kind}`).join(', ')}`,
