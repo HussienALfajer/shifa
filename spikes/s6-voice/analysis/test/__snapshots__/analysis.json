@@ -1,0 +1,213 @@
+{
+  "setHash": "0123456789abcdef",
+  "seed": 1,
+  "startedAt": "2026-11-20T09:00:00.000Z",
+  "finishedAt": "2026-11-20T10:30:00.000Z",
+  "voices": [
+    {
+      "voiceId": "azure/ar-SY-LaithNeural",
+      "provider": "azure",
+      "voice": "ar-SY-LaithNeural",
+      "naturalness": {
+        "all": {
+          "n": 8,
+          "mean": 3.375,
+          "sd": 0.744
+        },
+        "byCategory": {
+          "name": {
+            "n": 3,
+            "mean": 3.3333,
+            "sd": 0.5774
+          },
+          "name-plain": {
+            "n": 2,
+            "mean": 3,
+            "sd": 0
+          },
+          "number": {
+            "n": 2,
+            "mean": 4,
+            "sd": 1.4142
+          },
+          "room": {
+            "n": 1,
+            "mean": 3,
+            "sd": 0
+          }
+        }
+      },
+      "wrongNumbers": [],
+      "wrongNames": [
+        {
+          "clipId": "name-plain-f01",
+          "text": "فاطمة",
+          "note": "name-plain-f01 misread"
+        }
+      ],
+      "pairs": {
+        "wins": 2,
+        "losses": 0,
+        "ties": 1
+      }
+    },
+    {
+      "voiceId": "google/ar-XA-Chirp3-HD-Kore",
+      "provider": "google",
+      "voice": "ar-XA-Chirp3-HD-Kore",
+      "naturalness": {
+        "all": {
+          "n": 8,
+          "mean": 4,
+          "sd": 0
+        },
+        "byCategory": {
+          "name": {
+            "n": 3,
+            "mean": 4,
+            "sd": 0
+          },
+          "name-plain": {
+            "n": 2,
+            "mean": 4,
+            "sd": 0
+          },
+          "number": {
+            "n": 2,
+            "mean": 4,
+            "sd": 0
+          },
+          "room": {
+            "n": 1,
+            "mean": 4,
+            "sd": 0
+          }
+        }
+      },
+      "wrongNumbers": [
+        {
+          "clipId": "number-111",
+          "text": "الرقم مئة وأحد عشر",
+          "note": "number-111 misread"
+        }
+      ],
+      "wrongNames": [],
+      "pairs": {
+        "wins": 1,
+        "losses": 1,
+        "ties": 1
+      }
+    },
+    {
+      "voiceId": "silma/default",
+      "provider": "silma",
+      "voice": "default",
+      "naturalness": {
+        "all": {
+          "n": 8,
+          "mean": 2,
+          "sd": 0
+        },
+        "byCategory": {
+          "name": {
+            "n": 3,
+            "mean": 2,
+            "sd": 0
+          },
+          "name-plain": {
+            "n": 2,
+            "mean": 2,
+            "sd": 0
+          },
+          "number": {
+            "n": 2,
+            "mean": 2,
+            "sd": 0
+          },
+          "room": {
+            "n": 1,
+            "mean": 2,
+            "sd": 0
+          }
+        }
+      },
+      "wrongNumbers": [],
+      "wrongNames": [
+        {
+          "clipId": "name-m02",
+          "text": "خَالِد",
+          "note": "name-m02 misread"
+        }
+      ],
+      "pairs": {
+        "wins": 0,
+        "losses": 2,
+        "ties": 0
+      }
+    }
+  ],
+  "tashkeel": {
+    "all": {
+      "diacritised": {
+        "judged": 6,
+        "wrong": 0,
+        "rate": 0
+      },
+      "plain": {
+        "judged": 6,
+        "wrong": 1,
+        "rate": 0.1667
+      }
+    },
+    "byVoice": {
+      "azure/ar-SY-LaithNeural": {
+        "diacritised": {
+          "judged": 2,
+          "wrong": 0,
+          "rate": 0
+        },
+        "plain": {
+          "judged": 2,
+          "wrong": 1,
+          "rate": 0.5
+        }
+      },
+      "google/ar-XA-Chirp3-HD-Kore": {
+        "diacritised": {
+          "judged": 2,
+          "wrong": 0,
+          "rate": 0
+        },
+        "plain": {
+          "judged": 2,
+          "wrong": 0,
+          "rate": 0
+        }
+      },
+      "silma/default": {
+        "diacritised": {
+          "judged": 2,
+          "wrong": 0,
+          "rate": 0
+        },
+        "plain": {
+          "judged": 2,
+          "wrong": 0,
+          "rate": 0
+        }
+      }
+    }
+  },
+  "ratedClips": 24,
+  "pairsJudged": 4,
+  "decision": {
+    "kind": "winner",
+    "voiceId": "azure/ar-SY-LaithNeural",
+    "runnerUp": "silma/default",
+    "margin": 1.375,
+    "reason": "highest mean naturalness among voices with no wrong number",
+    "excluded": [
+      "google/ar-XA-Chirp3-HD-Kore"
+    ]
+  }
+}

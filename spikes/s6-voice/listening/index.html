@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>اختبار الاستماع</title>
+    <style>
+      :root {
+        color-scheme: light;
+        font-family: system-ui, 'Noto Sans Arabic', sans-serif;
+        --ink: #0f172a;
+        --muted: #64748b;
+        --line: #cbd5e1;
+        --accent: #0f766e;
+        --picked: #ccfbf1;
+      }
+      body {
+        margin: 0;
+        background: #f8fafc;
+        color: var(--ink);
+      }
+      #app {
+        max-width: 56rem;
+        margin: 0 auto;
+        padding: 1.5rem 1rem 3rem;
+      }
+      h1 {
+        font-size: 1.6rem;
+      }
+      h2 {
+        font-size: 1.15rem;
+        margin: 1rem 0 0.5rem;
+      }
+      .card {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 0.75rem;
+        padding: 1rem 1.25rem;
+      }
+      .card.picked {
+        background: var(--picked);
+        border-color: var(--accent);
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+      .text {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0.5rem 0;
+      }
+      .row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        align-items: center;
+        margin: 0.5rem 0;
+      }
+      button {
+        font: inherit;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid var(--line);
+        background: #fff;
+        cursor: pointer;
+      }
+      button[aria-pressed='true'] {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: #fff;
+      }
+      button:disabled {
+        opacity: 0.45;
+        cursor: not-allowed;
+      }
+      button.primary {
+        background: var(--accent);
+        color: #fff;
+        border-color: var(--accent);
+      }
+      button.score {
+        min-width: 3rem;
+        font-size: 1.3rem;
+      }
+      textarea {
+        font: inherit;
+        width: 100%;
+        box-sizing: border-box;
+        margin-top: 0.5rem;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+        gap: 1rem;
+      }
+      .phrases {
+        padding-inline-start: 1.25rem;
+      }
+      .phrases button {
+        text-align: start;
+        margin: 0.2rem 0;
+      }
+      .reset {
+        margin-top: 2rem;
+      }
+    </style>
+  </head>
+  <body>
+    <main id="app"><p>جارٍ التحميل…</p></main>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

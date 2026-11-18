@@ -47,3 +47,6 @@ spikes/s6-voice/.out/
 spikes/s6-voice/display/public/pack/
 spikes/s6-voice/display/playwright-report/
 spikes/s6-voice/display/test-results/
+spikes/s6-voice/listening/test-set/
+spikes/s6-voice/listening/playwright-report/
+spikes/s6-voice/listening/test-results/

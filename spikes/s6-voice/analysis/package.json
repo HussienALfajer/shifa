@@ -1,0 +1,24 @@
+{
+  "name": "@shifa-spike/s6-analysis",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "analyse": "node src/analyse.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "@shifa-spike/s6-tts": "workspace:*",
+    "zod": "4.6.7"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
