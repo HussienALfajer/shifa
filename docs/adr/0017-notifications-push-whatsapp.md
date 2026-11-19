@@ -1,6 +1,6 @@
 # ADR-0017: Notifications — push + in-app inbox primary; WhatsApp via self-hosted WAHA as secondary channel
 
-Status: Accepted · Amended by ADR-0036 (proposed) · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Amended by ADR-0036 · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 The owner decided to use an unofficial WhatsApp library with ban-risk minimisation (official API unavailable for Syria), no SMS, and Firebase (confirmed working in Syria and Azaz by the owner). WhatsApp's terms forbid automated unofficial clients and bans are the realistic risk [RN-10 §2]. Among gateways, WAHA's free image includes unlimited sessions since 2026.6.1 and runs a Go engine without a browser; Baileys v7 is still RC; Evolution API requires licence-server activation; browser-based libraries cost 200–500 MB per session [RN-10 §1].

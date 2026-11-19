@@ -1,6 +1,6 @@
 # ADR-0036: WhatsApp gateway, pacing and reverse verification — WAHA GOWS with PostgreSQL storage, one container per role, signed webhooks matched by message key, pg-boss pacing, admin-confirmed breaker, phrase-bound codes
 
-Status: Proposed · Date: 2026-11-20 · Deciders: product owner (with Claude) · Amends: [ADR-0016](0016-identity-better-auth-reverse-whatsapp.md), [ADR-0017](0017-notifications-push-whatsapp.md)
+Status: Accepted (owner, 2026-11-20) · Date: 2026-11-20 · Deciders: product owner (with Claude) · Amends: [ADR-0016](0016-identity-better-auth-reverse-whatsapp.md), [ADR-0017](0017-notifications-push-whatsapp.md)
 
 ## Context
 [ADR-0017](0017-notifications-push-whatsapp.md) chose self-hosted WAHA (GOWS, NOWEB fallback) behind `sendWhatsApp(...)` as the secondary channel, with opt-in, pacing, quiet hours and a breaker; [ADR-0016](0016-identity-better-auth-reverse-whatsapp.md) chose reverse WhatsApp codes for patient phone verification. Neither had been run. Spike S5 ([spec](../specs/spikes/0.3-s5-whatsapp.md), [result](../spikes/s5-whatsapp.md)) built that layer as throwaway code against a fake WAHA, then ran it on real WhatsApp for one day with two numbers the owner owns (OD-45). The real run found what the fake had wrong: every one-to-one inbound chat is an `@lid`, acks name the `@lid` chat while the send returned `<phone>@c.us`, an unlinked session is `FAILED` and needs a stop before a start. The rules below are what Phase A must meet; numeric thresholds stay with the OD-12 pilot.
@@ -45,7 +45,7 @@ Status: Proposed · Date: 2026-11-20 · Deciders: product owner (with Claude) ·
 - No phone number, message body, code, QR value, key or HMAC secret in logs; the QR is shown only to the clinic admin and never stored. WAHA's own logs go through the Collector's redaction (they name other people's `@lid` ids).
 - Captures for new fixtures only in a manual run, outside the repository tree, scrubbed to placeholders and checked before commit.
 
-**To confirm when the owner accepts this ADR** (not decided by the spike): starting at 10 sessions per container; dropping group, newsletter and `fromMe` events before any processing or capture; WAHA's logs through the Collector's redaction (or a lower log level).
+**Confirmed by the owner on acceptance (2026-11-20)**, beyond what the spike measured: start at 10 sessions per container; drop group, newsletter and `fromMe` events before any processing or capture; WAHA's logs go through the Collector's redaction.
 
 ## Consequences
 + Phase A builds on a layer that has met real WhatsApp: verification, opt-in and opt-out, pacing under the cap, acks and recovery all worked with the owner's numbers.

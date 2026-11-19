@@ -42,7 +42,7 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
   - link at most 3 other devices;
   - complete the business profile.
 - MSG-09 The platform uses a separate number, in its own container, only for phone verification (§5).
-- MSG-10 Clinic sessions are sharded across containers, starting at about 20–50 per container (an estimate, to be validated by load test). Proposed in ADR-0036: start at 10 with a 2 GiB limit and raise only on pilot measurements.
+- MSG-10 Clinic sessions are sharded across containers, starting at 10 per container with a 2 GiB limit (ADR-0036, owner 2026-11-20; estimated from one measured session) and raised only on pilot measurements.
 - MSG-11 All sending goes through one internal interface, `sendWhatsApp(clinicId, patientId, templateKey, vars)`. WAHA can then be swapped for Baileys, Evolution, or the official Cloud API for +90 numbers through a Turkish entity, without changing business logic (OD-12).
 - MSG-12 Inbound messages are matched by phone number. Senders shown as `@lid` are resolved to phone numbers before any matching; on GOWS every one-to-one inbound chat is an `@lid` (spike S5). Acks are matched to sends by message key, because they name the `@lid` chat while the send named the phone.
 - MSG-32 Outside production, the sending interface (MSG-11) delivers only to numbers on an explicit per-environment allowlist and drops every other message with a log line that carries no phone number. Synthetic test data uses realistic +963/+90 numbers that may belong to real people (OD-23, [0.2-08 spec](../specs/foundation/0.2-08-synthetic-data-generator.md)).
@@ -61,7 +61,7 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
 
   All numbers are estimates to validate in a 2–3 clinic pilot (OD-12).
 - MSG-16 Circuit breaker: on error 463/475 or any warning, the session stops sending for 24 h. Pending messages are routed to fallbacks and the clinic admin is alerted. The session is never re-paired automatically.
-- MSG-17 A health job runs every 5 minutes. It flags unlinked sessions and warns the clinic when the linked phone has not been seen for about 10 days. GOWS gave no explicit "phone not seen" signal (spike S5: the session stayed `WORKING` and sends succeeded with the phone offline; only acks stopped). Proposed in ADR-0036: "seen" is the last delivered or read ack or the last inbound message, never the last send.
+- MSG-17 A health job runs every 5 minutes. It flags unlinked sessions and warns the clinic when the linked phone has not been seen for about 10 days. GOWS gave no explicit "phone not seen" signal (spike S5: the session stayed `WORKING` and sends succeeded with the phone offline; only acks stopped). ADR-0036: "seen" is the last delivered or read ack or the last inbound message, never the last send.
 - MSG-18 Delivered and read acknowledgements show as ticks in the staff UI.
 - MSG-19 Clinics can edit message templates in Arabic using fixed placeholders (patient name, date, doctor, clinic). Free-form bulk marketing is not allowed.
 
@@ -69,7 +69,7 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
 
 - MSG-20 **Primary: reverse WhatsApp verification.**
   1. The app requests a nonce, valid for 10 minutes and bound to the device.
-  2. It opens `wa.me/<platform number>?text=<fixed phrase> <code>`; a code counts only right after the phrase (proposed in ADR-0036; built in spike S5).
+  2. It opens `wa.me/<platform number>?text=<fixed phrase> <code>`; a code counts only right after the phrase (ADR-0036; built in spike S5).
   3. The patient sends that message.
   4. The backend matches the nonce to the sender's number, then confirms to the app over a websocket or FCM and replies "verified" in the same chat.
 
