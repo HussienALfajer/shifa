@@ -1,0 +1,1249 @@
+{
+  "schemaVersion": 1,
+  "kind": "full",
+  "setHash": "0837814499865b20",
+  "startedAt": "2026-11-19T16:57:33.809Z",
+  "finishedAt": "2026-11-19T17:08:33.731Z",
+  "ratings": [
+    {
+      "code": "TJYOMCCA",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:57:50.284Z"
+    },
+    {
+      "code": "JXCGM2VI",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T16:57:57.373Z"
+    },
+    {
+      "code": "BGNNFT36",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:01.330Z"
+    },
+    {
+      "code": "FKXADQYN",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:04.030Z"
+    },
+    {
+      "code": "3IFZ7MTE",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:06.200Z"
+    },
+    {
+      "code": "X7CWKZ6T",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:09.941Z"
+    },
+    {
+      "code": "5JZR6HEU",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:16.793Z"
+    },
+    {
+      "code": "TUJMZBXE",
+      "naturalness": 2,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:22.375Z"
+    },
+    {
+      "code": "JRPWIN7H",
+      "naturalness": 2,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:25.932Z"
+    },
+    {
+      "code": "UJSYT7SK",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:29.476Z"
+    },
+    {
+      "code": "MJDJOQBH",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:32.108Z"
+    },
+    {
+      "code": "6YGYPUYI",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:34.129Z"
+    },
+    {
+      "code": "3AFPNM6R",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:37.054Z"
+    },
+    {
+      "code": "APBTOFO6",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:47.548Z"
+    },
+    {
+      "code": "SMA2XP43",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:51.430Z"
+    },
+    {
+      "code": "KJ7DE6PG",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:55.385Z"
+    },
+    {
+      "code": "BHTGEVLM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:58:58.729Z"
+    },
+    {
+      "code": "WGMNMU62",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:01.340Z"
+    },
+    {
+      "code": "JYDBEFNP",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:04.039Z"
+    },
+    {
+      "code": "TFE67PNL",
+      "naturalness": 3,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T16:59:11.303Z"
+    },
+    {
+      "code": "JVMHZ2WS",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:15.525Z"
+    },
+    {
+      "code": "HZEAMWTF",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:18.594Z"
+    },
+    {
+      "code": "APLKXJD4",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:21.664Z"
+    },
+    {
+      "code": "HO4V2KPX",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T16:59:25.026Z"
+    },
+    {
+      "code": "5IN3T3RK",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:27.810Z"
+    },
+    {
+      "code": "Q2JED6EQ",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:33.280Z"
+    },
+    {
+      "code": "KX6DDVCJ",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:37.123Z"
+    },
+    {
+      "code": "IGUUL2UL",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:39.462Z"
+    },
+    {
+      "code": "JARFHY7B",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:41.715Z"
+    },
+    {
+      "code": "HRNP5352",
+      "naturalness": 3,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T16:59:45.861Z"
+    },
+    {
+      "code": "OMBEIQEE",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:50.302Z"
+    },
+    {
+      "code": "WM3SGKPF",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:53.868Z"
+    },
+    {
+      "code": "SQ26LJYP",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T16:59:56.715Z"
+    },
+    {
+      "code": "PQWOUAUY",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T16:59:59.925Z"
+    },
+    {
+      "code": "N23TWJQZ",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:00:02.261Z"
+    },
+    {
+      "code": "MJY2WQIW",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:00:06.997Z"
+    },
+    {
+      "code": "ABR46Q6S",
+      "naturalness": 4,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T17:00:10.968Z"
+    },
+    {
+      "code": "2UHAH6TM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:00:16.109Z"
+    },
+    {
+      "code": "NZ6DRLYR",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:17.606Z"
+    },
+    {
+      "code": "ELPSNLAT",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:19.593Z"
+    },
+    {
+      "code": "WQBIE7AP",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:01:22.510Z"
+    },
+    {
+      "code": "WS55EEF4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:25.544Z"
+    },
+    {
+      "code": "7AL3TDMR",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:27.441Z"
+    },
+    {
+      "code": "PAJXSCHJ",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:01:29.925Z"
+    },
+    {
+      "code": "YMCN5BYH",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:01:33.294Z"
+    },
+    {
+      "code": "7PK6UAJL",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:35.903Z"
+    },
+    {
+      "code": "WUYG63W6",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:38.158Z"
+    },
+    {
+      "code": "KMSPB7GG",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:41.478Z"
+    },
+    {
+      "code": "A5CFLQR4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:45.914Z"
+    },
+    {
+      "code": "QAMJGNQN",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:48.079Z"
+    },
+    {
+      "code": "7IH5GD2H",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:50.373Z"
+    },
+    {
+      "code": "57DLGHCU",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:54.153Z"
+    },
+    {
+      "code": "Y5AVMALS",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:56.664Z"
+    },
+    {
+      "code": "KPLLAD7P",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:01:58.360Z"
+    },
+    {
+      "code": "QPB6NIFE",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:00.704Z"
+    },
+    {
+      "code": "ZDC4O4CK",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:02.447Z"
+    },
+    {
+      "code": "EIUQFRFB",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:04.268Z"
+    },
+    {
+      "code": "NP3T3IWG",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:07.414Z"
+    },
+    {
+      "code": "QBEB3HXU",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:12.242Z"
+    },
+    {
+      "code": "6LP7GT5E",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:14.154Z"
+    },
+    {
+      "code": "TFWQSD55",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:16.247Z"
+    },
+    {
+      "code": "OXWIZFGS",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:20.379Z"
+    },
+    {
+      "code": "EOAEA6TV",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:25.193Z"
+    },
+    {
+      "code": "EKULGIFN",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:28.152Z"
+    },
+    {
+      "code": "5XG7ITC4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:30.097Z"
+    },
+    {
+      "code": "XKULMI4X",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:32.386Z"
+    },
+    {
+      "code": "6DDGFU2Q",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:02:34.773Z"
+    },
+    {
+      "code": "Z57IICL3",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:36.858Z"
+    },
+    {
+      "code": "LCQIUKOB",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:39.077Z"
+    },
+    {
+      "code": "F6GBPUJ5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:40.984Z"
+    },
+    {
+      "code": "LAZX7KSK",
+      "naturalness": 3,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T17:02:44.937Z"
+    },
+    {
+      "code": "QWDEBKJE",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:02:48.272Z"
+    },
+    {
+      "code": "ICNMPKEW",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:02:50.826Z"
+    },
+    {
+      "code": "ZOO3HDEH",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:54.432Z"
+    },
+    {
+      "code": "4OF7WRW5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:56.882Z"
+    },
+    {
+      "code": "JKLIYUAR",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:02:58.765Z"
+    },
+    {
+      "code": "4AQQ62IO",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:00.566Z"
+    },
+    {
+      "code": "LLE5N47N",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:04.214Z"
+    },
+    {
+      "code": "N4YVEXEH",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:03:07.781Z"
+    },
+    {
+      "code": "OBNFJRFI",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:03:11.409Z"
+    },
+    {
+      "code": "HPQYCKZN",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:13.466Z"
+    },
+    {
+      "code": "B6MUY74O",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:16.186Z"
+    },
+    {
+      "code": "GXFU2MIQ",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:19.404Z"
+    },
+    {
+      "code": "QDV4HQKM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:49.589Z"
+    },
+    {
+      "code": "HBUYLTW4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:51.716Z"
+    },
+    {
+      "code": "DGXAEUZ6",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:53.864Z"
+    },
+    {
+      "code": "Q25UUJXL",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:57.395Z"
+    },
+    {
+      "code": "HGUYQ6AS",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:03:59.384Z"
+    },
+    {
+      "code": "XWYHR4XD",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:02.682Z"
+    },
+    {
+      "code": "PJJLF65M",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:04.753Z"
+    },
+    {
+      "code": "KA72LHTM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:08.207Z"
+    },
+    {
+      "code": "OOYSMIW5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:10.669Z"
+    },
+    {
+      "code": "PAG3ZTVG",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:04:13.608Z"
+    },
+    {
+      "code": "SOU3Q3BX",
+      "naturalness": 4,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T17:04:16.801Z"
+    },
+    {
+      "code": "4375WDG5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:18.985Z"
+    },
+    {
+      "code": "ZTNXVBCL",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:31.610Z"
+    },
+    {
+      "code": "TLM5BHU7",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:41.942Z"
+    },
+    {
+      "code": "GJXDRP2G",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:44.055Z"
+    },
+    {
+      "code": "HHJEVJOJ",
+      "naturalness": 4,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T17:04:50.905Z"
+    },
+    {
+      "code": "EIA7C2VM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:54.657Z"
+    },
+    {
+      "code": "I5TS7BOT",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:04:57.121Z"
+    },
+    {
+      "code": "COUJQUZJ",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:01.437Z"
+    },
+    {
+      "code": "5TT75SVN",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:04.360Z"
+    },
+    {
+      "code": "XOXVYROK",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:06.852Z"
+    },
+    {
+      "code": "6X2VPTY4",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:05:10.760Z"
+    },
+    {
+      "code": "CUT2IWJF",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:13.305Z"
+    },
+    {
+      "code": "4IUYLBLO",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:05:16.595Z"
+    },
+    {
+      "code": "4HHLKAF5",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:05:19.201Z"
+    },
+    {
+      "code": "HYCQZOLO",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:21.316Z"
+    },
+    {
+      "code": "OIYEPVR2",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:24.932Z"
+    },
+    {
+      "code": "OF2OV4XD",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:28.937Z"
+    },
+    {
+      "code": "W5LPB5EH",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:31.031Z"
+    },
+    {
+      "code": "QNPBMSW2",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:34.407Z"
+    },
+    {
+      "code": "7LNSNP6Y",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:37.142Z"
+    },
+    {
+      "code": "OUGO35RL",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:39.640Z"
+    },
+    {
+      "code": "TLKLBYOW",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:43.002Z"
+    },
+    {
+      "code": "AQ2YRFIJ",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:45.012Z"
+    },
+    {
+      "code": "ROK42NX5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:47.012Z"
+    },
+    {
+      "code": "SREGBJNV",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:48.883Z"
+    },
+    {
+      "code": "L54WJUCB",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:05:51.430Z"
+    },
+    {
+      "code": "5G6QJG2V",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:53.545Z"
+    },
+    {
+      "code": "4GHCSOA6",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:05:56.253Z"
+    },
+    {
+      "code": "W25EGCA5",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:00.204Z"
+    },
+    {
+      "code": "YSEQ2A4D",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:05.814Z"
+    },
+    {
+      "code": "6PNPUEZS",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:08.423Z"
+    },
+    {
+      "code": "LYAADGIZ",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:11.262Z"
+    },
+    {
+      "code": "4FSOWVP2",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:13.675Z"
+    },
+    {
+      "code": "E2ZT2CD3",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:16.306Z"
+    },
+    {
+      "code": "MOMWIRSQ",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:19.435Z"
+    },
+    {
+      "code": "7O3N4TTH",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:22.517Z"
+    },
+    {
+      "code": "PZQ7P6ZO",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:25.572Z"
+    },
+    {
+      "code": "2XE6KZHW",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:28.809Z"
+    },
+    {
+      "code": "2SGNTDW4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:30.903Z"
+    },
+    {
+      "code": "5CGTGRX2",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:33.337Z"
+    },
+    {
+      "code": "GDNLDZWR",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:35.833Z"
+    },
+    {
+      "code": "AUFEHJXP",
+      "naturalness": 1,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:38.385Z"
+    },
+    {
+      "code": "KEUGR7ZT",
+      "naturalness": 2,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:41.985Z"
+    },
+    {
+      "code": "F4VBN6NC",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:06:44.858Z"
+    },
+    {
+      "code": "IP4ZGWIV",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:47.196Z"
+    },
+    {
+      "code": "GTQU2DQA",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:52.261Z"
+    },
+    {
+      "code": "VNRAWV22",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:54.968Z"
+    },
+    {
+      "code": "3GN4OZT3",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:06:57.599Z"
+    },
+    {
+      "code": "GDVWMR2U",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:01.017Z"
+    },
+    {
+      "code": "HSS6XKNT",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:07:05.042Z"
+    },
+    {
+      "code": "HH4CPRD3",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:07.085Z"
+    },
+    {
+      "code": "X4IW5QT4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:08.927Z"
+    },
+    {
+      "code": "EKOE4EOY",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:07:12.338Z"
+    },
+    {
+      "code": "2VOK6XQS",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:18.680Z"
+    },
+    {
+      "code": "X3CX6VN3",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:21.059Z"
+    },
+    {
+      "code": "H43C2AKQ",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:07:23.367Z"
+    },
+    {
+      "code": "XU3Q654N",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:25.069Z"
+    },
+    {
+      "code": "HATBCCHQ",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:28.157Z"
+    },
+    {
+      "code": "EJQKHWZM",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:30.859Z"
+    },
+    {
+      "code": "4BLE4TZE",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:33.690Z"
+    },
+    {
+      "code": "YSXCKJAO",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:37.219Z"
+    },
+    {
+      "code": "2Y243PVB",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:40.632Z"
+    },
+    {
+      "code": "ZZ2ATSAN",
+      "naturalness": 3,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:07:44.187Z"
+    },
+    {
+      "code": "R2A45JPG",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:46.058Z"
+    },
+    {
+      "code": "ZOSE5WJU",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:49.036Z"
+    },
+    {
+      "code": "JNRDJIOX",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:50.955Z"
+    },
+    {
+      "code": "LDC55JHV",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:52.803Z"
+    },
+    {
+      "code": "FNVUX7RY",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:54.839Z"
+    },
+    {
+      "code": "SQ3OH266",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:07:57.442Z"
+    },
+    {
+      "code": "P4DZ5TTI",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:07:59.450Z"
+    },
+    {
+      "code": "TPTFRHV4",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:01.139Z"
+    },
+    {
+      "code": "GAIYZAPE",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:03.076Z"
+    },
+    {
+      "code": "BPGKUE4R",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:05.972Z"
+    },
+    {
+      "code": "AN4H6LBO",
+      "naturalness": 3,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:09.090Z"
+    },
+    {
+      "code": "SYL5ZH2K",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:12.718Z"
+    },
+    {
+      "code": "GISDCEYX",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:15.801Z"
+    },
+    {
+      "code": "E66IHWY7",
+      "naturalness": 4,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:18.425Z"
+    },
+    {
+      "code": "J2JASKFW",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:20.155Z"
+    },
+    {
+      "code": "YZHYQVL7",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:21.878Z"
+    },
+    {
+      "code": "LY4JAHGD",
+      "naturalness": 3,
+      "wrong": null,
+      "note": "",
+      "at": "2026-11-19T17:08:25.283Z"
+    },
+    {
+      "code": "7OQT47AA",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:27.536Z"
+    },
+    {
+      "code": "HOWX7SKB",
+      "naturalness": 5,
+      "wrong": false,
+      "note": "",
+      "at": "2026-11-19T17:08:30.634Z"
+    },
+    {
+      "code": "HT6ROLJB",
+      "naturalness": 2,
+      "wrong": true,
+      "note": "",
+      "at": "2026-11-19T17:08:32.920Z"
+    }
+  ],
+  "pairs": []
+}
