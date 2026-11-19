@@ -1,0 +1,32 @@
+# Flutter probe of spike 0.3-S7 (slice 0.3-S7a): FCM push on Android. Channels, permission after
+# booking, device-state reports, message log with dedupe, inbox fetched on open and polled while
+# open. Standalone: not in the root pub workspace, no package.json (verify does not run it; the
+# manual s7-push workflow does). Throwaway; synthetic data only.
+name: s7_push_probe
+description: Throwaway Flutter probe for the push spike (synthetic data only).
+publish_to: none
+version: 0.0.1+1
+
+environment:
+  sdk: ^3.13.0
+  flutter: 3.47.9
+
+dependencies:
+  crypto: 3.0.8
+  device_info_plus: 13.3.0
+  firebase_core: 5.2.0
+  firebase_messaging: 17.1.0
+  flutter:
+    sdk: flutter
+  flutter_local_notifications: 23.0.3
+  http: 1.6.0
+  path_provider: 2.1.6
+
+dev_dependencies:
+  fake_async: 1.3.3
+  flutter_test:
+    sdk: flutter
+  very_good_analysis: 11.0.0
+
+flutter:
+  uses-material-design: true

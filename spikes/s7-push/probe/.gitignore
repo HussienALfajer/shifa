@@ -1,0 +1,7 @@
+.dart_tool/
+.flutter-plugins-dependencies
+build/
+*.iml
+.idea/
+# Firebase app config (ADR-0026): the owner's copy stays local; never committed.
+android/app/google-services.json
