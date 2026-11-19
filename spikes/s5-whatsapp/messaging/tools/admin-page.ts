@@ -108,8 +108,16 @@ export async function startAdminPage(
       async (req, reply) => {
         const found = session(req.params.session, reply);
         if (!found) return reply;
-        const path = `/api/sessions/${encodeURIComponent(found.s.name)}/${action}`;
-        let res = await wahaCall(found.conf, 'POST', path, {}, config.sendTimeoutMs);
+        const base = `/api/sessions/${encodeURIComponent(found.s.name)}`;
+        // Manual day (2026-11-19): after an unlink on the phone the session is FAILED, and a
+        // start returns 200 but leaves it FAILED; a stop first makes the start ask for a new QR.
+        if (action === 'start') {
+          const now = await wahaCall(found.conf, 'GET', base, undefined, config.sendTimeoutMs);
+          if (now.kind === 'ok' && now.json['status'] === 'FAILED') {
+            await wahaCall(found.conf, 'POST', `${base}/stop`, {}, config.sendTimeoutMs);
+          }
+        }
+        let res = await wahaCall(found.conf, 'POST', `${base}/${action}`, {}, config.sendTimeoutMs);
         // WAHA starts only a session that exists; the first start of the day creates it (the
         // container's global webhook settings apply to it).
         if (action === 'start' && res.kind === 'http' && res.status === 404) {

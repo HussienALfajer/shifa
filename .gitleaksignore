@@ -20,3 +20,6 @@ b80138af4feda858256d6e4cedb933e4b052703b:scripts/test/backup-env.test.mjs:generi
 # 0.3-S5b: synthetic WhatsApp message key ("3EB0C1D2E3F4A5B6C7D8", hex, WAHA id format) in a
 # scrubber test; proves bare message keys are mapped to placeholders. Not a credential.
 53bf63a149b8340d764d5ac2261be113680b5082:spikes/s5-whatsapp/messaging/test/review-fixes.test.ts:generic-api-key:40
+
+# 0.3-S5c: synthetic WhatsApp message-id tail in the fixture replay test ("ABCDEF0123456789ABCD"), renamed afterwards.
+87d92377ab1368bb5c01789a9a708a1ca93a0314:spikes/s5-whatsapp/fake-waha/test/fixture-replay.test.ts:generic-api-key:44

@@ -1,0 +1,42 @@
+{
+  "container": "clinics",
+  "receivedAt": "2026-11-19T20:39:42.633Z",
+  "signature": {
+    "present": true,
+    "valid": true,
+    "algorithm": "sha512"
+  },
+  "body": {
+    "id": "evt_xxxxxxxxxxxxxxxxxxxxxxx488",
+    "timestamp": 1795120782630,
+    "event": "session.status",
+    "session": "clinic-g",
+    "me": null,
+    "payload": {
+      "name": "clinic-g",
+      "status": "SCAN_QR_CODE",
+      "statuses": [
+        {
+          "status": "STARTING",
+          "timestamp": 1795120781950
+        },
+        {
+          "status": "SCAN_QR_CODE",
+          "timestamp": 1795120782630
+        }
+      ],
+      "data": null
+    },
+    "engine": "GOWS",
+    "environment": {
+      "version": "2026.10.1",
+      "engine": "GOWS",
+      "tier": "CORE",
+      "browser": null,
+      "platform": "text-1",
+      "worker": {
+        "id": null
+      }
+    }
+  }
+}

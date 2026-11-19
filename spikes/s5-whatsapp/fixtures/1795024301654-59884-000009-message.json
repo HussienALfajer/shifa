@@ -1,0 +1,60 @@
+{
+  "container": "platform",
+  "receivedAt": "2026-11-18T17:51:41.654Z",
+  "signature": {
+    "present": true,
+    "valid": true,
+    "algorithm": "sha512"
+  },
+  "body": {
+    "id": "evt_xxxxxxxxxxxxxxxxxxxxxxxxx9",
+    "timestamp": 1795024301651,
+    "event": "message",
+    "session": "platform",
+    "me": {
+      "id": "963930090001@c.us",
+      "pushName": "text-2",
+      "lid": "963930080001@lid",
+      "jid": "text-3",
+      "reachoutTimelock": null,
+      "messageCapping": {
+        "cappingStatus": "NONE",
+        "totalQuota": -1,
+        "usedQuota": 0,
+        "cycleStart": 1793484000,
+        "cycleEnd": 1796075999,
+        "mvStatus": "NOT_ELIGIBLE",
+        "oteStatus": "NOT_ELIGIBLE"
+      }
+    },
+    "payload": {
+      "id": "false_963930080002@lid_ABCDEFABCDEFABCDEFABCDEFABCD0006",
+      "timestamp": 1795024300,
+      "from": "963930080002@lid",
+      "fromMe": false,
+      "source": "app",
+      "body": "text-7",
+      "to": null,
+      "participant": null,
+      "hasMedia": false,
+      "media": null,
+      "ack": 2,
+      "location": null,
+      "vCards": null,
+      "ackName": "DEVICE",
+      "replyTo": null,
+      "_data": null
+    },
+    "engine": "GOWS",
+    "environment": {
+      "version": "2026.10.1",
+      "engine": "GOWS",
+      "tier": "CORE",
+      "browser": null,
+      "platform": "text-1",
+      "worker": {
+        "id": null
+      }
+    }
+  }
+}

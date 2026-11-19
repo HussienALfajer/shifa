@@ -1,0 +1,38 @@
+{
+  "container": "clinics",
+  "receivedAt": "2026-11-18T18:31:44.436Z",
+  "signature": {
+    "present": true,
+    "valid": true,
+    "algorithm": "sha512"
+  },
+  "body": {
+    "id": "evt_xxxxxxxxxxxxxxxxxxxxxxxx17",
+    "timestamp": 1795026704365,
+    "event": "session.status",
+    "session": "clinic-g",
+    "me": null,
+    "payload": {
+      "name": "clinic-g",
+      "status": "STARTING",
+      "statuses": [
+        {
+          "status": "STARTING",
+          "timestamp": 1795026704364
+        }
+      ],
+      "data": null
+    },
+    "engine": "GOWS",
+    "environment": {
+      "version": "2026.10.1",
+      "engine": "GOWS",
+      "tier": "CORE",
+      "browser": null,
+      "platform": "text-1",
+      "worker": {
+        "id": null
+      }
+    }
+  }
+}

@@ -9,26 +9,12 @@ import { alert, fallbackQueued, refreshHealth } from './fallback.ts';
 export const PAUSE_MS = 24 * 60 * 60_000;
 
 /**
- * Warning signals of the pinned WAHA (OpenAPI 2026.10.1): `me.messageCapping.cappingStatus`
+ * Warning signals of the pinned WAHA (OpenAPI 2026.10.1): `messageCapping.cappingStatus`
  * FIRST_WARNING / SECOND_WARNING / CAPPED and an active `reachoutTimelock` (the restriction
- * behind 463), both pushed through `session.status`. Unknown capping values are treated as a
- * warning too (WAHA calls the set open), except NONE.
+ * behind 463). Unknown capping values are treated as a warning too (WAHA calls the set open),
+ * except NONE. Lives in `normalise.ts` with the other webhook parsers.
  */
-export function warningOf(envelope: { me?: unknown; payload?: unknown }): string | null {
-  const me = (envelope.me ?? {}) as {
-    messageCapping?: { cappingStatus?: unknown } | null;
-    reachoutTimelock?: { isActive?: unknown } | null;
-  };
-  const data = (
-    (envelope.payload ?? {}) as { data?: { reachoutTimelock?: { isActive?: unknown } } | null }
-  ).data;
-  const capping = me.messageCapping?.cappingStatus;
-  if (typeof capping === 'string' && capping !== 'NONE') return `capping_${capping.toLowerCase()}`;
-  if (me.reachoutTimelock?.isActive === true || data?.reachoutTimelock?.isActive === true) {
-    return 'reachout_timelock';
-  }
-  return null;
-}
+export { warningOf } from './normalise.ts';
 
 export async function tripBreaker(ctx: Ctx, client: Client, name: string, reason: string) {
   const s = await loadSession(client, name, true);
