@@ -1,0 +1,96 @@
+# Spike 0.3-S7: FCM push on Android. Manual dispatch only; never part of PR CI (OD-31). Job `node`
+# runs the receiver and sender suites against a fake FCM and a fake token endpoint, then the
+# key-leak check; job `flutter` analyzes and tests the probe app against a fake push client. CI
+# never calls FCM and uses no secrets: the only key is generated per test run.
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: s7-push
+
+on:
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: s7-push
+  cancel-in-progress: false
+
+# Flutter pins: the same values as ci.yml (the install step checks them against .fvmrc).
+env:
+  FLUTTER_VERSION: 3.47.9
+  FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+
+jobs:
+  node:
+    name: receiver, sender, key-leak check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - run: pnpm install --frozen-lockfile
+      - name: Receiver (inbox, device state, receipts)
+        working-directory: spikes/s7-push/receiver
+        run: pnpm run test:spike
+      - name: Sender (payload, auth, send order, retries, dead tokens, key-leak check tests)
+        working-directory: spikes/s7-push/sender
+        run: pnpm run test:spike
+      - name: No key, config or full token in the spike, its logs or its reports
+        working-directory: spikes/s7-push/sender
+        run: node scripts/check-no-secrets.ts
+
+  # No SDK or pub cache (OD-35): Flutter comes from Google's release storage, checksum-verified,
+  # and pub fetches by the probe's own lockfile. No google-services.json: the Gradle plugin is
+  # applied only when it exists, and tests never touch Firebase.
+  flutter:
+    name: flutter probe (analyze, test)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Install Flutter
+        working-directory: ${{ runner.temp }}
+        env:
+          FVMRC: ${{ github.workspace }}/.fvmrc
+        run: |
+          export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+          pinned="$(jq -r .flutter "$FVMRC")"
+          if [ "$pinned" != "$FLUTTER_VERSION" ]; then
+            echo "::error::.fvmrc pins Flutter $pinned but s7-push.yml installs $FLUTTER_VERSION"
+            exit 1
+          fi
+          archive="flutter_linux_${FLUTTER_VERSION}-stable.tar.xz"
+          curl -fsSL -o "$archive" "https://storage.googleapis.com/flutter_infra_release/releases/stable/linux/${archive}"
+          echo "${FLUTTER_SHA256}  ${archive}" | sha256sum --check --strict
+          tar -xJf "$archive" -C "$RUNNER_TEMP"
+          rm "$archive"
+          echo "SHIFA_FLUTTER_ROOT=${RUNNER_TEMP}/flutter" >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/flutter/bin/flutter" --disable-analytics
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      - name: Fetch the probe's pub packages
+        working-directory: spikes/s7-push/probe
+        run: node ../../../scripts/dart.mjs flutter pub get --enforce-lockfile
+      # The probe is outside the pub workspace, so verify does not analyze it.
+      - name: Analyze the probe
+        working-directory: spikes/s7-push/probe
+        run: node ../../../scripts/dart.mjs dart analyze --fatal-infos
+      - name: Format check
+        working-directory: spikes/s7-push/probe
+        run: node ../../../scripts/dart.mjs dart format --output=none --set-exit-if-changed lib test
+      - name: Test the probe (channels, permission, device state, message log, inbox)
+        working-directory: spikes/s7-push/probe
+        run: node ../../../scripts/dart.mjs flutter test
