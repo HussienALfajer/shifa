@@ -1,6 +1,6 @@
 # ADR-0016: Identity with Better Auth; phone verification by reverse WhatsApp code; no SMS
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Amended by ADR-0036 (proposed) · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 Patients log in with a phone number; many have no email. The owner decided on 2026-11-07 that the product uses no SMS at all. The official WhatsApp Business Platform is not available for Syria [RN-10 §2]. Outbound OTP from an unofficial WhatsApp number to unknown contacts is the riskiest pattern for bans; a code sent by the user to the platform number is far safer [RN-10 §5]. Staff need strong authentication and multi-clinic membership ([ADR-0006](0006-one-organisation-model.md)).
