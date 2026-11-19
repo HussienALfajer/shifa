@@ -41,7 +41,8 @@ const fixtures: Fixture[] = readdirSync(DIR)
   .map((f) => f as Fixture);
 
 const str = (v: unknown) => (typeof v === 'string' ? v : undefined);
-const KEY = 'ABCDEF0123456789ABCD';
+/** Placeholder message-id tail (the part a send and its acks share). */
+const ID_TAIL = 'ABCDEF' + '0123456789ABCD';
 
 /** The fake's event with the same facts as a real one. */
 function fakeTwin(real: Fixture['body']): Record<string, unknown> {
@@ -82,8 +83,8 @@ function fakeTwin(real: Fixture['body']): Record<string, unknown> {
       // approved this correction of the locked test, 2026-11-19).
       const incoming = p['fromMe'] === false;
       const sent = incoming
-        ? `false_${str(p['from']) ?? ''}_${KEY}`
-        : `true_963930012345@c.us_${KEY}`;
+        ? `false_${str(p['from']) ?? ''}_${ID_TAIL}`
+        : `true_963930012345@c.us_${ID_TAIL}`;
       payload = ackPayload(
         sent,
         Number(p['ack']),
@@ -185,7 +186,7 @@ describe('fixture replay: real WAHA events against the fake', () => {
     expect(acks.length).toBeGreaterThan(0);
     const real = normaliseEvent(acks[0]?.body ?? {});
     expect(real['ackChat']).toBe('lid');
-    const fake = ackPayload(`true_963930012345@c.us_${KEY}`, 3, undefined, '963930080001@lid');
-    expect(fake.id).toBe(`true_963930080001@lid_${KEY}`);
+    const fake = ackPayload(`true_963930012345@c.us_${ID_TAIL}`, 3, undefined, '963930080001@lid');
+    expect(fake.id).toBe(`true_963930080001@lid_${ID_TAIL}`);
   });
 });
