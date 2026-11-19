@@ -95,7 +95,8 @@ export function buildServer({ apiKey, state, control }: ServerOptions) {
       async (req, reply) => {
         const call = record('POST', `/api/sessions/${req.params.session}/${action}`);
         const s = sessionOr404(req.params.session, reply);
-        if (s && action === 'start') state.start(s);
+        // As the real WAHA (manual day): a start on a FAILED session answers but changes nothing.
+        if (s && action === 'start' && s.status !== 'FAILED') state.start(s);
         if (s && action === 'stop') state.setStatus(s, 'STOPPED');
         done(call);
         return s ? reply.code(201).send(info(s)) : reply;

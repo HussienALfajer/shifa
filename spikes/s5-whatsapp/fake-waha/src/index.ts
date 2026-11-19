@@ -3,10 +3,12 @@
 // the test process (methods below) or over HTTP (POST /__fake/<method> {"args": [...]}).
 import {
   ackPayload,
+  cappingBlock,
   envelope,
   type InboundInput,
   inboundPayload,
   type SessionStatus,
+  statusPayload,
 } from './events.ts';
 import { buildServer } from './server.ts';
 import { type FakeCall, FakeState, type SendMode } from './state.ts';
@@ -74,13 +76,19 @@ export async function startFakeWaha(options: FakeWahaOptions): Promise<FakeWaha>
     if (!s) throw new Error('unknown session');
     return s;
   };
+  // As in the real run: no `me` while not linked; capping in `data` on WORKING; the logout reason
+  // in `data` on FAILED.
   const statusEvent = (name: string, options: DeliveryOptions = {}) => {
     const s = need(name);
-    const timelock = s.me.reachoutTimelock;
-    const data =
-      s.status === 'WORKING' && timelock?.isActive ? { reachoutTimelock: timelock } : null;
-    const payload = { name, status: s.status, statuses: s.statuses, data };
-    return emitter.deliver(envelope('session.status', name, s.me, payload, now()), options);
+    const linked = s.status !== 'STARTING' && s.status !== 'SCAN_QR_CODE';
+    const payload = statusPayload(name, s.status, s.statuses, {
+      capping: s.status === 'WORKING',
+      loggedOut: s.status === 'FAILED',
+      timelock: s.status === 'WORKING' ? s.me.reachoutTimelock : null,
+      nowSeconds: Math.floor(now() / 1000),
+    });
+    const me = linked ? s.me : null;
+    return emitter.deliver(envelope('session.status', name, me, payload, now()), options);
   };
 
   const fake: FakeWaha = {
@@ -112,19 +120,7 @@ export async function startFakeWaha(options: FakeWahaOptions): Promise<FakeWaha>
     },
     capping(session, cappingStatus) {
       const s = need(session);
-      const cycleStart = Math.floor(now() / 1000);
-      s.me = {
-        ...s.me,
-        messageCapping: {
-          cappingStatus,
-          totalQuota: 1000,
-          usedQuota: cappingStatus === 'NONE' ? 10 : 990,
-          cycleStart,
-          cycleEnd: cycleStart + 30 * 86_400,
-          mvStatus: 'NOT_ELIGIBLE',
-          oteStatus: 'NOT_ELIGIBLE',
-        },
-      };
+      s.me = { ...s.me, messageCapping: cappingBlock(cappingStatus, Math.floor(now() / 1000)) };
       return statusEvent(session);
     },
     timelock(session, active) {
@@ -142,7 +138,10 @@ export async function startFakeWaha(options: FakeWahaOptions): Promise<FakeWaha>
     },
     ack(session, messageId, ack, ackOptions = {}) {
       const s = need(session);
-      const payload = ackPayload(messageId, ack, ackOptions.error);
+      // The real WAHA names the recipient's LID chat in acks when it knows one (manual day).
+      const chat = /^true_(.+)_[0-9A-Za-z]+$/.exec(messageId)?.[1];
+      const lid = [...s.lids].find(([, pn]) => pn !== null && pn === chat)?.[0];
+      const payload = ackPayload(messageId, ack, ackOptions.error, lid);
       return emitter.deliver(envelope('message.ack', session, s.me, payload, now()));
     },
     replay: (eventId) => emitter.replay(eventId),

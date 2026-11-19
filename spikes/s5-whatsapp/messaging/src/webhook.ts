@@ -6,9 +6,10 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
 import type { FastifyInstance } from 'fastify';
 import { handleAck } from './acks.ts';
-import { tripBreaker, warningOf } from './breaker.ts';
+import { tripBreaker } from './breaker.ts';
 import { type Ctx, loadSession, ts } from './context.ts';
 import { setWahaStatus } from './fallback.ts';
+import { inboundParts, warningOf } from './normalise.ts';
 import { type Inbound, recordInbound } from './optin.ts';
 import { captureRaw } from './raw-capture.ts';
 import { handlePlatformMessage, type PlatformMessage, platformReply } from './verify.ts';
@@ -34,22 +35,6 @@ function signatureOk(raw: Buffer, given: unknown, key: string): boolean {
   if (typeof given !== 'string' || !/^[0-9a-f]{128}$/i.test(given)) return false;
   const expected = createHmac('sha512', key).update(raw).digest();
   return timingSafeEqual(expected, Buffer.from(given, 'hex'));
-}
-
-/** Sender, direction and time of an inbound event, in the shape each event documents. */
-function inboundParts(event: string, envelope: Envelope) {
-  const p = envelope.payload ?? {};
-  const src = (event === 'message.revoked' ? (p['after'] ?? {}) : p) as Record<string, unknown>;
-  const idParts =
-    typeof src['id'] === 'string' ? /^(true|false)_(.+)_[^_]+$/.exec(src['id']) : null;
-  const from = typeof src['from'] === 'string' ? src['from'] : (idParts?.[2] ?? '');
-  const fromMe = src['fromMe'] === true || idParts?.[1] === 'true';
-  const envelopeSeconds =
-    typeof envelope.timestamp === 'number' ? Math.floor(envelope.timestamp / 1000) : 0;
-  const timestamp =
-    typeof src['timestamp'] === 'number' ? Math.floor(src['timestamp']) : envelopeSeconds;
-  const text = event === 'message' && typeof p['body'] === 'string' ? p['body'] : null;
-  return { from, fromMe, timestamp, text };
 }
 
 /** The dedupe key: an exact replay of an event maps to the same key. */
@@ -147,6 +132,10 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
       }
       const out: string[] = [];
       let answer: string | null = null;
+      // Every event's `me` carries the capping block (0.3-S5c manual day), not only
+      // `session.status`: a warning on any event from this session trips the breaker.
+      const warning = warningOf(envelope);
+      if (warning) await tripBreaker(ctx, client, name, warning);
       if (platformMessage) {
         answer = await handlePlatformMessage(ctx, client, session, platformMessage);
       } else if (inbound) {
@@ -156,8 +145,6 @@ export function registerWebhooks(app: FastifyInstance, ctx: Ctx) {
         await handleAck(ctx, client, name, envelope.payload ?? {});
       } else if (event === 'session.status') {
         const status = envelope.payload?.['status'];
-        const warning = warningOf(envelope);
-        if (warning) await tripBreaker(ctx, client, name, warning);
         if (typeof status === 'string') await setWahaStatus(ctx, client, name, status, true);
         if (status === 'WORKING') out.push(name);
       }

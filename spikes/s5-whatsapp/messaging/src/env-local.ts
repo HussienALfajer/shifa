@@ -64,7 +64,13 @@ export function runConfig(env: Record<string, string>): MessagingConfig {
     sessions: RUN_SESSIONS,
     // MSG-32: only the owner's two dedicated numbers receive anything.
     allowlist: new Set([need(env, 'S5_NUMBER_G'), need(env, 'S5_NUMBER_P')]),
-    pacing: { ...DEFAULT_PACING, capPerWindow: Number(env['S5_CAP_PER_HOUR'] ?? 30) },
+    pacing: {
+      ...DEFAULT_PACING,
+      capPerWindow: Number(env['S5_CAP_PER_HOUR'] ?? 30),
+      // Owner's choice on the manual day (2026-11-19): `off` lets the run continue at night; quiet
+      // hours themselves stay covered by the automated `scheduler-day` suite.
+      ...(env['S5_QUIET_HOURS'] === 'off' ? { quiet: { kind: 'none' as const } } : {}),
+    },
     sendTimeoutMs: 15_000,
     adminToken: need(env, 'S5_ADMIN_TOKEN'),
     queue: 'worker',
