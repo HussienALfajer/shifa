@@ -51,3 +51,8 @@ spikes/s6-voice/display/test-results/
 spikes/s6-voice/listening/test-set/
 spikes/s6-voice/listening/playwright-report/
 spikes/s6-voice/listening/test-results/
+
+# Spike 0.3-S7 push: run state and logs, the Firebase app config and the service-account key
+spikes/s7-push/.out/
+spikes/s7-push/probe/android/app/google-services.json
+spikes/s7-push/**/service-account*.json
