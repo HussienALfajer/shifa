@@ -1,6 +1,6 @@
 # Spike S6 result: voice calling with SILMA TTS
 
-Date: 2026-11-19 (owner's machine) · Spec: [0.3-S6](../specs/spikes/0.3-s6-voice.md) · Slices: [0.3-S6a](../slices/0.3-s6a-voice-generation-and-display.md), [0.3-S6b](../slices/0.3-s6b-voice-listening-and-result.md) · Decision: [ADR-0037](../adr/0037-voice-silma-self-hosted.md) (Proposed), amending [ADR-0020](../adr/0020-voice-calling-voice-packs.md) · Requirements: VOX-01, VOX-03, VOX-06, VOX-08–VOX-18 · Decisions: OD-11, OD-50, OD-51
+Date: 2026-11-19 (owner's machine) · Spec: [0.3-S6](../specs/spikes/0.3-s6-voice.md) · Slices: [0.3-S6a](../slices/0.3-s6a-voice-generation-and-display.md), [0.3-S6b](../slices/0.3-s6b-voice-listening-and-result.md) · Decision: [ADR-0037](../adr/0037-voice-silma-self-hosted.md) (Accepted, owner 2026-11-19), amending [ADR-0020](../adr/0020-voice-calling-voice-packs.md) · Requirements: VOX-01, VOX-03, VOX-06, VOX-08–VOX-18 · Decisions: OD-11, OD-50, OD-51
 
 ## Answer
 **SILMA TTS v1, self-hosted, is good enough to be Shifa's only voice: in the owner's blind rating of all 177 clips no number was wrong and the mean naturalness was 4.14 of 5 (numbers 4.68). Names are the weak spot (31 of 120 heard wrong), so number-only stays the default and the tashkeel preview stays. On an Android TV 16 emulator, Fully Kiosk's free version plays cached calls with no tap, also with its server unreachable, with clips scheduled back to back and the screen kept on.**

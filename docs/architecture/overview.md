@@ -122,5 +122,5 @@ One deployable NestJS application with strict module boundaries, enforced by lin
 | Auth | Better Auth | 0016 |
 | Messaging | FCM, WAHA (GOWS engine) | 0017 |
 | Imaging | Orthanc, OHIF, Cornerstone3D | 0019 |
-| Voice | Self-hosted SILMA TTS (generation only; no cloud vendor) | 0020, 0037 (proposed) |
+| Voice | Self-hosted SILMA TTS (generation only; no cloud vendor) | 0020, 0037 |
 | Infra | Garage, Valkey, Gotenberg, ExcelJS, Docker Compose + Kamal, pgBackRest, OpenTelemetry, GlitchTip, Infisical | 0021, 0022 |

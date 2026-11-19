@@ -1,6 +1,6 @@
 # ADR-0020: Voice calling with pre-generated TTS voice packs played locally on the display
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner (with Claude)
+Status: Accepted · Amended by ADR-0037 · Date: 2026-11-08 · Deciders: product owner (with Claude)
 
 ## Context
 The owner added a voice-calling system to the queue. Announcements must work during internet cuts, sound natural in Syrian Arabic, avoid privacy problems and optionally add Turkish for Azaz. Azure has Syrian Arabic neural voices (ar-SY-LaithNeural, ar-SY-AmanyNeural) and Turkish voices; Azure access from inside Syria is restricted, so generation must happen on our servers [RN-15 §5]. Chrome blocks autoplay without a gesture and Android WebView lacks Web Speech [RN-15 §4, §8] [RN-17 §12].

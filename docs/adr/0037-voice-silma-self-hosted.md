@@ -1,6 +1,6 @@
 # ADR-0037: Voice calling with self-hosted SILMA TTS; no cloud vendor
 
-Status: Proposed · Date: 2026-11-19 · Deciders: product owner (with Claude) · Amends: [ADR-0020](0020-voice-calling-voice-packs.md)
+Status: Accepted (owner, 2026-11-19) · Date: 2026-11-19 · Deciders: product owner (with Claude) · Amends: [ADR-0020](0020-voice-calling-voice-packs.md)
 
 ## Context
 ADR-0020 made Azure `ar-SY` primary, Google backup and SILMA fallback. Cloud free tiers have monthly limits, need a card and bind clinics to vendor terms; the owner wants a voice free without limits (OD-51). In spike 0.3-S6 ([report](../spikes/s6-voice.md)) the owner rated all 177 SILMA clips blind: no wrong number, mean naturalness 4.14 of 5 (numbers 4.68), passing the bar (no wrong number, mean ≥ 3.5). Names were weaker: 31 of 120 heard wrong; tashkeel cut errors from 8/20 to 3/20. On an Android TV 16 emulator, Fully Kiosk free played cached calls with no tap, also with its server down.
