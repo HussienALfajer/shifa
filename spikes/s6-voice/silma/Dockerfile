@@ -9,9 +9,13 @@ RUN apt-get update \
   && apt-get install -y --no-install-recommends ffmpeg \
   && rm -rf /var/lib/apt/lists/*
 
-# Every dependency hash-checked: the build fails on any package not in the lock.
+# Every dependency hash-checked: the build fails on any package not in the lock. The BuildKit
+# cache mount keeps pip's downloads between build attempts (not in the image), so on a link that
+# drops large downloads a rebuild reuses every wheel that already arrived intact; a cut download
+# fails its hash and is fetched again.
 COPY requirements.txt /opt/silma/requirements.txt
-RUN pip install --no-cache-dir --root-user-action=ignore --require-hashes \
+RUN --mount=type=cache,target=/root/.cache/pip \
+  pip install --root-user-action=ignore --require-hashes --timeout 120 --retries 20 \
   -r /opt/silma/requirements.txt
 
 # As root, so site-packages stays root-owned: the tashkeel model the package would otherwise
