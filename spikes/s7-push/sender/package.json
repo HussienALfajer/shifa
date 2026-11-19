@@ -1,0 +1,27 @@
+{
+  "name": "@shifa-spike/s7-sender",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "send": "node src/cli.ts send",
+    "check:secrets": "node scripts/check-no-secrets.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint . && node scripts/check-no-secrets.ts",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "@shifa-spike/s7-receiver": "workspace:*"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

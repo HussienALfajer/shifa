@@ -51,3 +51,23 @@ spikes/s6-voice/display/test-results/
 spikes/s6-voice/listening/test-set/
 spikes/s6-voice/listening/playwright-report/
 spikes/s6-voice/listening/test-results/
+
+# Spike 0.3-S7 push: run state and logs, the Firebase app config and the service-account key
+# (under any of the names the Firebase and Cloud consoles and flutterfire give them), builds
+# and dumps. The key-leak check (spikes/s7-push/sender/scripts) also fails if one is tracked.
+spikes/s7-push/.out/
+**/google-services.json
+**/GoogleService-Info.plist
+**/service-account*.json
+*-firebase-adminsdk-*.json
+spikes/s7-push/*.json
+spikes/s7-push/sender/*-*.json
+spikes/s7-push/probe/lib/firebase_options.dart
+spikes/s7-push/**/firebase.json
+spikes/s7-push/**/.firebaserc
+spikes/s7-push/**/*.apk
+spikes/s7-push/**/*.aab
+spikes/s7-push/**/*.zip
+spikes/s7-push/**/*.gz
+spikes/s7-push/**/*.7z
+spikes/s7-push/**/*.hprof

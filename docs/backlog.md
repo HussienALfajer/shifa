@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-17 · Owner: product owner
+Status: Living · Last updated: 2026-11-19 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -115,3 +115,6 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Listening page: no e2e test for a set with zero pairs** (0.3-S6b review): with one voice the page goes from the last rating straight to "done" and the download; the Playwright specs cover pairs only, and the owner's results came from saved progress, so that download path is unproven. Add a spec if the page is reused.
 - **`fetch.py` retries permanent errors** (0.3-S6b review): its broad `except Exception` retries a wrong commit or missing file ten times (about 4 min) before failing; retry only network errors.
 - **SILMA server origin checks** (0.3-S6a security review N8): the wrapper now checks Host and `application/json` and times out slow bodies; if it becomes a service, add authentication and run it behind the API, never on a port a browser can reach.
+- **Key-leak check scope** (0.3-S7a security review N2): the check scans the S7 spike, its docs and ADR-0038 only, and reads the working tree, not the index. Scan the whole repository with the same patterns (one prose hit was rephrased), and for staged paths also scan `git show :<path>`; or fold the FCM-token and OAuth-token patterns into the gitleaks config used by PR CI.
+- **Production project id in S7 logs** (0.3-S7a security review N3, before 0.3-S7b commits logs): FCM's `fcmName` (`projects/<id>/messages/<n>`) goes to `sends.jsonl` and CLI output. Ask the owner whether the id may be public; if not, strip it before committing (the locked send test expects the full name in the local log), and add patterns built from the local `project_id`, `client_email` and `project_number`.
+- **S7 receipt dedupe and cross-isolate outbox** (0.3-S7a review 7): the probe serializes its outbox within an isolate, but the background isolate shares the file; a receipt can reach the receiver twice. The 0.3-S7b analysis dedupes receipts by `s7id`; the real app's outbox (Phase A) needs one writer or an append-only queue with sent markers.
