@@ -9,6 +9,8 @@ the owner's Firebase project on emulators. Synthetic data only.
 |---|---|
 | `receiver/` (`@shifa-spike/s7-receiver`) | `node:http` server on `127.0.0.1`: `POST /devices` (state report), `POST /receipts`, `GET /inbox?installId&since`, `GET /time`, `GET /queue`. Library API used by the sender: `writeInbox`, `markDead`, `isDead`. |
 | `sender/` (`@shifa-spike/s7-sender`) | FCM HTTP v1 sender: service-account JWT (no Google SDK), inbox record before every send, send log, retries, dead tokens. `scripts/check-no-secrets.ts` is the key-leak check. |
+| `scenarios/` (`@shifa-spike/s7-scenarios`, 0.3-S7b) | State matrix runner (`run --state <name> --serial <emulator> --install <installId> [--app noshow]`) and one-day runner (`day --target <serial>=<installId> ...`) over `adb`; a host-side watcher reads `dumpsys notification --noredact` every second and finds each shown push by its ticker (the s7id). Writes `runs/<date>-<state>-api<n>/`. |
+| `analysis/` (`@shifa-spike/s7-analysis`, 0.3-S7b) | `pnpm analyse [--run <dir> ...]`: joins sends, shown, receipts and inbox per run; per-state table and the OD-52 pass mark in `runs/analysis.{md,json}`. |
 | `probe/` (Flutter, standalone) | Android probe app `dev.shifa.spike.s7push` (flavor `compliant`) and `….noshow` (flavor `noshow`, criterion 5). |
 
 ## Files that must never be committed (ADR-0026)
