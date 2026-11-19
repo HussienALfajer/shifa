@@ -1,6 +1,7 @@
 // CLI (owner machine, 0.3-S7b checkpoints D–E):
 //   node src/cli.ts run --state <name> --serial <emulator> --install <installId>
 //     [--app compliant|noshow] [--count n] [--gap-s n] [--settle-s n] [--runs <dir>]
+//   node src/cli.ts devices   (installs the receiver knows, no tokens)
 //   node src/cli.ts day --target <serial>=<installId> [--target ...] [--date YYYY-MM-DD]
 //     [--runs <dir>]
 // Sends through the 0.3-S7a sender (inbox record first, then FCM) with the key named in
@@ -89,6 +90,16 @@ async function main(argv: string[]) {
     },
   });
   const runs = values.runs ?? RUNS_DIR;
+  if (positionals[0] === 'devices') {
+    // The installs the receiver knows, without tokens: pick `--install` from here.
+    const receiver = openReceiver(loadConfig().outDir);
+    for (const d of await receiver.devices()) {
+      process.stdout.write(
+        `${d.installId} sdk=${String(d.sdkInt)} model=${d.model} app=${d.appVersion} permission=${d.permission} appointments=${d.channels.appointments} token=${d.tokenHash} at=${d.reportedAt}\n`,
+      );
+    }
+    return;
+  }
   if (positionals[0] === 'run') {
     const { state, serial, install } = values;
     const appArg = values.app ?? 'compliant';

@@ -9,6 +9,7 @@
   "scripts": {
     "run-state": "node src/cli.ts run",
     "run-day": "node src/cli.ts day",
+    "devices": "node src/cli.ts devices",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test:spike": "vitest run"
