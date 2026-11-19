@@ -5,8 +5,9 @@
 # Run bound to loopback only: docker run --rm -p 127.0.0.1:8088:8088 shifa-s6-silma
 FROM python:3.12-slim-bookworm@sha256:935c3c5b12357a7e10caa9c1e6ca5692344d97cf229832ef584be2cec9fc03df
 
+# gcc and libc6-dev: cdifflib (a SILMA dependency) ships only as source with a C extension.
 RUN apt-get update \
-  && apt-get install -y --no-install-recommends ffmpeg \
+  && apt-get install -y --no-install-recommends ffmpeg gcc libc6-dev \
   && rm -rf /var/lib/apt/lists/*
 
 # Every dependency hash-checked: the build fails on any package not in the lock. The BuildKit
