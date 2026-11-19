@@ -19,8 +19,9 @@ const { values, positionals } = parseArgs({
   },
 });
 const files = [...values.manifests, ...positionals];
-if (files.length < 2) {
-  throw new Error('usage: build-listening-set --seed <n> [--pre-round] <manifest.json>…');
+// One manifest is a rating-only run (OD-51); the pre-round needs at least two voices.
+if (files.length < (values['pre-round'] ? 2 : 1)) {
+  throw new Error('usage: build-listening-set [--seed <n>] [--pre-round] <manifest.json>…');
 }
 // Record the seed in the slice file: it fixes the order and the pairs.
 const seed = values.seed === undefined ? randomInt(1, 2 ** 31) : Number(values.seed);
