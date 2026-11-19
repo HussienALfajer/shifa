@@ -12,7 +12,10 @@
       "!docs/brand/**",
       "!pnpm-lock.yaml",
       "!**/migrations/*/snapshot.json",
-      "!**/generated/**"
+      "!**/generated/**",
+      "!spikes/s6-voice/analysis/test/__snapshots__/**",
+      "!spikes/s6-voice/manifests/**",
+      "!spikes/s6-voice/results/**"
     ]
   },
   "formatter": {

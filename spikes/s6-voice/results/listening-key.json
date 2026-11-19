@@ -1,0 +1,1432 @@
+{
+  "schemaVersion": 1,
+  "kind": "full",
+  "setHash": "0837814499865b20",
+  "seed": 1364424875,
+  "voices": [
+    {
+      "voiceId": "silma/default",
+      "provider": "silma",
+      "voice": "default"
+    }
+  ],
+  "codes": {
+    "TJYOMCCA": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-076",
+      "category": "number",
+      "text": "الرقم ستة وسبعون",
+      "use": "rating"
+    },
+    "JXCGM2VI": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f25",
+      "category": "name-plain",
+      "text": "لارا",
+      "use": "rating"
+    },
+    "BGNNFT36": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-100",
+      "category": "number",
+      "text": "الرقم مئة",
+      "use": "rating"
+    },
+    "FKXADQYN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m18",
+      "category": "name",
+      "text": "ضِيَاء",
+      "use": "rating"
+    },
+    "3IFZ7MTE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m10",
+      "category": "name-plain",
+      "text": "مصطفى",
+      "use": "rating"
+    },
+    "X7CWKZ6T": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m33",
+      "category": "name",
+      "text": "بِيرْزَان",
+      "use": "rating"
+    },
+    "5JZR6HEU": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m08",
+      "category": "name",
+      "text": "عُمَر",
+      "use": "rating"
+    },
+    "TUJMZBXE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-040",
+      "category": "number",
+      "text": "الرقم أربعون",
+      "use": "rating"
+    },
+    "JRPWIN7H": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-050",
+      "category": "number",
+      "text": "الرقم خمسون",
+      "use": "rating"
+    },
+    "UJSYT7SK": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m22",
+      "category": "name",
+      "text": "زَكَرِيَّا",
+      "use": "rating"
+    },
+    "MJDJOQBH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m48",
+      "category": "name",
+      "text": "مَاهِر",
+      "use": "rating"
+    },
+    "6YGYPUYI": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f01",
+      "category": "name",
+      "text": "فَاطِمَة",
+      "use": "rating"
+    },
+    "3AFPNM6R": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f41",
+      "category": "name",
+      "text": "آيْلِين",
+      "use": "rating"
+    },
+    "APBTOFO6": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-025",
+      "category": "number",
+      "text": "الرقم خمسة وعشرون",
+      "use": "rating"
+    },
+    "SMA2XP43": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m03",
+      "category": "name",
+      "text": "إِبْرَاهِيم",
+      "use": "rating"
+    },
+    "KJ7DE6PG": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f21",
+      "category": "name",
+      "text": "بَتُول",
+      "use": "rating"
+    },
+    "BHTGEVLM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m20",
+      "category": "name",
+      "text": "أُسَامَة",
+      "use": "rating"
+    },
+    "WGMNMU62": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m19",
+      "category": "name",
+      "text": "بَهَاء",
+      "use": "rating"
+    },
+    "JYDBEFNP": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f02",
+      "category": "name-plain",
+      "text": "عائشة",
+      "use": "rating"
+    },
+    "TFE67PNL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "room-3",
+      "category": "room",
+      "text": "إلى العيادة رقم ثلاثة",
+      "use": "rating"
+    },
+    "JVMHZ2WS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-018",
+      "category": "number",
+      "text": "الرقم ثمانية عشر",
+      "use": "rating"
+    },
+    "HZEAMWTF": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f44",
+      "category": "name",
+      "text": "نُورْجَان",
+      "use": "rating"
+    },
+    "APLKXJD4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-080",
+      "category": "number",
+      "text": "الرقم ثمانون",
+      "use": "rating"
+    },
+    "HO4V2KPX": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f12",
+      "category": "name",
+      "text": "هِبَة",
+      "use": "rating"
+    },
+    "5IN3T3RK": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m16",
+      "category": "name",
+      "text": "مُؤْمِن",
+      "use": "rating"
+    },
+    "Q2JED6EQ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m40",
+      "category": "name",
+      "text": "أُوغُوز",
+      "use": "rating"
+    },
+    "KX6DDVCJ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-017",
+      "category": "number",
+      "text": "الرقم سبعة عشر",
+      "use": "rating"
+    },
+    "IGUUL2UL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f18",
+      "category": "name-plain",
+      "text": "نور",
+      "use": "rating"
+    },
+    "JARFHY7B": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m36",
+      "category": "name",
+      "text": "أَرْمَانْج",
+      "use": "rating"
+    },
+    "HRNP5352": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "room-2",
+      "category": "room",
+      "text": "إلى العيادة رقم اثنان",
+      "use": "rating"
+    },
+    "OMBEIQEE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f20",
+      "category": "name",
+      "text": "شَهْد",
+      "use": "rating"
+    },
+    "WM3SGKPF": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f26",
+      "category": "name",
+      "text": "أَلِيس",
+      "use": "rating"
+    },
+    "SQ26LJYP": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m36",
+      "category": "name-plain",
+      "text": "أرمانج",
+      "use": "rating"
+    },
+    "PQWOUAUY": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f39",
+      "category": "name",
+      "text": "أَفِين",
+      "use": "rating"
+    },
+    "N23TWJQZ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f19",
+      "category": "name",
+      "text": "إِيمَان",
+      "use": "rating"
+    },
+    "MJY2WQIW": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-999",
+      "category": "number",
+      "text": "الرقم تسعمئة وتسعة وتسعون",
+      "use": "rating"
+    },
+    "ABR46Q6S": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "doctor-2",
+      "category": "doctor",
+      "text": "عيادة الدكتور فراس",
+      "use": "rating"
+    },
+    "2UHAH6TM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-101",
+      "category": "number",
+      "text": "الرقم مئة وواحد",
+      "use": "rating"
+    },
+    "NZ6DRLYR": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f14",
+      "category": "name",
+      "text": "عَزَّة",
+      "use": "rating"
+    },
+    "ELPSNLAT": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f06",
+      "category": "name",
+      "text": "زَيْنَب",
+      "use": "rating"
+    },
+    "WQBIE7AP": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f25",
+      "category": "name",
+      "text": "لَارَا",
+      "use": "rating"
+    },
+    "WS55EEF4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m11",
+      "category": "name-plain",
+      "text": "عبد الرحمن",
+      "use": "rating"
+    },
+    "7AL3TDMR": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m25",
+      "category": "name",
+      "text": "مَأْمُون",
+      "use": "rating"
+    },
+    "PAJXSCHJ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f46",
+      "category": "name",
+      "text": "رَشَا",
+      "use": "rating"
+    },
+    "YMCN5BYH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m31",
+      "category": "name",
+      "text": "آزَاد",
+      "use": "rating"
+    },
+    "7PK6UAJL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-016",
+      "category": "number",
+      "text": "الرقم ستة عشر",
+      "use": "rating"
+    },
+    "WUYG63W6": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m14",
+      "category": "name",
+      "text": "عَمَّار",
+      "use": "rating"
+    },
+    "KMSPB7GG": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-014",
+      "category": "number",
+      "text": "الرقم أربعة عشر",
+      "use": "rating"
+    },
+    "A5CFLQR4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-112",
+      "category": "number",
+      "text": "الرقم مئة واثنا عشر",
+      "use": "rating"
+    },
+    "QAMJGNQN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m17",
+      "category": "name",
+      "text": "عَلَاء",
+      "use": "rating"
+    },
+    "7IH5GD2H": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m01",
+      "category": "name",
+      "text": "مُحَمَّد",
+      "use": "rating"
+    },
+    "57DLGHCU": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-003",
+      "category": "number",
+      "text": "الرقم ثلاثة",
+      "use": "rating"
+    },
+    "Y5AVMALS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f23",
+      "category": "name-plain",
+      "text": "ياسمين",
+      "use": "rating"
+    },
+    "KPLLAD7P": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m29",
+      "category": "name",
+      "text": "هَيْثَم",
+      "use": "rating"
+    },
+    "QPB6NIFE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m34",
+      "category": "name",
+      "text": "بَارَان",
+      "use": "rating"
+    },
+    "ZDC4O4CK": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f47",
+      "category": "name",
+      "text": "سَوْسَن",
+      "use": "rating"
+    },
+    "EIUQFRFB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f32",
+      "category": "name-plain",
+      "text": "آلاء",
+      "use": "rating"
+    },
+    "NP3T3IWG": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m39",
+      "category": "name",
+      "text": "أَيْدِن",
+      "use": "rating"
+    },
+    "QBEB3HXU": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-058",
+      "category": "number",
+      "text": "الرقم ثمانية وخمسون",
+      "use": "rating"
+    },
+    "6LP7GT5E": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f29",
+      "category": "name",
+      "text": "لُجَيْن",
+      "use": "rating"
+    },
+    "TFWQSD55": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f02",
+      "category": "name",
+      "text": "عَائِشَة",
+      "use": "rating"
+    },
+    "OXWIZFGS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-021",
+      "category": "number",
+      "text": "الرقم واحد وعشرون",
+      "use": "rating"
+    },
+    "EOAEA6TV": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m11",
+      "category": "name",
+      "text": "عَبْد الرَّحْمٰن",
+      "use": "rating"
+    },
+    "EKULGIFN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-008",
+      "category": "number",
+      "text": "الرقم ثمانية",
+      "use": "rating"
+    },
+    "5XG7ITC4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f40",
+      "category": "name",
+      "text": "بِيرْفِين",
+      "use": "rating"
+    },
+    "XKULMI4X": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f38",
+      "category": "name",
+      "text": "هِيلِين",
+      "use": "rating"
+    },
+    "6DDGFU2Q": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f48",
+      "category": "name",
+      "text": "لَمَى",
+      "use": "rating"
+    },
+    "Z57IICL3": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f09",
+      "category": "name",
+      "text": "سَنَاء",
+      "use": "rating"
+    },
+    "LCQIUKOB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m02",
+      "category": "name",
+      "text": "أَحْمَد",
+      "use": "rating"
+    },
+    "F6GBPUJ5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f03",
+      "category": "name",
+      "text": "آمِنَة",
+      "use": "rating"
+    },
+    "LAZX7KSK": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "room-5",
+      "category": "room",
+      "text": "إلى العيادة رقم خمسة",
+      "use": "rating"
+    },
+    "QWDEBKJE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f42",
+      "category": "name",
+      "text": "دِيلَك",
+      "use": "rating"
+    },
+    "ICNMPKEW": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f43",
+      "category": "name",
+      "text": "أَيْتَن",
+      "use": "rating"
+    },
+    "ZOO3HDEH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-047",
+      "category": "number",
+      "text": "الرقم سبعة وأربعون",
+      "use": "rating"
+    },
+    "4OF7WRW5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-006",
+      "category": "number",
+      "text": "الرقم ستة",
+      "use": "rating"
+    },
+    "JKLIYUAR": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m30",
+      "category": "name",
+      "text": "مُعْتَصِم",
+      "use": "rating"
+    },
+    "4AQQ62IO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f05",
+      "category": "name",
+      "text": "مَرْيَم",
+      "use": "rating"
+    },
+    "LLE5N47N": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-090",
+      "category": "number",
+      "text": "الرقم تسعون",
+      "use": "rating"
+    },
+    "N4YVEXEH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f10",
+      "category": "name",
+      "text": "دُعَاء",
+      "use": "rating"
+    },
+    "OBNFJRFI": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f33",
+      "category": "name",
+      "text": "مَلَك",
+      "use": "rating"
+    },
+    "HPQYCKZN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f38",
+      "category": "name-plain",
+      "text": "هيلين",
+      "use": "rating"
+    },
+    "B6MUY74O": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-011",
+      "category": "number",
+      "text": "الرقم أحد عشر",
+      "use": "rating"
+    },
+    "GXFU2MIQ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-099",
+      "category": "number",
+      "text": "الرقم تسعة وتسعون",
+      "use": "rating"
+    },
+    "QDV4HQKM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m50",
+      "category": "name",
+      "text": "عِيسَى",
+      "use": "rating"
+    },
+    "HBUYLTW4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m03",
+      "category": "name-plain",
+      "text": "إبراهيم",
+      "use": "rating"
+    },
+    "DGXAEUZ6": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m46",
+      "category": "name",
+      "text": "صُهَيْب",
+      "use": "rating"
+    },
+    "Q25UUJXL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-102",
+      "category": "number",
+      "text": "الرقم مئة واثنان",
+      "use": "rating"
+    },
+    "HGUYQ6AS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m43",
+      "category": "name",
+      "text": "طَارِق",
+      "use": "rating"
+    },
+    "XWYHR4XD": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-013",
+      "category": "number",
+      "text": "الرقم ثلاثة عشر",
+      "use": "rating"
+    },
+    "PJJLF65M": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m49",
+      "category": "name",
+      "text": "رَامِي",
+      "use": "rating"
+    },
+    "KA72LHTM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-119",
+      "category": "number",
+      "text": "الرقم مئة وتسعة عشر",
+      "use": "rating"
+    },
+    "OOYSMIW5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-002",
+      "category": "number",
+      "text": "الرقم اثنان",
+      "use": "rating"
+    },
+    "PAG3ZTVG": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f13",
+      "category": "name",
+      "text": "رَنَا",
+      "use": "rating"
+    },
+    "SOU3Q3BX": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "doctor-1",
+      "category": "doctor",
+      "text": "عيادة الدكتور رياض",
+      "use": "rating"
+    },
+    "4375WDG5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m47",
+      "category": "name",
+      "text": "عُثْمَان",
+      "use": "rating"
+    },
+    "ZTNXVBCL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-064",
+      "category": "number",
+      "text": "الرقم أربعة وستون",
+      "use": "rating"
+    },
+    "TLM5BHU7": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m44",
+      "category": "name",
+      "text": "وَائِل",
+      "use": "rating"
+    },
+    "GJXDRP2G": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f07",
+      "category": "name",
+      "text": "خَدِيجَة",
+      "use": "rating"
+    },
+    "HHJEVJOJ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "room-1",
+      "category": "room",
+      "text": "إلى العيادة رقم واحد",
+      "use": "rating"
+    },
+    "EIA7C2VM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-060",
+      "category": "number",
+      "text": "الرقم ستون",
+      "use": "rating"
+    },
+    "I5TS7BOT": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-005",
+      "category": "number",
+      "text": "الرقم خمسة",
+      "use": "rating"
+    },
+    "COUJQUZJ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f37",
+      "category": "name",
+      "text": "زُوزَان",
+      "use": "rating"
+    },
+    "5TT75SVN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-200",
+      "category": "number",
+      "text": "الرقم مئتان",
+      "use": "rating"
+    },
+    "XOXVYROK": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-010",
+      "category": "number",
+      "text": "الرقم عشرة",
+      "use": "rating"
+    },
+    "6X2VPTY4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m12",
+      "category": "name",
+      "text": "بَشَّار",
+      "use": "rating"
+    },
+    "CUT2IWJF": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m27",
+      "category": "name",
+      "text": "إِلْيَاس",
+      "use": "rating"
+    },
+    "4IUYLBLO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f17",
+      "category": "name",
+      "text": "هُدَى",
+      "use": "rating"
+    },
+    "4HHLKAF5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m35",
+      "category": "name",
+      "text": "آدَار",
+      "use": "rating"
+    },
+    "HYCQZOLO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f04",
+      "category": "name",
+      "text": "أَسْمَاء",
+      "use": "rating"
+    },
+    "OIYEPVR2": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-007",
+      "category": "number",
+      "text": "الرقم سبعة",
+      "use": "rating"
+    },
+    "OF2OV4XD": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f23",
+      "category": "name",
+      "text": "يَاسَمِين",
+      "use": "rating"
+    },
+    "W5LPB5EH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m41",
+      "category": "name",
+      "text": "يِلْمَاز",
+      "use": "rating"
+    },
+    "QNPBMSW2": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-300",
+      "category": "number",
+      "text": "الرقم ثلاثمئة",
+      "use": "rating"
+    },
+    "7LNSNP6Y": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f35",
+      "category": "name-plain",
+      "text": "روجين",
+      "use": "rating"
+    },
+    "OUGO35RL": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f15",
+      "category": "name",
+      "text": "لَيْلَى",
+      "use": "rating"
+    },
+    "TLKLBYOW": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-120",
+      "category": "number",
+      "text": "الرقم مئة وعشرون",
+      "use": "rating"
+    },
+    "AQ2YRFIJ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f18",
+      "category": "name",
+      "text": "نُور",
+      "use": "rating"
+    },
+    "ROK42NX5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f49",
+      "category": "name",
+      "text": "وَعْد",
+      "use": "rating"
+    },
+    "SREGBJNV": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f50",
+      "category": "name",
+      "text": "جُمَانَة",
+      "use": "rating"
+    },
+    "L54WJUCB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m05",
+      "category": "name",
+      "text": "حَسَن",
+      "use": "rating"
+    },
+    "5G6QJG2V": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m15",
+      "category": "name",
+      "text": "لُؤَيّ",
+      "use": "rating"
+    },
+    "4GHCSOA6": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-004",
+      "category": "number",
+      "text": "الرقم أربعة",
+      "use": "rating"
+    },
+    "W25EGCA5": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-640",
+      "category": "number",
+      "text": "الرقم ستمئة وأربعون",
+      "use": "rating"
+    },
+    "YSEQ2A4D": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m37",
+      "category": "name-plain",
+      "text": "أرسلان",
+      "use": "rating"
+    },
+    "6PNPUEZS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-020",
+      "category": "number",
+      "text": "الرقم عشرون",
+      "use": "rating"
+    },
+    "LYAADGIZ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m09",
+      "category": "name",
+      "text": "يُوسُف",
+      "use": "rating"
+    },
+    "4FSOWVP2": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f08",
+      "category": "name",
+      "text": "رُؤَى",
+      "use": "rating"
+    },
+    "E2ZT2CD3": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m13",
+      "category": "name",
+      "text": "غَسَّان",
+      "use": "rating"
+    },
+    "MOMWIRSQ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m42",
+      "category": "name",
+      "text": "أَرْطُغْرُل",
+      "use": "rating"
+    },
+    "7O3N4TTH": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-070",
+      "category": "number",
+      "text": "الرقم سبعون",
+      "use": "rating"
+    },
+    "PZQ7P6ZO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f01",
+      "category": "name-plain",
+      "text": "فاطمة",
+      "use": "rating"
+    },
+    "2XE6KZHW": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m32",
+      "category": "name",
+      "text": "بَهُوز",
+      "use": "rating"
+    },
+    "2SGNTDW4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m17",
+      "category": "name-plain",
+      "text": "علاء",
+      "use": "rating"
+    },
+    "5CGTGRX2": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f16",
+      "category": "name",
+      "text": "سَلْمَى",
+      "use": "rating"
+    },
+    "GDNLDZWR": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f34",
+      "category": "name",
+      "text": "جُودِي",
+      "use": "rating"
+    },
+    "AUFEHJXP": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m07",
+      "category": "name",
+      "text": "خَالِد",
+      "use": "rating"
+    },
+    "KEUGR7ZT": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m01",
+      "category": "name-plain",
+      "text": "محمد",
+      "use": "rating"
+    },
+    "F4VBN6NC": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f08",
+      "category": "name-plain",
+      "text": "رؤى",
+      "use": "rating"
+    },
+    "IP4ZGWIV": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f22",
+      "category": "name",
+      "text": "رَهَف",
+      "use": "rating"
+    },
+    "GTQU2DQA": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-089",
+      "category": "number",
+      "text": "الرقم تسعة وثمانون",
+      "use": "rating"
+    },
+    "VNRAWV22": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m04",
+      "category": "name",
+      "text": "عَلِيّ",
+      "use": "rating"
+    },
+    "3GN4OZT3": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-001",
+      "category": "number",
+      "text": "الرقم واحد",
+      "use": "rating"
+    },
+    "GDVWMR2U": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-019",
+      "category": "number",
+      "text": "الرقم تسعة عشر",
+      "use": "rating"
+    },
+    "HSS6XKNT": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m26",
+      "category": "name-plain",
+      "text": "جورج",
+      "use": "rating"
+    },
+    "HH4CPRD3": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m21",
+      "category": "name",
+      "text": "أَنَس",
+      "use": "rating"
+    },
+    "X4IW5QT4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m10",
+      "category": "name",
+      "text": "مُصْطَفَى",
+      "use": "rating"
+    },
+    "EKOE4EOY": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f30",
+      "category": "name",
+      "text": "غِنَى",
+      "use": "rating"
+    },
+    "2VOK6XQS": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-215",
+      "category": "number",
+      "text": "الرقم مئتان وخمسة عشر",
+      "use": "rating"
+    },
+    "X3CX6VN3": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f32",
+      "category": "name",
+      "text": "آلَاء",
+      "use": "rating"
+    },
+    "H43C2AKQ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m31",
+      "category": "name-plain",
+      "text": "آزاد",
+      "use": "rating"
+    },
+    "XU3Q654N": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m24",
+      "category": "name",
+      "text": "سَامِي",
+      "use": "rating"
+    },
+    "HATBCCHQ": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-012",
+      "category": "number",
+      "text": "الرقم اثنا عشر",
+      "use": "rating"
+    },
+    "EJQKHWZM": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-009",
+      "category": "number",
+      "text": "الرقم تسعة",
+      "use": "rating"
+    },
+    "4BLE4TZE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-015",
+      "category": "number",
+      "text": "الرقم خمسة عشر",
+      "use": "rating"
+    },
+    "YSXCKJAO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-800",
+      "category": "number",
+      "text": "الرقم ثمانمئة",
+      "use": "rating"
+    },
+    "2Y243PVB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-110",
+      "category": "number",
+      "text": "الرقم مئة وعشرة",
+      "use": "rating"
+    },
+    "ZZ2ATSAN": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m38",
+      "category": "name",
+      "text": "تُورْغُوت",
+      "use": "rating"
+    },
+    "R2A45JPG": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m23",
+      "category": "name",
+      "text": "يَحْيَى",
+      "use": "rating"
+    },
+    "ZOSE5WJU": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-022",
+      "category": "number",
+      "text": "الرقم اثنان وعشرون",
+      "use": "rating"
+    },
+    "JNRDJIOX": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m45",
+      "category": "name",
+      "text": "سُهَيْل",
+      "use": "rating"
+    },
+    "LDC55JHV": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f11",
+      "category": "name",
+      "text": "رَجَاء",
+      "use": "rating"
+    },
+    "FNVUX7RY": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f45",
+      "category": "name",
+      "text": "أُوزْلَم",
+      "use": "rating"
+    },
+    "SQ3OH266": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f28",
+      "category": "name",
+      "text": "رُبَى",
+      "use": "rating"
+    },
+    "P4DZ5TTI": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f27",
+      "category": "name",
+      "text": "فَيْرُوز",
+      "use": "rating"
+    },
+    "TPTFRHV4": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f24",
+      "category": "name",
+      "text": "نَسْرِين",
+      "use": "rating"
+    },
+    "GAIYZAPE": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f35",
+      "category": "name",
+      "text": "رُوجِين",
+      "use": "rating"
+    },
+    "BPGKUE4R": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-030",
+      "category": "number",
+      "text": "الرقم ثلاثون",
+      "use": "rating"
+    },
+    "AN4H6LBO": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m26",
+      "category": "name",
+      "text": "جُورْج",
+      "use": "rating"
+    },
+    "SYL5ZH2K": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "number-111",
+      "category": "number",
+      "text": "الرقم مئة وأحد عشر",
+      "use": "rating"
+    },
+    "GISDCEYX": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m06",
+      "category": "name",
+      "text": "حُسَيْن",
+      "use": "rating"
+    },
+    "E66IHWY7": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f36",
+      "category": "name",
+      "text": "بِيرِيفَان",
+      "use": "rating"
+    },
+    "J2JASKFW": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-f41",
+      "category": "name-plain",
+      "text": "آيلين",
+      "use": "rating"
+    },
+    "YZHYQVL7": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-f31",
+      "category": "name",
+      "text": "تَسْنِيم",
+      "use": "rating"
+    },
+    "LY4JAHGD": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "room-4",
+      "category": "room",
+      "text": "إلى العيادة رقم أربعة",
+      "use": "rating"
+    },
+    "7OQT47AA": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m28",
+      "category": "name",
+      "text": "رَيَّان",
+      "use": "rating"
+    },
+    "HOWX7SKB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-m37",
+      "category": "name",
+      "text": "أَرْسْلَان",
+      "use": "rating"
+    },
+    "HT6ROLJB": {
+      "provider": "silma",
+      "voice": "default",
+      "clipId": "name-plain-m15",
+      "category": "name-plain",
+      "text": "لؤي",
+      "use": "rating"
+    }
+  },
+  "pairs": []
+}

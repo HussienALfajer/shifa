@@ -1,5 +1,13 @@
 export { makeChime } from './chime.ts';
 export { type GenerateOptions, type GenerateResult, generate } from './generate.ts';
+export * from './listening-schemas.ts';
+export {
+  type BuiltListeningSet,
+  buildListeningSet,
+  type ListeningInput,
+  VOICE_GENDERS,
+  writeListeningSet,
+} from './listening-set.ts';
 export {
   checkCompleteness,
   type Manifest,

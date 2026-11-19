@@ -12,7 +12,10 @@
     "check-no-keys": "node scripts/check-no-keys.ts",
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test:spike": "vitest run"
+    "test:spike": "vitest run",
+    "listening-set": "node scripts/build-listening-set.ts",
+    "measure-gaps": "node scripts/measure-gaps.ts",
+    "pack-size": "node scripts/pack-size.ts"
   },
   "dependencies": {
     "@shifa/testing": "workspace:*",

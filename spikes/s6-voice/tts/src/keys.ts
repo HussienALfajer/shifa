@@ -18,8 +18,10 @@ const PATTERNS: [KeyFinding['kind'], RegExp][] = [
   ],
   [
     // No leading word boundary: S6_AZURE_KEY=…, "apiKey": "…", "ocp-apim-subscription-key":"…".
+    // A value that goes on into a member access or a call (`key = listeningKeySchema.parse(`) is
+    // code, not a secret; a key at the end of a sentence (`key=…xyz.`) still matches.
     'generic-key',
-    /(?:api[_-]?key|subscription[_-]?key|access[_-]?key|secret|key)["']?\s*[=:]\s*["']?[A-Za-z0-9_\-+/]{16,}/giu,
+    /(?:api[_-]?key|subscription[_-]?key|access[_-]?key|secret|key)["']?\s*[=:]\s*["']?[A-Za-z0-9_\-+/]{16,}(?![A-Za-z0-9_\-+/(]|\.[A-Za-z_$])/giu,
   ],
 ];
 

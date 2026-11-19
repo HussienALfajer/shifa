@@ -1,0 +1,247 @@
+{
+  "setHash": "0837814499865b20",
+  "seed": 1364424875,
+  "startedAt": "2026-11-19T16:57:33.809Z",
+  "finishedAt": "2026-11-19T17:08:33.731Z",
+  "voices": [
+    {
+      "voiceId": "silma/default",
+      "provider": "silma",
+      "voice": "default",
+      "naturalness": {
+        "all": {
+          "n": 177,
+          "mean": 4.1412,
+          "sd": 1.2869
+        },
+        "byCategory": {
+          "doctor": {
+            "n": 2,
+            "mean": 4,
+            "sd": 0
+          },
+          "name": {
+            "n": 100,
+            "mean": 4.02,
+            "sd": 1.4141
+          },
+          "name-plain": {
+            "n": 20,
+            "mean": 3.65,
+            "sd": 1.4965
+          },
+          "number": {
+            "n": 50,
+            "mean": 4.68,
+            "sd": 0.7126
+          },
+          "room": {
+            "n": 5,
+            "mean": 3.2,
+            "sd": 0.4472
+          }
+        }
+      },
+      "wrongNumbers": [],
+      "wrongNames": [
+        {
+          "clipId": "name-f08",
+          "text": "رُؤَى",
+          "note": ""
+        },
+        {
+          "clipId": "name-f10",
+          "text": "دُعَاء",
+          "note": ""
+        },
+        {
+          "clipId": "name-f12",
+          "text": "هِبَة",
+          "note": ""
+        },
+        {
+          "clipId": "name-f13",
+          "text": "رَنَا",
+          "note": ""
+        },
+        {
+          "clipId": "name-f17",
+          "text": "هُدَى",
+          "note": ""
+        },
+        {
+          "clipId": "name-f25",
+          "text": "لَارَا",
+          "note": ""
+        },
+        {
+          "clipId": "name-f28",
+          "text": "رُبَى",
+          "note": ""
+        },
+        {
+          "clipId": "name-f30",
+          "text": "غِنَى",
+          "note": ""
+        },
+        {
+          "clipId": "name-f33",
+          "text": "مَلَك",
+          "note": ""
+        },
+        {
+          "clipId": "name-f34",
+          "text": "جُودِي",
+          "note": ""
+        },
+        {
+          "clipId": "name-f42",
+          "text": "دِيلَك",
+          "note": ""
+        },
+        {
+          "clipId": "name-f43",
+          "text": "أَيْتَن",
+          "note": ""
+        },
+        {
+          "clipId": "name-f46",
+          "text": "رَشَا",
+          "note": ""
+        },
+        {
+          "clipId": "name-f48",
+          "text": "لَمَى",
+          "note": ""
+        },
+        {
+          "clipId": "name-m05",
+          "text": "حَسَن",
+          "note": ""
+        },
+        {
+          "clipId": "name-m07",
+          "text": "خَالِد",
+          "note": ""
+        },
+        {
+          "clipId": "name-m12",
+          "text": "بَشَّار",
+          "note": ""
+        },
+        {
+          "clipId": "name-m13",
+          "text": "غَسَّان",
+          "note": ""
+        },
+        {
+          "clipId": "name-m31",
+          "text": "آزَاد",
+          "note": ""
+        },
+        {
+          "clipId": "name-m32",
+          "text": "بَهُوز",
+          "note": ""
+        },
+        {
+          "clipId": "name-m35",
+          "text": "آدَار",
+          "note": ""
+        },
+        {
+          "clipId": "name-m38",
+          "text": "تُورْغُوت",
+          "note": ""
+        },
+        {
+          "clipId": "name-m42",
+          "text": "أَرْطُغْرُل",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-f01",
+          "text": "فاطمة",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-f08",
+          "text": "رؤى",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-f25",
+          "text": "لارا",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-m15",
+          "text": "لؤي",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-m26",
+          "text": "جورج",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-m31",
+          "text": "آزاد",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-m36",
+          "text": "أرمانج",
+          "note": ""
+        },
+        {
+          "clipId": "name-plain-m37",
+          "text": "أرسلان",
+          "note": ""
+        }
+      ],
+      "pairs": {
+        "wins": 0,
+        "losses": 0,
+        "ties": 0
+      }
+    }
+  ],
+  "tashkeel": {
+    "all": {
+      "diacritised": {
+        "judged": 20,
+        "wrong": 3,
+        "rate": 0.15
+      },
+      "plain": {
+        "judged": 20,
+        "wrong": 8,
+        "rate": 0.4
+      }
+    },
+    "byVoice": {
+      "silma/default": {
+        "diacritised": {
+          "judged": 20,
+          "wrong": 3,
+          "rate": 0.15
+        },
+        "plain": {
+          "judged": 20,
+          "wrong": 8,
+          "rate": 0.4
+        }
+      }
+    }
+  },
+  "ratedClips": 177,
+  "pairsJudged": 0,
+  "decision": {
+    "kind": "accepted",
+    "voiceId": "silma/default",
+    "mean": 4.1412,
+    "wrongNumbers": [],
+    "reason": "no wrong number and mean naturalness 4.14 ≥ 3.5"
+  }
+}

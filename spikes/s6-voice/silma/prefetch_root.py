@@ -3,8 +3,10 @@
 package downloads the zip itself at run time, unhashed, into site-packages (security review)."""
 
 import hashlib
+import http.client
 import io
 import sys
+import time
 import urllib.request
 import zipfile
 from importlib.resources import files
@@ -15,12 +17,26 @@ URL = "https://github.com/abjadai/catt/releases/download/v2/eo_model_onnx.zip"
 SHA256 = "5343bfdfda70c981b587811b79348b8dde91f65c0a551ca98f232ea5cb62ceac"
 
 
+def fetch(attempts: int = 5) -> bytes:
+    """A cut download fails the hash; on a link that drops, try again a few times."""
+    got = ""
+    for attempt in range(1, attempts + 1):
+        try:
+            with urllib.request.urlopen(URL, timeout=600) as res:  # noqa: S310 - fixed https URL
+                data = res.read()
+        except (OSError, http.client.HTTPException) as error:  # a cut body raises IncompleteRead
+            print(f"attempt {attempt} failed ({type(error).__name__})")
+        else:
+            got = hashlib.sha256(data).hexdigest()
+            if got == SHA256:
+                return data
+            print(f"attempt {attempt}: SHA-256 mismatch {got}")
+        time.sleep(min(60, 5 * attempt))
+    sys.exit(f"eo_model_onnx.zip not fetched intact after {attempts} attempts (last {got})")
+
+
 def main() -> None:
-    with urllib.request.urlopen(URL, timeout=600) as res:  # noqa: S310 - fixed https URL
-        data = res.read()
-    got = hashlib.sha256(data).hexdigest()
-    if got != SHA256:
-        sys.exit(f"eo_model_onnx.zip SHA-256 mismatch: {got}")
+    data = fetch()
     target = Path(str(files("catt_tashkeel"))) / "onnx_models" / "eo_model"
     target.mkdir(parents=True, exist_ok=True)
     with zipfile.ZipFile(io.BytesIO(data)) as zf:

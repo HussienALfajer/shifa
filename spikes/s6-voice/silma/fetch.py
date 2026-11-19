@@ -6,6 +6,7 @@ in a separate step with HF_HUB_OFFLINE=1 (warmup.py), so nothing is ever resolve
 import hashlib
 import os
 import sys
+import time
 
 from huggingface_hub import hf_hub_download
 
@@ -43,11 +44,24 @@ def sha256(path: str) -> str:
     return h.hexdigest()
 
 
+def download(repo: str, name: str, commit: str, attempts: int = 10) -> str:
+    """hf_hub_download resumes a cut download from its .incomplete file; retry on a dropped link."""
+    for attempt in range(1, attempts + 1):
+        try:
+            return hf_hub_download(repo, name, revision=commit)
+        except Exception as error:  # noqa: BLE001 - network errors come in many types
+            if attempt == attempts:
+                raise
+            print(f"{repo}/{name}: attempt {attempt} failed ({type(error).__name__}); retrying")
+            time.sleep(min(60, 5 * attempt))
+    raise AssertionError("unreachable")
+
+
 def main() -> None:
     hub = os.path.join(os.environ["HF_HOME"], "hub")
     for repo, commit, pinned in PINS:
         for name, expected in pinned.items():
-            path = hf_hub_download(repo, name, revision=commit)
+            path = download(repo, name, commit)
             if expected is not None and sha256(path) != expected:
                 sys.exit(f"{repo}/{name}: SHA-256 mismatch")
             if repo == "silma-ai/silma-tts" and name == "README.md":
