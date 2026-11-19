@@ -1,6 +1,6 @@
 # Voice Calling (Waiting-Room Announcements)
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-19 · Owner: product owner
 Sources: RN-15, RN-17, RN-06
 
 Purpose: defines the waiting-room voice announcement system (نداء صوتي) that calls queue numbers into rooms. Calls are made in natural Syrian Arabic, Turkish is an optional second language for Azaz, and calls keep working with no internet. Audio is generated ahead of time on our servers and played locally on the display device. It is never synthesised at call time on the device (ADR-0020). Built in **Phase A**, together with [scheduling and queue](scheduling-queue.md).
@@ -17,15 +17,15 @@ Related: [scheduling and queue](scheduling-queue.md) · [patient app](patient-ap
 
 ## 2. Audio generation (server side, outside Syria)
 
-- VOX-06 Voice packs are generated once per language and voice, with Azure neural TTS `ar-SY` voices (Laith/Amany) as the primary and `tr-TR` voices for Turkish. Each pack contains:
+- VOX-06 Voice packs are generated once per language and voice by self-hosted SILMA TTS v1 with its default voice (ADR-0037; no cloud vendor). The Turkish voice is open (OD-11). Each pack contains:
   - the chime;
   - "الرقم N" for N = 1–999 as full-phrase clips, so Arabic number grammar is fixed at generation and never assembled at runtime;
   - connector phrases.
   Packs are versioned with a manifest of hashes [RN-15 §5, §11].
 - VOX-07 A clinic's room and doctor phrases are generated when the clinic configures its rooms. Staff preview them before they are published.
 - VOX-08 Name clips are optional and generated when a patient is registered or booked, never at call time. The pipeline is: shared name lexicon → automatic diacritisation (tashkeel) → receptionist preview and correction → TTS → a global cache keyed by a hash of the diacritised text, shared across tenants, with no patient link stored in the cache.
-- VOX-09 TTS sits behind a `TtsProvider` interface (Azure, Google, self-hosted SILMA as fallback), so changing provider only triggers regeneration [RN-15 §6].
-- VOX-10 Clinic devices only download audio files from Shifa servers. They never call TTS vendors directly, because vendor access from inside Syria is restricted [RN-15 §5].
+- VOX-09 TTS sits behind a `TtsProvider` interface (SILMA in use; Azure and Google adapters exist from spike S6 but are unused), so changing provider only triggers regeneration [RN-15 §6].
+- VOX-10 Clinic devices only download audio files from Shifa servers. They never generate audio or call a TTS service themselves [RN-15 §5].
 
 ## 3. Display client
 
@@ -66,6 +66,8 @@ Related: [scheduling and queue](scheduling-queue.md) · [patient app](patient-ap
 4. Test autoplay, service-worker caching and Wake Lock on 2–3 cheap Android TV boxes sold locally.
 
 Spike 0.3-S6 ([spec](../specs/spikes/0.3-s6-voice.md)) narrows this (OD-50): the owner is the only listener and decides vendor and voice; playback is tested in Chromium and an Android TV emulator. Item 3 stays open in OD-11, and item 4 on a real box must pass before the first pilot.
+
+Result (2026-11-19, [report](../spikes/s6-voice.md)): the owner chose SILMA only (OD-51) and accepted it (no wrong number, mean naturalness 4.14 of 5); names were the weak spot and tashkeel helped, so VOX-02's number-only default and VOX-08's preview stay. On an Android TV emulator, Fully Kiosk's free version played cached calls with no tap, offline and gapless (VOX-11 to VOX-18 confirmed there); the start URL is the only setting a clinic needs for playback.
 
 ## Key entities
 

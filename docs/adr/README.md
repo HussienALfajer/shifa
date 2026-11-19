@@ -73,3 +73,4 @@ What we will do, stated precisely.
 | [0033](0033-pre-pr-fast-verify-ci-full-gate.md) | Before a PR, fast `verify` locally; CI's `verify (full)` is the full gate (full locally only for build/boot, DB harness, drift, CI) | Accepted |
 | [0034](0034-arabic-output-and-name-search.md) | Arabic output and name search: Gotenberg 8 settings, Vazirmatn, roll-paper and thermal raster rules, one normaliser with shared vectors, stored key; amends 0021 | Accepted |
 | [0035](0035-imaging-storage-upload-and-edge-push.md) | Imaging storage, upload and edge push: Garage bucket and key per tenant, encrypted objects, own chunked resumable upload, Transfers through the gateway with an edge queue; amends 0019 | Accepted |
+| [0037](0037-voice-silma-self-hosted.md) | Voice calling with self-hosted SILMA TTS and no cloud vendor; generation, fallback, normalisation and display playback rules; amends 0020 | Proposed |
