@@ -27,11 +27,13 @@ export function createStore(dir: string): JsonlStore {
     append: (file, record) => {
       const path = pathOf(file);
       const line = `${JSON.stringify(record)}\n`;
-      chain = chain.then(async () => {
+      const write = chain.then(async () => {
         await mkdir(join(path, '..'), { recursive: true });
         await appendFile(path, line, 'utf8');
       });
-      return chain;
+      // A failed write (say a transient EBUSY on Windows) fails only its own caller.
+      chain = write.catch(() => undefined);
+      return write;
     },
     readAll: async <T>(file: LogFile | StateFile) => {
       await chain;

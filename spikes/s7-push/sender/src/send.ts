@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { appendFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
-import { type Kind, type Receiver, type StoredDevice } from '@shifa-spike/s7-receiver';
+import { hashToken, type Kind, type Receiver, type StoredDevice } from '@shifa-spike/s7-receiver';
 import { resolveTargets } from './devices.ts';
 import { buildMessage, labelFor, textFor, validateLabel } from './payload.ts';
 
@@ -74,10 +74,9 @@ function classify(status: number, body: unknown): Outcome {
   const code = err?.details?.find((d) => d.errorCode)?.errorCode;
   const fields = err?.details?.flatMap((d) => d.fieldViolations ?? []).map((v) => v.field) ?? [];
   const error = code ?? err?.status ?? `HTTP ${String(status)}`;
+  // Only FCM's own verdict on the token kills a device; a bare 404 (wrong base URL) does not.
   const dead =
-    code === 'UNREGISTERED' ||
-    status === 404 ||
-    (error === 'INVALID_ARGUMENT' && fields.includes('message.token'));
+    code === 'UNREGISTERED' || (error === 'INVALID_ARGUMENT' && fields.includes('message.token'));
   return { status, error, dead, retry: status === 429 || status >= 500 };
 }
 
@@ -89,11 +88,18 @@ export function createSender(deps: SenderDeps) {
   const url = `${deps.fcmBaseUrl}/v1/projects/${deps.projectId}/messages:send`;
 
   const post = async (body: unknown): Promise<Outcome> => {
+    let accessToken: string;
+    try {
+      accessToken = await deps.getToken();
+    } catch {
+      // A refused or unreadable key is not a network loss: logged as `auth`, never retried.
+      return { status: null, error: 'auth', dead: false, retry: false };
+    }
     try {
       const res = await fetch(url, {
         method: 'POST',
         headers: {
-          authorization: `Bearer ${await deps.getToken()}`,
+          authorization: `Bearer ${accessToken}`,
           'content-type': 'application/json; charset=utf-8',
         },
         body: JSON.stringify(body),
@@ -137,7 +143,14 @@ export function createSender(deps: SenderDeps) {
       if (!outcome.retry || attempts > MAX_RETRIES) break;
       await sleep(BASE_DELAY_MS * 2 ** (attempts - 1));
     }
-    if (outcome.dead) await deps.receiver.markDead(device.installId, outcome.error ?? 'dead');
+    if (outcome.dead) {
+      // The hash of the token this send used, not of a token reported meanwhile.
+      await deps.receiver.markDead(
+        device.installId,
+        outcome.error ?? 'dead',
+        hashToken(device.token),
+      );
+    }
 
     const line: SendLogLine = {
       s7id,

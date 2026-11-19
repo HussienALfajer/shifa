@@ -115,7 +115,8 @@ export async function startServer(opts: ServerOptions): Promise<ReceiverServer> 
           status: res.statusCode,
           ms: Date.now() - started,
         };
-        void receiver.store.append('requests', line);
+        // A lost request-log line must never take the receiver down.
+        receiver.store.append('requests', line).catch(() => undefined);
       });
   });
   const host = opts.host ?? '127.0.0.1';

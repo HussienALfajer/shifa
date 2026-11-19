@@ -29,6 +29,9 @@ class MessageLog {
   final ClockOffset clock;
   final DateTime Function() _now;
 
+  /// Dedupe check and append run one at a time, so two paths cannot both log one s7id.
+  final _serial = SerialQueue();
+
   Future<bool> _seen(String s7id) async {
     for (final line in await store.lines(messageLogFile)) {
       final entry = jsonDecode(line) as Map<String, Object?>;
@@ -41,6 +44,12 @@ class MessageLog {
   /// terminated; [path] is foreground, background (handler) or opened (from the tray).
   /// Returns whether it was new.
   Future<bool> record(
+    PushMessage message, {
+    required String appState,
+    required String path,
+  }) => _serial.run(() => _record(message, appState: appState, path: path));
+
+  Future<bool> _record(
     PushMessage message, {
     required String appState,
     required String path,

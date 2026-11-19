@@ -3,6 +3,17 @@
 // `MemoryStore` is the same contract in memory for tests.
 import 'dart:io';
 
+/// Runs jobs one at a time, in order; a failed job does not block the next.
+class SerialQueue {
+  Future<void> _tail = Future<void>.value();
+
+  Future<T> run<T>(Future<T> Function() job) {
+    final result = _tail.then((_) => job());
+    _tail = result.then<void>((_) {}, onError: (_) {});
+    return result;
+  }
+}
+
 abstract interface class ProbeStore {
   Future<String?> read(String name);
   Future<void> write(String name, String content);
@@ -46,7 +57,8 @@ class FileStore implements ProbeStore {
   @override
   Future<void> write(String name, String content) async {
     // Write then rename, so a reader in the other isolate never sees half a file.
-    final tmp = _file('$name.tmp');
+    // A unique temp name: the background isolate may write the same file at the same time.
+    final tmp = _file('$name.${DateTime.now().microsecondsSinceEpoch}.tmp');
     await tmp.writeAsString(content, flush: true);
     await tmp.rename(_file(name).path);
   }

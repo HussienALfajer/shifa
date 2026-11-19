@@ -22,7 +22,8 @@ export interface Receiver {
   devices: () => Promise<StoredDevice[]>;
   addReceipt: (receipt: Receipt) => Promise<void>;
   receipts: () => Promise<StoredReceipt[]>;
-  markDead: (installId: string, reason: string) => Promise<void>;
+  /** `tokenHash` is the hash of the token FCM refused; default: the latest reported token. */
+  markDead: (installId: string, reason: string, tokenHash?: string) => Promise<void>;
   /** Dead until the install reports a token other than the one FCM refused. */
   isDead: (installId: string) => Promise<boolean>;
 }
@@ -62,11 +63,11 @@ export function openReceiver(dir: string, now: () => Date = () => new Date()): R
       await store.append('receipts', stored);
     },
     receipts: () => store.readAll<StoredReceipt>('receipts'),
-    markDead: async (installId, reason) => {
+    markDead: async (installId, reason, tokenHash) => {
       const device = (await devices()).find((d) => d.installId === installId);
       const record: DeadRecord = {
         installId,
-        tokenHash: device ? hashToken(device.token) : null,
+        tokenHash: tokenHash ?? (device ? hashToken(device.token) : null),
         reason,
         at: now().toISOString(),
       };

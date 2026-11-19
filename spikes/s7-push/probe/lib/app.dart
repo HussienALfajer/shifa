@@ -101,6 +101,14 @@ class _ProbeHomeState extends State<ProbeHome> {
   @override
   void initState() {
     super.initState();
+    // Registered before any await, so a hide during start-up is never missed.
+    _lifecycle = AppLifecycleListener(
+      onResume: () {
+        inbox?.setForeground(foreground: true);
+        unawaited(_report());
+      },
+      onHide: () => inbox?.setForeground(foreground: false),
+    );
     unawaited(_boot());
   }
 
@@ -154,14 +162,10 @@ class _ProbeHomeState extends State<ProbeHome> {
     if (initial != null) {
       await logger.record(initial, appState: 'terminated', path: 'opened');
     }
-    _lifecycle = AppLifecycleListener(
-      onResume: () {
-        inbox?.setForeground(foreground: true);
-        unawaited(_report());
-      },
-      onHide: () => inbox?.setForeground(foreground: false),
+    final lifecycle = WidgetsBinding.instance.lifecycleState;
+    box.open(
+      foreground: lifecycle == null || lifecycle == AppLifecycleState.resumed,
     );
-    box.open();
     await _report();
   }
 
@@ -171,7 +175,11 @@ class _ProbeHomeState extends State<ProbeHome> {
       appState: 'foreground',
       path: 'foreground',
     );
-    if (isNew && s.showForeground) await s.channels.show(m, channelFor(m));
+    // Silent sync (data-only) is logged, never shown.
+    final visible = m.kind != 'sync' && (m.title != null || m.body != null);
+    if (isNew && visible && s.showForeground) {
+      await s.channels.show(m, channelFor(m));
+    }
   }
 
   /// Every open, resume and permission change reports the device state (PAT-21).

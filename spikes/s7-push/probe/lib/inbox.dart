@@ -65,17 +65,28 @@ class InboxController extends ChangeNotifier {
   DateTime? lastFetch;
   Timer? _timer;
   var _disposed = false;
+  var _foreground = true;
 
-  /// On app open: show the cache at once, fetch, then poll while in the foreground.
-  void open() => unawaited(_open());
+  /// On app open: show the cache at once, fetch, then poll while in the foreground. Opened in
+  /// the background (the app was hidden during start-up), it fetches once and does not poll.
+  void open({bool foreground = true}) {
+    _foreground = foreground;
+    unawaited(_open());
+  }
 
   Future<void> _open() async {
     await _loadCache();
-    setForeground(foreground: true);
+    // A pause during the cache read wins over the state passed to open().
+    if (_foreground) {
+      setForeground(foreground: true);
+    } else {
+      await refresh();
+    }
   }
 
   /// Resume fetches at once and polls; pause stops polling (no background polling).
   void setForeground({required bool foreground}) {
+    _foreground = foreground;
     _timer?.cancel();
     _timer = null;
     if (!foreground || _disposed) return;

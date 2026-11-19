@@ -12,6 +12,9 @@ class Outbox {
 
   final ProbeStore store;
 
+  /// Read-modify-write of the queue file, one at a time within this isolate.
+  final _serial = SerialQueue();
+
   Future<List<Map<String, Object?>>> _load() async {
     final text = await store.read(outboxFile);
     if (text == null || text.isEmpty) return [];
@@ -25,17 +28,22 @@ class Outbox {
       store.write(outboxFile, jsonEncode(entries));
 
   /// Queues [body] for `/devices` (kind `device`) or `/receipts` (kind `receipt`).
-  Future<void> add(String kind, Map<String, Object?> body) async {
+  Future<void> add(String kind, Map<String, Object?> body) =>
+      _serial.run(() => _add(kind, body));
+
+  Future<void> _add(String kind, Map<String, Object?> body) async {
     final entries = await _load();
     if (kind == 'device') entries.removeWhere((e) => e['kind'] == 'device');
     entries.add({'kind': kind, 'body': body});
     await _save(entries);
   }
 
-  Future<int> get length async => (await _load()).length;
+  Future<int> get length => _serial.run(() async => (await _load()).length);
 
   /// Sends queued entries in order; stops at the first failure. Returns how many were sent.
-  Future<int> flush(ReceiverApi api) async {
+  Future<int> flush(ReceiverApi api) => _serial.run(() => _flush(api));
+
+  Future<int> _flush(ReceiverApi api) async {
     final entries = await _load();
     var sent = 0;
     try {
