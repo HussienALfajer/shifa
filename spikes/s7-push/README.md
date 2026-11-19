@@ -12,7 +12,7 @@ the owner's Firebase project on emulators. Synthetic data only.
 | `probe/` (Flutter, standalone) | Android probe app `dev.shifa.spike.s7push` (flavor `compliant`) and `….noshow` (flavor `noshow`, criterion 5). |
 
 ## Files that must never be committed (ADR-0026)
-All are git-ignored; the key-leak check also fails if one is tracked.
+All are git-ignored, also under the default names the Firebase and Cloud consoles and `flutterfire` give them (`*-firebase-adminsdk-*.json`, `<project>-<hash>.json`, per-flavor `google-services.json`, `firebase_options.dart`), and so are archives and dumps under the spike. The key-leak check fails if one is tracked; it runs in the sender's `lint`, so `pnpm verify` and PR CI run it.
 
 | File | Holds |
 |---|---|
@@ -33,7 +33,8 @@ Reports show a 12-character SHA-256 prefix of a token, never the token.
    `pnpm send --kind reminder --appointment appt-1 --to all [--at <iso>] [--count 20] [--no-collapse] [--ttl-to <iso>]`.
    Kinds: `reminder`, `turn-near`, `call-in` (visible, high priority, channel "مواعيد") and
    `sync` (data-only, normal priority).
-4. Before any commit: `node scripts/check-no-secrets.ts` from `sender/`.
+4. Before any commit: `node scripts/check-no-secrets.ts` from `sender/` (also in `pnpm verify`). It cannot read archives or files over 64 MiB and fails on them: split or summarise run logs.
+5. `S7_FCM_BASE_URL` and `S7_TOKEN_URL` must be `https` (plain `http` only to `127.0.0.1`); a Google token is only ever sent to Google FCM. The probe's `S7_RECEIVER` must be `https` or `http` to `10.0.2.2`/`127.0.0.1`.
 
 ## Tests (no Firebase, no emulator)
 - `pnpm run test:spike` in `receiver/` and `sender/` (fake FCM and fake token endpoint).

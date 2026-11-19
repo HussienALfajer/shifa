@@ -42,15 +42,40 @@ export function loadServiceAccount(file: string): ServiceAccount {
   return sa as ServiceAccount;
 }
 
+const LOOPBACK = new Set(['127.0.0.1', 'localhost', '[::1]']);
+
+/** HTTPS, or plain HTTP to this machine only (a fake): the token and key never go in clear. */
+export function checkUrl(name: string, value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value);
+  } catch {
+    throw new Error(`${name} is not a URL`);
+  }
+  if (url.protocol !== 'https:' && !(url.protocol === 'http:' && LOOPBACK.has(url.hostname)))
+    throw new Error(`${name} must be https (http only to 127.0.0.1)`);
+  return value.replace(/\/+$/, '');
+}
+
+const isGoogle = (value: string) => {
+  const host = new URL(value).hostname;
+  return host === 'googleapis.com' || host.endsWith('.googleapis.com');
+};
+
 export function loadConfig(env: Record<string, string> = readEnvLocal()): SenderConfig {
   const file = env['S7_SERVICE_ACCOUNT_FILE'];
   if (!file) throw new Error('S7_SERVICE_ACCOUNT_FILE is not set in .env.local');
   const serviceAccount = loadServiceAccount(file);
-  return {
-    serviceAccount,
-    tokenUrl:
-      env['S7_TOKEN_URL'] ?? serviceAccount.token_uri ?? 'https://oauth2.googleapis.com/token',
-    fcmBaseUrl: env['S7_FCM_BASE_URL'] ?? 'https://fcm.googleapis.com',
-    outDir: env['S7_OUT_DIR'] ?? DEFAULT_OUT_DIR,
-  };
+  const tokenUrl = checkUrl(
+    'S7_TOKEN_URL',
+    env['S7_TOKEN_URL'] ?? serviceAccount.token_uri ?? 'https://oauth2.googleapis.com/token',
+  );
+  const fcmBaseUrl = checkUrl(
+    'S7_FCM_BASE_URL',
+    env['S7_FCM_BASE_URL'] ?? 'https://fcm.googleapis.com',
+  );
+  // A real Google access token must only ever go to Google's FCM endpoint.
+  if (isGoogle(tokenUrl) && !isGoogle(fcmBaseUrl))
+    throw new Error('S7_FCM_BASE_URL must be Google FCM when the token comes from Google');
+  return { serviceAccount, tokenUrl, fcmBaseUrl, outDir: env['S7_OUT_DIR'] ?? DEFAULT_OUT_DIR };
 }

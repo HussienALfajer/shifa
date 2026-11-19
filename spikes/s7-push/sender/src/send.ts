@@ -180,6 +180,8 @@ export function createSender(deps: SenderDeps) {
         for (let i = 0; i < (req.count ?? 1); i += 1) {
           const line = await sendOne(device, req);
           lines.push(line);
+          // A refused key fails every later send too: stop instead of hammering the token URL.
+          if (line.error === 'auth') return lines;
           if (await deps.receiver.isDead(device.installId)) break;
         }
       }

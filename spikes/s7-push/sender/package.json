@@ -10,7 +10,7 @@
     "send": "node src/cli.ts send",
     "check:secrets": "node scripts/check-no-secrets.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "lint": "eslint .",
+    "lint": "eslint . && node scripts/check-no-secrets.ts",
     "test:spike": "vitest run"
   },
   "dependencies": {

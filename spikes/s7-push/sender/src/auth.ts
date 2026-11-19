@@ -61,6 +61,12 @@ export function createTokenProvider(opts: TokenProviderOptions): TokenProvider {
   const fetchToken = async (): Promise<string> => {
     const issuedAt = now();
     log('token: requesting an access token');
+    let assertion: string;
+    try {
+      assertion = signAssertion(opts.serviceAccount, opts.tokenUrl, issuedAt);
+    } catch {
+      throw new Error('service-account private key cannot sign (malformed key)');
+    }
     let res: Response;
     try {
       res = await fetch(opts.tokenUrl, {
@@ -68,7 +74,7 @@ export function createTokenProvider(opts: TokenProviderOptions): TokenProvider {
         headers: { 'content-type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
-          assertion: signAssertion(opts.serviceAccount, opts.tokenUrl, issuedAt),
+          assertion,
         }).toString(),
       });
     } catch {

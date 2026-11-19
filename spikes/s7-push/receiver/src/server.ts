@@ -52,12 +52,27 @@ function json(res: ServerResponse, status: number, body: unknown) {
 /** The live-queue line comes from the poll, not from push (MSG-30). Synthetic and fixed. */
 const QUEUE = { ahead: 3, text: 'دورك بعد ٣' };
 
+/**
+ * Only the host machine, the emulator and the local tools may talk to the receiver: no browser
+ * page (any `Origin`), no rebound DNS name (`Host` must be a loopback or emulator address), and
+ * writes only as `application/json` (a cross-site form post cannot set it without a preflight).
+ */
+function guard(req: IncomingMessage): void {
+  if (req.headers.origin !== undefined) throw new HttpError(403, 'browser requests are refused');
+  const host = (req.headers.host ?? '').replace(/:\d+$/, '');
+  if (!['127.0.0.1', 'localhost', '10.0.2.2', '[::1]'].includes(host))
+    throw new HttpError(403, 'unexpected host');
+  if (req.method === 'POST' && !(req.headers['content-type'] ?? '').startsWith('application/json'))
+    throw new HttpError(415, 'application/json required');
+}
+
 async function route(
   receiver: Receiver,
   req: IncomingMessage,
   res: ServerResponse,
   now: () => Date,
 ): Promise<void> {
+  guard(req);
   const url = new URL(req.url ?? '/', 'http://receiver.local');
   const key = `${req.method ?? 'GET'} ${url.pathname}`;
   switch (key) {

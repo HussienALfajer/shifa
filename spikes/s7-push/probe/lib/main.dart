@@ -22,12 +22,30 @@ import 'package:s7_push_probe/receiver_api.dart';
 import 'package:s7_push_probe/store.dart';
 
 const appVersion = '0.0.1';
-final Uri receiverUrl = Uri.parse(
+final Uri receiverUrl = checkedReceiverUrl(
   const String.fromEnvironment(
     'S7_RECEIVER',
     defaultValue: 'http://10.0.2.2:8787',
   ),
 );
+
+/// The probe posts its full FCM token: plain HTTP only to the host machine (the emulator's
+/// 10.0.2.2, or loopback through `adb reverse`), HTTPS anywhere else. Android's network security
+/// config does not limit dart:io, so the check lives here.
+Uri checkedReceiverUrl(String value) {
+  final url = Uri.parse(value);
+  const local = {'10.0.2.2', '127.0.0.1', 'localhost'};
+  if (url.scheme == 'https' ||
+      (url.scheme == 'http' && local.contains(url.host))) {
+    return url;
+  }
+  throw ArgumentError.value(
+    value,
+    'S7_RECEIVER',
+    'must be https, or http to 10.0.2.2 / 127.0.0.1',
+  );
+}
+
 const _settings = MethodChannel('dev.shifa.spike.s7push/settings');
 
 Future<FileStore> _store() async =>

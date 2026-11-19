@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:s7_push_probe/app.dart';
 import 'package:s7_push_probe/clock.dart';
 import 'package:s7_push_probe/inbox.dart';
+import 'package:s7_push_probe/main.dart' show checkedReceiverUrl;
 import 'package:s7_push_probe/message_log.dart';
 import 'package:s7_push_probe/outbox.dart';
 import 'package:s7_push_probe/push_client.dart';
@@ -98,6 +99,16 @@ void main() {
     expect(results, [true, false, true]);
     expect(await store.lines(messageLogFile), hasLength(2));
     expect(await outbox.length, 2);
+  });
+
+  test('the receiver URL is https, or http only to the host machine', () {
+    expect(checkedReceiverUrl('http://10.0.2.2:8787').host, '10.0.2.2');
+    expect(checkedReceiverUrl('http://127.0.0.1:8787').port, 8787);
+    expect(checkedReceiverUrl('https://receiver.example').scheme, 'https');
+    expect(
+      () => checkedReceiverUrl('http://192.168.1.5:8787'),
+      throwsArgumentError,
+    );
   });
 }
 
