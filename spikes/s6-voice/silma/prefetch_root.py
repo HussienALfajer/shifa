@@ -3,6 +3,7 @@
 package downloads the zip itself at run time, unhashed, into site-packages (security review)."""
 
 import hashlib
+import http.client
 import io
 import sys
 import time
@@ -23,7 +24,7 @@ def fetch(attempts: int = 5) -> bytes:
         try:
             with urllib.request.urlopen(URL, timeout=600) as res:  # noqa: S310 - fixed https URL
                 data = res.read()
-        except OSError as error:
+        except (OSError, http.client.HTTPException) as error:  # a cut body raises IncompleteRead
             print(f"attempt {attempt} failed ({type(error).__name__})")
         else:
             got = hashlib.sha256(data).hexdigest()

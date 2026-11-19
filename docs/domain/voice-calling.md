@@ -41,7 +41,7 @@ Related: [scheduling and queue](scheduling-queue.md) · [patient app](patient-ap
 ## 4. Local mode (no internet)
 
 - VOX-19 Tier 1, the recommended default for single-room clinics: the reception PC drives the TV as a second HDMI screen. The reception app and the display window talk through `BroadcastChannel`, so calling works with zero internet. Calls are logged locally and uploaded later.
-- VOX-20 Tier 2, for multi-room clinics: an Android TV box running Fully Kiosk Browser (PLUS licence, ~€6–8 one-time per device, unverified price) receives calls over the realtime channel. When the clinic is offline, the receptionist sees "the screen is not connected".
+- VOX-20 Tier 2, for multi-room clinics: an Android TV box running Fully Kiosk Browser receives calls (the free version plays calls, spike S6; PLUS, ~€6–8 one-time per device, unverified price, adds lock-down and remote admin and is a Phase A choice) over the realtime channel. When the clinic is offline, the receptionist sees "the screen is not connected".
 - VOX-21 A LAN relay box (a small local server) for multi-room offline calling (Later).
 
 ## 5. Controls
@@ -67,7 +67,7 @@ Related: [scheduling and queue](scheduling-queue.md) · [patient app](patient-ap
 
 Spike 0.3-S6 ([spec](../specs/spikes/0.3-s6-voice.md)) narrows this (OD-50): the owner is the only listener and decides vendor and voice; playback is tested in Chromium and an Android TV emulator. Item 3 stays open in OD-11, and item 4 on a real box must pass before the first pilot.
 
-Result (2026-11-19, [report](../spikes/s6-voice.md)): the owner chose SILMA only (OD-51) and accepted it (no wrong number, mean naturalness 4.14 of 5); names were the weak spot and tashkeel helped, so VOX-02's number-only default and VOX-08's preview stay. On an Android TV emulator, Fully Kiosk's free version played cached calls with no tap, offline and gapless (VOX-11 to VOX-18 confirmed there); the start URL is the only setting a clinic needs for playback.
+Result (2026-11-19, [report](../spikes/s6-voice.md)): the owner chose SILMA only (OD-51) and accepted it (no wrong number, mean naturalness 4.14 of 5); names were the weak spot and tashkeel helped, so VOX-02's number-only default and VOX-08's preview stay. On an Android TV emulator, Fully Kiosk's free version played cached calls with no tap, also with its server unreachable: VOX-11, VOX-12 (scheduling; the output was not recorded), VOX-13, VOX-16, VOX-18 and the no-tap part of VOX-17 held; the screen stayed on through Fully's own flag. Free Fully played with only the start URL set; start on boot was not tested.
 
 ## Key entities
 
