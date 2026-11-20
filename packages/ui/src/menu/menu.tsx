@@ -87,7 +87,7 @@ export function MenuTrigger(props: MenuTriggerProps) {
 
 const CONTENT = cn(
   FLOATING_BOX,
-  'flex min-w-56 max-w-(--shifa-size-popover) flex-col gap-0.5',
+  'flex w-max min-w-(--anchor-width) max-w-(--shifa-size-popover) flex-col gap-0.5',
 );
 
 export function MenuContent({

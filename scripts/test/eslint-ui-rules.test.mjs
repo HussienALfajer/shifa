@@ -189,6 +189,11 @@ describe('no-hardcoded-design-values', () => {
           code: "export const c = cn('h-(--shifa-button-height)', 'px-[var(--shifa-button-padding-inline)]');",
           options: spacingOptions,
         },
+        // The sizes UI SDK measures for a popup at run time are not design values.
+        {
+          code: "export const c2 = cn('min-w-(--anchor-width)', 'max-h-(--available-height)');",
+          options: spacingOptions,
+        },
         {
           code: "export const d = <div style={{ color: 'var(--shifa-color-text-default)', padding: 0 }} />;",
           options: spacingOptions,

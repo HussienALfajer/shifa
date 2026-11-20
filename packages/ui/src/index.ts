@@ -6,7 +6,46 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from './button/button.tsx';
+export {
+  Combobox,
+  type ComboboxItem,
+  type ComboboxProps,
+} from './combobox/combobox.tsx';
+export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
+export {
+  Dialog,
+  DialogActions,
+  DialogClose,
+  type DialogCloseProps,
+  DialogContent,
+  type DialogContentProps,
+  type DialogProps,
+  DialogTrigger,
+  type DialogTriggerProps,
+} from './dialog/dialog.tsx';
+export {
+  Menu,
+  MenuContent,
+  MenuItem,
+  type MenuItemProps,
+  type MenuProps,
+  MenuSeparator,
+  MenuTrigger,
+  type MenuTriggerProps,
+  Submenu,
+  type SubmenuProps,
+} from './menu/menu.tsx';
+export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
+export {
+  Popover,
+  PopoverContent,
+  type PopoverContentProps,
+  type PopoverProps,
+  PopoverTrigger,
+  type PopoverTriggerProps,
+} from './popover/popover.tsx';
+export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
 export {
   DIRECTIONAL_ICONS,
