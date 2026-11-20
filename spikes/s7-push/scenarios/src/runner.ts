@@ -13,7 +13,7 @@ import {
   type StateContext,
   type StateName,
 } from './states.ts';
-import { createWatcher, type ShownRecord, type Watcher } from './watcher.ts';
+import { clearTray, createWatcher, type ShownRecord, type Watcher } from './watcher.ts';
 
 export const PROBE_PKG = 'dev.shifa.spike.s7push';
 export type App = 'compliant' | 'noshow';
@@ -138,6 +138,8 @@ export async function runState(opts: RunOptions, deps: RunDeps): Promise<RunReco
   const started = deps.now();
   const info = await describeDevice(dev);
   const before = await measureSkew(dev, { hostNs: deps.hostNs });
+  const cleared = await clearTray(dev, pkg);
+  if (cleared > 0) deps.log(`${opts.state}: snoozed ${String(cleared)} old notifications`);
   deps.log(`${opts.state} on ${opts.serial} (${pkg}): setup`);
   await state.setup(ctx);
 

@@ -12,7 +12,7 @@ import {
   type RunRecord,
 } from './runner.ts';
 import { checkDrift, measureSkew } from './skew.ts';
-import { createWatcher } from './watcher.ts';
+import { clearTray, createWatcher } from './watcher.ts';
 
 const LATE_MS = 60_000;
 
@@ -75,6 +75,9 @@ export async function runDay(
       continue;
     }
     await pollUntil(watchers, deps, slot.getTime());
+    // 53 slots exceed Android's 50 notifications per package; the watcher has already recorded
+    // what is snoozed here.
+    for (const t of targets) await clearTray(t.dev, PROBE_PKG, 40);
     for (const t of targets) {
       const lines = await deps.send({
         kind: 'reminder',

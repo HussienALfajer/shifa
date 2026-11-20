@@ -68,6 +68,26 @@ export function parseNotifications(dump: string, pkg: string): Posted[] {
   return out;
 }
 
+const SNOOZE_MS = 30 * 24 * 3600_000;
+
+/**
+ * Android keeps at most 50 posted notifications per package and silently drops the rest
+ * ("Package has already posted or enqueued 50 notifications"), so runs that leave their pushes in
+ * the tray would hide later ones. Snoozing a notification takes it out of that count and out of
+ * the dump the watcher reads. Only acts when the package holds `atLeast` notifications; returns
+ * how many it snoozed.
+ */
+export async function clearTray(dev: Device, pkg: string, atLeast = 1): Promise<number> {
+  const keys = (await dev.shell('cmd notification list'))
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.split('|')[1] === pkg);
+  if (keys.length < atLeast) return 0;
+  for (const key of keys)
+    await dev.shell(`cmd notification snooze --for ${String(SNOOZE_MS)} '${key}'`);
+  return keys.length;
+}
+
 export function createWatcher(opts: { dev: Device; pkg: string; nowMs: () => number }) {
   const seen = new Map<string, ShownRecord>();
   return {
