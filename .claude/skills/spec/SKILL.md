@@ -18,7 +18,7 @@ Write the spec for: $ARGUMENTS
    - Verification contract: for every criterion, the exact test or check that proves it (unit, integration, isolation suite, browser run against the real backend, golden test).
    - Out of scope; open questions (must be empty before approval).
 4. If the feature has UI, draw its screens before asking for approval (ADR-0040; `docs/architecture/design-system.md`, "Design workflow"):
-   - in the screens canvas of the app, on the module's page, built on the Shifa design system and its components, never look-alikes or one-off styles;
+   - in the screens canvas of the app, on the module's page, with the Shifa Design System installed (README read first) and the Shifa Guide's rules kept, built on its tokens and components, never look-alikes, another system or one-off styles;
    - Arabic RTL, light and dark, at the sizes the feature needs (desktop, 10-inch tablet, phone), with synthetic names from `@shifa/testing` only;
    - a screen that needs a component the design system lacks: stop, tell the owner, and plan that component first (`/ui-component`);
    - list the screens in the spec (name, sizes, states shown) and add "browser screenshot compared with the approved drawing" to the verification contract. Do not commit artifact links (public repository).

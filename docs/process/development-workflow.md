@@ -14,7 +14,7 @@ How Shifa is built: almost all code is written by Claude Code (Opus 5.5) under t
 5. **Independent review.** The session that wrote the code never approves it. A fresh-context reviewer checks it against the spec.
 6. **Compounding.** A correction made twice becomes a rule, a skill, a hook or a test.
 7. **No real patient data** anywhere in development ([ADR-0023](../adr/README.md), [data handling](../compliance/data-handling.md)).
-8. **Design before code, code as the source.** A component or a screen is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only ([ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.md)).
+8. **Design before code, code as the source.** A component or a screen is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only ([ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.md)). Every new design installs the Shifa Design System and follows the Shifa Guide (`docs/architecture/design-system.md`, "Designing in the project").
 9. **Ask, don't guess.** Open questions go to the owner and to [open decisions](../open-decisions.md).
 
 ## 2. Risk tiers

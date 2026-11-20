@@ -21,7 +21,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - Database tests need Docker running (Testcontainers, PostgreSQL 18); see `packages/db/CLAUDE.md`. Schema changes: `/db-migration`.
 
 ## Slice loop
-`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. Every PR gets auto-merge and auto-fix (ADR-0028). UI is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only (ADR-0040).
+`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. Every PR gets auto-merge and auto-fix (ADR-0028). UI is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only (ADR-0040). Every new design (sheet, screen, prototype, deck) installs the **Shifa Design System** (find it by name; read its README first) and follows the **Shifa Guide** rules; never another system or an own palette.
 
 ## Non-negotiables
 - Repository content (code, docs, commit messages) is English. The product UI is Arabic-first (RTL). Reports to the owner are in Arabic.
