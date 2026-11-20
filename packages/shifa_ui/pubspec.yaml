@@ -1,0 +1,18 @@
+name: shifa_ui
+description: Shifa's Flutter design system. Today the tokens generated from packages/tokens; theme extensions and widgets come in slice 0.4-08.
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.13.0
+  flutter: 3.47.9
+
+resolution: workspace
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  test: ^1.33.0
+  very_good_analysis: ^11.0.0

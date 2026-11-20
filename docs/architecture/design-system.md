@@ -23,12 +23,28 @@ Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, ed
 | Brand (per clinic) | `color.brand.primary`, `color.brand.on-primary` | Generated per clinic, contrast-checked |
 | Component | `button.primary.bg`, `odontogram.planned.fill` | Design system only |
 
-Pipeline: Style Dictionary v5 builds
-- CSS custom properties and a Tailwind v4 theme for web packages;
-- a Dart class consumed by `packages/shifa_ui` (Flutter `ThemeExtension`s);
-- a drift check in CI fails if generated outputs are stale.
+Pipeline (built in slice 0.4-01): Style Dictionary v5 builds
+- CSS custom properties (`--shifa-*`: light on `:root`, then what changes under `[data-theme='dark']` and `[data-density='compact']`) and a Tailwind v4 theme for web packages;
+- Dart constants consumed by `packages/shifa_ui` (both themes, both densities; `ThemeExtension`s wrap them in slice 0.4-08);
+- the `tokens` drift check of `verify` fails if generated outputs are stale.
+
+Rules the schema test enforces (details in `packages/tokens/CLAUDE.md`):
+- A primitive holds a literal; a semantic or brand token references a primitive; a component token references a semantic or brand token.
+- Modes: every semantic and brand colour has a light and a dark value; sizes that differ between the two densities have a compact value.
+- Tailwind is given semantic and brand colours only, so a utility class cannot name a palette step.
 
 Clinical and status colours are locked tokens: odontogram statuses, perio thresholds, laterality chips, alert severities and queue statuses have one meaning everywhere.
+
+Locked set today (hues from `color.signal.*`, apart from the brand palette):
+
+| Group | Members | Parts |
+|---|---|---|
+| `color.status` | success (green), warning (amber), danger (brick), info (blue), neutral (slate) | fg, bg, border, solid, on-solid |
+| `color.sync` | saved (green), offline (slate), syncing (blue) | fg, bg |
+| `color.alert` | info (blue), warning (amber), critical (crimson) | fg, bg, border, solid, on-solid |
+| `color.queue` (SCH-18) | booked (slate), confirmed (blue), arrived (cyan), waiting (amber), in-room (violet), done (green), no-show (brick), cancelled (sand) | fg, bg |
+
+Crimson is the only red and belongs to `color.alert.critical` (principle 1 of spec 0.4), so `danger` (destructive actions, validation errors) is brick. The three alert severity names and the hue of each status are provisional until the owner sees them on real screens in slice 0.4-02. Odontogram, perio, laterality and pain colours join under `color.clinical` with their modules (Phases B–C, spike S8).
 
 ## Platform colour palette — "Damascene Jasmine" (ياسمين الشام)
 
@@ -91,12 +107,37 @@ Approximate usage weight: about 70 % jasmine and white surfaces, 20 % green (act
 
 Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is never body text. The muted text was darkened from the exploration value `#6B7A73` to `#5B6A63` so it passes AA on every surface.
 
+Contrast is declared, not guessed: `packages/tokens/src/contrast-pairs.json` lists each text or icon colour with a surface it is drawn on and its class (`body` 4.5 : 1; `large` and `ui` 3 : 1). The contrast test computes every pair in light and in dark and fails the build below the minimum; a text or icon colour that is in no pair fails the schema test. A clinic brand palette (PLT-41) must meet the pairs declared for the `color.brand.*` slots.
+
+### Dark theme (provisional, OD-56)
+
+Derived from the same palette in slice 0.4-01; the owner sees it on real screens in slice 0.4-02 and may adjust it there. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
+
+| Semantic token | Dark value |
+|---|---|
+| `color.bg.app` | `night.950` `#0E1513` |
+| `color.bg.surface` | `night.900` `#151E1B` |
+| `color.bg.surface-raised` | `night.800` `#1C2824` |
+| `color.border.default` | `night.700` `#2B3934` |
+| `color.border.strong` (light and dark) | `ink.400` `#76857E` (3 : 1 on every surface, for input outlines) |
+| `color.text.default` | `ink.100` `#E6EDE9` |
+| `color.text.muted` | `ink.300` `#A3B2AB` |
+| `color.brand.primary` / `color.border.focus` | `green.300` `#6FC3AB` |
+| `color.brand.primary-hover` / `-pressed` | `green.200` `#9AD8C5` |
+| `color.brand.on-primary` / `color.brand.on-accent` | `night.950` `#0E1513` |
+| `color.brand.primary-soft` | `green.900` `#12382F` |
+| `color.brand.accent` | `gold.400` `#D4B463` |
+| `color.brand.accent-soft` | `gold.900` `#3A2F14` |
+| `color.nav.bg` / `color.nav.text` | `green.950` `#0C2A23` / `green.50` `#E8F2EE` |
+
+Status colours in dark use the 300 step for text, 900 for the soft fill, 800 for the border and 400 for the solid fill with `night.950` text on it.
+
 ### Boundaries
 
 - The palette covers brand and neutral colours only. Clinical and status colours (alert severities, queue statuses, odontogram statuses, laterality, pain types) stay locked tokens with their own definitions and are never taken from this palette; red is reserved for clinical alerts.
 - A clinic brand colour replaces `color.brand.*` for that clinic only; neutrals and clinical tokens stay as defined here.
-- Dark mode (for evening clinics and the waiting-room display) ships with light mode: Phase 0.4 derives it from this palette, gives every semantic colour token both values and tests every component in both (OD-56).
-- The design language beyond colour (type scale, shape, elevation, density, motion, icon style) is chosen by the owner from three directions in slice 0.4-02 (OD-57) and recorded here.
+- Dark mode (for evening clinics and the waiting-room display) ships with light mode: every semantic colour token has both values (table above) and every component is tested in both (OD-56).
+- The design language beyond colour (type scale, shape, elevation, density, motion, icon style) is chosen by the owner from three directions in slice 0.4-02 (OD-57) and recorded here. Until then the tokens hold neutral defaults: sizes 12–30 px, radius 4/8/12, three small shadows, 120/180/240 ms, controls 36/44/52 px (compact 28/32/40).
 
 ## Clinic theming
 

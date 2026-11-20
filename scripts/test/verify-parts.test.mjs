@@ -56,7 +56,11 @@ describe('verify parts', () => {
   });
 
   it('splits Turborepo packages into the pub workspace and everything else', () => {
-    assert.deepEqual(dart.sort(), ['@shifa/api-client-dart', '@shifa/dart-testing']);
+    assert.deepEqual(dart.sort(), [
+      '@shifa/api-client-dart',
+      '@shifa/dart-testing',
+      '@shifa/dart-ui',
+    ]);
     assert.deepEqual(
       filters(turboOf(part('dart'))),
       dart.map((p) => `--filter=${p}`),

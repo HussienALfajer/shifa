@@ -36,6 +36,12 @@
       "trailingCommas": "all"
     }
   },
+  "overrides": [
+    {
+      "includes": ["packages/tokens/src/**/*.tokens.json"],
+      "formatter": { "lineWidth": 160 }
+    }
+  ],
   "linter": {
     "enabled": false
   },
