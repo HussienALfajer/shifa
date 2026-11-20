@@ -32,6 +32,17 @@ export const BUNDLE_COMPONENTS = [
   'Combobox',
   'NumberInput',
   'DatePicker',
+  'IconButton',
+  'Input',
+  'Textarea',
+  'PasswordInput',
+  'Checkbox',
+  'RadioGroup',
+  'Switch',
+  'OtpInput',
+  'TimeInput',
+  'Field',
+  'Form',
 ] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */

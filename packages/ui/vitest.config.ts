@@ -24,16 +24,26 @@ const optimizeDeps = {
   include: [
     'button',
     'calendar',
+    'checkbox',
     'combobox',
     'date-picker',
     'dialog',
     'field',
+    'input',
     'menu',
     'number-input',
+    'otp-input',
+    'password-input',
     'popover',
+    'radio',
     'select',
+    'switch',
     'tabs',
-  ].map((entry) => `@ui-sdk/react/${entry}`),
+    'textarea',
+    'time-input',
+  ]
+    .map((entry) => `@ui-sdk/react/${entry}`)
+    .concat(['react-hook-form', '@hookform/resolvers/zod', 'zod']),
 };
 
 export default defineConfig({

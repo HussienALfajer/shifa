@@ -6,6 +6,7 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from './button/button.tsx';
+export { Checkbox, type CheckboxProps } from './checkbox/checkbox.tsx';
 export {
   Combobox,
   type ComboboxItem,
@@ -25,6 +26,20 @@ export {
   DialogTrigger,
   type DialogTriggerProps,
 } from './dialog/dialog.tsx';
+export { Field, type FieldProps } from './field/field.tsx';
+export {
+  Form,
+  FormField,
+  type FormFieldControl,
+  type FormFieldProps,
+  type FormProps,
+  FormSubmit,
+  type FormSubmitProps,
+  type ShifaForm,
+  type Translate,
+  useShifaForm,
+} from './form/form.tsx';
+export { IconButton, type IconButtonProps } from './icon-button/icon-button.tsx';
 export {
   DIRECTIONAL_ICONS,
   HEALTH_ICONS,
@@ -33,6 +48,7 @@ export {
   type IconName,
   type IconProps,
 } from './icons/icon.tsx';
+export { Input, type InputProps } from './input/input.tsx';
 export { cn } from './lib/cn.ts';
 export { toWesternDigits } from './lib/digits.ts';
 export {
@@ -48,6 +64,11 @@ export {
   type SubmenuProps,
 } from './menu/menu.tsx';
 export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
+export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
+export {
+  PasswordInput,
+  type PasswordInputProps,
+} from './password-input/password-input.tsx';
 export {
   Popover,
   PopoverContent,
@@ -62,7 +83,14 @@ export {
   useDirection,
 } from './providers/direction-provider.tsx';
 export { type Theme, ThemeProvider, useTheme } from './providers/theme-provider.tsx';
+export {
+  Radio,
+  RadioGroup,
+  type RadioGroupProps,
+  type RadioProps,
+} from './radio/radio.tsx';
 export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
+export { Switch, type SwitchProps } from './switch/switch.tsx';
 export {
   Tab,
   TabList,
@@ -73,3 +101,5 @@ export {
   Tabs,
   type TabsProps,
 } from './tabs/tabs.tsx';
+export { Textarea, type TextareaProps } from './textarea/textarea.tsx';
+export { TimeInput, type TimeInputProps } from './time-input/time-input.tsx';

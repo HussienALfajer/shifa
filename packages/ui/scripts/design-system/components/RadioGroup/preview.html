@@ -1,0 +1,38 @@
+<!-- @dsCard group="Forms" height=460 subtitle="Vertical with a disabled option, an error, horizontal · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var VISIT = [
+    { value: 'exam', label: 'كشف' },
+    { value: 'review', label: 'مراجعة' },
+    { value: 'emergency', label: 'إسعاف' },
+    { value: 'home', label: 'زيارة منزلية (غير متاحة)', disabled: true }
+  ];
+  var GROUPS = [
+    { label: 'نوع الزيارة', items: VISIT, defaultValue: 'exam' },
+    { label: 'نوع الزيارة', items: VISIT.slice(0, 3), error: 'اختر نوع الزيارة', required: true },
+    { label: 'الجنس', orientation: 'horizontal', defaultValue: 'female', items: [{ value: 'female', label: 'أنثى' }, { value: 'male', label: 'ذكر' }] }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    GROUPS.forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'RadioGroup', props);
+    });
+  });
+</script>
+</body>
+</html>
