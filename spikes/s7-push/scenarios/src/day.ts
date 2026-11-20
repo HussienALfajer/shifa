@@ -26,6 +26,11 @@ export function daySlots(day: Date, fromHour = 8, toHour = 21, everyMin = 15): D
   return slots;
 }
 
+/** The quick variant (OD-55): `count` slots `everyS` seconds apart from `start`. */
+export function quickSlots(start: Date, count: number, everyS: number): Date[] {
+  return Array.from({ length: count }, (_, i) => new Date(start.getTime() + i * everyS * 1000));
+}
+
 const hhmm = (d: Date) =>
   `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
 
@@ -36,6 +41,10 @@ export interface DayOptions {
   dozeAfterS?: number;
   /** Wait after the last slot for late arrivals (default 300 s). */
   settleS?: number;
+  /** Send times instead of the day's 08:00–21:00 slots (the quick variant, OD-55). */
+  slots?: Date[];
+  /** Seconds between slots, recorded in the run (default 900). */
+  gapS?: number;
 }
 
 export async function runDay(
@@ -68,7 +77,7 @@ export async function runDay(
 
   const missed: Date[] = [];
   const sends = [];
-  for (const slot of daySlots(opts.day)) {
+  for (const slot of opts.slots ?? daySlots(opts.day)) {
     if (nowMs() > slot.getTime() + LATE_MS) {
       missed.push(slot);
       deps.log(`day: missed ${hhmm(slot)} (now ${hhmm(deps.now())})`);
@@ -112,7 +121,7 @@ export async function runDay(
         ...info,
         grading: 'graded',
         count: own.length,
-        gapS: 15 * 60,
+        gapS: opts.gapS ?? 15 * 60,
         startedAt: started.toISOString(),
         endedAt: deps.now().toISOString(),
         skew: checkDrift(before, after),

@@ -97,6 +97,28 @@
       "skewFlagged": false
     },
     {
+      "run": "2026-11-20-day-quick-api33",
+      "state": "day",
+      "app": "compliant",
+      "serial": "emulator-5554",
+      "sdk": 33,
+      "kind": "day",
+      "grading": "graded",
+      "n": 53,
+      "expected": 53,
+      "shown": 53,
+      "within60": 53,
+      "within60Pct": 100,
+      "p50S": 0.4,
+      "p95S": 0.8,
+      "maxS": 0.9,
+      "collapsed": 0,
+      "expired": 0,
+      "inboxOnly": 0,
+      "lost": [],
+      "skewFlagged": false
+    },
+    {
       "run": "2026-11-20-doze-api33",
       "state": "doze",
       "app": "compliant",

@@ -12,7 +12,7 @@ import { parseArgs } from 'node:util';
 import { type InboxRecord, openReceiver } from '@shifa-spike/s7-receiver';
 import { createSender, createTokenProvider, loadConfig } from '@shifa-spike/s7-sender';
 import { systemAdb } from './adb.ts';
-import { runDay } from './day.ts';
+import { quickSlots, runDay } from './day.ts';
 import { writeRun } from './run-files.ts';
 import { type App, type BaseDeps, runState } from './runner.ts';
 import { isStateName } from './states.ts';
@@ -20,7 +20,8 @@ import { isStateName } from './states.ts';
 const RUNS_DIR = join(import.meta.dirname, '..', '..', 'runs');
 const USAGE =
   'usage: run --state <name> --serial <s> --install <id> [--app compliant|noshow] [--count n] ' +
-  '[--gap-s n] [--settle-s n] | day --target <serial>=<installId> [...] [--date YYYY-MM-DD]';
+  '[--gap-s n] [--settle-s n] | day --target <serial>=<installId> [...] [--date YYYY-MM-DD] ' +
+  '[--every-s n]';
 
 function baseDeps(): BaseDeps {
   const config = loadConfig();
@@ -86,6 +87,7 @@ async function main(argv: string[]) {
       'settle-s': { type: 'string' },
       target: { type: 'string', multiple: true },
       date: { type: 'string' },
+      'every-s': { type: 'string' },
       runs: { type: 'string' },
     },
   });
@@ -143,7 +145,18 @@ async function main(argv: string[]) {
     });
     if (targets.length === 0) throw new Error(USAGE);
     const day = values.date ? new Date(`${values.date}T00:00:00`) : new Date();
-    const { records, missed } = await runDay({ day, targets }, baseDeps());
+    // `--every-s n`: the quick variant (OD-55), the same 53 sends n seconds apart from the next
+    // full minute, Doze forced halfway between sends.
+    const everyS = int('every-s', values['every-s']);
+    const quick = everyS
+      ? {
+          slots: quickSlots(new Date(Math.ceil((Date.now() + 1) / 60_000) * 60_000), 53, everyS),
+          gapS: everyS,
+          dozeAfterS: Math.floor(everyS / 2),
+          settleS: 120,
+        }
+      : {};
+    const { records, missed } = await runDay({ day, targets, ...quick }, baseDeps());
     for (const r of records) process.stdout.write(`written ${await writeRun(runs, r)}\n`);
     process.stdout.write(`missed slots: ${String(missed.length)}\n`);
     return;

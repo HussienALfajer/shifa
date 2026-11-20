@@ -11,7 +11,10 @@ export function runDirName(record: RunRecord): string {
   const { meta } = record;
   const date = meta.startedAt.slice(0, 10);
   const api = meta.sdk === null ? meta.serial : `api${String(meta.sdk)}`;
-  return [date, meta.state, api, ...(meta.app === 'noshow' ? ['noshow'] : [])].join('-');
+  // A day run not 15 minutes apart is the quick variant (OD-55) and must not share the real one's
+  // directory.
+  const quick = meta.kind === 'day' && meta.gapS !== 15 * 60 ? ['quick'] : [];
+  return [date, meta.state, ...quick, api, ...(meta.app === 'noshow' ? ['noshow'] : [])].join('-');
 }
 
 export async function writeRun(root: string, record: RunRecord): Promise<string> {
