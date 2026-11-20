@@ -42,7 +42,7 @@ export function tokensCheck({
 } = {}) {
   return {
     name: 'tokens',
-    inputs: [`${pkgDir}/src`, `${pkgDir}/scripts`],
+    inputs: [`${pkgDir}/src`, `${pkgDir}/scripts`, `${pkgDir}/fonts/fonts.json`],
     outputs: [`${pkgDir}/generated`, dartOutput],
     hint: 'design tokens changed: run `node scripts/check-drift.mjs --fix` and commit packages/tokens/generated and the Dart tokens file',
     async generate(outDir, { root }) {

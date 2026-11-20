@@ -15,6 +15,7 @@ const generator = join(repo, 'packages', 'tokens', 'scripts', 'build.ts');
 const CSS = 'packages/tokens/generated/css/tokens.css';
 const TAILWIND = 'packages/tokens/generated/css/tailwind-theme.css';
 const DART = 'packages/shifa_ui/lib/src/generated/tokens.g.dart';
+const DESIGN_SYSTEM = 'packages/tokens/generated/design-system/tokens.json';
 
 let root;
 
@@ -22,6 +23,7 @@ beforeEach(() => {
   root = mkdtempSync(join(tmpdir(), 'drift-tokens-'));
   for (const dir of [
     'packages/tokens/src',
+    'packages/tokens/fonts',
     'packages/tokens/generated',
     'packages/shifa_ui/lib/src/generated',
   ]) {
@@ -59,11 +61,15 @@ const changeGreen = () =>
   });
 
 describe('tokensCheck', () => {
-  it('is registered, owns the three outputs and names the fix', () => {
+  it('is registered, owns the four outputs and names the fix', () => {
     const check = config.find((c) => c.name === 'tokens');
     assert.ok(check, 'no `tokens` entry in scripts/drift.config.mjs');
     assert.deepEqual(check.outputs, ['packages/tokens/generated', DART]);
-    assert.deepEqual(check.inputs, ['packages/tokens/src', 'packages/tokens/scripts']);
+    assert.deepEqual(check.inputs, [
+      'packages/tokens/src',
+      'packages/tokens/scripts',
+      'packages/tokens/fonts/fonts.json',
+    ]);
     assert.match(check.hint, /check-drift\.mjs --fix/);
     assert.notEqual(check.full, true, 'the tokens check must run in fast verify');
   });
@@ -77,7 +83,7 @@ describe('tokensCheck', () => {
     changeGreen();
     const { code, results } = await drift();
     assert.equal(code, 1);
-    assert.deepEqual(results[0].stale.sort(), [DART, CSS].sort());
+    assert.deepEqual(results[0].stale.sort(), [DART, CSS, DESIGN_SYSTEM].sort());
     const report = formatReport(results);
     assert.match(report, /DRIFT {4}tokens/);
     assert.match(report, /check-drift\.mjs --fix/);
@@ -90,6 +96,7 @@ describe('tokensCheck', () => {
     assert.equal(fixed.results[0].status, 'fixed');
     assert.match(readFileSync(join(root, CSS), 'utf8'), /#20705c/);
     assert.match(readFileSync(join(root, DART), 'utf8'), /0xFF20705C/);
+    assert.match(readFileSync(join(root, DESIGN_SYSTEM), 'utf8'), /"#20705c"/);
     const { code, results } = await drift();
     assert.equal(code, 0, JSON.stringify(results));
     assert.equal(results[0].status, 'clean');
@@ -101,6 +108,14 @@ describe('tokensCheck', () => {
     const { code, results } = await drift();
     assert.equal(code, 1);
     assert.deepEqual(results[0].stale, [TAILWIND]);
+  });
+
+  it('red: a hand-edited design-system tokens file is stale', async () => {
+    const path = join(root, DESIGN_SYSTEM);
+    writeFileSync(path, readFileSync(path, 'utf8').replace('"Shifa"', '"Edited"'));
+    const { code, results } = await drift();
+    assert.equal(code, 1);
+    assert.deepEqual(results[0].stale, [DESIGN_SYSTEM]);
   });
 
   it('red: a deleted Dart file is missing, a stray generated file is extra', async () => {

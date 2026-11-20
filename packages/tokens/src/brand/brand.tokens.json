@@ -3,18 +3,46 @@
     "$type": "color",
     "brand": {
       "$description": "The slots a clinic palette replaces (PLT-41). The server-side palette must meet the pairs declared for these slots in contrast-pairs.json.",
-      "primary": { "$value": "{color.jasmine.green.600}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } } },
-      "primary-hover": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } } },
-      "primary-pressed": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } } },
-      "on-primary": { "$value": "{color.white}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
-      "primary-soft": { "$value": "{color.jasmine.green.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } } },
+      "primary": {
+        "$description": "Primary buttons, links, the selected tab and active marks.",
+        "$value": "{color.jasmine.green.600}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } }
+      },
+      "primary-hover": {
+        "$description": "A primary button or link under the pointer.",
+        "$value": "{color.jasmine.green.800}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } }
+      },
+      "primary-pressed": {
+        "$description": "A primary button while pressed.",
+        "$value": "{color.jasmine.green.800}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } }
+      },
+      "on-primary": {
+        "$description": "Text and icons on a primary fill.",
+        "$value": "{color.white}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } }
+      },
+      "primary-soft": {
+        "$description": "A soft brand fill: the current navigation entry, a highlighted card, a soft button.",
+        "$value": "{color.jasmine.green.100}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } }
+      },
       "accent": {
-        "$description": "A fill, border or mark colour, never body text on a light surface.",
+        "$description": "Gold: a fill, border or mark colour (the current item, the queue badge ring), never body text on a light surface.",
         "$value": "{color.jasmine.gold.500}",
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.400}" } } }
       },
-      "on-accent": { "$value": "{color.jasmine.ink.900}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
-      "accent-soft": { "$value": "{color.jasmine.gold.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } } }
+      "on-accent": {
+        "$description": "Text and icons on a gold fill.",
+        "$value": "{color.jasmine.ink.900}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } }
+      },
+      "accent-soft": {
+        "$description": "A soft gold fill: a featured note, a tip.",
+        "$value": "{color.jasmine.gold.100}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } }
+      }
     }
   }
 }

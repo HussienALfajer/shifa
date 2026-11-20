@@ -227,6 +227,11 @@ function checkToken(token: FlatToken, index: Map<string, FlatToken>): string[] {
     token.layer === 'primitive'
       ? checkPrimitive(token, token.type)
       : checkDerived(token, token.layer, index);
+  if ((token.layer === 'semantic' || token.layer === 'brand') && token.description === undefined) {
+    problems.push(
+      `${token.path}: a ${token.layer} token needs a usage note ($description on it or on a group above it)`,
+    );
+  }
   if (token.layer === 'brand' && !token.path.startsWith('color.brand.')) {
     problems.push(`${token.path}: the brand layer holds only color.brand.* slots`);
   }

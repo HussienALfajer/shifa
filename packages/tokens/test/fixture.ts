@@ -24,12 +24,21 @@ export function validSources(): Sources {
         color: {
           $type: 'color',
           bg: {
-            surface: { $value: '{color.white}', $extensions: dark('{color.night.900}') },
+            surface: {
+              $description: 'Cards and inputs.',
+              $value: '{color.white}',
+              $extensions: dark('{color.night.900}'),
+            },
           },
           text: {
-            default: { $value: '{color.ink.900}', $extensions: dark('{color.ink.100}') },
+            default: {
+              $description: 'Body text.',
+              $value: '{color.ink.900}',
+              $extensions: dark('{color.ink.100}'),
+            },
           },
           status: {
+            $description: 'Locked status colours.',
             success: {
               fg: {
                 $value: '{color.green.600}',
@@ -39,6 +48,7 @@ export function validSources(): Sources {
           },
         },
         size: {
+          $description: 'Control sizes.',
           control: {
             md: {
               $type: 'dimension',
@@ -52,6 +62,7 @@ export function validSources(): Sources {
         color: {
           $type: 'color',
           brand: {
+            $description: 'The slots a clinic palette replaces.',
             primary: { $value: '{color.green.600}', $extensions: dark('{color.green.300}') },
             'on-primary': { $value: '{color.white}', $extensions: dark('{color.night.900}') },
           },

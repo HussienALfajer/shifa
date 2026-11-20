@@ -26,12 +26,14 @@ Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, ed
 Pipeline (built in slice 0.4-01): Style Dictionary v5 builds
 - CSS custom properties (`--shifa-*`: light on `:root`, then what changes under `[data-theme='dark']` and `[data-density='compact']`) and a Tailwind v4 theme for web packages;
 - Dart constants consumed by `packages/shifa_ui` (both themes, both densities; `ThemeExtension`s wrap them in slice 0.4-08);
+- the Shifa Design System's tokens file (`packages/tokens/generated/design-system/tokens.json`, the Design System artifact type's list format, names = the CSS custom properties; slice 0.4-02b, ADR-0040);
 - the `tokens` drift check of `verify` fails if generated outputs are stale.
 
 Rules the schema test enforces (details in `packages/tokens/CLAUDE.md`):
 - A primitive holds a literal; a semantic or brand token references a primitive; a component token references a semantic or brand token.
 - Modes: every semantic and brand colour has a light and a dark value; sizes that differ between the two densities have a compact value.
-- Tailwind is given semantic and brand colours only, so a utility class cannot name a palette step.
+- Tailwind is given semantic and brand colours only, so a utility class cannot name a palette step; shadows only by job.
+- Every semantic and brand token has a usage note (`$description` on it or on a group above it, not at the top of a file); the design system shows it.
 
 Clinical and status colours are locked tokens: odontogram statuses, perio thresholds, laterality chips, alert severities and queue statuses have one meaning everywhere.
 
@@ -44,7 +46,7 @@ Locked set today (hues from `color.signal.*`, apart from the brand palette):
 | `color.alert` | info (blue), warning (amber), critical (crimson) | fg, bg, border, solid, on-solid |
 | `color.queue` (SCH-18) | booked (slate), confirmed (blue), arrived (cyan), waiting (amber), in-room (violet), done (green), no-show (brick), cancelled (sand) | fg, bg |
 
-Crimson is the only red and belongs to `color.alert.critical` (principle 1 of spec 0.4), so `danger` (destructive actions, validation errors) is brick. The three alert severity names and the hue of each status are provisional until the owner confirms them (asked again in slice 0.4-02b). Odontogram, perio, laterality and pain colours join under `color.clinical` with their modules (Phases B–C, spike S8).
+Crimson is the only red and belongs to `color.alert.critical` (principle 1 of spec 0.4), so `danger` (destructive actions, validation errors) is brick. The three alert severity names and the hue of each status were confirmed by the owner on 2026-11-20 (slice 0.4-02b). Odontogram, perio, laterality and pain colours join under `color.clinical` with their modules (Phases B–C, spike S8).
 
 ## Platform colour palette — "Damascene Jasmine" (ياسمين الشام)
 
@@ -111,7 +113,7 @@ Contrast is declared, not guessed: `packages/tokens/src/contrast-pairs.json` lis
 
 ### Dark theme (provisional, OD-56)
 
-Derived from the same palette in slice 0.4-01; shown on the direction screens of slice 0.4-02; the owner's word on it is asked in slice 0.4-02b. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
+Derived from the same palette in slice 0.4-01; shown on the direction screens of slice 0.4-02; drawn again, side by side with light, in the Shifa Guide (slice 0.4-02b); the owner's word on it is asked with the Button sheet in slice 0.4-03. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
 
 | Semantic token | Dark value |
 |---|---|
@@ -162,7 +164,7 @@ Rules that come with it:
 - Light is the default theme; dark is a user choice and the waiting-room display's default.
 - Compact density is for pointer devices; the tablet and the phone stay comfortable.
 
-Still to fill from this choice (with the design-system token output, checkpoint E of the slice): named type styles, the icon and disabled-text colours, the overlay colour, the selection tint scale and the avatar palette. The status hues and alert severity names stay provisional until the owner confirms them on the screens.
+Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.paragraph.*`), the focus halo (`elevation.focus`, `shadow.focus`, outside the 2 px `color.border.focus` outline), icon colours (`color.icon.default`, `.muted`) and duotone second tones (`color.icon-tone.default` mint, `.current` gold), `color.text.disabled`, the overlay scrim (`color.bg.overlay`), a selection tint scale (`color.selection.subtle`, `.default`, `.strong`) and a six-hue avatar palette (`color.avatar.*`, never red). Every semantic and brand token carries a usage note, which the Shifa Design System shows. The status hues and alert severity names were confirmed by the owner on 2026-11-20: `danger` is brick, the clinical alerts are `info`/`warning`/`critical` with crimson for `critical` only, and `done`/`success`/`saved` share green.
 
 ## Clinic theming
 

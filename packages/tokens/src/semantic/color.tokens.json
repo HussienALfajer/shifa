@@ -2,26 +2,141 @@
   "color": {
     "$type": "color",
     "bg": {
-      "app": { "$value": "{color.jasmine.cream.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
-      "surface": { "$value": "{color.white}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.900}" } } } },
-      "surface-raised": { "$value": "{color.jasmine.cream.200}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.800}" } } } }
+      "app": {
+        "$description": "Page background behind the cards (cream).",
+        "$value": "{color.jasmine.cream.50}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } }
+      },
+      "surface": {
+        "$description": "Cards, inputs, tables and dialogs.",
+        "$value": "{color.white}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.900}" } } }
+      },
+      "surface-raised": {
+        "$description": "A band or panel set apart inside a surface: table headers, a side panel, a selected tab.",
+        "$value": "{color.jasmine.cream.200}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.800}" } } }
+      },
+      "overlay": {
+        "$description": "Translucent scrim behind dialogs and sheets. Never under text that must be read.",
+        "$value": "{color.jasmine.scrim.light}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.scrim.dark}" } } }
+      }
     },
     "text": {
-      "default": { "$value": "{color.jasmine.ink.900}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } } },
-      "muted": { "$value": "{color.jasmine.ink.500}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } } }
+      "default": {
+        "$description": "Body text, headings and values on every surface.",
+        "$value": "{color.jasmine.ink.900}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } }
+      },
+      "muted": {
+        "$description": "Secondary text: hints, captions, metadata, column headers. 4.5 : 1 on the app, surface and raised backgrounds and the subtle and default selection tints; not on selection.strong.",
+        "$value": "{color.jasmine.ink.500}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } }
+      },
+      "disabled": {
+        "$description": "Text and icons of a disabled control. 3 : 1, so it is still legible; disabled is also shown by the control's state, never by colour alone.",
+        "$value": "{color.jasmine.ink.400}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.400}" } } }
+      }
+    },
+    "icon": {
+      "default": {
+        "$description": "Icon strokes next to text and in controls (Phosphor, duotone).",
+        "$value": "{color.jasmine.ink.500}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } }
+      },
+      "muted": {
+        "$description": "Icons that only decorate a value already written in words (a field's leading icon). 3 : 1.",
+        "$value": "{color.jasmine.ink.400}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.400}" } } }
+      }
+    },
+    "icon-tone": {
+      "default": {
+        "$description": "Second tone of a duotone icon (mint). Decorative fill under the stroke; the stroke carries the contrast.",
+        "$value": "{color.jasmine.green.200}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.800}" } } }
+      },
+      "current": {
+        "$description": "Second tone of the icon of the current item only (gold): the active navigation entry, the patient in the room.",
+        "$value": "{color.jasmine.gold.400}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } }
+      }
     },
     "border": {
-      "default": { "$value": "{color.jasmine.cream.300}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.700}" } } } },
+      "default": {
+        "$description": "Card and divider lines. Decorative: never the only cue.",
+        "$value": "{color.jasmine.cream.300}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.700}" } } }
+      },
       "strong": {
         "$description": "Borders that carry meaning alone (input outlines): 3 : 1 on every surface.",
         "$value": "{color.jasmine.ink.400}",
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.400}" } } }
       },
-      "focus": { "$value": "{color.jasmine.green.600}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } } }
+      "focus": {
+        "$description": "The 2 px focus outline of every interactive element; 3 : 1 on every surface. The focus halo (shadow.focus) sits outside it.",
+        "$value": "{color.jasmine.green.600}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } }
+      }
+    },
+    "selection": {
+      "$description": "Tints of a selected item, mint from the brand green: rows, list items, calendar slots. Text stays color.text.default.",
+      "subtle": {
+        "$description": "A hovered row or a soft highlight.",
+        "$value": "{color.jasmine.green.50}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.950}" } } }
+      },
+      "default": {
+        "$description": "A selected row, list item or slot.",
+        "$value": "{color.jasmine.green.100}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } }
+      },
+      "strong": {
+        "$description": "A selected item that is also hovered or pressed, and the range ends of a date range. Only color.text.default and color.icon.default sit on it.",
+        "$value": "{color.jasmine.green.200}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.800}" } } }
+      }
     },
     "nav": {
-      "bg": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.950}" } } } },
-      "text": { "$value": "{color.jasmine.green.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.50}" } } } }
+      "bg": {
+        "$description": "The navigation rail and the top bar (deep green).",
+        "$value": "{color.jasmine.green.800}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.950}" } } }
+      },
+      "text": {
+        "$description": "Labels and icons on the navigation rail.",
+        "$value": "{color.jasmine.green.50}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.50}" } } }
+      }
+    },
+    "avatar": {
+      "$description": "Initials avatars of people (staff and patients), one hue per person picked from the name; no meaning, never red. Initials use the fg on the bg of the same hue.",
+      "green": {
+        "bg": { "$value": "{color.jasmine.green.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } } },
+        "fg": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } } }
+      },
+      "gold": {
+        "bg": { "$value": "{color.jasmine.gold.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } } },
+        "fg": { "$value": "{color.jasmine.ink.900}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.400}" } } } }
+      },
+      "blue": {
+        "bg": { "$value": "{color.signal.blue.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.blue.900}" } } } },
+        "fg": { "$value": "{color.signal.blue.700}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.blue.300}" } } } }
+      },
+      "violet": {
+        "bg": { "$value": "{color.signal.violet.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.violet.900}" } } } },
+        "fg": { "$value": "{color.signal.violet.700}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.violet.300}" } } } }
+      },
+      "cyan": {
+        "bg": { "$value": "{color.signal.cyan.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.cyan.900}" } } } },
+        "fg": { "$value": "{color.signal.cyan.700}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.cyan.300}" } } } }
+      },
+      "sand": {
+        "bg": { "$value": "{color.signal.sand.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.sand.900}" } } } },
+        "fg": { "$value": "{color.signal.sand.700}", "$extensions": { "shifa": { "modes": { "dark": "{color.signal.sand.300}" } } } }
+      }
     }
   }
 }

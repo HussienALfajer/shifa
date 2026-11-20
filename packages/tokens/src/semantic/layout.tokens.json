@@ -3,12 +3,20 @@
     "$type": "dimension",
     "$description": "Two densities (principle 3): comfortable for touch (44 px targets), compact for desktop data screens (32 px rows).",
     "control": {
-      "sm": { "$value": "{space.9}", "$extensions": { "shifa": { "modes": { "compact": "{space.7}" } } } },
-      "md": { "$value": "{space.11}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
-      "lg": { "$value": "{space.13}", "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } } }
+      "sm": {
+        "$description": "Small controls: icon buttons in a row, chips.",
+        "$value": "{space.9}",
+        "$extensions": { "shifa": { "modes": { "compact": "{space.7}" } } }
+      },
+      "md": { "$description": "Buttons, inputs and selects.", "$value": "{space.11}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
+      "lg": {
+        "$description": "The one main action of a screen (call the next patient, book).",
+        "$value": "{space.13}",
+        "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } }
+      }
     },
-    "row": { "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
-    "target-min": { "$value": "{space.11}" },
+    "row": { "$description": "Table and list rows.", "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
+    "target-min": { "$description": "The smallest touch target, in every density.", "$value": "{space.11}" },
     "icon": {
       "$description": "Phosphor icons, duotone: sm in rows and controls, md in navigation and cards.",
       "sm": { "$value": "{space.5}" },
@@ -17,23 +25,39 @@
   },
   "inset": {
     "$type": "dimension",
-    "control": { "$value": "{space.4}", "$extensions": { "shifa": { "modes": { "compact": "{space.3}" } } } },
-    "surface": { "$value": "{space.6}", "$extensions": { "shifa": { "modes": { "compact": "{space.4}" } } } }
+    "$description": "Padding inside a box.",
+    "control": {
+      "$description": "Inline padding of buttons and inputs.",
+      "$value": "{space.4}",
+      "$extensions": { "shifa": { "modes": { "compact": "{space.3}" } } }
+    },
+    "surface": {
+      "$description": "Padding of cards, dialogs and sheets.",
+      "$value": "{space.6}",
+      "$extensions": { "shifa": { "modes": { "compact": "{space.4}" } } }
+    }
   },
   "gap": {
     "$type": "dimension",
-    "stack": { "$value": "{space.4}", "$extensions": { "shifa": { "modes": { "compact": "{space.2}" } } } },
-    "inline": { "$value": "{space.2}" }
+    "$description": "Space between boxes.",
+    "stack": {
+      "$description": "Between stacked fields and cards.",
+      "$value": "{space.4}",
+      "$extensions": { "shifa": { "modes": { "compact": "{space.2}" } } }
+    },
+    "inline": { "$description": "Between an icon and its label, and between buttons in a row.", "$value": "{space.2}" }
   },
   "text": {
     "family": {
       "$type": "fontFamily",
+      "$description": "ui: every screen (IBM Plex Sans Arabic); reading: long text such as instructions and notes (Noto Naskh Arabic); code: identifiers.",
       "ui": { "$value": "{font.family.sans}" },
       "reading": { "$value": "{font.family.serif}" },
       "code": { "$value": "{font.family.mono}" }
     },
     "size": {
       "$type": "dimension",
+      "$description": "Sizes by job. Prefer the named styles (text.style.*), which pair a size with its weight and line height.",
       "caption": { "$value": "{font.size.100}" },
       "data": { "$value": "{font.size.250}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.200}" } } } },
       "body": { "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.250}" } } } },
@@ -45,6 +69,7 @@
     },
     "weight": {
       "$type": "fontWeight",
+      "$description": "400 body, 500 labels, 600 headings, 700 display numbers.",
       "body": { "$value": "{font.weight.regular}" },
       "label": { "$value": "{font.weight.medium}" },
       "heading": { "$value": "{font.weight.semibold}" },
@@ -52,9 +77,95 @@
     },
     "leading": {
       "$type": "number",
+      "$description": "Line height: 1.6 body, 1.3 headings and labels, 1.8 long reading text.",
       "body": { "$value": "{font.line-height.normal}" },
       "heading": { "$value": "{font.line-height.tight}" },
       "reading": { "$value": "{font.line-height.relaxed}" }
+    },
+    "style": {
+      "title": {
+        "display": {
+          "$description": "Queue numbers and other large numerals: Western tabular digits in a round badge.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.800}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.bold}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        },
+        "lg": {
+          "$description": "Page titles.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.700}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.semibold}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        },
+        "md": {
+          "$description": "Section, dialog and sheet titles.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.600}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.semibold}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        },
+        "sm": {
+          "$description": "Card titles, and the patient's name on the room card.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.500}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.semibold}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        }
+      },
+      "label": {
+        "md": {
+          "$description": "Buttons, field labels and tabs.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.250}" } } } },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.medium}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        },
+        "sm": {
+          "$description": "Column headers, chips and status pills.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.200}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.medium}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.tight}" }
+        }
+      },
+      "paragraph": {
+        "lg": {
+          "$description": "Body text on the phone.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.400}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.regular}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.normal}" }
+        },
+        "md": {
+          "$description": "Body text.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.250}" } } } },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.regular}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.normal}" }
+        },
+        "data": {
+          "$description": "Table cells and dense data; never below 14 px.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.250}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.200}" } } } },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.regular}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.normal}" }
+        },
+        "caption": {
+          "$description": "Captions and helper text only.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.sans}" },
+          "size": { "$type": "dimension", "$value": "{font.size.100}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.regular}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.normal}" }
+        },
+        "reading": {
+          "$description": "Long reading text: instructions and notes, in Noto Naskh Arabic.",
+          "family": { "$type": "fontFamily", "$value": "{font.family.serif}" },
+          "size": { "$type": "dimension", "$value": "{font.size.400}" },
+          "weight": { "$type": "fontWeight", "$value": "{font.weight.regular}" },
+          "leading": { "$type": "number", "$value": "{font.line-height.relaxed}" }
+        }
+      }
     }
   },
   "shape": {
@@ -68,17 +179,18 @@
       "pill": { "$description": "Status pills and round badges.", "$value": "{radius.full}" }
     },
     "border": {
-      "default": { "$value": "{border.width.thin}" },
-      "focus": { "$value": "{border.width.thick}" }
+      "default": { "$description": "Card, input and divider lines.", "$value": "{border.width.thin}" },
+      "focus": { "$description": "The focus outline.", "$value": "{border.width.thick}" }
     }
   },
   "shadow": {
     "$type": "shadow",
     "$description": "Named by job. A card also has a border, which carries it in the dark theme.",
-    "card": { "$value": "{elevation.1}" },
-    "dropdown": { "$value": "{elevation.2}" },
-    "raised": { "$value": "{elevation.1}" },
-    "overlay": { "$value": "{elevation.2}" },
-    "modal": { "$value": "{elevation.3}" }
+    "card": { "$description": "Cards on the cream page.", "$value": "{elevation.1}" },
+    "dropdown": { "$description": "Menus, selects and popovers.", "$value": "{elevation.2}" },
+    "raised": { "$description": "A card lifted on hover or while dragged.", "$value": "{elevation.1}" },
+    "overlay": { "$description": "Sheets and side panels.", "$value": "{elevation.2}" },
+    "modal": { "$description": "Dialogs.", "$value": "{elevation.3}" },
+    "focus": { "$description": "Focus halo outside the 2 px focus outline (color.border.focus).", "$value": "{elevation.focus}" }
   }
 }
