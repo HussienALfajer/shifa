@@ -1,8 +1,11 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-19 · Owner: product owner
+Status: Living · Last updated: 2026-11-20 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
+
+- **`flutter_test` cannot join the pub workspace** (0.4-01 build; blocks 0.4-08 and the patient app): Flutter 3.47.9's `flutter_test` pins `test_api` 0.7.12; the only `test` release with that `test_api` needs `analyzer` < 14, and `api_client_dart`'s `build_runner` 2.17.1 needs `analyzer` ^14.3, so `flutter pub get` fails for the workspace. `shifa_ui` therefore tests with `package:test` under `flutter test` (works for `dart:ui` values, not for widget or golden tests). Before 0.4-08: move the Dart client's generator dependencies (`build_runner`, `json_serializable`, `retrofit_generator`, `swagger_parser`) out of the workspace resolution into a standalone generator package with its own lockfile (generation already runs in a standalone temp copy), or move to a Flutter release whose `flutter_test` matches; then switch `shifa_ui` to `flutter_test`.
+- **Status hues and alert severity names are provisional** (0.4-01 build): `danger` is brick so that crimson stays the clinical-alert red, the alert severities are `info`/`warning`/`critical`, and `done`/`success`/`saved` share green. Confirm with the owner on the 0.4-02 screens; a rename later touches every component that uses the token.
 
 - **CI pub cache** (0.2-04 review): cache `~/.pub-cache` in the `verify` job, keyed on `pubspec.lock`, with a SHA-pinned `actions/cache`. Speed only.
 - **Dart vulnerability scanning** (0.2-04 security review): nothing scans `pubspec.lock` for advisories; Dependabot alerts are off. Turn on Dependabot alerts (owner, repo settings) or add a checksum-pinned OSV-Scanner step to the `audit` job.
