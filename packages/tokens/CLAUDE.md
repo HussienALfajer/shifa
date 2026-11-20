@@ -11,7 +11,7 @@ The one source of design values (W3C Design Tokens, DTCG 2025.10) for the web th
 - `$extensions.shifa.modes`: `dark` (colours only) and `compact` (other values only) hold the value in that mode, as a reference. Every semantic and brand colour needs `dark`.
 - `$extensions.shifa.locked: true` on every colour under `color.status`, `color.sync`, `color.alert`, `color.queue`, `color.clinical` (semantic layer), and nowhere else. Take locked colours from the `color.signal.*` primitives, not from the brand palette (review this by eye; only the next rule is tested). Red (`color.signal.crimson.*`) is for `color.alert.critical` only: any other token that references it fails.
 - A token cannot hold other tokens, and a colour in a contrast pair must be opaque (no `alpha`).
-- Every semantic and brand token needs a usage note: `$description` on it or on a group above it. The design system shows it next to the token; write what the token is for, not what it is.
+- Every semantic and brand token needs a usage note (`$description` on it or a group above it): what it is for.
 - Named type styles are `text.style.<title|label|paragraph>.<name>.{family,size,weight,leading}`, each style group with its `$description`.
 - `src/contrast-pairs.json`: each text or icon colour with a surface it is drawn on and its class (`body` 4.5 : 1, `large` or `ui` 3 : 1). A semantic or brand colour that is a foreground (`color.text.*`, `color.icon.*`, a name ending in `fg`, `text`, `icon` or starting with `on-`) must be in at least one pair.
 - `src/schema.ts` (the rules above), `src/contrast.ts` (WCAG 2.2), run by `test/` on the real source.
