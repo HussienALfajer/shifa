@@ -6,7 +6,8 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./css/*": "./generated/css/*"
+    "./css/*": "./generated/css/*",
+    "./fonts/*": "./fonts/*"
   },
   "scripts": {
     "generate": "node ../../scripts/check-drift.mjs --fix",

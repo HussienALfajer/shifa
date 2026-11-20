@@ -20,6 +20,12 @@ export const readFontInfo = (path) => {
     codePoints: new Set(font.characterSet),
     version: String(font.version).replace(/^Version\s+/i, ''),
     features,
+    // The English name records by fontkit key (fontFamily, copyright, license, …).
+    names: Object.fromEntries(
+      Object.entries(font.name?.records ?? {})
+        .filter(([, value]) => typeof value?.en === 'string')
+        .map(([key, value]) => [key, value.en]),
+    ),
     // Width in font units of each character set alone, as a table cell would set a digit.
     tabularWidths: (codePoints) =>
       codePoints.map((cp) => font.layout(String.fromCodePoint(cp), requested).advanceWidth),

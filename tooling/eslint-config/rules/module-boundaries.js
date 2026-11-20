@@ -95,6 +95,3 @@ export const moduleBoundariesRule = {
     };
   },
 };
-
-/** ESLint plugin `shifa`. */
-export const shifaPlugin = { rules: { 'module-boundaries': moduleBoundariesRule } };

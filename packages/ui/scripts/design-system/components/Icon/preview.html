@@ -1,0 +1,33 @@
+<!-- @dsCard group="Foundations" height=220 subtitle="Phosphor duotone and Healthicons, 20 and 24 px; directional icons mirror in RTL" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-icon-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <p class="label"><bdi dir="ltr">20 px</bdi> · من اليمين (الأسهم منعكسة)</p>
+  <div class="row" dir="rtl" data-size="sm"></div>
+  <p class="label" dir="ltr">24 px · left to right</p>
+  <div class="row" dir="ltr" data-size="md"></div>
+</div>
+<script>
+  var NAMES = ['calendar-plus', 'clock', 'printer', 'pencil', 'trash', 'magnifying-glass', 'user', 'bell',
+    'warning', 'check-circle', 'cloud-check', 'wifi-slash', 'arrow-forward', 'caret-forward', 'sign-out',
+    'tooth', 'stethoscope', 'syringe', 'medicines', 'blood-drop', 'heart-organ'];
+  document.querySelectorAll('[data-size]').forEach(function (row) {
+    NAMES.forEach(function (name) {
+      var slot = document.createElement('span');
+      row.appendChild(slot);
+      window.Shifa.mount(slot, 'Icon', { name: name, size: row.getAttribute('data-size'), label: name });
+    });
+  });
+</script>
+</body>
+</html>

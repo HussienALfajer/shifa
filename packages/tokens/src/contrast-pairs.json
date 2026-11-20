@@ -138,5 +138,14 @@
   { "text": "color.avatar.blue.fg", "surface": "color.avatar.blue.bg", "class": "body" },
   { "text": "color.avatar.violet.fg", "surface": "color.avatar.violet.bg", "class": "body" },
   { "text": "color.avatar.cyan.fg", "surface": "color.avatar.cyan.bg", "class": "body" },
-  { "text": "color.avatar.sand.fg", "surface": "color.avatar.sand.bg", "class": "body" }
+  { "text": "color.avatar.sand.fg", "surface": "color.avatar.sand.bg", "class": "body" },
+
+  { "text": "button.primary.fg", "surface": "button.primary.bg", "class": "body" },
+  { "text": "button.primary.fg", "surface": "button.primary.bg-hover", "class": "body" },
+  { "text": "button.primary.fg", "surface": "button.primary.bg-pressed", "class": "body" },
+  { "text": "input.fg", "surface": "input.bg", "class": "body" },
+
+  { "text": "color.status.danger.on-solid", "surface": "color.status.danger.fg", "class": "body" },
+  { "text": "color.brand.primary", "surface": "color.selection.subtle", "class": "body" },
+  { "text": "color.brand.primary", "surface": "color.selection.default", "class": "body" }
 ]

@@ -50,7 +50,7 @@
   "text": {
     "family": {
       "$type": "fontFamily",
-      "$description": "ui: every screen (IBM Plex Sans Arabic); reading: long text such as instructions and notes (Noto Naskh Arabic); code: identifiers.",
+      "$description": "ui: every screen (Shifa Sans Arabic: IBM Plex Sans Arabic renamed in the web subsets, OD-59); reading: long text such as instructions and notes (Noto Naskh Arabic); code: identifiers.",
       "ui": { "$value": "{font.family.sans}" },
       "reading": { "$value": "{font.family.serif}" },
       "code": { "$value": "{font.family.mono}" }

@@ -18,11 +18,23 @@
     },
     "lint": {
       "dependsOn": ["transit"],
-      "inputs": ["$TURBO_DEFAULT$"]
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/tooling/eslint-config/**",
+        "$TURBO_ROOT$/packages/tokens/generated/css/tailwind-theme.css"
+      ]
     },
     "test": {
       "dependsOn": ["transit"],
-      "inputs": ["$TURBO_DEFAULT$", "$TURBO_ROOT$/scripts/lib/lock.mjs"],
+      "inputs": [
+        "$TURBO_DEFAULT$",
+        "$TURBO_ROOT$/scripts/lib/lock.mjs",
+        "$TURBO_ROOT$/scripts/lib/font-rename.mjs",
+        "$TURBO_ROOT$/scripts/lib/fonts.mjs",
+        "$TURBO_ROOT$/docs/brand/logo/**",
+        "$TURBO_ROOT$/packages/tokens/fonts/**",
+        "$TURBO_ROOT$/packages/tokens/generated/**"
+      ],
       "passThroughEnv": [
         "DOCKER_HOST",
         "DOCKER_CONTEXT",

@@ -1,0 +1,10 @@
+{
+  "@phosphor-icons/react": "MIT",
+  "@ui-sdk/core": "Apache-2.0",
+  "@ui-sdk/react": "Apache-2.0",
+  "clsx": "MIT",
+  "react": "MIT",
+  "react-dom": "MIT",
+  "tailwind-merge": "MIT",
+  "tailwindcss": "MIT"
+}

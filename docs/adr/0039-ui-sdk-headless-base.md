@@ -1,6 +1,6 @@
 # ADR-0039: UI SDK as the headless base of `packages/ui`, with an RTL gate and a Base UI fallback; code-first design source
 
-Status: Accepted (owner, 2026-11-20) · Date: 2026-11-20 · Deciders: product owner (with Claude) · Amends: [ADR-0011](0011-design-system-base-ui.md)
+Status: Accepted (owner, 2026-11-20); "Agent skill" point amended by [ADR-0041](0041-ui-sdk-skill-not-vendored-agent-bridge-off.md) · Date: 2026-11-20 · Deciders: product owner (with Claude) · Amends: [ADR-0011](0011-design-system-base-ui.md)
 
 ## Context
 ADR-0011 chose Base UI as the headless base of the web design system and Figma as the design source. On 2026-11-12 Vercel Labs published UI SDK (`@ui-sdk/core`, `@ui-sdk/react`), a library of interface behaviours (keyboard, focus, selection, popups, drag and drop, ARIA) with unstyled React parts, and the owner asked to re-evaluate (OD-48). Checked on 2026-11-20:

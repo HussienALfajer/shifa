@@ -18,13 +18,19 @@ node_modules/
 dist/
 build/
 coverage/
+# Storybook builds and Vitest browser failure screenshots (packages/ui, 0.4-03)
+storybook-static/
+.vitest/
+packages/ui/screenshots/results/
+# The Shifa Design System's files, rebuilt by `pnpm design-system:build` (0.4-03)
+packages/ui/design-system/
 .next/
 .dart_tool/
 .fvm/
 *.log
 
 # Claude Code local files
-.claude/settings.local.json
+.claude/settings.local.json*
 .claude/worktrees/
 .claude/state/
 CLAUDE.local.md

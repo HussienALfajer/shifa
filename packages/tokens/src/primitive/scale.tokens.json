@@ -38,7 +38,7 @@
   "font": {
     "family": {
       "$type": "fontFamily",
-      "sans": { "$value": ["IBM Plex Sans Arabic", "system-ui", "sans-serif"] },
+      "sans": { "$value": ["Shifa Sans Arabic", "system-ui", "sans-serif"] },
       "serif": { "$value": ["Noto Naskh Arabic", "serif"] },
       "mono": { "$value": ["ui-monospace", "monospace"] }
     },

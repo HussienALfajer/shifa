@@ -12,7 +12,7 @@ import { parse } from 'yaml';
 
 const root = join(import.meta.dirname, '..', '..');
 const ci = parse(readFileSync(join(root, '.github', 'workflows', 'ci.yml'), 'utf8'));
-const PART_JOBS = ['node', 'build', 'dart'];
+const PART_JOBS = ['node', 'build', 'dart', 'ui'];
 const CODE_JOBS = ['checks', ...PART_JOBS];
 // Jobs that run only pinned tools (never repository or dependency code) or nothing at all.
 const TOOL_JOBS = ['scope', 'caches', 'verify', 'audit', 'secrets', 'workflows'];
@@ -34,7 +34,29 @@ describe('ci.yml verify jobs', () => {
       'checks: node scripts/verify.mjs docs',
       'dart: node scripts/verify.mjs full --part dart',
       'node: node scripts/verify.mjs full --part node',
+      'ui: node scripts/verify.mjs full --part ui',
     ]);
+  });
+
+  // Slice 0.4-03: the ui job installs Playwright's Chromium for the browser tests and pulls the
+  // screenshot image by its pinned digest before verify; a failure uploads the screenshot diffs.
+  it('the ui job prepares Chromium and the pinned screenshot image, and keeps the diffs', () => {
+    const ui = ci.jobs.ui;
+    assert.equal(ui.permissions?.contents, 'read');
+    const all = runs(ui).join('\n');
+    assert.match(all, /pnpm --filter @shifa\/ui exec playwright install --with-deps chromium/);
+    assert.match(
+      all,
+      /docker pull --quiet "\$\(node packages\/ui\/scripts\/screenshot-image\.ts\)"/,
+    );
+    const order = ui.steps.map((s) => s.name ?? s.uses ?? s.run);
+    const verifyAt = order.indexOf('verify full --part ui');
+    assert.ok(verifyAt > order.indexOf('Install Chromium'), 'Chromium before verify');
+    assert.ok(verifyAt > order.indexOf('Pull the screenshot image'), 'image before verify');
+    const upload = ui.steps.find((s) => /actions\/upload-artifact@[0-9a-f]{40}/.test(s.uses ?? ''));
+    assert.ok(upload, 'uploads the screenshot diffs');
+    assert.equal(upload.if, 'failure()');
+    assert.equal(upload.with.path, 'packages/ui/screenshots/results/');
   });
 
   it('runs code jobs only after scope and caches succeeded; parts only in full mode', () => {
@@ -102,6 +124,7 @@ describe('ci.yml verify jobs', () => {
       'dart',
       'node',
       'scope',
+      'ui',
     ]);
     assert.deepEqual(verify.permissions, {});
     assert.equal(verify.steps.length, 1);
@@ -114,6 +137,7 @@ describe('ci.yml verify jobs', () => {
       NODE: '${{ needs.node.result }}',
       BUILD: '${{ needs.build.result }}',
       DART: '${{ needs.dart.result }}',
+      UI: '${{ needs.ui.result }}',
     });
     const names = Object.values(ci.jobs).map((j) => j.name);
     assert.equal(names.filter((n) => n === 'verify (full)').length, 1);
@@ -251,7 +275,7 @@ describe('verify (full) aggregator script', () => {
       encoding: 'utf8',
       env: { PATH: process.env.PATH, ...env },
     }).status;
-  const all = (result) => ({ NODE: result, BUILD: result, DART: result });
+  const all = (result) => ({ NODE: result, BUILD: result, DART: result, UI: result });
   const pr = { EVENT: 'pull_request', SCOPE: 'success', CACHES: 'skipped', CHECKS: 'success' };
   const push = { ...pr, EVENT: 'push', CACHES: 'success' };
 
@@ -268,7 +292,7 @@ describe('verify (full) aggregator script', () => {
 
   it('fails on any failed, cancelled or wrongly skipped part', { skip }, () => {
     for (const bad of ['failure', 'cancelled', 'skipped']) {
-      for (const job of ['NODE', 'BUILD', 'DART']) {
+      for (const job of ['NODE', 'BUILD', 'DART', 'UI']) {
         assert.equal(decide({ MODE: 'full', ...pr, ...all('success'), [job]: bad }), 1);
       }
     }

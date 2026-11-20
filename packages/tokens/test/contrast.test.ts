@@ -2,6 +2,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   checkContrast,
+  checkSchema,
   contrastProblems,
   contrastRatio,
   loadSources,
@@ -109,5 +110,88 @@ describe('a failing pair', () => {
 
   it('the fixture itself passes', () => {
     expect(contrastProblems(validSources())).toEqual([]);
+  });
+});
+
+// Slice 0.4-03 (backlog "Component colour pairs are not contrast-checked"): a component group's
+// `fg` is checked on each of its `bg` siblings, and every semantic or brand colour outside `bg`
+// and `border` is in a pair, so a new colour cannot skip the contrast test.
+type Group = Record<string, unknown>;
+const group = (tree: Group, ...path: string[]): Group =>
+  path.reduce<Group>((node, key) => node[key] as Group, tree);
+
+describe('component colour pairs', () => {
+  const withButtonFg = (declared: boolean) => {
+    const sources = validSources();
+    group(sources.layers.component, 'button')['primary'] = {
+      $type: 'color',
+      bg: { $value: '{color.brand.primary}' },
+      'bg-hover': { $value: '{color.brand.primary}' },
+      fg: { $value: '{color.brand.on-primary}' },
+    };
+    if (declared) {
+      for (const surface of ['button.primary.bg', 'button.primary.bg-hover']) {
+        sources.pairs.push({ text: 'button.primary.fg', surface, class: 'body' });
+      }
+    }
+    return sources;
+  };
+
+  it('an fg with no declared pair on each bg sibling fails', () => {
+    const text = checkSchema(withButtonFg(false)).join('\n');
+    expect(text).toMatch(
+      /button\.primary\.fg on button\.primary\.bg:.*not a declared contrast pair/,
+    );
+    expect(text).toMatch(
+      /button\.primary\.fg on button\.primary\.bg-hover:.*not a declared contrast pair/,
+    );
+  });
+
+  it('passes once both pairs are declared, and the pairs are measured', () => {
+    const sources = withButtonFg(true);
+    expect(checkSchema(sources)).toEqual([]);
+    expect(checkContrast(sources).filter((f) => f.text === 'button.primary.fg')).toHaveLength(4);
+  });
+
+  it('a component pair below its minimum fails the contrast check', () => {
+    const sources = withButtonFg(true);
+    const primary = group(sources.layers.component, 'button', 'primary');
+    primary['fg'] = { $value: '{color.text.default}' };
+    primary['bg-hover'] = { $value: '{color.text.default}' };
+    expect(contrastProblems(sources).join('\n')).toMatch(
+      /button\.primary\.fg on button\.primary\.bg-hover \(light, body\)/,
+    );
+  });
+
+  it('a semantic colour outside bg and border in no pair fails', () => {
+    const sources = validSources();
+    group(sources.layers.semantic, 'color')['link'] = {
+      $description: 'Links in text.',
+      $value: '{color.green.600}',
+      $extensions: { shifa: { modes: { dark: '{color.green.300}' } } },
+    };
+    expect(checkSchema(sources).join('\n')).toMatch(/color\.link: .*in no contrast pair/);
+    sources.pairs.push({ text: 'color.link', surface: 'color.bg.surface', class: 'body' });
+    expect(checkSchema(sources)).toEqual([]);
+  });
+
+  it('a bg or border colour needs no pair of its own', () => {
+    const sources = validSources();
+    const locked = (ref: string) => ({
+      $value: ref,
+      $extensions: { shifa: { locked: true, modes: { dark: ref } } },
+    });
+    const success = group(sources.layers.semantic, 'color', 'status', 'success');
+    success['bg'] = locked('{color.ink.100}');
+    success['border'] = locked('{color.green.600}');
+    expect(checkSchema(sources)).toEqual([]);
+  });
+
+  it('the real source declares the pairs of the button and the input', () => {
+    const pairs = loadSources().pairs.map((p) => `${p.text} on ${p.surface}`);
+    for (const surface of ['bg', 'bg-hover', 'bg-pressed']) {
+      expect(pairs).toContain(`button.primary.fg on button.primary.${surface}`);
+    }
+    expect(pairs).toContain('input.fg on input.bg');
   });
 });

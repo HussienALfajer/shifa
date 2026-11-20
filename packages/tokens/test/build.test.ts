@@ -150,7 +150,7 @@ describe('build (the token source)', () => {
   it('writes shadows, font stacks and easings as CSS values', () => {
     const root = block(files[OUTPUTS.css] ?? '', ':root');
     expect(root).toMatch(/--shifa-elevation-\w+: \d+px \d+px \d+px -?\d+px rgb\(/);
-    expect(root).toMatch(/--shifa-font-family-\w+: 'IBM Plex Sans Arabic', /);
+    expect(root).toMatch(/--shifa-font-family-\w+: 'Shifa Sans Arabic', /);
     expect(root).toMatch(/--shifa-motion-easing-\w+: cubic-bezier\(/);
   });
 

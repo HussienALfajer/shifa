@@ -176,6 +176,14 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 
 - `packages/ui` wraps UI SDK (`@ui-sdk/react` and `@ui-sdk/core`, a beta when adopted, pinned to an exact version; ADR-0039). Only `packages/ui` imports `@ui-sdk/*`. Eight components pass an Arabic RTL gate before the core set is built; a component that fails is built on Base UI (`@base-ui/react`, exact pin) behind the same API and listed here with the upstream issue. The UI SDK agent bridge is not used.
 - Styling with Tailwind v4 logical utilities (`ms-*`, `pe-*`, `start-*`) only; physical left/right utilities are lint errors.
+- Lint (`tooling/eslint-config/rules/`, plugin `shifa`, every package): `no-physical-direction` (physical utilities in class lists, physical properties in `style`), `no-hardcoded-design-values` (arbitrary values other than a token reference, spacing steps the tokens do not offer, literal colours, lengths and fonts in `style`), `ui-sdk-only-in-ui` (`@ui-sdk/*` and Base UI outside `packages/ui`), `no-ui-sdk-agent` (`@ui-sdk/react/agent` anywhere). Class lists are read from `className`, `cn`/`clsx`/`twMerge` and `cva`/`tv`.
+- The Tailwind theme offers token values only: Tailwind's colours, spacing (with its multiplier), radius, shadows, fonts, sizes and easings are reset, so `p-14` or `bg-red-500` compile to nothing.
+- `DensityProvider` refuses `compact` on a coarse pointer (`(pointer: coarse)`) and falls back to comfortable with a development warning.
+- Icons: one `Icon` component over a curated list (`packages/ui/src/icons/icon.tsx`): Phosphor drawn duotone, a small Healthicons set kept as files with its licence. Arrows, carets and sign-out mirror in RTL; nothing else does. The second tone is 20 % of the stroke colour for now; the mint and gold `icon-tone` tokens join when navigation is built (backlog).
+- Storybook (`packages/ui/.storybook`) renders every story in the eight combinations of direction × theme × density, with the text states (long Arabic label, mixed direction, 200 % zoom, reduced motion) and axe on every story. Test helpers for the RTL gate live in `packages/ui/test/support/`.
+- **UI SDK upgrade rule** (ADR-0039): UI SDK is a beta, so an upgrade of `@ui-sdk/react` and `@ui-sdk/core` (always together, to one exact version at least 24 hours old) is its own PR, with nothing else in it. That PR runs the whole `ui` part of `verify` (component tests, the RTL gate, every story with axe, the screenshots) and fixes or explains every difference; its body lists the upstream changes read (release notes and the changed components). A component whose behaviour breaks moves to Base UI behind the same API, as for the gate. The same PR re-reads the upstream `ui-sdk` skill at the new version's commit and updates `.claude/skills/ui-component/references/ui-sdk.md`, which is not a vendored copy (ADR-0041). The agent bridge stays off; ADR-0041 lists the conditions for any later use.
+- Browser checks and screenshots: `docs/process/ui-screenshots.md`.
+- Button (0.4-03, sheet approved 2026-11-20): primary, secondary (default), ghost, danger; sm, md, lg; the icon on the logical start; loading keeps focus and its label; the focus ring does not animate.
 - Core set (Phase 0.4): listed in spec 0.4, criterion 8.
 - Companions where UI SDK has gaps:
 
@@ -194,7 +202,7 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 - Set `dir="rtl"` and `lang="ar"` on the document; UI SDK reads the page's text direction (a Base UI fallback component also needs Base UI's `DirectionProvider`) [RN-19].
 - Use logical sides for floating elements (`inline-start` / `inline-end`); test keyboard navigation in RTL for every interactive component (RTL keyboard fixes were still landing in 2026).
 - Wrap Latin fragments inside Arabic text (drug names, units, IDs, phone numbers, tooth numbers) in isolated spans so they render in the correct direction.
-- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (both OFL 1.1). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`; built by `scripts/fonts-subset.mjs`). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text (15 px in compact); Naskh from 18 px up.
+- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (both OFL 1.1). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`, `fonts.css`; built by `scripts/fonts-subset.mjs`). The OFL of IBM Plex Sans Arabic reserves the name "Plex" and a subset is a Modified Version, so its web subsets are renamed **Shifa Sans Arabic** inside the font and in the CSS and tokens; the copyright and licence notices and `OFL.txt` are kept (OD-59, slice 0.4-03). The static TTFs are the unmodified upstream files. Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text (15 px in compact); Naskh from 18 px up.
 - Digits: Western (0–9) only, everywhere (OD-20, closed 2026-11-20); dates and currency through i18next/ICU with the numbering system set to `latn`. Inputs accept typed Arabic-Indic digits and store Western ones. Numbers in tables and queue numbers use the UI font's digits, which are tabular.
 
 ## Flutter design system
@@ -263,7 +271,8 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 ### Limits
 
-- Bundling `packages/ui` for the design system is tried first in slice 0.4-03 (Button). If it fails, components appear as static previews from Storybook and screens are drawn with tokens and matching markup; the screenshot comparison then carries the consistency check.
+- Bundling `packages/ui` for the design system works (slice 0.4-03, Button and Icon). The bundle is one classic script with React 19 inside, because React 19 ships no browser global and a canvas runs React 18. Its components are islands with their own React root, so only text children cross from a canvas. Direction, theme and density come from the page's attributes. The fallback (static previews from Storybook) is not needed. How the system is rebuilt and synced: `docs/process/ui-screenshots.md`.
+- Direction variants follow the nearest `dir` (`rtl:`/`ltr:` are `:dir()`), so an LTR region inside an RTL page is LTR. Tailwind's default matched every descendant of an RTL page; the design-system preview found it.
 - A screens canvas holds a copy of the tokens taken when the design system was installed; refresh it after a token change.
 - Patient app (Flutter): drawings are a visual reference; `shifa_ui` golden tests are the check.
 - Standalone Claude Design (claude.ai/design) closes on 2026-12-14; the project uses the artifact types inside Claude.

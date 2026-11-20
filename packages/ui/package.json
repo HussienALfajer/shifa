@@ -1,0 +1,58 @@
+{
+  "name": "@shifa/ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Shifa's web components: UI SDK behaviours with Shifa styling, semantic tokens only (spec 0.4, ADR-0039).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./styles.css": "./src/styles/tailwind.css"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run --project node",
+    "test:browser": "vitest run --project browser",
+    "test:storybook": "vitest run --project storybook",
+    "storybook": "storybook dev -p 6006",
+    "storybook:build": "storybook build -o storybook-static",
+    "screenshots": "node scripts/screenshots.ts",
+    "design-system:build": "node scripts/design-system/build.ts"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "2.1.10",
+    "@shifa/tokens": "workspace:*",
+    "@ui-sdk/core": "0.1.0-beta.13",
+    "@ui-sdk/react": "0.1.0-beta.13",
+    "clsx": "2.1.1",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.5"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/testing": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-vitest": "10.6.7",
+    "@storybook/react-vite": "10.6.7",
+    "@tailwindcss/node": "4.3.5",
+    "@tailwindcss/vite": "4.3.5",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.3.0",
+    "@vitest/browser-playwright": "5.1.0",
+    "axe-core": "4.14.1",
+    "eslint": "10.14.0",
+    "healthicons": "3.1.0",
+    "playwright": "1.65.1",
+    "storybook": "10.6.7",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0",
+    "vitest-browser-react": "2.3.0"
+  }
+}
