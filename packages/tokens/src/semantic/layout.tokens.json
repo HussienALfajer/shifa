@@ -16,6 +16,8 @@
       }
     },
     "row": { "$description": "Table and list rows.", "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
+    "popover": { "$description": "Width of a popover that holds a short form, and of a calendar (capped by the screen).", "$value": "{width.80}" },
+    "dialog": { "$description": "Width of a dialog (capped by the screen, less a margin).", "$value": "{width.120}" },
     "target-min": { "$description": "The smallest touch target, in every density.", "$value": "{space.11}" },
     "icon": {
       "$description": "Phosphor icons, duotone: sm in rows and controls, md in navigation and cards.",

@@ -19,6 +19,12 @@
     "13": { "$value": { "value": 52, "unit": "px" } },
     "16": { "$value": { "value": 64, "unit": "px" } }
   },
+  "width": {
+    "$type": "dimension",
+    "$description": "Widths of floating boxes, in 4 px units like space (slice 0.4-04 sheet).",
+    "80": { "$value": { "value": 320, "unit": "px" } },
+    "120": { "$value": { "value": 480, "unit": "px" } }
+  },
   "radius": {
     "$type": "dimension",
     "none": { "$value": { "value": 0, "unit": "px" } },

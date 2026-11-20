@@ -24,3 +24,13 @@ export {
   useDirection,
 } from './providers/direction-provider.tsx';
 export { type Theme, ThemeProvider, useTheme } from './providers/theme-provider.tsx';
+export {
+  Tab,
+  TabList,
+  type TabListProps,
+  TabPanel,
+  type TabPanelProps,
+  type TabProps,
+  Tabs,
+  type TabsProps,
+} from './tabs/tabs.tsx';

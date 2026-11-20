@@ -112,6 +112,38 @@ const VARIANTS: Record<ButtonVariant, { rest: string; live: string; disabled: st
 /** The 1 px press of the sheet; none under reduced motion. */
 const PRESS = cn('active:translate-y-px motion-reduce:active:translate-y-0');
 
+/**
+ * The classes of a pressable Button at rest, for a UI SDK trigger part (dialog, popover, menu)
+ * that must look like a Button but keep its own behaviour. `data-disabled` gives the disabled
+ * look; `data-open` the pressed look while its popup is open. Internal to @shifa/ui.
+ */
+export function buttonClasses({
+  variant = 'secondary',
+  size = 'md',
+  iconOnly = false,
+}: {
+  variant?: ButtonVariant;
+  size?: ButtonSize;
+  iconOnly?: boolean;
+} = {}): string {
+  const look = VARIANTS[variant];
+  const box = SIZES[size];
+  return cn(
+    BASE,
+    box.box,
+    'leading-heading',
+    iconOnly && box.iconOnly,
+    look.rest,
+    look.live,
+    PRESS,
+    'data-open:bg-selection-default',
+    'data-disabled:cursor-not-allowed data-disabled:border-border-default data-disabled:bg-bg-surface-raised data-disabled:text-text-disabled',
+  );
+}
+
+/** The icon size of a Button size, for triggers built with `buttonClasses`. */
+export const buttonIconSize = (size: ButtonSize = 'md'): 'sm' | 'md' => SIZES[size].icon;
+
 export function Button({
   variant = 'secondary',
   size = 'md',
