@@ -102,7 +102,8 @@ export function joinRun(run: Run): RunResult {
     expected,
     shown: counts.shown,
     within60,
-    within60Pct: expected === 0 ? 0 : round1((within60 / expected) * 100),
+    // Nothing due on the tray (every send expired or collapsed) means nothing was late.
+    within60Pct: expected === 0 ? 100 : round1((within60 / expected) * 100),
     p50S: pct(percentile(latencies, 50)),
     p95S: pct(percentile(latencies, 95)),
     maxS: pct(latencies.at(-1) ?? null),
