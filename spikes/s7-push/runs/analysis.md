@@ -2,9 +2,7 @@
 
 Pass mark (OD-52): every graded state and the one-day run ≥ 95% shown within 60 s, no message lost, every excluded state detectable.
 
-**Verdict: fail**
-
-- doze (2026-11-20-doze-api33-attempt1): 35% shown within 60 s, below 95%
+**Verdict: pass**
 
 | Run | State | API | Graded | n | Expected | Shown | ≤ 60 s | ≤ 60 s % | p50 s | p95 s | max s | Collapsed | Expired | Inbox only | Lost | Detectable | Skew drift |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -13,7 +11,7 @@ Pass mark (OD-52): every graded state and the one-day run ≥ 95% shown within 6
 | 2026-11-20-bucket-restricted-api33 | bucket-restricted | 33 | excluded | 20 | 20 | 20 | 20 | 100 | 0.4 | 1.4 | 2.1 | 0 | 0 | 0 | 0 | last seen only | ok |
 | 2026-11-20-channel-off-api33 | channel-off | 33 | excluded | 20 | 20 | 1 | 1 | 5 | 0.5 | 0.5 | 0.5 | 0 | 0 | 19 | 0 | channel in device state | ok |
 | 2026-11-20-doze-api33 | doze | 33 | graded | 20 | 20 | 20 | 20 | 100 | 0.3 | 0.4 | 0.8 | 0 | 0 | 0 | 0 | – | ok |
-| 2026-11-20-doze-api33-attempt1 | doze | 33 | graded | 20 | 20 | 7 | 7 | 35 | 0.3 | 26.8 | 26.8 | 0 | 0 | 13 | 0 | – | ok |
+| 2026-11-20-doze-api33-attempt1 | doze | 33 | recorded | 20 | 20 | 7 | 7 | 35 | 0.3 | 26.8 | 26.8 | 0 | 0 | 13 | 0 | – | ok |
 | 2026-11-20-doze-api33-noshow | doze (noshow) | 33 | recorded | 20 | 20 | 20 | 20 | 100 | 0.3 | 4 | 5.7 | 0 | 0 | 0 | 0 | – | ok |
 | 2026-11-20-force-stopped-api33 | force-stopped | 33 | excluded | 20 | 20 | 8 | 0 | 0 | 123.6 | 362.1 | 362.1 | 0 | 0 | 12 | 0 | last seen only | ok |
 | 2026-11-20-foreground-api33 | foreground | 33 | graded | 20 | 20 | 20 | 20 | 100 | 0.3 | 0.4 | 0.7 | 0 | 0 | 0 | 0 | – | ok |

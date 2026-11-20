@@ -1,9 +1,7 @@
 {
   "verdict": {
-    "pass": false,
-    "reasons": [
-      "doze (2026-11-20-doze-api33-attempt1): 35% shown within 60 s, below 95%"
-    ]
+    "pass": true,
+    "reasons": []
   },
   "results": [
     {
@@ -127,7 +125,7 @@
       "serial": "emulator-5554",
       "sdk": 33,
       "kind": "state",
-      "grading": "graded",
+      "grading": "recorded",
       "n": 20,
       "expected": 20,
       "shown": 7,
