@@ -36,7 +36,7 @@ export interface ContrastFinding {
 
 /**
  * One finding per declared pair and theme. A pair the schema already rejects (unknown token or
- * class, a colour with alpha) is left out here; `checkSchema` reports it.
+ * class) is left out here; `checkSchema` reports it.
  */
 export function checkContrast(sources: Sources): ContrastFinding[] {
   const index = indexTokens(flatten(sources));

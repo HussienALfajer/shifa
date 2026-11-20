@@ -54,7 +54,7 @@ function walk(
       modes: isObject(shifa['modes']) ? shifa['modes'] : {},
       locked: shifa['locked'] === true,
     });
-    return;
+    // No return: a token nested inside a token is still listed, so the schema can refuse it.
   }
   for (const [key, child] of Object.entries(tree)) {
     if (key.startsWith('$') || !isObject(child)) continue;

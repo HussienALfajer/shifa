@@ -2,7 +2,14 @@
 // problem; test/schema.test.ts runs it on the real source and the build refuses a broken one.
 import { colorProblem } from './color.ts';
 import { isObject, type Layer, MODES, PAIR_CLASSES, type Sources } from './sources.ts';
-import { containsReference, type FlatToken, flatten, indexTokens, referenceOf } from './tokens.ts';
+import {
+  containsReference,
+  type FlatToken,
+  flatten,
+  indexTokens,
+  referenceOf,
+  resolve,
+} from './tokens.ts';
 
 /** Groups whose colours carry one meaning everywhere: locked, never themable. */
 export const LOCKED_GROUPS = [
@@ -155,6 +162,23 @@ function checkDerived(
   return problems;
 }
 
+const CRIMSON = 'color.signal.crimson.';
+const CRITICAL = 'color.alert.critical.';
+
+/** Red is for critical clinical alerts only (design principle 1). */
+function checkHue(token: FlatToken): string[] {
+  const targets = [token.value, ...Object.values(token.modes)]
+    .map(referenceOf)
+    .filter((path) => path !== null);
+  const problems: string[] = [];
+  if (!token.path.startsWith(CRITICAL) && targets.some((path) => path.startsWith(CRIMSON))) {
+    problems.push(
+      `${token.path}: crimson is the clinical-alert red, for color.alert.critical only`,
+    );
+  }
+  return problems;
+}
+
 function checkLock(token: FlatToken): string[] {
   if (inLockedGroup(token.path)) {
     if (token.layer !== 'semantic') {
@@ -165,6 +189,34 @@ function checkLock(token: FlatToken): string[] {
       : [`${token.path}: clinical and status colours must be locked ($extensions.shifa.locked)`];
   }
   return token.locked ? [`${token.path}: only clinical and status colours may be locked`] : [];
+}
+
+/** A token may not hold other tokens: Style Dictionary would drop them without a word. */
+function nested(tokens: FlatToken[]): string[] {
+  const paths = new Set(tokens.map((t) => t.path));
+  const problems: string[] = [];
+  for (const token of tokens) {
+    const segments = token.path.split('.');
+    for (let depth = segments.length - 1; depth > 0; depth -= 1) {
+      const parent = segments.slice(0, depth).join('.');
+      if (paths.has(parent)) {
+        problems.push(`${token.path}: is inside the token ${parent}; a token cannot be a group`);
+      }
+    }
+  }
+  return problems;
+}
+
+/** A pair is measured on opaque colours; a translucent one has no contrast of its own. */
+function translucent(index: Map<string, FlatToken>, path: string): boolean {
+  return ([undefined, 'dark'] as const).some((mode) => {
+    try {
+      const value = resolve(index, path, mode);
+      return isObject(value) && typeof value['alpha'] === 'number' && value['alpha'] < 1;
+    } catch {
+      return false;
+    }
+  });
 }
 
 function checkToken(token: FlatToken, index: Map<string, FlatToken>): string[] {
@@ -178,7 +230,7 @@ function checkToken(token: FlatToken, index: Map<string, FlatToken>): string[] {
   if (token.layer === 'brand' && !token.path.startsWith('color.brand.')) {
     problems.push(`${token.path}: the brand layer holds only color.brand.* slots`);
   }
-  return [...problems, ...checkLock(token)];
+  return [...problems, ...checkLock(token), ...checkHue(token)];
 }
 
 function checkPairs(
@@ -199,6 +251,8 @@ function checkPairs(
       else if (token.type !== 'color') problems.push(`${name}: ${path} is not a colour`);
       else if (token.layer === 'primitive') {
         problems.push(`${name}: ${path} is a primitive; pairs name semantic or brand colours`);
+      } else if (translucent(index, path)) {
+        problems.push(`${name}: ${path} has an alpha below 1; pairs need opaque colours`);
       }
     }
     paired.add(pair.text);
@@ -220,6 +274,7 @@ export function checkSchema(sources: Sources): string[] {
   const index = indexTokens(tokens);
   return [
     ...duplicates(tokens),
+    ...nested(tokens),
     ...tokens.flatMap((token) => checkToken(token, index)),
     ...checkPairs(sources, tokens, index),
   ];
