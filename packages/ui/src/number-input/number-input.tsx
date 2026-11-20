@@ -124,11 +124,7 @@ export function NumberInput({
               steppers ? 'px-2 text-center' : 'text-start',
             )}
           />
-          {unit !== undefined && (
-            <span className="shrink-0 text-200 text-text-muted">
-              {unit}
-            </span>
-          )}
+          {unit !== undefined && <span className="shrink-0 text-200 text-text-muted">{unit}</span>}
           {steppers && (
             <NumberInputIncrement
               aria-label={incrementLabel}

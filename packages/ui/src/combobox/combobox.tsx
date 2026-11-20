@@ -138,7 +138,9 @@ export function Combobox({
           // is what lines up with the field. The empty message has a box of its own.
           className="m-0 min-w-(--anchor-width) overflow-visible border-0 bg-transparent p-0"
         >
-          <ComboboxEmpty className={cn(FLOATING_BOX, 'px-3 py-2 text-250 leading-body text-text-muted')}>
+          <ComboboxEmpty
+            className={cn(FLOATING_BOX, 'px-3 py-2 text-250 leading-body text-text-muted')}
+          >
             {emptyMessage}
           </ComboboxEmpty>
           <ComboboxList className={cn(FLOATING_BOX, 'flex flex-col gap-0.5 empty:hidden')}>

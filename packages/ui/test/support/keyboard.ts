@@ -1,6 +1,6 @@
 // Keyboard and typing helpers for the RTL gate (spec 0.4 criterion 7).
 import { expect } from 'vitest';
-import { userEvent } from 'vitest/browser';
+import { cdp, userEvent } from 'vitest/browser';
 import type { Direction } from '../../src/index.ts';
 import { toWesternDigits } from '../../src/lib/digits.ts';
 
@@ -42,6 +42,25 @@ export async function expectArrow({
       message: `${backward} moves back in ${dir}`,
     })
     .toBe(first);
+}
+
+/**
+ * Presses one key for each character of `text` as a real keyboard does, with `keydown` and
+ * `keyup` carrying the character as `key` (slice 0.4-04). `userEvent.keyboard` sends a letter
+ * outside the US layout (Arabic) as inserted text with no key events, so typeahead in a menu or
+ * a list never sees it; Chromium's input protocol sends the key itself.
+ */
+export async function pressKeys(text: string): Promise<void> {
+  const session = cdp();
+  for (const ch of text) {
+    await session.send('Input.dispatchKeyEvent', {
+      type: 'keyDown',
+      key: ch,
+      text: ch,
+      unmodifiedText: ch,
+    });
+    await session.send('Input.dispatchKeyEvent', { type: 'keyUp', key: ch });
+  }
 }
 
 /** Types `text` (Arabic letters included) into `input` and proves the field kept it. */

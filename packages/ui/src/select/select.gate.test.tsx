@@ -6,7 +6,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { DOCTORS } from '../../test/fixtures.ts';
-import { expectAxeClean, expectPopupSide, renderDir } from '../../test/support/index.ts';
+import { expectAxeClean, expectPopupSide, pressKeys, renderDir } from '../../test/support/index.ts';
 import { Select, type SelectItem } from './select.tsx';
 
 const DIRS = ['rtl', 'ltr'] as const;
@@ -34,7 +34,7 @@ function current(): string | undefined {
   const el = id ? document.getElementById(id) : active;
   const option =
     el?.closest('[role="option"]') ?? document.querySelector('[role="option"][data-highlighted]');
-  return option?.getAttribute('data-value') ?? option?.textContent?.trim();
+  return option?.getAttribute('data-value') ?? option?.textContent.trim();
 }
 const isOn = (label: string) => current()?.includes(label) ?? false;
 
@@ -94,7 +94,7 @@ describe.each(DIRS)('Select gate in %s', (dir) => {
 
   it('typing an Arabic letter finds the doctor by the given name, not the title', async () => {
     await open(dir);
-    await userEvent.keyboard(firstLetter(third.name));
+    await pressKeys(firstLetter(third.name));
     await poll(() => isOn(third.name), `«${firstLetter(third.name)}» finds ${third.name}`).toBe(
       true,
     );

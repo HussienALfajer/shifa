@@ -35,8 +35,8 @@ export const DATE_LOCALE = { rtl: 'ar-SY-u-nu-latn', ltr: 'en-GB' } as const;
 const SATURDAY = 6;
 
 const LABELS = {
-  rtl: { open: 'فتح التقويم', previous: 'الشهر السابق', next: 'الشهر التالي' },
-  ltr: { open: 'فتح التقويم', previous: 'Previous month', next: 'Next month' },
+  rtl: { open: 'فتح التقويم', calendar: 'اختيار التاريخ', previous: 'الشهر السابق', next: 'الشهر التالي' },
+  ltr: { open: 'فتح التقويم', calendar: 'Choose a date', previous: 'Previous month', next: 'Next month' },
 } as const;
 
 export interface DatePickerProps {
@@ -65,9 +65,11 @@ const NAV = cn(
   'data-disabled:cursor-not-allowed data-disabled:text-text-disabled',
 );
 
+// The day cells are table cells (UI SDK draws a real <table>): sized and rounded as cells, never
+// given a flex display, which would take them out of the table's columns.
 const DAY = cn(
-  'inline-flex size-(--shifa-size-control-md) cursor-pointer items-center justify-center rounded-pill border-2 border-transparent',
-  'text-250 leading-heading tabular-nums text-text-default outline-none',
+  'h-(--shifa-size-control-md) w-(--shifa-size-control-md) cursor-pointer rounded-pill border-2 border-transparent p-0',
+  'text-center align-middle text-250 leading-heading tabular-nums text-text-default outline-none',
   'hover:bg-selection-subtle',
   'data-outside:text-text-muted',
   'data-today:border-brand-primary data-today:font-semibold',
@@ -137,6 +139,7 @@ export function DatePicker({
           sideOffset={4}
           collisionPadding={8}
           {...(field === null ? {} : { anchor: field })}
+          aria-label={labels.calendar}
           className={cn(
             FLOATING_BOX,
             'flex w-(--shifa-size-popover) max-w-full flex-col gap-3 p-4',
@@ -151,7 +154,7 @@ export function DatePicker({
               <Icon name="caret-forward" />
             </CalendarNext>
           </div>
-          <CalendarGrid className="w-full border-collapse">
+          <CalendarGrid className="w-full border-separate border-spacing-0.5">
             <CalendarWeekdays>
               {(index) => (
                 <CalendarWeekday

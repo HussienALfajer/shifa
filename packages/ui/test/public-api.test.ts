@@ -37,7 +37,7 @@ describe('public API of @shifa/ui', () => {
   let api: Record<string, unknown>;
   beforeAll(async () => {
     declarations = emitDeclarations();
-    api = (await import('../src/index.ts')) as Record<string, unknown>;
+    api = await import('../src/index.ts');
   }, 60_000);
 
   it('emits declarations for the entry', () => {

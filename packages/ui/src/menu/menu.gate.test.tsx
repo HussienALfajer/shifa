@@ -5,7 +5,13 @@
 // focus returns to the trigger; axe is clean. Digits do not apply (n/a).
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { arrows, expectAxeClean, expectPopupSide, renderDir } from '../../test/support/index.ts';
+import {
+  arrows,
+  expectAxeClean,
+  expectPopupSide,
+  pressKeys,
+  renderDir,
+} from '../../test/support/index.ts';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Submenu } from './menu.tsx';
 
 const DIRS = ['rtl', 'ltr'] as const;
@@ -55,7 +61,7 @@ function current(): string | undefined {
   const item =
     el?.closest('[role^="menuitem"]') ??
     document.querySelector('[role^="menuitem"][data-highlighted]');
-  return item?.textContent?.trim().split('\n')[0];
+  return item?.textContent.trim().split('\n')[0];
 }
 
 const poll = (fn: () => unknown, message: string) => expect.poll(fn, { timeout: 1000, message });
@@ -119,9 +125,9 @@ describe.each(DIRS)('Menu gate in %s', (dir) => {
 
   it('typing an Arabic letter moves to the item that starts with it', async () => {
     await open(dir);
-    await userEvent.keyboard('إ');
+    await pressKeys('إ');
     await poll(() => startsWith(current(), L.cancel), '«إ» finds «إلغاء الموعد»').toBe(true);
-    await userEvent.keyboard('ن');
+    await pressKeys('ن');
     await poll(() => current(), 'a new letter after a pause').toBeDefined();
   });
 

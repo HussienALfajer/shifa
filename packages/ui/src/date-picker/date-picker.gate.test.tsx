@@ -49,7 +49,7 @@ async function openCalendar(
 const plain = (text: string) => text.replace(/[‎‏؜]/g, '');
 
 /** The focused day, as its day-of-month number. */
-const focusedDay = () => document.activeElement?.textContent?.trim();
+const focusedDay = () => document.activeElement?.textContent.trim();
 
 describe.each(DIRS)('Date Picker gate in %s', (dir) => {
   it('shows the date as dd/mm/yyyy in Western digits', async () => {
@@ -110,7 +110,7 @@ describe.each(DIRS)('Date Picker gate in %s', (dir) => {
     const day19 = screen
       .getByRole('gridcell')
       .elements()
-      .find((c) => c.textContent?.trim() === '19' && !c.closest('[data-outside-month]'));
+      .find((c) => c.textContent.trim() === '19' && !c.closest('[data-outside-month]'));
     const target = day19?.querySelector('button') ?? day19;
     expect(
       target?.getAttribute('aria-disabled') === 'true' ||

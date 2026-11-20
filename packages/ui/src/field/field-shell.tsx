@@ -41,8 +41,17 @@ export const FIELD_BOX = cn(
   'has-[:focus-visible]:border-border-focus has-[:focus-visible]:shadow-focus',
   'has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-border-focus has-[:focus-visible]:transition-none',
   'has-[[aria-invalid=true]]:border-2 has-[[aria-invalid=true]]:border-status-danger-fg',
-  'has-[:disabled]:cursor-not-allowed has-[:disabled]:border-border-default',
-  'has-[:disabled]:bg-bg-surface-raised has-[:disabled]:text-text-disabled',
+  // The control itself, not any disabled child: a stepper at its limit is disabled too.
+  'has-[input:disabled]:cursor-not-allowed has-[input:disabled]:border-border-default',
+  'has-[input:disabled]:bg-bg-surface-raised has-[input:disabled]:text-text-disabled',
+);
+
+/** The same box when it is the control itself (Select's trigger button). */
+export const FIELD_BOX_SELF = cn(
+  FIELD_BOX,
+  'focus-visible:border-border-focus focus-visible:shadow-focus focus-visible:outline-2 focus-visible:outline-border-focus focus-visible:transition-none',
+  'aria-invalid:border-2 aria-invalid:border-status-danger-fg',
+  'data-disabled:cursor-not-allowed data-disabled:border-border-default data-disabled:bg-bg-surface-raised data-disabled:text-text-disabled',
 );
 
 export function FieldShell({

@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from '@ui-sdk/react/select';
 import type { ReactNode } from 'react';
-import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
+import { FIELD_BOX_SELF, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
@@ -103,7 +103,7 @@ export function Select({
             })}
       >
         <SelectTrigger
-          className={cn(FIELD_BOX, 'cursor-pointer justify-between px-3 text-start outline-none')}
+          className={cn(FIELD_BOX_SELF, 'cursor-pointer justify-between px-3 text-start outline-none')}
         >
           <SelectValue className="min-w-0 flex-1 truncate data-placeholder:text-text-muted">
             {(state) =>

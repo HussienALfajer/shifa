@@ -29,7 +29,7 @@ const EMPTY = 'لا يوجد مريض بهذا الاسم';
 const poll = (fn: () => unknown, message: string) => expect.poll(fn, { timeout: 1000, message });
 
 const optionTexts = () =>
-  [...document.querySelectorAll('[role="option"]')].map((o) => o.textContent ?? '');
+  [...document.querySelectorAll('[role="option"]')].map((o) => o.textContent);
 
 function highlighted(input: HTMLElement): string | undefined {
   const id = input.getAttribute('aria-activedescendant');
