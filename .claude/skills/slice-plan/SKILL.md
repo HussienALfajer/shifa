@@ -13,6 +13,7 @@ Plan slices for the approved spec: $ARGUMENTS
 4. For each slice copy `docs/slices/_template.md` to `docs/slices/<phase>-<nn>-<kebab-title>.md` and fill in:
    - goal, tier, branch `<type>/<phase>-<nn>-<name>`, spec link and requirement IDs;
    - the plan by layer: contracts → database (RLS, expand/migrate/contract) → API → web → Flutter → end-to-end;
+   - for UI: the approved screens or component sheet the slice builds from (ADR-0040); a component batch starts with a "sheet and owner approval" checkpoint and ends with the design-system sync;
    - the tests written first, mapped to acceptance criteria;
    - the hand-written line estimate.
 5. Add the slices to the phase table in `docs/roadmap.md` with status `Planned`.

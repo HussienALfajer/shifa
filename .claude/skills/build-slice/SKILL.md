@@ -14,7 +14,7 @@ Build the slice: $ARGUMENTS
    - commit at the green checkpoint (conventional commit, slice ID in the scope);
    - update the "Stopped at" line in the slice file.
 4. Before the PR:
-   - `pnpm verify` green (CI runs the full gate, ADR-0033); also `pnpm verify:full` when the slice touches build or boot check, the DB test harness, drift generators, CI or `verify`; for UI, run the app against the real backend in the browser and capture screenshots (Arabic RTL);
+   - `pnpm verify` green (CI runs the full gate, ADR-0033); also `pnpm verify:full` when the slice touches build or boot check, the DB test harness, drift generators, CI or `verify`; for UI, run the app against the real backend in the browser, capture screenshots (Arabic RTL) and compare each with its approved drawing or component sheet in the Shifa design project (ADR-0040): fix a difference or explain it in the slice file; after a component batch passes, sync the real components with `/design-sync` (the owner starts it);
    - write the evidence (commands and summary lines) into the slice file;
    - run the `reviewer` agent (and `security-reviewer` for T0) with the branch and slice file; fix real findings, put non-blocking ones in `docs/backlog.md`.
 5. Clear `.claude/state/locked-tests.txt`, open the PR (slice and spec linked, evidence, tier), update `docs/roadmap.md`, and report to the owner in Arabic: what changed, evidence, risks, what is left.

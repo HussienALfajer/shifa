@@ -1,6 +1,6 @@
 # Development workflow
 
-Status: Accepted (ADR-0025) · Last updated: 2026-11-08 · Owner: product owner
+Status: Accepted (ADR-0025; design-first step added by ADR-0040) · Last updated: 2026-11-20 · Owner: product owner
 Sources: RN-18, RN-20, RN-21, RN-22
 
 How Shifa is built: almost all code is written by Claude Code (Opus 5.5) under the owner's direction. This document defines the operating model: risk tiers, the slice loop, verification, review, instruction files and the Claude Code configuration. It is the reference for every session.
@@ -14,7 +14,8 @@ How Shifa is built: almost all code is written by Claude Code (Opus 5.5) under t
 5. **Independent review.** The session that wrote the code never approves it. A fresh-context reviewer checks it against the spec.
 6. **Compounding.** A correction made twice becomes a rule, a skill, a hook or a test.
 7. **No real patient data** anywhere in development ([ADR-0023](../adr/README.md), [data handling](../compliance/data-handling.md)).
-8. **Ask, don't guess.** Open questions go to the owner and to [open decisions](../open-decisions.md).
+8. **Design before code, code as the source.** A component or a screen is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only ([ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.md)).
+9. **Ask, don't guess.** Open questions go to the owner and to [open decisions](../open-decisions.md).
 
 ## 2. Risk tiers
 
@@ -28,10 +29,10 @@ Every slice and every PR carries a tier. The tier decides effort level and revie
 
 ## 3. The slice loop
 
-1. **Spec** — run `/spec`. Claude interviews the owner with recommended options, never guesses open questions, and writes `docs/specs/<area>/<id>-<name>.md`: goal, user stories, acceptance criteria, edge cases, money/abuse/privacy considerations, verification contract (exactly how each criterion will be proven), open questions. Owner approves. A new decision becomes an ADR.
+1. **Spec** — run `/spec`. Claude interviews the owner with recommended options, never guesses open questions, and writes `docs/specs/<area>/<id>-<name>.md`: goal, user stories, acceptance criteria, edge cases, money/abuse/privacy considerations, verification contract (exactly how each criterion will be proven), open questions. For a feature with UI, the spec step also draws each screen in the Shifa design project from the design system's components, and the owner approves the screens with the spec ([ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.md), [design workflow](../architecture/design-system.md#design-workflow)). Owner approves. A new decision becomes an ADR.
 2. **Plan** — fresh session in plan mode; `/slice-plan` writes the plan into the slice file ([docs/slices](../slices/README.md)): layers, files, tests first, risk tier, PR size estimate. Owner approves. For T0, a second session critiques the plan.
 3. **Build** — `/build-slice`: failing test first, then implementation layer by layer (contracts → db → API → web → Flutter → end-to-end), `verify` (fast) after each layer, commit at each green checkpoint.
-4. **Verify** — `verify` green locally (fast; full as well when the slice touches build or boot check, the DB test harness, drift generators, CI or `verify` itself) and CI's full `verify` green ([ADR-0033](../adr/0033-pre-pr-fast-verify-ci-full-gate.md)), isolation suite, browser verification of UI against the real backend (not mocks), Flutter widget/golden tests. Paste the commands and their summarised output as evidence in the slice file.
+4. **Verify** — `verify` green locally (fast; full as well when the slice touches build or boot check, the DB test harness, drift generators, CI or `verify` itself) and CI's full `verify` green ([ADR-0033](../adr/0033-pre-pr-fast-verify-ci-full-gate.md)), isolation suite, browser verification of UI against the real backend (not mocks) with the screenshot compared to the approved drawing, Flutter widget/golden tests. Paste the commands and their summarised output as evidence in the slice file.
 5. **Review** — reviewer agent against the spec ("correctness only, skip style"); `/code-review`; `/security-review` for T0. Fix real findings; write non-blocking findings to `docs/backlog.md`.
 6. **PR** — one slice, linked spec and slice file, evidence, agent-written description checked by the owner. Merge per tier.
 7. **Close** — update the slice file (status, "stopped at", evidence), update [roadmap](../roadmap.md) status, apply the compounding rule, end the session with the owner report (§9).
@@ -41,7 +42,7 @@ Every slice and every PR carries a tier. The tier decides effort level and revie
 - [ ] Every acceptance criterion in the spec is met and proven by the evidence listed in the verification contract.
 - [ ] Fast `verify` green locally (full too for the paths in ADR-0033); CI's full `verify` green; no new lint suppressions without a written reason.
 - [ ] Tenant isolation, permission matrix and architecture tests green.
-- [ ] UI: Arabic RTL checked, keyboard and screen-reader basics, offline behaviour where specified, screenshots attached.
+- [ ] UI: built from an owner-approved design sheet (components) or screen drawing (features) and matching it (ADR-0040); Arabic RTL checked, keyboard and screen-reader basics, offline behaviour where specified, screenshots attached.
 - [ ] No real patient data, secrets or production identifiers in code, fixtures, logs or screenshots.
 - [ ] Docs updated where behaviour changed (spec, domain doc, ADR via a new ADR); nothing documented that the code already shows.
 - [ ] PR within size budget; slice file and roadmap updated.
@@ -111,7 +112,7 @@ Rules:
   - session end: warn about uncommitted work.
 - **Agents:** `reviewer` (Opus, high, fresh context, healthcare checklist: patient data in logs, tenant scoping, audit of reads, consent, money and rounding, laterality); `checker` (Haiku, runs checks only); `security-reviewer` (T0).
 - **Skills:** `/spec`, `/slice-plan`, `/build-slice`, `/db-migration` (expand → migrate → contract; refuses destructive changes), `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`, `/audit-phase`, `/release` (user-invoked only).
-- **Plugins and MCP:** TypeScript LSP; official Flutter plugin and Dart MCP server (rules copied into the Flutter app's CLAUDE.md); Figma MCP; browser automation for `/verify`.
+- **Plugins and MCP:** TypeScript LSP; official Flutter plugin and Dart MCP server (rules copied into the Flutter app's CLAUDE.md); the Design System and Design artifact types in Claude with `/design-sync` (ADR-0040; no Figma, OD-19); browser automation for `/verify`.
 - **Environment:** WSL2 with Ubuntu 26.04 is primary, repository in `~/src/shifa` ([setup guide](wsl2-setup.md)); sandbox on with an exact-domain network allowlist. `pnpm env:check` shows what is ready. Windows (`D:\shifa`) is the unsandboxed fallback: the sandbox does not run on native Windows, the hooks still apply.
 - **Hook policy** lives in `.claude/hooks/lib/policy.mjs` with unit tests in `scripts/test/claude-hooks.test.mjs`; guards fail closed when they cannot read the tool event.
 
