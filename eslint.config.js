@@ -3,6 +3,8 @@
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import globals from 'globals';
+import { UI_ROOT } from './tooling/eslint-config/index.js';
+import { shifaPlugin } from './tooling/eslint-config/rules/plugin.js';
 
 export default defineConfig(
   // spikes/ packages lint themselves through Turborepo like apps/ and packages/; without this
@@ -27,9 +29,13 @@ export default defineConfig(
     extends: [js.configs.recommended],
     languageOptions: { globals: globals.node },
     linterOptions: { reportUnusedDisableDirectives: 'error' },
+    plugins: { shifa: shifaPlugin },
     rules: {
       'max-lines': ['error', { max: 400, skipBlankLines: true, skipComments: true }],
       eqeqeq: ['error', 'always'],
+      // ADR-0039: the UI library stays inside packages/ui; the agent bridge nowhere.
+      'shifa/ui-sdk-only-in-ui': ['error', { uiRoot: UI_ROOT }],
+      'shifa/no-ui-sdk-agent': 'error',
     },
   },
 );

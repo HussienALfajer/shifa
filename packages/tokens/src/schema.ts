@@ -245,6 +245,7 @@ function checkPairs(
 ): string[] {
   const problems: string[] = [];
   const paired = new Set<string>();
+  const inPair = new Set<string>();
   for (const pair of sources.pairs) {
     const name = `contrast pair ${pair.text} on ${pair.surface}`;
     if (!(PAIR_CLASSES as readonly string[]).includes(pair.class)) {
@@ -261,13 +262,54 @@ function checkPairs(
       }
     }
     paired.add(pair.text);
+    inPair.add(pair.text);
+    inPair.add(pair.surface);
   }
   for (const token of tokens) {
     const themed = token.layer === 'semantic' || token.layer === 'brand';
-    if (themed && token.type === 'color' && isForeground(token.path) && !paired.has(token.path)) {
+    if (!themed || token.type !== 'color') continue;
+    if (isForeground(token.path) && !paired.has(token.path)) {
       problems.push(
         `${token.path}: a text or icon colour in no contrast pair (add it to src/contrast-pairs.json)`,
       );
+    } else if (needsPair(token.path) && !inPair.has(token.path)) {
+      problems.push(
+        `${token.path}: a colour in no contrast pair; every semantic and brand colour outside bg, border and the icon tones is drawn on a surface or under text (add it to src/contrast-pairs.json)`,
+      );
+    }
+  }
+  return [...problems, ...componentPairs(sources, tokens)];
+}
+
+const lastSegment = (path: string) => path.slice(path.lastIndexOf('.') + 1);
+const parentOf = (path: string) => path.slice(0, path.lastIndexOf('.'));
+
+/**
+ * Surfaces and lines carry no text of their own, and the icon tones are decorative fills under a
+ * stroke that carries the contrast: these need no pair. Every other colour does (slice 0.4-03).
+ */
+function needsPair(path: string): boolean {
+  if (['color.bg.', 'color.border.', 'color.icon-tone.'].some((g) => path.startsWith(g))) {
+    return false;
+  }
+  return !/^(?:bg|border)(?:-|$)/.test(lastSegment(path));
+}
+
+/** A component group's `fg` is declared on each of its `bg` siblings (`bg`, `bg-hover`, …). */
+function componentPairs(sources: Sources, tokens: FlatToken[]): string[] {
+  const declared = new Set(sources.pairs.map((p) => `${p.text} on ${p.surface}`));
+  const colours = tokens.filter((t) => t.layer === 'component' && t.type === 'color');
+  const problems: string[] = [];
+  for (const fg of colours.filter((t) => lastSegment(t.path) === 'fg')) {
+    const group = parentOf(fg.path);
+    for (const bg of colours) {
+      if (parentOf(bg.path) !== group || !/^bg(?:-|$)/.test(lastSegment(bg.path))) continue;
+      const name = `${fg.path} on ${bg.path}`;
+      if (!declared.has(name)) {
+        problems.push(
+          `component pair ${name}: not a declared contrast pair (add it to src/contrast-pairs.json)`,
+        );
+      }
     }
   }
   return problems;

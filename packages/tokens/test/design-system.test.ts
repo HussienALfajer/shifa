@@ -185,7 +185,7 @@ describe('the design-system output (the token source)', () => {
 
   it('type: the three families, the self-hosted fonts and the named styles', () => {
     expect(Object.keys(ds.type.families).sort()).toEqual(['mono', 'sans', 'serif']);
-    expect(ds.type.families['sans']).toBe("'IBM Plex Sans Arabic', system-ui, sans-serif");
+    expect(ds.type.families['sans']).toBe("'Shifa Sans Arabic', system-ui, sans-serif");
     const groups = ds.type.groups.map((g) => g.name);
     expect(groups).toEqual(['Titles', 'Labels', 'Paragraphs']);
     const styles = ds.type.groups.flatMap((g) => g.styles.map((s) => ({ ...s, group: g })));
@@ -207,10 +207,10 @@ describe('the design-system output (the token source)', () => {
   it('fonts are the static TTFs of fonts.json, one per family and weight', () => {
     const fonts = ds.type.fonts;
     expect(fonts.map((f) => `${f.family} ${f.weight}`)).toEqual([
-      'IBM Plex Sans Arabic 400',
-      'IBM Plex Sans Arabic 500',
-      'IBM Plex Sans Arabic 600',
-      'IBM Plex Sans Arabic 700',
+      'Shifa Sans Arabic 400',
+      'Shifa Sans Arabic 500',
+      'Shifa Sans Arabic 600',
+      'Shifa Sans Arabic 700',
       'Noto Naskh Arabic 400',
       'Noto Naskh Arabic 700',
     ]);

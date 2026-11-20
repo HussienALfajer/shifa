@@ -8,6 +8,10 @@
     "./rules/module-boundaries": {
       "types": "./rules/module-boundaries.d.ts",
       "default": "./rules/module-boundaries.js"
+    },
+    "./rules/ui-sdk-imports": {
+      "types": "./rules/ui-sdk-imports.d.ts",
+      "default": "./rules/ui-sdk-imports.js"
     }
   },
   "peerDependencies": {

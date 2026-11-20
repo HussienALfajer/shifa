@@ -3,6 +3,7 @@
     {
       "id": "ibm-plex-sans-arabic",
       "family": "IBM Plex Sans Arabic",
+      "webFamily": "Shifa Sans Arabic",
       "role": "ui",
       "version": "1.101",
       "source": "https://github.com/google/fonts/tree/main/ofl/ibmplexsansarabic",
@@ -14,8 +15,8 @@
           "weight": 400,
           "subset": "arabic",
           "unicodeRange": "U+060C, U+061B, U+061F, U+0621-063A, U+0640-0655, U+0660-066D, U+0670-0671, U+067E, U+0686, U+0698, U+06A4, U+06A9, U+06AF, U+06BE, U+06C1, U+06CC, U+06D2, U+06D4, U+200C-200F",
-          "bytes": 19040,
-          "sha256": "598b01a896959748674e594c6b63e2b9c1307c1d3ce48414ecc633adfaf4f774"
+          "bytes": 19092,
+          "sha256": "710febfa69e193868cbc7503386ad2aa09b053117970d8e1537f5f6205cf4e90"
         },
         {
           "path": "ibm-plex-sans-arabic/web/ibm-plex-sans-arabic-400-latin.woff2",
@@ -23,8 +24,8 @@
           "weight": 400,
           "subset": "latin",
           "unicodeRange": "U+0020-007E, U+00A0, U+00AB, U+00B0, U+00B1, U+00B5, U+00B7, U+00BB, U+00C2, U+00C7, U+00CE, U+00D6-00D7, U+00DB-00DC, U+00E2, U+00E7, U+00EE, U+00F6-00F7, U+00FB-00FC, U+011E-011F, U+0130-0131, U+015E-015F, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
-          "bytes": 14592,
-          "sha256": "bd04748c9fa7bf448771cfe48196e4d38da8ac1c7190d740c95a78e7f783f2a4"
+          "bytes": 14692,
+          "sha256": "35a2a9164d0ad643ca7e35ebb340ac398f783e1e2e0839b4f37b4825e35b7aeb"
         },
         {
           "path": "ibm-plex-sans-arabic/ttf/ibm-plex-sans-arabic-400.ttf",
@@ -39,8 +40,8 @@
           "weight": 500,
           "subset": "arabic",
           "unicodeRange": "U+060C, U+061B, U+061F, U+0621-063A, U+0640-0655, U+0660-066D, U+0670-0671, U+067E, U+0686, U+0698, U+06A4, U+06A9, U+06AF, U+06BE, U+06C1, U+06CC, U+06D2, U+06D4, U+200C-200F",
-          "bytes": 19912,
-          "sha256": "dff626f7976ad539359d033f6f715c11cd4ef5ae846904af8a2059084052348e"
+          "bytes": 20108,
+          "sha256": "b2e9fa2c75b314784d1e7e74da0122e194b270e4ad92350b0db05139f2efd248"
         },
         {
           "path": "ibm-plex-sans-arabic/web/ibm-plex-sans-arabic-500-latin.woff2",
@@ -48,8 +49,8 @@
           "weight": 500,
           "subset": "latin",
           "unicodeRange": "U+0020-007E, U+00A0, U+00AB, U+00B0, U+00B1, U+00B5, U+00B7, U+00BB, U+00C2, U+00C7, U+00CE, U+00D6-00D7, U+00DB-00DC, U+00E2, U+00E7, U+00EE, U+00F6-00F7, U+00FB-00FC, U+011E-011F, U+0130-0131, U+015E-015F, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
-          "bytes": 15476,
-          "sha256": "a9ae57fa3f2e871603659c278c1e5c24471c273502b5527bce702fec879dae52"
+          "bytes": 15512,
+          "sha256": "ed0808d18a499e0bd13ee69818a776fc6e3bd6b5803110d35e6bde15f8e63601"
         },
         {
           "path": "ibm-plex-sans-arabic/ttf/ibm-plex-sans-arabic-500.ttf",
@@ -64,8 +65,8 @@
           "weight": 600,
           "subset": "arabic",
           "unicodeRange": "U+060C, U+061B, U+061F, U+0621-063A, U+0640-0655, U+0660-066D, U+0670-0671, U+067E, U+0686, U+0698, U+06A4, U+06A9, U+06AF, U+06BE, U+06C1, U+06CC, U+06D2, U+06D4, U+200C-200F",
-          "bytes": 20328,
-          "sha256": "9e7acfce63e2bae444587a896e08c5885e55f1b9de777b38ae02161bafa8d7a6"
+          "bytes": 20376,
+          "sha256": "73b3ea7d773de07ff9a268f062f9fbc5e2f478d20d709ec870b22971d21e3292"
         },
         {
           "path": "ibm-plex-sans-arabic/web/ibm-plex-sans-arabic-600-latin.woff2",
@@ -73,8 +74,8 @@
           "weight": 600,
           "subset": "latin",
           "unicodeRange": "U+0020-007E, U+00A0, U+00AB, U+00B0, U+00B1, U+00B5, U+00B7, U+00BB, U+00C2, U+00C7, U+00CE, U+00D6-00D7, U+00DB-00DC, U+00E2, U+00E7, U+00EE, U+00F6-00F7, U+00FB-00FC, U+011E-011F, U+0130-0131, U+015E-015F, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
-          "bytes": 15664,
-          "sha256": "7f9334b65058e657e8ed5422b6be57a6e1613adbcfbd5611b2e940a09ecf21ad"
+          "bytes": 15832,
+          "sha256": "224b6950dd61974a3dd6cdd548d6369c24cf5b92553918fe63385620a0931672"
         },
         {
           "path": "ibm-plex-sans-arabic/ttf/ibm-plex-sans-arabic-600.ttf",
@@ -89,8 +90,8 @@
           "weight": 700,
           "subset": "arabic",
           "unicodeRange": "U+060C, U+061B, U+061F, U+0621-063A, U+0640-0655, U+0660-066D, U+0670-0671, U+067E, U+0686, U+0698, U+06A4, U+06A9, U+06AF, U+06BE, U+06C1, U+06CC, U+06D2, U+06D4, U+200C-200F",
-          "bytes": 19656,
-          "sha256": "11d693ae7f90fc3d70591a0e2317ca968def2c6eb0154a1fe8b6cc4921d292de"
+          "bytes": 19828,
+          "sha256": "8724422f28b89717836643030cacc2572b800026160ad41b118ac0b1dae5cbfd"
         },
         {
           "path": "ibm-plex-sans-arabic/web/ibm-plex-sans-arabic-700-latin.woff2",
@@ -98,8 +99,8 @@
           "weight": 700,
           "subset": "latin",
           "unicodeRange": "U+0020-007E, U+00A0, U+00AB, U+00B0, U+00B1, U+00B5, U+00B7, U+00BB, U+00C2, U+00C7, U+00CE, U+00D6-00D7, U+00DB-00DC, U+00E2, U+00E7, U+00EE, U+00F6-00F7, U+00FB-00FC, U+011E-011F, U+0130-0131, U+015E-015F, U+2013-2014, U+2018-2019, U+201C-201D, U+2026",
-          "bytes": 14820,
-          "sha256": "8c8b1209e91137c3f093f00cd72d874faa9f5a92ae3d35f5d54eef2cfc4bf2e8"
+          "bytes": 14952,
+          "sha256": "5c8a7b545af38dbf56663d9f4468482f9d804113cc8096861202cef927fdb9c3"
         },
         {
           "path": "ibm-plex-sans-arabic/ttf/ibm-plex-sans-arabic-700.ttf",
@@ -113,6 +114,7 @@
     {
       "id": "noto-naskh-arabic",
       "family": "Noto Naskh Arabic",
+      "webFamily": "Noto Naskh Arabic",
       "role": "long-text",
       "version": "2.021",
       "source": "https://github.com/google/fonts/tree/main/ofl/notonaskharabic",

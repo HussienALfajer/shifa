@@ -1,13 +1,48 @@
 // Shared ESLint flat config for every TypeScript package.
 // Type-aware rules catch what formatting and tsc cannot (unawaited promises, unsafe any).
+import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import js from '@eslint/js';
 import { defineConfig } from 'eslint/config';
 import tseslint from 'typescript-eslint';
-import { shifaPlugin } from './rules/module-boundaries.js';
+import { shifaPlugin } from './rules/plugin.js';
 
 /** Hand-written files above this length must be split. */
 export const MAX_LINES = 400;
+
+const REPO_ROOT = join(import.meta.dirname, '..', '..');
+/** The only package that may import the UI library (ADR-0039). */
+export const UI_ROOT = join(REPO_ROOT, 'packages', 'ui');
+const TAILWIND_THEME = join(
+  REPO_ROOT,
+  'packages',
+  'tokens',
+  'generated',
+  'css',
+  'tailwind-theme.css',
+);
+
+/**
+ * The spacing steps the token theme offers, as Tailwind names them (`4`, `0.5`): read from the
+ * generated Tailwind theme of @shifa/tokens, where `--spacing-0_5` is the utility `p-0.5`.
+ * @returns {Set<string>}
+ */
+export function spacingSteps() {
+  const theme = readFileSync(TAILWIND_THEME, 'utf8');
+  return new Set(
+    [...theme.matchAll(/^\s*--spacing-([\w-]+):/gm)].map((m) => (m[1] ?? '').replaceAll('_', '.')),
+  );
+}
+
+/** The UI rules of spec 0.4 criterion 6, for every file (ADR-0039, design-system.md). */
+export function uiRules() {
+  return {
+    'shifa/no-physical-direction': 'error',
+    'shifa/no-hardcoded-design-values': ['error', { spacing: [...spacingSteps()] }],
+    'shifa/ui-sdk-only-in-ui': ['error', { uiRoot: UI_ROOT }],
+    'shifa/no-ui-sdk-agent': 'error',
+  };
+}
 
 const DB_MESSAGE = 'Use @shifa/db (withTenant) instead of a raw database connection (ADR-0005).';
 const DRIVERS = [
@@ -172,6 +207,11 @@ export function createConfig({ tsconfigRootDir, allowRawDb = [], moduleBoundarie
     dbImportRestrictions(allowRawDb, 'production'),
     dbImportRestrictions(allowRawDb, 'scripts'),
     dbImportRestrictions(allowRawDb, 'tests'),
+    {
+      files: ['**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}'],
+      plugins: { shifa: shifaPlugin },
+      rules: uiRules(),
+    },
     ...moduleBoundaries(tsconfigRootDir, boundaries),
     {
       files: ['**/*.js', '**/*.mjs'],

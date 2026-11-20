@@ -63,6 +63,8 @@ export interface DesignSystemTokens {
 /** One family of packages/tokens/fonts/fonts.json. */
 export interface FontFamily {
   family: string;
+  /** The family name the CSS uses (OD-59: IBM Plex Sans Arabic is served as Shifa Sans Arabic). */
+  webFamily?: string;
   files: { path: string; format: string; weight: number }[];
 }
 
@@ -237,7 +239,7 @@ export function designSystem(
     f.files
       .filter((file) => file.format === 'ttf')
       .map((file) => ({
-        family: f.family,
+        family: f.webFamily ?? f.family,
         file: `fonts/${basename(file.path)}`,
         weight: String(file.weight),
         style: 'normal' as const,

@@ -58,14 +58,30 @@ const THEME: { prefix: string; namespace: string; layers?: BuiltToken['layer'][]
   { prefix: 'motion.easing.', namespace: 'ease' },
 ];
 
-/** Namespaces whose Tailwind defaults are removed, so only token values exist. */
-const RESET = ['color', 'radius', 'shadow', 'font', 'text', 'font-weight', 'leading', 'ease'];
+/**
+ * Namespaces whose Tailwind defaults are removed, so only token values exist. Resetting
+ * `spacing` also removes the `--spacing` multiplier, so `p-14` or `p-0.5` compile to nothing
+ * unless a token offers that step (slice 0.4-03).
+ */
+const RESET = [
+  'color',
+  'spacing',
+  'radius',
+  'shadow',
+  'font',
+  'text',
+  'font-weight',
+  'leading',
+  'ease',
+];
 
 function themeName(token: BuiltToken): string | null {
   const group = THEME.find((g) => token.path.startsWith(g.prefix));
   if (group === undefined) return null;
   if (group.layers !== undefined && !group.layers.includes(token.layer)) return null;
-  const rest = token.path.slice(group.prefix.length).replaceAll('.', '-');
+  let rest = token.path.slice(group.prefix.length).replaceAll('.', '-');
+  // A fractional step (`space.0-5`) is the usual Tailwind name `p-0.5`, written `0_5` in a theme.
+  if (group.namespace === 'spacing') rest = rest.replace(/^(\d+)-(\d+)$/, '$1_$2');
   return `--${group.namespace}-${rest}`;
 }
 

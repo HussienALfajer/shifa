@@ -15,6 +15,9 @@ const manifestPath = join(fontsDir, 'fonts.json');
 /** Bytes; each WOFF2 subset must fit (slice 0.4-02, "Budget"). */
 const WOFF2_BUDGET = 60_000;
 
+/** The family name inside the UI web subsets and in the CSS (OD-59). */
+const WEB_FAMILY = 'Shifa Sans Arabic';
+
 const FAMILIES = {
   ui: { family: 'IBM Plex Sans Arabic', weights: [400, 500, 600, 700], latin: true },
   'long-text': { family: 'Noto Naskh Arabic', weights: [400, 700], latin: false },
@@ -131,6 +134,34 @@ describe('font files', () => {
         }
       }
     }
+  });
+
+  // OD-59 (owner, 2026-11-20): the OFL of IBM Plex Sans Arabic reserves the name "Plex", and a
+  // subset is a Modified Version, so the web subsets carry another family name. The static TTFs
+  // are the unmodified upstream files and keep theirs.
+  it('names the UI web subsets Shifa Sans Arabic, with no "Plex", and keeps the copyright', () => {
+    const ui = manifest().families.find((f) => f.role === 'ui');
+    assert.equal(ui.webFamily, WEB_FAMILY);
+    const upstream = readFontInfo(join(fontsDir, ui.files.find((f) => f.format === 'ttf').path));
+    assert.match(upstream.names.copyright, /IBM Corp/);
+    const subsets = ui.files.filter((f) => f.format === 'woff2');
+    assert.equal(subsets.length, FAMILIES.ui.weights.length * 2);
+    for (const file of subsets) {
+      const { names } = readFontInfo(join(fontsDir, file.path));
+      const plex = Object.entries(names).filter(([, value]) => /plex/i.test(value));
+      assert.deepEqual(plex, [], `${file.path}: name records with "Plex"`);
+      assert.equal(names.fontFamily, WEB_FAMILY, `${file.path}: family name`);
+      assert.match(names.postscriptName, /^ShifaSansArabic-/, `${file.path}: PostScript name`);
+      assert.equal(names.copyright, upstream.names.copyright, `${file.path}: copyright notice`);
+      assert.match(names.license ?? '', /Open Font License/, `${file.path}: licence notice`);
+    }
+    const licence = readFileSync(join(fontsDir, ui.licence), 'utf8');
+    assert.match(licence, /Reserved Font Name "Plex"/, 'the upstream OFL is kept unchanged');
+  });
+
+  it('keeps the upstream name in the long-text family, which reserves none', () => {
+    const naskh = manifest().families.find((f) => f.role === 'long-text');
+    assert.equal(naskh.webFamily, naskh.family);
   });
 
   // Western digits only: the product shows no Arabic-Indic digits (OD-20, closed 2026-11-20),

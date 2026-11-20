@@ -2,6 +2,7 @@
 /* Import after tailwindcss and tokens.css. */
 @theme inline {
   --color-*: initial;
+  --spacing-*: initial;
   --radius-*: initial;
   --shadow-*: initial;
   --font-*: initial;
@@ -125,7 +126,7 @@
   --spacing-12: var(--shifa-space-12);
   --spacing-13: var(--shifa-space-13);
   --spacing-16: var(--shifa-space-16);
-  --spacing-0-5: var(--shifa-space-0-5);
+  --spacing-0_5: var(--shifa-space-0-5);
   --radius-none: var(--shifa-radius-none);
   --radius-xs: var(--shifa-radius-xs);
   --radius-sm: var(--shifa-radius-sm);

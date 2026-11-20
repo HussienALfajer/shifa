@@ -176,6 +176,9 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 
 - `packages/ui` wraps UI SDK (`@ui-sdk/react` and `@ui-sdk/core`, a beta when adopted, pinned to an exact version; ADR-0039). Only `packages/ui` imports `@ui-sdk/*`. Eight components pass an Arabic RTL gate before the core set is built; a component that fails is built on Base UI (`@base-ui/react`, exact pin) behind the same API and listed here with the upstream issue. The UI SDK agent bridge is not used.
 - Styling with Tailwind v4 logical utilities (`ms-*`, `pe-*`, `start-*`) only; physical left/right utilities are lint errors.
+- Lint (`tooling/eslint-config/rules/`, plugin `shifa`, every package): `no-physical-direction` (physical utilities in class lists, physical properties in `style`), `no-hardcoded-design-values` (arbitrary values other than a token reference, spacing steps the tokens do not offer, literal colours, lengths and fonts in `style`), `ui-sdk-only-in-ui` (`@ui-sdk/*` and Base UI outside `packages/ui`), `no-ui-sdk-agent` (`@ui-sdk/react/agent` anywhere). Class lists are read from `className`, `cn`/`clsx`/`twMerge` and `cva`/`tv`.
+- The Tailwind theme offers token values only: Tailwind's colours, spacing (with its multiplier), radius, shadows, fonts, sizes and easings are reset, so `p-14` or `bg-red-500` compile to nothing.
+- `DensityProvider` refuses `compact` on a coarse pointer (`(pointer: coarse)`) and falls back to comfortable with a development warning.
 - Core set (Phase 0.4): listed in spec 0.4, criterion 8.
 - Companions where UI SDK has gaps:
 
@@ -194,7 +197,7 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 - Set `dir="rtl"` and `lang="ar"` on the document; UI SDK reads the page's text direction (a Base UI fallback component also needs Base UI's `DirectionProvider`) [RN-19].
 - Use logical sides for floating elements (`inline-start` / `inline-end`); test keyboard navigation in RTL for every interactive component (RTL keyboard fixes were still landing in 2026).
 - Wrap Latin fragments inside Arabic text (drug names, units, IDs, phone numbers, tooth numbers) in isolated spans so they render in the correct direction.
-- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (both OFL 1.1). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`; built by `scripts/fonts-subset.mjs`). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text (15 px in compact); Naskh from 18 px up.
+- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (both OFL 1.1). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`, `fonts.css`; built by `scripts/fonts-subset.mjs`). The OFL of IBM Plex Sans Arabic reserves the name "Plex" and a subset is a Modified Version, so its web subsets are renamed **Shifa Sans Arabic** inside the font and in the CSS and tokens; the copyright and licence notices and `OFL.txt` are kept (OD-59, slice 0.4-03). The static TTFs are the unmodified upstream files. Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text (15 px in compact); Naskh from 18 px up.
 - Digits: Western (0–9) only, everywhere (OD-20, closed 2026-11-20); dates and currency through i18next/ICU with the numbering system set to `latn`. Inputs accept typed Arabic-Indic digits and store Western ones. Numbers in tables and queue numbers use the UI font's digits, which are tabular.
 
 ## Flutter design system

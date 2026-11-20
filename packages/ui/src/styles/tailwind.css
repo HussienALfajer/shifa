@@ -1,0 +1,14 @@
+/* The Tailwind v4 entry of @shifa/ui (import it as `@shifa/ui/styles.css`).
+ * Order: Tailwind, the token custom properties, the token theme (which removes Tailwind's own
+ * colours, spacing, radius, shadows, fonts, sizes and easings, so only token values compile),
+ * then the self-hosted font faces. */
+@import "tailwindcss";
+@import "@shifa/tokens/css/tokens.css";
+@import "@shifa/tokens/css/tailwind-theme.css";
+@import "@shifa/tokens/fonts/fonts.css";
+
+/* The components' classes, for an app that imports this entry. */
+@source "../";
+
+/* Themes switch by attribute (ThemeProvider), not by the system setting. */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
