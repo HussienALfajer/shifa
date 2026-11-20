@@ -30,7 +30,7 @@
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } }
       },
       "muted": {
-        "$description": "Secondary text: hints, captions, metadata, column headers. 4.5 : 1 on every surface.",
+        "$description": "Secondary text: hints, captions, metadata, column headers. 4.5 : 1 on the app, surface and raised backgrounds and the subtle and default selection tints; not on selection.strong.",
         "$value": "{color.jasmine.ink.500}",
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } }
       },
@@ -94,7 +94,7 @@
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } }
       },
       "strong": {
-        "$description": "A selected item that is also hovered or pressed, and the range ends of a date range.",
+        "$description": "A selected item that is also hovered or pressed, and the range ends of a date range. Only color.text.default and color.icon.default sit on it.",
         "$value": "{color.jasmine.green.200}",
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.800}" } } }
       }

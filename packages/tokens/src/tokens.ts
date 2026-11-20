@@ -47,7 +47,9 @@ function walk(
 ): void {
   const own = typeof tree['$type'] === 'string' ? tree['$type'] : type;
   const described = typeof tree['$description'] === 'string' ? tree['$description'].trim() : '';
-  const description = described === '' ? note : described;
+  // A note at the top of a file is not a usage note: the files of a layer are merged into one
+  // tree, so it would pass down to every token of the layer.
+  const description = described === '' || path.length === 0 ? note : described;
   if ('$value' in tree) {
     const extensions = isObject(tree['$extensions']) ? tree['$extensions']['shifa'] : undefined;
     const shifa = isObject(extensions) ? extensions : {};

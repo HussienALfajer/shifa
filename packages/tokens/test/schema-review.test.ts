@@ -98,6 +98,15 @@ describe('hue rules', () => {
     expect(problems.join('\n')).toMatch(/color\.brand\.primary: crimson/);
   });
 
+  it('a note at the top of a file is not a usage note for the layer', () => {
+    const problems = broken((s) => {
+      s.layers.semantic['$description'] = 'Semantic tokens.';
+      const text = group(group(s.layers.semantic['color'])['text']);
+      delete text['default']?.['$description'];
+    });
+    expect(problems).toContainEqual(expect.stringMatching(/^color\.text\.default: .*usage note/));
+  });
+
   it('crimson under color.alert.critical passes', () => {
     const problems = broken((s) => {
       withCrimson(s);
