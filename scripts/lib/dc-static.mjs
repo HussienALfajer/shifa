@@ -140,7 +140,21 @@ export function mount(Component) {
     const handlers = [];
     const live = [...root.querySelectorAll('[data-dc-on]')];
     const focused = live.indexOf(doc.activeElement);
+    // The tree is rebuilt on every state change: carry typed text and scroll positions over.
+    const fields = () => [...root.querySelectorAll('textarea, input')];
+    const typed = fields().map((field) => field.value);
+    const scrolled = [...root.querySelectorAll('*')].map((element) => element.scrollTop);
     root.innerHTML = renderTemplate(nodes, instance.renderVals(), handlers);
+    fields().forEach((field, index) => {
+      if (typed[index] !== undefined && typed.length === fields().length)
+        field.value = typed[index];
+    });
+    const rebuilt = [...root.querySelectorAll('*')];
+    if (rebuilt.length === scrolled.length) {
+      rebuilt.forEach((element, index) => {
+        if (scrolled[index]) element.scrollTop = scrolled[index];
+      });
+    }
     const bound = [...root.querySelectorAll('[data-dc-on]')];
     for (const element of bound) {
       const [type, index] = element.getAttribute('data-dc-on').split(':');

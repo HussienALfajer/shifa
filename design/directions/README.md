@@ -1,6 +1,6 @@
 # Design directions (slice 0.4-02)
 
-Four interactive prototypes of Shifa's design language, each on the same three screens, so the owner can compare them and pick one (spec 0.4, criterion 4; OD-57). They are drawn in the Shifa design project, exported as static builds and committed here as the record of the decision. The three not chosen stay.
+Four interactive prototypes of Shifa's design language, each on the same three screens, so the owner can compare them and pick one (spec 0.4, criterion 4; OD-57). They were drawn in a design canvas of the owner's account ("Shifa Design Directions"), and are kept here as static builds, as the record of the decision. The three not chosen stay.
 
 | Folder | Direction | Brief |
 |---|---|---|
@@ -29,7 +29,8 @@ The bar at the top of each page links the four screens and switches theme (`data
 
 Shared by the four briefs in [briefs/common.md](briefs/common.md) and checked by `scripts/test/design-directions.test.mjs`:
 
-- Three entry files with the names above, `lang="ar"` and `dir="rtl"`.
+- Four entry files with the names above, `lang="ar"` and `dir="rtl"`.
 - No external URL: fonts, icons and scripts are inside the build.
 - People are shown by names made from the lists of `@shifa/testing` only, each in an element with `data-person="<full name>"`.
-- The folders `a/` to `d/` are exported files: excluded from Biome and ESLint and marked `linguist-generated`. Do not edit them by hand; change the design and export again.
+- The folders `a/` to `d/` are generated files: excluded from Biome and ESLint and marked `linguist-generated`. Do not edit them by hand; change a file in `source/` and run the build script.
+- The density switch changes the desktop screens only; the tablet and phone screens stay comfortable.

@@ -44,7 +44,7 @@ Locked set today (hues from `color.signal.*`, apart from the brand palette):
 | `color.alert` | info (blue), warning (amber), critical (crimson) | fg, bg, border, solid, on-solid |
 | `color.queue` (SCH-18) | booked (slate), confirmed (blue), arrived (cyan), waiting (amber), in-room (violet), done (green), no-show (brick), cancelled (sand) | fg, bg |
 
-Crimson is the only red and belongs to `color.alert.critical` (principle 1 of spec 0.4), so `danger` (destructive actions, validation errors) is brick. The three alert severity names and the hue of each status are provisional until the owner sees them on real screens in slice 0.4-02. Odontogram, perio, laterality and pain colours join under `color.clinical` with their modules (Phases B–C, spike S8).
+Crimson is the only red and belongs to `color.alert.critical` (principle 1 of spec 0.4), so `danger` (destructive actions, validation errors) is brick. The three alert severity names and the hue of each status are provisional until the owner confirms them (asked again in slice 0.4-02b). Odontogram, perio, laterality and pain colours join under `color.clinical` with their modules (Phases B–C, spike S8).
 
 ## Platform colour palette — "Damascene Jasmine" (ياسمين الشام)
 
@@ -111,7 +111,7 @@ Contrast is declared, not guessed: `packages/tokens/src/contrast-pairs.json` lis
 
 ### Dark theme (provisional, OD-56)
 
-Derived from the same palette in slice 0.4-01; the owner sees it on real screens in slice 0.4-02 and may adjust it there. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
+Derived from the same palette in slice 0.4-01; shown on the direction screens of slice 0.4-02; the owner's word on it is asked in slice 0.4-02b. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
 
 | Semantic token | Dark value |
 |---|---|
@@ -150,7 +150,7 @@ Idea: a welcoming place. Generous cards, rounder shapes, larger text and a littl
 | Radius | 4 marks, 8 inputs and chips, 12 buttons and cards, 16 dialogs and sheets, full for status pills and number badges | `radius.xs`–`lg`, `shape.radius.*` |
 | Surfaces | white cards on cream with a light border and one small soft shadow (0 1 px 2 px, 8 %); dropdowns one level higher, dialogs one more; no blur, no large shadow. In dark the border carries the card | `elevation.1`–`3`, `shadow.card`, `.dropdown`, `.modal` |
 | Type | ratio 1.25 from 16 px: data 15 (compact 14), body 16 (phone and reading 18), headings 20, 25, 31, display numbers 44; line height 1.6 body, 1.3 headings, 1.8 reading; weights 400 body, 500 labels, 600 headings, 700 display numbers | `font.size.*`, `text.size.*`, `text.weight.*` |
-| Density | comfortable: 44 px controls, 48 px rows, card rows with 8 px gaps; compact (pointer devices only): 32 px controls and ruled rows, at least ten queue rows at 1366 × 768 | `size.control.*`, `size.row` |
+| Density | comfortable: 44 px controls (the prototype drew 48; the tokens keep 44 with 52 for large), 48 px rows, card rows with 8 px gaps; compact (pointer devices only): 32 px controls and ruled rows, at least ten queue rows at 1366 × 768 | `size.control.*`, `size.row` |
 | Icons | Phosphor (MIT), duotone, 20 px in rows and controls and 24 px in navigation and cards; mint second tone, gold second tone only for the current item; Healthicons (CC0) for medical glyphs. Mirror only directional icons | `size.icon.*` |
 | Motion | 150 ms hover and press, 200 ms popovers, 240 ms dialogs and sheets; ease-out, 8 px rise; off under reduced motion | `motion.duration.*`, `motion.easing.*` |
 | Numerals | Western digits, tabular; the queue number at 44 px, weight 700, in a round badge | `text.size.display`, `text.weight.display` |
@@ -192,7 +192,7 @@ Still to fill from this choice (with the design-system token output, checkpoint 
 - Set `dir="rtl"` and `lang="ar"` on the document; UI SDK reads the page's text direction (a Base UI fallback component also needs Base UI's `DirectionProvider`) [RN-19].
 - Use logical sides for floating elements (`inline-start` / `inline-end`); test keyboard navigation in RTL for every interactive component (RTL keyboard fixes were still landing in 2026).
 - Wrap Latin fragments inside Arabic text (drug names, units, IDs, phone numbers, tooth numbers) in isolated spans so they render in the correct direction.
-- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (licences to confirm). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`; built by `scripts/fonts-subset.mjs`). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text; Naskh from 18 px up.
+- Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (both OFL 1.1). Files, subsets and licences are in `packages/tokens/fonts/` (`fonts.json`; built by `scripts/fonts-subset.mjs`). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text (15 px in compact); Naskh from 18 px up.
 - Digits: Western (0–9) only, everywhere (OD-20, closed 2026-11-20); dates and currency through i18next/ICU with the numbering system set to `latn`. Inputs accept typed Arabic-Indic digits and store Western ones. Numbers in tables and queue numbers use the UI font's digits, which are tabular.
 
 ## Flutter design system

@@ -27,7 +27,6 @@ design/directions/a/** linguist-generated
 design/directions/b/** linguist-generated
 design/directions/c/** linguist-generated
 design/directions/d/** linguist-generated
-design/directions/source/** linguist-generated
 
 # drizzle-kit snapshots (also refused by the edit hook)
 **/migrations/*/snapshot.json linguist-generated

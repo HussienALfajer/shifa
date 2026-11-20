@@ -53,6 +53,8 @@ const fontFaces = () => {
   const faces = [];
   const files = [];
   for (const family of families) {
+    // OFL condition 2: the licence travels with every copy of the fonts.
+    files.push([join(fontsDir, family.licence), `${family.id}-OFL.txt`]);
     for (const file of family.files.filter((f) => f.format === 'woff2')) {
       const name = file.path.split('/').pop();
       files.push([join(fontsDir, file.path), name]);

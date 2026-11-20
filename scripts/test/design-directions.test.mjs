@@ -10,7 +10,12 @@ const root = join(import.meta.dirname, '..', '..');
 const directionsDir = join(root, 'design', 'directions');
 
 const DIRECTIONS = ['a', 'b', 'c', 'd'];
-const SCREENS = ['reception-queue.html', 'doctor-visit.html', 'patient-booking.html'];
+const SCREENS = [
+  'reception-queue.html',
+  'doctor-visit.html',
+  'doctor-visit-tablet.html',
+  'patient-booking.html',
+];
 const TEXT_FILE = /\.(html|css|js|mjs|json|svg)$/;
 /** XML namespaces are identifiers, not requests. */
 const NAMESPACE = /^https?:\/\/www\.w3\.org\//;
