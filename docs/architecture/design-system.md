@@ -14,7 +14,7 @@ Shifa has its own design system, built on UI SDK headless behaviours for the web
 
 ## Token model
 
-Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, edited in code. Figma is not used (OD-19 closed); visual exploration is done in Claude Design and Storybook is the living reference.
+Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, edited in code. Figma is not used (OD-19 closed). Designs are made first in the Shifa design project in Claude, which mirrors the code ([Design workflow](#design-workflow)); Storybook is the technical reference for components.
 
 | Layer | Examples | Who may change |
 |---|---|---|
@@ -185,9 +185,58 @@ Status colours in dark use the 300 step for text, 900 for the soft fill, 800 for
 - Flutter: golden tests (alchemist) for `shifa_ui` widgets in RTL; widget previews for development.
 - Contract: tokens drift check; no hard-coded colours, spacing or fonts outside `packages/tokens` (lint rule).
 
+## Design workflow
+
+Decided in [ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.md) (OD-58). Every component and every screen is designed and approved by the owner before it is coded, in one design project in Claude; the code stays the source of truth and the project mirrors it.
+
+### The Shifa design project
+
+| Part | Type | Holds | Changed by |
+|---|---|---|---|
+| Shifa Design System | Design System, synced from code (read-only), the account's default | Brand book, tokens in both themes, type, spacing, radius, shadows, fonts, logo and icons, the components of `packages/ui` with live previews and guidelines | The repository only: token output and `/design-sync` |
+| Shifa Guide | Design canvas | One guide page drawn from the tokens: the layer flow, then 01 Foundations, 02 Theme, 03 Tokens, 04 Effects, 05 Typography, 06 Rules | Redrawn after a token change |
+| Shifa Components (proposals) | Design canvas, one page per batch | The sheet of a component batch before it is coded | The session with the owner |
+| Shifa Screens | One Design canvas per app (clinic web, admin, display, booking pages, patient app), one page per module | Screens, assembled from the design system's components | The session with the owner |
+
+The layers of the guide are the token layers: Foundations = primitive, Theme = brand, Tokens = semantic, Layers = component. Artifacts are private to the owner's account; their links are not committed here.
+
+### Direction of flow
+
+```
+packages/tokens ──generate──▶ design-system tokens ──sync──▶ Shifa Design System ──▶ Guide, sheets, screens
+packages/ui (tested) ──/design-sync──▶ Shifa Design System (components)
+approved sheet ──▶ component code            approved screen ──▶ screen code
+```
+
+- A value changes in `packages/tokens`, is regenerated (drift-checked) and synced. Nothing is edited in the design system.
+- A component enters the design system only after it is built and tested in `packages/ui`.
+- A drawing is the approved look. Behaviour (RTL keyboard, focus, typeahead, screen reader, digits) is proven by tests only.
+
+### Component cycle (per batch)
+
+1. **Sheet:** every component of the batch in all its states (default, hover, focus, pressed, disabled, invalid, loading), light and dark, RTL and LTR, both densities, with the real tokens and synthetic names.
+2. **Approval:** the owner approves the sheet, once per batch; changes are made on the sheet.
+3. **Code:** built in `packages/ui` to match the sheet, with the RTL, axe and screenshot tests.
+4. **Sync:** `/design-sync` pushes the real components; the sheet is marked superseded.
+
+### Screen cycle (Phase A onward)
+
+1. **Draw in `/spec`:** each screen of the feature, from the design system's components, in Arabic RTL, light and dark, at the sizes the feature needs, with synthetic data.
+2. **Approval:** the owner approves the screens with the spec.
+3. **Code:** built to match; the slice compares the browser screenshot (real backend) with the drawing and fixes or explains each difference.
+4. **Missing component:** it goes through the component cycle first; no one-off inside a screen.
+
+### Limits
+
+- Bundling `packages/ui` for the design system is tried first in slice 0.4-03 (Button). If it fails, components appear as static previews from Storybook and screens are drawn with tokens and matching markup; the screenshot comparison then carries the consistency check.
+- A screens canvas holds a copy of the tokens taken when the design system was installed; refresh it after a token change.
+- Patient app (Flutter): drawings are a visual reference; `shifa_ui` golden tests are the check.
+- Standalone Claude Design (claude.ai/design) closes on 2026-12-14; the project uses the artifact types inside Claude.
+
 ## Working with Claude Code
 
-- The `/ui-component` skill holds the component checklist (API conventions, RTL, a11y, stories, tests) and points to the best existing component to copy.
+- `/spec` draws the screens of a feature with UI and `/build-slice` compares the built screen with the approved drawing (ADR-0040).
+- The `/ui-component` skill holds the component checklist (the design sheet and its approval, API conventions, RTL, a11y, stories, tests, the sync to the design system) and points to the best existing component to copy.
 - The upstream `ui-sdk` agent skill is vendored at a pinned commit after review (ADR-0039).
 
 ## Effort and risks
