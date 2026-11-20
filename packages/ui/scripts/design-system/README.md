@@ -67,8 +67,15 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **Combobox**: search a long list; a word of the name starts with what was typed.
 - **NumberInput**: − at the logical start, + at the end; Western digits with comma grouping.
 - **DatePicker**: dd/mm/yyyy, Gregorian, the week from Saturday, Levantine month names.
+- **IconButton**: a square Button with one icon; its `label` names it; md 44, sm 36.
+- **Input**, **Textarea**, **PasswordInput**: the shared field box; an error is a 2 px danger border with an icon and text; `dir: 'auto'` for Latin content; the password toggle sits inside at the logical end.
+- **Checkbox**, **RadioGroup**, **Switch**: a 20 px mark or a 44 × 24 track at the logical start, the line a 44 px target; checkbox for a form, switch for a setting that acts at once.
+- **OtpInput**: six 48 × 52 slots, left to right in both directions (OD-62); one field for screen readers.
+- **TimeInput**: hour and minute (and ص/م on the 12-hour clock, a clinic setting, OD-62), left to right; the value is "HH:mm".
+- **Field**: label, required asterisk, hint and error around a control.
+- **Form**: a whole form in one state; in code React Hook Form with the server's Zod schema, errors as i18n keys.
 
-Tabs, Dialog, Popover and Menu take their content as data here (`items`, `title`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field and Form take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 
@@ -76,6 +83,6 @@ Tabs, Dialog, Popover and Menu take their content as data here (`items`, `title`
 
 ## Not synced yet
 
-- The rest of the core set (inputs and forms, more overlays, data display): they arrive batch by batch, after each sheet is approved and the code passes its tests (slices 0.4-05 to 0.4-07).
+- The rest of the core set (more overlays, data display): they arrive batch by batch, after each sheet is approved and the code passes its tests (slices 0.4-06 and 0.4-07).
 - Motion durations and easings: this format has no motion section.
 - Compact density: shown in each token's note and in the component stylesheet, not as separate token values.

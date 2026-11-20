@@ -1,0 +1,45 @@
+<!-- @dsCard group="Forms" height=820 subtitle="Registration after a failed submit, sign-in while submitting · RTL light, LTR dark" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; padding: 16px; align-items: start; }
+  .panel { padding: 24px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-surface); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" id="registration" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" id="sign-in" data-theme="dark" dir="ltr" lang="en"></section>
+</div>
+<script>
+  window.Shifa.mount(document.getElementById('registration'), 'Form', {
+    title: 'تسجيل مريض جديد',
+    summary: 'حقلان يحتاجان إلى تصحيح.',
+    fields: [
+      { kind: 'input', label: 'الاسم الكامل', required: true, defaultValue: 'سارة الأحمد', half: true },
+      { kind: 'input', label: 'رقم الهاتف', required: true, dir: 'auto', defaultValue: '0944 12', error: '10 أرقام تبدأ بـ 09', half: true },
+      { kind: 'radio', label: 'الجنس', orientation: 'horizontal', defaultValue: 'female', items: [{ value: 'female', label: 'أنثى' }, { value: 'male', label: 'ذكر' }], half: true },
+      { kind: 'time', label: 'الوقت المفضّل للمواعيد', defaultValue: '16:00', half: true },
+      { kind: 'textarea', label: 'ملاحظات', defaultValue: 'حساسية من البنسلين.', hint: 'تظهر للطبيب فقط' },
+      { kind: 'switch', label: 'تذكير بالمواعيد عبر واتساب', defaultChecked: true },
+      { kind: 'checkbox', label: 'أوافق على حفظ بياناتي في ملف العيادة', error: 'الموافقة مطلوبة للتسجيل' }
+    ],
+    cancelLabel: 'إلغاء',
+    submitLabel: 'سجّل'
+  });
+  window.Shifa.mount(document.getElementById('sign-in'), 'Form', {
+    title: 'Sign in',
+    fields: [
+      { kind: 'input', label: 'Phone', dir: 'auto', defaultValue: '0944 123 456' },
+      { kind: 'password', label: 'Password', defaultValue: 'Shifa-2026' },
+      { kind: 'otp', label: 'Verification code', defaultValue: '4820' }
+    ],
+    submitLabel: 'Sign in',
+    submitting: true
+  });
+</script>
+</body>
+</html>

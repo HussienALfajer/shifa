@@ -42,6 +42,9 @@ export const PARTS: Record<string, string> = {
   MenuItem: 'Menu',
   MenuSeparator: 'Menu',
   Submenu: 'Menu',
+  Radio: 'RadioGroup',
+  FormField: 'Form',
+  FormSubmit: 'Form',
 };
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';

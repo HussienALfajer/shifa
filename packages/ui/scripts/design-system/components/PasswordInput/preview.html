@@ -1,0 +1,32 @@
+<!-- @dsCard group="Forms" height=300 subtitle="Hidden, an error, disabled · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var FIELDS = [
+    { label: 'كلمة المرور', defaultValue: 'Shifa-2026' },
+    { label: 'كلمة المرور الجديدة', autoComplete: 'new-password', defaultValue: 'Shif', error: '8 أحرف على الأقل' },
+    { label: 'كلمة المرور', disabled: true }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    FIELDS.forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'PasswordInput', props);
+    });
+  });
+</script>
+</body>
+</html>

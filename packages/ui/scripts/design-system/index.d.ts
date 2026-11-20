@@ -17,6 +17,8 @@ export type IconName =
   | 'clock'
   | 'cloud-check'
   | 'dots'
+  | 'eye'
+  | 'eye-slash'
   | 'file-text'
   | 'gear'
   | 'house'
@@ -161,6 +163,129 @@ export interface DatePickerProps extends FieldProps {
   max?: string;
 }
 
+/** A square button with one icon; `label` is its required name. md 44 px, sm 36 px. */
+export interface IconButtonProps {
+  icon: IconName;
+  label: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  size?: 'sm' | 'md';
+  disabled?: boolean;
+}
+
+/** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
+export interface InputProps extends Partial<FieldProps> {
+  defaultValue?: string;
+  placeholder?: string;
+  required?: boolean;
+  readOnly?: boolean;
+  dir?: 'auto' | 'ltr' | 'rtl';
+  type?: 'text' | 'email' | 'tel' | 'search' | 'url';
+  startIcon?: IconName;
+}
+
+/** Longer text; grows with it; `maxLength` shows a «n / max» counter. */
+export interface TextareaProps extends Partial<FieldProps> {
+  defaultValue?: string;
+  placeholder?: string;
+  required?: boolean;
+  readOnly?: boolean;
+  maxLength?: number;
+}
+
+/** A password with a show toggle inside at the logical end (one name, aria-pressed). */
+export interface PasswordInputProps extends Partial<FieldProps> {
+  defaultValue?: string;
+  required?: boolean;
+  autoComplete?: 'current-password' | 'new-password';
+}
+
+/** A choice sent with a form; the text is `children`. */
+export interface CheckboxProps {
+  children: string;
+  defaultChecked?: boolean | 'indeterminate';
+  description?: string;
+  error?: string;
+  disabled?: boolean;
+}
+
+/** One of a few choices, vertical or (short ones) horizontal. */
+export interface RadioGroupProps extends FieldProps {
+  items: { value: string; label: string; description?: string; disabled?: boolean }[];
+  defaultValue?: string | null;
+  orientation?: 'vertical' | 'horizontal';
+  required?: boolean;
+}
+
+/** A setting that acts at once; the text is `children`. */
+export interface SwitchProps {
+  children: string;
+  defaultChecked?: boolean;
+  description?: string;
+  disabled?: boolean;
+}
+
+/** A one-time code: 6 slots (OD-62), left to right in both directions; Western digits. */
+export interface OtpInputProps extends Partial<FieldProps> {
+  length?: number;
+  defaultValue?: string;
+}
+
+/** A time, "HH:mm"; 24-hour by default, 12-hour with a ص/م segment (a clinic setting, OD-62). */
+export interface TimeInputProps extends FieldProps {
+  defaultValue?: string | null;
+  hourCycle?: 12 | 24;
+  min?: string;
+  max?: string;
+  required?: boolean;
+}
+
+/** A Field around an Input: label, required asterisk, hint and error. */
+export interface FieldComponentProps extends FieldProps {
+  required?: boolean;
+  defaultValue?: string;
+  placeholder?: string;
+  dir?: 'auto' | 'ltr' | 'rtl';
+}
+
+/** A complete form drawn in one state (in code it checks a Zod schema). */
+export interface FormProps {
+  title?: string;
+  summary?: string;
+  fields: (
+    | {
+        kind: 'input' | 'password' | 'textarea' | 'time' | 'otp';
+        label: string;
+        defaultValue?: string;
+        hint?: string;
+        error?: string;
+        required?: boolean;
+        dir?: 'auto' | 'ltr' | 'rtl';
+        hourCycle?: 12 | 24;
+        half?: boolean;
+      }
+    | {
+        kind: 'radio';
+        label: string;
+        items: { value: string; label: string }[];
+        defaultValue?: string;
+        error?: string;
+        required?: boolean;
+        orientation?: 'vertical' | 'horizontal';
+        half?: boolean;
+      }
+    | {
+        kind: 'checkbox' | 'switch';
+        label: string;
+        defaultChecked?: boolean;
+        error?: string;
+        half?: boolean;
+      }
+  )[];
+  submitLabel: string;
+  cancelLabel?: string;
+  submitting?: boolean;
+}
+
 type Name =
   | 'Button'
   | 'Icon'
@@ -171,7 +296,18 @@ type Name =
   | 'Select'
   | 'Combobox'
   | 'NumberInput'
-  | 'DatePicker';
+  | 'DatePicker'
+  | 'IconButton'
+  | 'Input'
+  | 'Textarea'
+  | 'PasswordInput'
+  | 'Checkbox'
+  | 'RadioGroup'
+  | 'Switch'
+  | 'OtpInput'
+  | 'TimeInput'
+  | 'Field'
+  | 'Form';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -185,3 +321,14 @@ export declare const Select: (props: SelectProps) => unknown;
 export declare const Combobox: (props: ComboboxProps) => unknown;
 export declare const NumberInput: (props: NumberInputProps) => unknown;
 export declare const DatePicker: (props: DatePickerProps) => unknown;
+export declare const IconButton: (props: IconButtonProps) => unknown;
+export declare const Input: (props: InputProps) => unknown;
+export declare const Textarea: (props: TextareaProps) => unknown;
+export declare const PasswordInput: (props: PasswordInputProps) => unknown;
+export declare const Checkbox: (props: CheckboxProps) => unknown;
+export declare const RadioGroup: (props: RadioGroupProps) => unknown;
+export declare const Switch: (props: SwitchProps) => unknown;
+export declare const OtpInput: (props: OtpInputProps) => unknown;
+export declare const TimeInput: (props: TimeInputProps) => unknown;
+export declare const Field: (props: FieldComponentProps) => unknown;
+export declare const Form: (props: FormProps) => unknown;
