@@ -68,7 +68,7 @@ export const FIELD_BOX = cn(
   'has-[input:disabled,textarea:disabled]:cursor-not-allowed has-[input:disabled,textarea:disabled]:border-border-default',
   'has-[input:disabled,textarea:disabled]:bg-bg-surface-raised has-[input:disabled,textarea:disabled]:text-text-disabled',
   // Read-only keeps its text readable on the raised surface, with no hover.
-  'has-[input[readonly]:not(:disabled),textarea[readonly]:not(:disabled)]:border-border-default',
+  // Only the background: a border colour here would outrank the error and focus borders.
   'has-[input[readonly]:not(:disabled),textarea[readonly]:not(:disabled)]:bg-bg-surface-raised',
 );
 
@@ -160,6 +160,12 @@ export interface WithFieldProps {
 export function WithField({ children, ...field }: WithFieldProps & { children: ReactNode }) {
   const own =
     field.label !== undefined || field.hint !== undefined || hasError(field.error ?? undefined);
-  if (!own) return <>{children}</>;
+  // Standalone, the control still takes its layout class (a toolbar search box's width).
+  if (!own)
+    return field.className === undefined ? (
+      children
+    ) : (
+      <div className={field.className}>{children}</div>
+    );
   return <FieldShell {...field}>{children}</FieldShell>;
 }

@@ -67,6 +67,7 @@ export function Checkbox({
   const field = useFieldShell();
   const invalid = hasError(error) || field?.invalid === true;
   const isDisabled = disabled ?? field?.disabled;
+  const isRequired = required ?? field?.required;
   const box = (
     <label className={CHOICE_LINE}>
       <BaseCheckbox
@@ -74,7 +75,7 @@ export function Checkbox({
         {...(checked === undefined ? {} : { checked })}
         {...(defaultChecked === undefined ? {} : { defaultChecked })}
         {...(isDisabled === true ? { disabled: true } : {})}
-        {...(required === true ? { required: true } : {})}
+        {...(isRequired === true ? { required: true } : {})}
         {...(name === undefined ? {} : { name })}
         {...(value === undefined ? {} : { value })}
         {...(onBlur === undefined ? {} : { onBlur })}
@@ -98,8 +99,18 @@ export function Checkbox({
       </span>
     </label>
   );
-  // Inside an outer Field (a form field) the Field reads the description and error.
-  if (field !== null) return box;
+  const described = description !== undefined && (
+    <FieldDescription className={cn(FIELD_TEXT.hint, '-mt-2 ps-7')}>{description}</FieldDescription>
+  );
+  // Inside an outer Field (a form field) that Field reads the description and shows the error.
+  if (field !== null) {
+    return (
+      <div className={cn('flex flex-col', className)}>
+        {box}
+        {described}
+      </div>
+    );
+  }
   return (
     <Field
       {...(invalid ? { invalid: true } : {})}
@@ -107,11 +118,7 @@ export function Checkbox({
       className={cn('flex flex-col', className)}
     >
       {box}
-      {description !== undefined && (
-        <FieldDescription className={cn(FIELD_TEXT.hint, '-mt-2 ps-7')}>
-          {description}
-        </FieldDescription>
-      )}
+      {described}
       {hasError(error) && <FieldErrorText>{error}</FieldErrorText>}
     </Field>
   );

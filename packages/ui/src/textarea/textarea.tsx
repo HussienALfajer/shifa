@@ -56,7 +56,10 @@ export function Textarea({
   const isRequired = required ?? field?.required;
   const isDisabled = disabled ?? field?.disabled;
   const [own, setOwn] = useState(defaultValue ?? '');
-  const length = (value ?? own).length;
+  // Once controlled (a form field), an undefined value means empty, not the last typed text.
+  const [controlled, setControlled] = useState(value !== undefined);
+  if (value !== undefined && !controlled) setControlled(true);
+  const length = (value ?? (controlled ? '' : own)).length;
   return (
     <WithField
       label={label}

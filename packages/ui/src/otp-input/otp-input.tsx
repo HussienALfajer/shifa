@@ -71,7 +71,10 @@ export function OtpInput({
   const isDisabled = disabled ?? field?.disabled;
   const invalid = hasError(error) || field?.invalid === true;
   const [own, setOwn] = useState(toWesternDigits(defaultValue ?? ''));
-  const current = value === undefined ? own : toWesternDigits(value);
+  // Once controlled (a form field), an undefined value means empty, not the last typed code.
+  const [controlled, setControlled] = useState(value !== undefined);
+  if (value !== undefined && !controlled) setControlled(true);
+  const current = value === undefined ? (controlled ? '' : own) : toWesternDigits(value);
   const named = label !== undefined || field !== null;
   return (
     <WithField

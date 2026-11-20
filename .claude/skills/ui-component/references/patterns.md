@@ -17,7 +17,16 @@ Read with `ui-sdk.md`. Copy the closest component: Select (a field with a list),
 - `describe.each(['rtl', 'ltr'])` with `renderDir`; `expectArrow`, Home and End; `expectPopupSide`; focus in, trapped where it must be, back on the trigger; `expectDigitsAccepted`; `tokenColor`; `expectAxeClean` open and closed, light and dark. A check that does not apply is "n/a" with the reason in the results table.
 - Arabic letters: `pressKeys` outside a text field, `typeArabic` inside one (`userEvent.keyboard` sends no key events for them).
 - Names from `test/fixtures.ts`. Await every `unmount()`; click an `aria-disabled` element with `{ force: true }`; poll anything that animates.
+- Locators from `renderDir` search the whole page, and Tab walks the whole page: unmount the first render before drawing a second one in the same test (slice 0.4-05).
+- A segment of Time Input (and Date Input) is an `<input>`: read its `value`, not `textContent`.
 - Stories: an open popup is a play story (`parameters.matrix: false`) that waits with `waitFor` (popups fade in). The browser pane draws top-layer popups faded: read computed styles before "fixing" it.
+
+## Slice 0.4-05 traps
+- UI SDK owns `data-slot` on its parts: put your own marker (`data-slot="thumb"`, `data-slot="otp-slot"`) on a span inside the part, through its children function.
+- Segmented fields (Time Input) take typed text in each segment's own `beforeinput`, ASCII digits only: `useArabicIndicKeys()` on a container re-sends Arabic-Indic digits as Western ones. Size segments with `field-sizing-content` and a 24 px minimum (axe target-size).
+- A number laid out left to right inside RTL (OTP slots, a time, a «n / max» counter) gets `dir="ltr"`, and is pushed to the line's start with `justify-end` in Arabic.
+- The spacing scale is the token scale only (0–13, 16, 0.5): `py-2.5` or `min-h-20` silently do nothing.
+- A label of a disabled group (not a native input) fails axe contrast in the disabled grey: `mutedLabelWhenDisabled` on FieldShell.
 
 ## Design system
 A public component needs a folder in `scripts/design-system/components/<Name>/` (README and preview) and an entry in `BUNDLE_COMPONENTS` and `bundle-entry.tsx`. A composed component (Tabs, Menu) takes its content as data in `scripts/design-system/compound.tsx`; its parts are listed in `PARTS`.

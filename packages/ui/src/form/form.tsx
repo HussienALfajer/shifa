@@ -71,12 +71,28 @@ const FOCUS_ORDER = [
   '[role=spinbutton]:not([data-disabled])',
   'textarea:not([disabled])',
   'input:not([type=hidden]):not([disabled]):not([tabindex="-1"]):not([aria-hidden=true])',
+  // Anything else a person can Tab to (Select's trigger, a Combobox's button).
+  'button:not([disabled]):not([tabindex="-1"])',
+  '[tabindex]:not([tabindex="-1"])',
 ];
 
-function focusFirstInvalid(form: HTMLFormElement, invalid: ReadonlySet<string>): void {
+/** The paths of the invalid fields ("phone", "address.city"), from React Hook Form's errors. */
+export function errorPaths(errors: object, prefix = ''): string[] {
+  const out: string[] = [];
+  for (const [key, value] of Object.entries(errors) as [string, unknown][]) {
+    if (typeof value !== 'object' || value === null) continue;
+    const path = prefix === '' ? key : `${prefix}.${key}`;
+    if ('message' in value || 'type' in value) out.push(path);
+    else out.push(...errorPaths(value, path));
+  }
+  return out;
+}
+
+function focusFirstInvalid(form: HTMLFormElement, invalid: readonly string[]): void {
   const fields = form.querySelectorAll<HTMLElement>('[data-form-field]');
   for (const field of fields) {
-    if (!invalid.has(field.dataset['formField'] ?? '')) continue;
+    const name = field.dataset['formField'] ?? '';
+    if (!invalid.some((path) => path === name || path.startsWith(`${name}.`))) continue;
     for (const selector of FOCUS_ORDER) {
       const target = field.querySelector<HTMLElement>(selector);
       if (target !== null) {
@@ -108,7 +124,7 @@ export function Form<TInput extends FieldValues, TOutput>({
   ...native
 }: FormProps<TInput, TOutput>) {
   const element = useRef<HTMLFormElement>(null);
-  const errorCount = Object.keys(form.formState.errors).length;
+  const errorCount = errorPaths(form.formState.errors).length;
   const showSummary =
     errorSummary !== undefined && form.formState.submitCount > 0 && errorCount > 0;
   return (
@@ -125,7 +141,7 @@ export function Form<TInput extends FieldValues, TOutput>({
                 await onSubmit(values);
               },
               (errors) => {
-                const names = new Set(Object.keys(errors));
+                const names = errorPaths(errors);
                 // After the errors render, so the field is marked when it takes focus.
                 requestAnimationFrame(() => {
                   if (element.current !== null) focusFirstInvalid(element.current, names);
@@ -166,6 +182,9 @@ export interface FormFieldControl {
   disabled?: boolean;
   /** The translated error, given only when the FormField has no label of its own. */
   error?: string | undefined;
+  /** The FormField's hint and required mark, given only when it has no label of its own. */
+  hint?: ReactNode;
+  required?: boolean;
 }
 
 export interface FormFieldProps {
@@ -194,6 +213,8 @@ export function FormField({ name, label, hint, required, className, children }: 
     ref: field.ref,
     ...(field.disabled === undefined ? {} : { disabled: field.disabled }),
     ...(own ? {} : { error }),
+    ...(own || hint === undefined ? {} : { hint }),
+    ...(own || required === undefined ? {} : { required }),
   };
   return (
     <div data-form-field={name} className={className}>

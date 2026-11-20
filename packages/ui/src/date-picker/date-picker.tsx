@@ -113,6 +113,7 @@ export function DatePicker({
       label={label}
       hint={hint}
       error={error}
+      required={required}
       disabled={disabled}
       name={name}
       className={className}

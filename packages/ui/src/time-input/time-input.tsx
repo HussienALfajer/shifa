@@ -100,7 +100,11 @@ export function TimeInput({
             const cleanup = arabicIndicKeys(el);
             if (typeof ref === 'function') ref(el);
             else if (ref !== undefined && ref !== null) ref.current = el;
-            return cleanup;
+            return () => {
+              cleanup?.();
+              if (typeof ref === 'function') ref(null);
+              else if (ref !== undefined && ref !== null) ref.current = null;
+            };
           }}
           dir="ltr"
           locale={TIME_LOCALE[dir]}

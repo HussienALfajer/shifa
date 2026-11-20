@@ -6,6 +6,13 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 
 /** Throws, naming each rule and element, when axe finds a violation inside `container`. */
 export async function expectAxeClean(container: Element): Promise<void> {
+  // Popups fade in and colours transition: axe reads colours, so let running animations and
+  // transitions end first (under load it caught a calendar and a dialog mid-fade; slice 0.4-05).
+  // A spinner runs forever: wait only for animations that end.
+  const ending = document
+    .getAnimations()
+    .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
+  await Promise.allSettled(ending.map((animation) => animation.finished));
   const results = await axe.run(container, {
     runOnly: { type: 'tag', values: TAGS },
     resultTypes: ['violations'],

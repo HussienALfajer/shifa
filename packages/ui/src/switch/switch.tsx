@@ -83,19 +83,28 @@ export function Switch({
       <span className="py-2 in-data-[density=compact]:py-1">{children}</span>
     </label>
   );
-  // Inside an outer Field (a form field) the Field reads the description.
-  if (field !== null || (description === undefined && className === undefined)) return line;
+  const described = description !== undefined && (
+    <FieldDescription className={cn(FIELD_TEXT.hint, '-mt-2 ps-13')}>
+      {description}
+    </FieldDescription>
+  );
+  if (description === undefined && className === undefined) return line;
+  // Inside an outer Field (a form field) that Field reads the description.
+  if (field !== null) {
+    return (
+      <div className={cn('flex flex-col', className)}>
+        {line}
+        {described}
+      </div>
+    );
+  }
   return (
     <Field
       {...(isDisabled === true ? { disabled: true } : {})}
       className={cn('flex flex-col', className)}
     >
       {line}
-      {description !== undefined && (
-        <FieldDescription className={cn(FIELD_TEXT.hint, '-mt-2 ps-13')}>
-          {description}
-        </FieldDescription>
-      )}
+      {described}
     </Field>
   );
 }
