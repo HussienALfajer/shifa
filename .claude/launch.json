@@ -6,6 +6,16 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "@shifa/ui", "storybook", "--no-open"],
       "port": 6006
+    },
+    {
+      "name": "design-system-files",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "packages/ui/scripts/serve-static.ts",
+        "packages/ui/design-system/project",
+        "6201"
+      ],
+      "port": 6201
     }
   ]
 }

@@ -1,0 +1,63 @@
+<!-- @dsCard height=288 -->
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; background: var(--shifa-color-bg-app); }
+  .cover { position: relative; width: 960px; height: 288px; overflow: hidden; background: var(--shifa-color-bg-app); }
+  svg { position: absolute; inset: 0 0 auto 0; display: block; }
+  .leaf { fill: var(--shifa-color-jasmine-green-600); }
+  .night { fill: var(--shifa-color-jasmine-green-800); }
+  .gold { fill: var(--shifa-color-jasmine-gold-500); }
+  .mint { fill: var(--shifa-color-jasmine-green-100); }
+  .cream { fill: var(--shifa-color-jasmine-cream-50); }
+  .text { position: absolute; left: 32px; bottom: 32px; max-width: 896px; }
+  .name { margin: 0; font-family: var(--font-sans); font-weight: 600; font-size: 64px; line-height: 0.95; color: var(--shifa-color-text-default); }
+  .tagline { margin: 12px 0 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.6; color: var(--shifa-color-text-muted); max-width: 440px; }
+</style>
+</head>
+<body>
+<div class="cover">
+  <!--
+    blocks: jasmine leaf green 600 (400 wide), night green 800 (200), door gold 500 (64), mint green 100 (296); band 112 tall = space-16 + space-12
+    arrangement: top-band skeleton (the name is wider than 440 px at 64 px), a flush strip of unequal bands
+    pattern: literal motif, the logo's jasmine cross: four lens petals on the diagonals around a gold dot; the brand is "jasmine and care"
+    steps and radii: petals 36 long from 6 off centre (space-1-5ish gap), lens radius 28; dot r 6.5 as in the logo geometry; band gaps none
+  -->
+  <svg width="960" height="112" viewBox="0 0 960 112" aria-hidden="true">
+    <rect class="leaf" x="0" y="0" width="400" height="112"/>
+    <rect class="night" x="400" y="0" width="200" height="112"/>
+    <rect class="gold" x="600" y="0" width="64" height="112"/>
+    <rect class="mint" x="664" y="0" width="296" height="112"/>
+    <defs>
+      <path id="petal" d="M 4.2 -4.2 A 28 28 0 0 1 29.7 -29.7 A 28 28 0 0 1 4.2 -4.2 Z"/>
+    </defs>
+    <g transform="translate(200 56)">
+      <use href="#petal" class="cream"/><use href="#petal" class="mint" transform="rotate(90)"/>
+      <use href="#petal" class="cream" transform="rotate(180)"/><use href="#petal" class="mint" transform="rotate(270)"/>
+      <circle class="gold" r="6.5"/>
+    </g>
+    <g transform="translate(500 56)">
+      <use href="#petal" class="mint"/><use href="#petal" class="leaf" transform="rotate(90)"/>
+      <use href="#petal" class="mint" transform="rotate(180)"/><use href="#petal" class="leaf" transform="rotate(270)"/>
+      <circle class="gold" r="6.5"/>
+    </g>
+    <g transform="translate(760 56)">
+      <use href="#petal" class="leaf"/><use href="#petal" class="night" transform="rotate(90)"/>
+      <use href="#petal" class="leaf" transform="rotate(180)"/><use href="#petal" class="night" transform="rotate(270)"/>
+      <circle class="gold" r="6.5"/>
+    </g>
+    <g transform="translate(880 56)">
+      <use href="#petal" class="leaf"/><use href="#petal" class="night" transform="rotate(90)"/>
+      <use href="#petal" class="leaf" transform="rotate(180)"/><use href="#petal" class="night" transform="rotate(270)"/>
+      <circle class="gold" r="6.5"/>
+    </g>
+  </svg>
+  <div class="text">
+    <h1 class="name">Shifa Design System</h1>
+    <p class="tagline">Warm, Arabic first, right to left: one language for the clinic, the display and the patient app.</p>
+  </div>
+</div>
+</body>
+</html>

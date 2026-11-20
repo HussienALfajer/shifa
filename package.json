@@ -16,6 +16,7 @@
     "test": "turbo run test",
     "check:instructions": "node scripts/check-instruction-size.mjs",
     "ui:screenshots": "pnpm --filter @shifa/ui screenshots",
+    "design-system:build": "pnpm --filter @shifa/ui design-system:build",
     "env:check": "node scripts/env-check.mjs",
     "obs:up": "node scripts/obs.mjs up",
     "obs:down": "node scripts/obs.mjs down",

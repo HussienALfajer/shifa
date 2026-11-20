@@ -18,3 +18,4 @@ Shifa's web components: UI SDK behaviours (`@ui-sdk/react`, `@ui-sdk/core`) with
 - `pnpm --filter @shifa/ui test:storybook` — every story as a test, with axe.
 - `pnpm --filter @shifa/ui storybook` (port 6006) / `storybook:build`.
 - `pnpm ui:screenshots [--update]` — every story against `screenshots/baselines/`, in the pinned Playwright image (Docker; `docs/process/ui-screenshots.md`).
+- `pnpm design-system:build` — the Shifa Design System's files into `design-system/project/` (sources in `scripts/design-system/`; a synced component needs its README and preview there).

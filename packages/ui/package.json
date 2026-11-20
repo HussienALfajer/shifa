@@ -16,7 +16,8 @@
     "test:storybook": "vitest run --project storybook",
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o storybook-static",
-    "screenshots": "node scripts/screenshots.ts"
+    "screenshots": "node scripts/screenshots.ts",
+    "design-system:build": "node scripts/design-system/build.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",

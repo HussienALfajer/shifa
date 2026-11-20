@@ -16,7 +16,7 @@ Map of the documentation. Each kind of information has exactly one home; link to
 | Work in a Claude Code cloud session (what runs there, PRs without `gh`) | [process/cloud-sessions.md](process/cloud-sessions.md) |
 | Traces, logs, metrics and errors locally (`pnpm obs:*`, PLT-52 scrubbing) | [process/observability.md](process/observability.md) |
 | Backups, point-in-time restore and the restore drill (`pnpm backup:*`, PLT-51) | [process/backup-restore.md](process/backup-restore.md) |
-| UI browser checks: component tests, Storybook with axe, screenshots (`pnpm ui:screenshots`) | [process/ui-screenshots.md](process/ui-screenshots.md) |
+| UI browser checks: component tests, Storybook with axe, screenshots (`pnpm ui:screenshots`); the design-system sync (`pnpm design-system:build`) | [process/ui-screenshots.md](process/ui-screenshots.md) |
 | System shape and technology | [architecture/overview.md](architecture/overview.md) |
 | Design system | [architecture/design-system.md](architecture/design-system.md) |
 | Logo files and usage rules | [brand/logo.md](brand/logo.md) |

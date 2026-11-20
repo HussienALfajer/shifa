@@ -1,0 +1,71 @@
+<!-- @dsCard group="Actions" height=420 subtitle="Primary, secondary, ghost, danger · disabled and loading · sm, md, lg · RTL and LTR, light and dark" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar">
+    <p class="label">فاتح · من اليمين</p>
+    <div class="row" data-row="variants"></div>
+    <div class="row" data-row="states"></div>
+    <div class="row" data-row="sizes"></div>
+  </section>
+  <section class="panel" data-theme="dark" dir="rtl" lang="ar">
+    <p class="label">داكن · من اليمين</p>
+    <div class="row" data-row="variants"></div>
+    <div class="row" data-row="states"></div>
+    <div class="row" data-row="sizes"></div>
+  </section>
+  <section class="panel" data-theme="light" dir="ltr" lang="en">
+    <p class="label">Light · left to right</p>
+    <div class="row" data-row="directions-ltr"></div>
+  </section>
+  <section class="panel" data-theme="light" data-density="compact" dir="rtl" lang="ar">
+    <p class="label">مضغوطة (المؤشر فقط)</p>
+    <div class="row" data-row="sizes"></div>
+  </section>
+</div>
+<script>
+  var ROWS = {
+    variants: [
+      { variant: 'primary', children: 'حفظ الزيارة' },
+      { variant: 'secondary', children: 'طباعة' },
+      { variant: 'ghost', children: 'تعديل' },
+      { variant: 'danger', children: 'إلغاء الموعد' }
+    ],
+    states: [
+      { variant: 'primary', children: 'حفظ الزيارة', disabled: true },
+      { variant: 'primary', children: 'حفظ الزيارة', loading: true },
+      { variant: 'secondary', children: 'طباعة', startIcon: 'printer' },
+      { variant: 'secondary', startIcon: 'printer', 'aria-label': 'طباعة' }
+    ],
+    sizes: [
+      { variant: 'primary', size: 'sm', children: 'حجز', startIcon: 'calendar-plus' },
+      { variant: 'primary', size: 'md', children: 'حجز موعد', startIcon: 'calendar-plus' },
+      { variant: 'primary', size: 'lg', children: 'حجز موعد', startIcon: 'calendar-plus' }
+    ],
+    'directions-ltr': [
+      { variant: 'primary', children: 'Book appointment', startIcon: 'calendar-plus' },
+      { children: 'Back', startIcon: 'arrow-back' },
+      { children: 'Next', endIcon: 'arrow-forward' }
+    ]
+  };
+  document.querySelectorAll('[data-row]').forEach(function (row) {
+    ROWS[row.getAttribute('data-row')].forEach(function (props) {
+      var slot = document.createElement('span');
+      row.appendChild(slot);
+      window.Shifa.mount(slot, 'Button', props);
+    });
+  });
+</script>
+</body>
+</html>

@@ -1,42 +1,6 @@
 // One Icon component over a curated list (design doc, "Iconography"): Phosphor (MIT) drawn
 // duotone, the second tone at 20 % of the stroke, and a small Healthicons set (CC0) for medical
 // glyphs, kept as files in ./health. Icons that point a direction mirror under dir="rtl".
-import {
-  ArrowLeftIcon,
-  ArrowRightIcon,
-  BellIcon,
-  CalendarIcon,
-  CalendarPlusIcon,
-  CaretDownIcon,
-  CaretLeftIcon,
-  CaretRightIcon,
-  CaretUpIcon,
-  CheckCircleIcon,
-  CheckIcon,
-  ClockIcon,
-  CloudCheckIcon,
-  DotsThreeIcon,
-  FileTextIcon,
-  GearIcon,
-  HouseIcon,
-  InfoIcon,
-  ListIcon,
-  MagnifyingGlassIcon,
-  MinusIcon,
-  PencilSimpleIcon,
-  PhoneIcon,
-  type Icon as PhosphorIcon,
-  PlusIcon,
-  PrinterIcon,
-  SignOutIcon,
-  TrashIcon,
-  UserIcon,
-  UsersIcon,
-  WarningIcon,
-  WifiSlashIcon,
-  XCircleIcon,
-  XIcon,
-} from '@phosphor-icons/react';
 import { cn } from '../lib/cn.ts';
 import bloodDrop from './health/blood-drop.svg?raw';
 import heartOrgan from './health/heart-organ.svg?raw';
@@ -44,43 +8,7 @@ import medicines from './health/medicines.svg?raw';
 import stethoscope from './health/stethoscope.svg?raw';
 import syringe from './health/syringe.svg?raw';
 import tooth from './health/tooth.svg?raw';
-
-/** Phosphor icons by our name. "forward" and "back" follow the reading direction. */
-const PHOSPHOR = {
-  'arrow-back': ArrowLeftIcon,
-  'arrow-forward': ArrowRightIcon,
-  bell: BellIcon,
-  calendar: CalendarIcon,
-  'calendar-plus': CalendarPlusIcon,
-  'caret-back': CaretLeftIcon,
-  'caret-down': CaretDownIcon,
-  'caret-forward': CaretRightIcon,
-  'caret-up': CaretUpIcon,
-  check: CheckIcon,
-  'check-circle': CheckCircleIcon,
-  clock: ClockIcon,
-  'cloud-check': CloudCheckIcon,
-  dots: DotsThreeIcon,
-  'file-text': FileTextIcon,
-  gear: GearIcon,
-  house: HouseIcon,
-  info: InfoIcon,
-  list: ListIcon,
-  'magnifying-glass': MagnifyingGlassIcon,
-  minus: MinusIcon,
-  pencil: PencilSimpleIcon,
-  phone: PhoneIcon,
-  plus: PlusIcon,
-  printer: PrinterIcon,
-  'sign-out': SignOutIcon,
-  trash: TrashIcon,
-  user: UserIcon,
-  users: UsersIcon,
-  warning: WarningIcon,
-  'wifi-slash': WifiSlashIcon,
-  x: XIcon,
-  'x-circle': XCircleIcon,
-} satisfies Record<string, PhosphorIcon>;
+import { PHOSPHOR, type PhosphorIcon } from './phosphor.ts';
 
 /** Healthicons (outline, 24 px grid), as their SVG source. */
 const HEALTH = {

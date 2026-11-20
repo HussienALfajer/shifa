@@ -271,7 +271,8 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 ### Limits
 
-- Bundling `packages/ui` for the design system is tried first in slice 0.4-03 (Button). If it fails, components appear as static previews from Storybook and screens are drawn with tokens and matching markup; the screenshot comparison then carries the consistency check.
+- Bundling `packages/ui` for the design system works (slice 0.4-03, Button and Icon). The bundle is one classic script with React 19 inside, because React 19 ships no browser global and a canvas runs React 18. Its components are islands with their own React root, so only text children cross from a canvas. Direction, theme and density come from the page's attributes. The fallback (static previews from Storybook) is not needed. How the system is rebuilt and synced: `docs/process/ui-screenshots.md`.
+- Direction variants follow the nearest `dir` (`rtl:`/`ltr:` are `:dir()`), so an LTR region inside an RTL page is LTR. Tailwind's default matched every descendant of an RTL page; the design-system preview found it.
 - A screens canvas holds a copy of the tokens taken when the design system was installed; refresh it after a token change.
 - Patient app (Flutter): drawings are a visual reference; `shifa_ui` golden tests are the check.
 - Standalone Claude Design (claude.ai/design) closes on 2026-12-14; the project uses the artifact types inside Claude.

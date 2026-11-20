@@ -22,6 +22,8 @@ coverage/
 storybook-static/
 .vitest/
 packages/ui/screenshots/results/
+# The Shifa Design System's files, rebuilt by `pnpm design-system:build` (0.4-03)
+packages/ui/design-system/
 .next/
 .dart_tool/
 .fvm/

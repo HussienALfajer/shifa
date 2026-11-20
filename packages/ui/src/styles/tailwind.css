@@ -6,20 +6,7 @@
 @import "@shifa/tokens/css/tokens.css";
 @import "@shifa/tokens/css/tailwind-theme.css";
 @import "@shifa/tokens/fonts/fonts.css";
+@import "./variants.css";
 
 /* The components' classes, for an app that imports this entry. */
 @source "../";
-
-/* Themes switch by attribute (ThemeProvider), not by the system setting. */
-@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
-
-/* Reduced motion: the system setting, or a region marked data-motion="reduce" (stories, a
- * setting in the app later). */
-@custom-variant motion-reduce {
-  @media (prefers-reduced-motion: reduce) {
-    @slot;
-  }
-  &:where([data-motion="reduce"], [data-motion="reduce"] *) {
-    @slot;
-  }
-}

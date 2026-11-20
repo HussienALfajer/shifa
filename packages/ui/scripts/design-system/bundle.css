@@ -1,0 +1,13 @@
+/* The stylesheet of the design-system bundle: the utilities the components use, on the token
+ * theme, without Tailwind's page reset (the system's page and canvases bring their own base) and
+ * without the token values (the system's tokens.css holds them). bundle.ts appends the compact
+ * density values from packages/tokens. */
+@layer theme, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "@shifa/tokens/css/tailwind-theme.css";
+@import "../../src/styles/variants.css";
+
+@source "../../src";
+@source not "../../src/**/*.test.tsx";
+@source not "../../src/**/*.stories.tsx";
