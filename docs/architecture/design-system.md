@@ -1,9 +1,9 @@
 # Design system
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-20 · Owner: product owner
 Sources: RN-17, RN-19
 
-Shifa has its own design system, built on Base UI headless components for the web and on a matching Flutter widget library, both generated from one set of design tokens ([ADR-0011](../adr/README.md)). This document defines the token model, the component plan, RTL and typography rules, clinic theming, and how quality is checked.
+Shifa has its own design system, built on UI SDK headless behaviours for the web (Base UI as per-component fallback) and on a matching Flutter widget library, both generated from one set of design tokens ([ADR-0011 and ADR-0039](../adr/README.md)). Phase 0.4 builds it from [spec 0.4](../specs/design-system/0.4-design-system-foundations.md). This document defines the token model, the component plan, RTL and typography rules, clinic theming, and how quality is checked.
 
 ## Goals
 
@@ -14,7 +14,7 @@ Shifa has its own design system, built on Base UI headless components for the we
 
 ## Token model
 
-Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, edited in code (and mirrored from Figma Variables when the Figma plan allows, OD-19).
+Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, edited in code. Figma is not used (OD-19 closed); visual exploration is done in Claude Design and Storybook is the living reference.
 
 | Layer | Examples | Who may change |
 |---|---|---|
@@ -95,7 +95,8 @@ Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is 
 
 - The palette covers brand and neutral colours only. Clinical and status colours (alert severities, queue statuses, odontogram statuses, laterality, pain types) stay locked tokens with their own definitions and are never taken from this palette; red is reserved for clinical alerts.
 - A clinic brand colour replaces `color.brand.*` for that clinic only; neutrals and clinical tokens stay as defined here.
-- Dark mode (for evening clinics and the waiting-room display) is not defined yet; it will be derived from this palette in Phase 0.4.
+- Dark mode (for evening clinics and the waiting-room display) ships with light mode: Phase 0.4 derives it from this palette, gives every semantic colour token both values and tests every component in both (OD-56).
+- The design language beyond colour (type scale, shape, elevation, density, motion, icon style) is chosen by the owner from three directions in slice 0.4-02 (OD-57) and recorded here.
 
 ## Clinic theming
 
@@ -105,24 +106,24 @@ Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is 
 
 ## Web components
 
-- `packages/ui` wraps Base UI (`@base-ui/react`, pinned to an exact version; minor releases have changed behaviour) [RN-19].
+- `packages/ui` wraps UI SDK (`@ui-sdk/react` and `@ui-sdk/core`, a beta when adopted, pinned to an exact version; ADR-0039). Only `packages/ui` imports `@ui-sdk/*`. Eight components pass an Arabic RTL gate before the core set is built; a component that fails is built on Base UI (`@base-ui/react`, exact pin) behind the same API and listed here with the upstream issue. The UI SDK agent bridge is not used.
 - Styling with Tailwind v4 logical utilities (`ms-*`, `pe-*`, `start-*`) only; physical left/right utilities are lint errors.
-- Core set (Phase 0.4): button, icon button, input, textarea, number field, select, combobox, checkbox, radio, switch, field/form, dialog, alert dialog, popover, menu, tooltip, tabs, accordion, toast, avatar, badge, card, toolbar, pagination, skeleton, empty state.
-- Companions where Base UI has gaps:
+- Core set (Phase 0.4): listed in spec 0.4, criterion 8.
+- Companions where UI SDK has gaps:
 
 | Need | Choice |
 |---|---|
-| Date / time picking | react-day-picker (Arabic locale, optional Hijri display) |
+| Date / time picking | UI SDK Date Picker and Time Input (Gregorian, Arabic locale); react-day-picker only if the gate fails |
 | Data tables | TanStack Table + TanStack Virtual |
 | Forms | React Hook Form + Zod (shared schemas) |
-| File upload | react-dropzone (plus resumable upload for imaging) |
-| Command palette | Built on Base UI menu/combobox |
+| File upload | UI SDK File Input (plus resumable upload for imaging) |
+| Command palette | UI SDK Command |
 
 - Clinical widgets (odontogram, perio grid, skeleton/body chart) are custom SVG components in their domain packages, using the same tokens; they must also print correctly ([dental](../domain/dental.md), [orthopedics](../domain/orthopedics.md)).
 
 ## RTL and typography
 
-- Set `dir="rtl"` and `lang="ar"` on the document and wrap the app in Base UI's `DirectionProvider` (the provider alone does not set `dir`) [RN-19].
+- Set `dir="rtl"` and `lang="ar"` on the document; UI SDK reads the page's text direction (a Base UI fallback component also needs Base UI's `DirectionProvider`) [RN-19].
 - Use logical sides for floating elements (`inline-start` / `inline-end`); test keyboard navigation in RTL for every interactive component (RTL keyboard fixes were still landing in 2026).
 - Wrap Latin fragments inside Arabic text (drug names, units, IDs, phone numbers, tooth numbers) in isolated spans so they render in the correct direction.
 - Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (licences to confirm). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text.
@@ -146,9 +147,9 @@ Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is 
 ## Working with Claude Code
 
 - The `/ui-component` skill holds the component checklist (API conventions, RTL, a11y, stories, tests) and points to the best existing component to copy.
-- Figma MCP gives sessions access to designs; Code Connect for React and Flutter needs the Organization plan (OD-19).
+- The upstream `ui-sdk` agent skill is vendored at a pinned commit after review (ADR-0039).
 
 ## Effort and risks
 
 - Estimated 4.5–6.5 person-months for the first complete version (vs 1–2 for re-skinning a ready-made kit) [RN-19]; Phase 0.4 delivers the core set, the rest grows with features.
-- Risks: behaviour changes in Base UI minor releases (pin and test), RTL edge cases (test every component), complex widgets (date/time, tables, charts) taking longer than planned.
+- Risks: behaviour changes between UI SDK betas (pin, upgrade in its own PR, full test run), RTL edge cases (test every component), complex widgets (date/time, tables, charts) taking longer than planned.

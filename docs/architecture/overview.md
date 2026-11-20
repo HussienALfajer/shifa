@@ -49,7 +49,7 @@ flowchart TB
 ```
 apps/      api · clinic-web · admin-web · display-web · booking-web · patient_app (Flutter)
 packages/  contracts · api-client-ts (generated) · api_client_dart (generated) · db
-           tokens · ui (Base UI design system) · shifa_ui (Flutter design system)
+           tokens · ui (UI SDK design system) · shifa_ui (Flutter design system)
            i18n · domain-* (pure rules: money, queue, dental, ortho, …) · testing (synthetic data)
 docs/      product · domain · architecture · adr · compliance · process · slices · specs · research
 ```
@@ -97,7 +97,7 @@ One deployable NestJS application with strict module boundaries, enforced by lin
 | Imaging | Orthanc per tenant behind our gateway (AGPL boundary: no custom code inside Orthanc); OHIF viewer | 0019 |
 | Voice | Voice packs generated server-side outside Syria, cached on displays, played locally | 0020 |
 | Files, cache, PDFs, search | Garage, Valkey, Gotenberg, Postgres search with Arabic normalisation | 0021 |
-| Design system | DTCG tokens → CSS/Tailwind and Dart; Base UI components; Flutter design system from the same tokens | 0011, [design-system](design-system.md) |
+| Design system | DTCG tokens → CSS/Tailwind and Dart; UI SDK components (Base UI fallback); Flutter design system from the same tokens | 0011, 0039, [design-system](design-system.md) |
 | Security | Audit of every record read; deny rules and hooks in development; no real patient data in dev | 0023 |
 | Licensed content | PROMs and AO/OTA gated per tenant licence | 0024 |
 
@@ -116,7 +116,7 @@ One deployable NestJS application with strict module boundaries, enforced by lin
 | Backend | NestJS 12, pg-boss | 0003 |
 | Database / ORM | PostgreSQL 18, Drizzle | 0004, 0005 |
 | Web apps | React 19, Vite, TanStack Router/Query/Table, React Hook Form + Zod; Next.js 16 for public pages; MapLibre + OSM; i18next | 0010 |
-| Design system | Base UI + DTCG tokens (Style Dictionary) + Tailwind v4; Storybook | 0011 |
+| Design system | UI SDK (Base UI fallback) + DTCG tokens (Style Dictionary) + Tailwind v4; Storybook | 0011, 0039 |
 | Mobile | Flutter (MVVM, Riverpod 3, go_router, freezed, drift + SQLCipher) | 0012 |
 | Realtime | Centrifugo | 0015 |
 | Auth | Better Auth | 0016 |
