@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ar" dir="rtl" data-theme="light" data-density="comfortable">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>أرض الديار — زيارة الطبيب</title>
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+html{background:#d9d5cb}
+#dc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 16px;background:#1d2a26;color:#e6ede9;font:14px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif}
+#dc-bar strong{font-weight:600}
+#dc-bar a{color:#a9cfc3;text-decoration:none;padding:4px 6px;border-radius:4px}
+#dc-bar a[aria-current="page"]{color:#fff;background:rgba(255,255,255,.12)}
+#dc-bar button{font:inherit;color:#1d2a26;background:#e6ede9;border:0;border-radius:4px;padding:4px 10px;cursor:pointer}
+#dc-bar a:focus-visible,#dc-bar button:focus-visible{outline:2px solid #d4b463;outline-offset:2px}
+#dc-bar .dc-push{margin-inline-start:auto}
+#dc-root.dc-fixed{display:flex;justify-content:center;padding:24px 0}
+
+body{margin:0}
+a{color:#1f6f5c}a:hover{color:#134a3d}
+.sh{--app:#fbf8f1;--surface:#ffffff;--raised:#f4efe3;--band:#fbf8f1;--border:#e6dfcf;--strong:#76857e;--text:#1d2a26;--muted:#5b6a63;--primary:#1f6f5c;--primary-h:#134a3d;--on-primary:#ffffff;--soft:#e2f0ea;--accent:#c8a24a;--accent-soft:#f7edd3;--nav:#134a3d;--nav-text:#e8f2ee;--nav-dim:#a9cfc3;--focal-line:#1f6f5c;--row:44px;--gap:20px;--ctl:44px;
+--green-f:#1d744c;--green-b:#edf8f3;--amber-f:#8d5c07;--amber-b:#faf4ea;--violet-f:#7b43c8;--violet-b:#f1edf7;--crit-f:#c01b37;--crit-b:#f9ecee;--crit-l:#e9c4ca;
+font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--text);background:var(--app);font-variant-numeric:tabular-nums}
+.sh[data-theme="dark"]{--app:#0e1513;--surface:#151e1b;--raised:#1c2824;--band:#1c2824;--border:#2b3934;--text:#e6ede9;--muted:#a3b2ab;--primary:#6fc3ab;--primary-h:#9ad8c5;--on-primary:#0e1513;--soft:#12382f;--accent:#d4b463;--accent-soft:#3a2f14;--nav:#0c2a23;--nav-dim:#8fb5aa;--focal-line:#d4b463;
+--green-f:#42bb82;--green-b:#162c22;--amber-f:#db9824;--amber-b:#322611;--violet-f:#ac8fd3;--violet-b:#1f172b;--crit-f:#df8190;--crit-b:#2f1318;--crit-l:#5b2932}
+.sh[data-density="compact"]{--row:32px;--gap:14px;--ctl:32px}
+.sh button{font:inherit;cursor:pointer;transition:background-color 100ms ease-out,border-color 100ms ease-out}
+.sh button:focus-visible,.sh textarea:focus-visible,.sh a:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sh .btn-p:hover{background:var(--primary-h)}
+.sh .btn-s:hover{background:var(--soft)}
+.seal{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding-inline:8px 10px;border-radius:6px;border-inline-start:2px solid var(--f);background:var(--b);color:var(--f);font-size:14px;font-weight:600}
+.s-crit{--f:var(--crit-f);--b:var(--crit-b)}.s-room{--f:var(--violet-f);--b:var(--violet-b)}.s-done{--f:var(--green-f);--b:var(--green-b)}
+.band:nth-child(odd){background:var(--band)}.band:nth-child(even){background:var(--surface)}
+@media (prefers-reduced-motion:reduce){.sh *{transition:none!important}}
+</style>
+</head>
+<body>
+<nav id="dc-bar" aria-label="شاشات الاتجاه">
+<strong>D · أرض الديار</strong>
+<a href="reception-queue.html">دور الاستقبال</a><a href="doctor-visit.html" aria-current="page">زيارة الطبيب</a><a href="doctor-visit-tablet.html">الزيارة على اللوحي</a><a href="patient-booking.html">حجز المريض</a>
+<button type="button" class="dc-push" data-dc-set="theme light dark">فاتح / داكن</button>
+<button type="button" data-dc-set="density comfortable compact">مريح / مضغوط</button>
+</nav>
+<div id="dc-root"><div class="sh" data-theme="light" data-density="comfortable" style="min-height: 900px; font-size: 16px; line-height: 1.6; display: flex; flex-direction: column">
+
+  <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-height: 56px; padding: 8px 28px; background: var(--nav); color: var(--nav-text); box-sizing: border-box">
+    <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="var(--accent)"><rect x="5" y="5" width="14" height="14"></rect><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"></rect></svg>
+    <span style="font-family: 'Noto Naskh Arabic', serif; font-size: 22px; font-weight: 700">شفاء</span>
+    <a href="reception-queue.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding-inline: 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none; font-size: 15px">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6l-6 6"></path></svg>
+      دور اليوم
+    </a>
+    <span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--nav-dim)">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+      محفوظ تلقائياً
+    </span>
+    <span style="font-size: 14px">د. <span data-person="سامر الخطيب">سامر الخطيب</span></span>
+  </header>
+
+  <main style="flex: 1; padding: 24px 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap); max-width: 1440px; width: 100%; margin-inline: auto">
+
+    <section aria-label="المريضة" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 20px 28px; background: var(--surface); border: 1.5px solid var(--focal-line); border-radius: 20px 20px 10px 10px">
+      <div style="position: relative; width: 76px; height: 76px; flex: none; display: flex; align-items: center; justify-content: center">
+        <svg width="76" height="76" viewBox="0 0 24 24" aria-hidden="true" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="0.6" style="position: absolute; inset: 0"><rect x="4.5" y="4.5" width="15" height="15"></rect><rect x="4.5" y="4.5" width="15" height="15" transform="rotate(45 12 12)"></rect><rect x="5.2" y="5.2" width="13.6" height="13.6" stroke="none"></rect></svg>
+        <span style="position: relative; font-size: 32px; font-weight: 600; line-height: 1"><bdi dir="ltr">7</bdi></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 1 1 300px; min-width: 0">
+        <span data-person="فاطمة أحمد النجار" style="font-family: 'Noto Naskh Arabic', serif; font-size: 28px; font-weight: 700; line-height: 1.45">فاطمة أحمد النجار</span>
+        <span style="font-size: 15px; color: var(--muted)"><bdi dir="ltr">34</bdi> سنة · أنثى · ملف <bdi dir="ltr">2026-0147</bdi></span>
+      </div>
+      <span class="seal s-crit" role="img" aria-label="تنبيه حرج: حساسية من البنسلين" style="font-size: 15px; min-height: 36px">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 16H3zM12 10v5M12 17.5v.5"></path></svg>
+        حساسية: <bdi dir="ltr">Penicillin</bdi>
+      </span>
+      <span class="seal s-room">في الغرفة</span>
+      <button class="btn-p" type="button" data-dc-on="click:0" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding-inline: 22px; border: 0; border-radius: 6px; background: var(--primary); color: var(--on-primary); font-size: 17px; font-weight: 600">
+        <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        إنهاء الزيارة
+      </button>
+    </section>
+
+    <div style="display: flex; flex-wrap: wrap; gap: var(--gap); align-items: flex-start">
+
+      <article aria-label="ملاحظة الزيارة" style="flex: 999 1 520px; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px 40px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px">
+        <div style="display: flex; flex-direction: column; gap: 2px">
+          <span style="font-size: 13px; font-weight: 600; color: var(--muted)">سبب الزيارة</span>
+          <span style="font-size: 17px; font-weight: 500">ألم في الحلق وحرارة منذ ثلاثة أيام</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden">
+          <div style="padding: 10px 14px; background: var(--band)"><div style="font-size: 13px; color: var(--muted)">الضغط</div><div style="font-size: 19px; font-weight: 600"><bdi dir="ltr">118/76</bdi></div></div>
+          <div style="padding: 10px 14px"><div style="font-size: 13px; color: var(--muted)">النبض</div><div style="font-size: 19px; font-weight: 600"><bdi dir="ltr">78</bdi> <span style="font-size: 13px; font-weight: 400; color: var(--muted)">ن/د</span></div></div>
+          <div style="padding: 10px 14px; background: var(--band)"><div style="font-size: 13px; color: var(--muted)">الحرارة</div><div style="font-size: 19px; font-weight: 600; color: var(--amber-f)"><bdi dir="ltr">37.9</bdi> <span style="font-size: 13px; font-weight: 400">°م · مرتفعة</span></div></div>
+          <div style="padding: 10px 14px"><div style="font-size: 13px; color: var(--muted)">الوزن</div><div style="font-size: 19px; font-weight: 600"><bdi dir="ltr">64</bdi> <span style="font-size: 13px; font-weight: 400; color: var(--muted)">كغ</span></div></div>
+        </div>
+        <label style="display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; font-weight: 600; color: var(--muted)">الملاحظة</span>
+          <textarea rows="9" style="font-family: 'Noto Naskh Arabic', serif; font-size: 19px; line-height: 1.75; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--border); padding: 14px 0 0; resize: vertical; width: 100%; box-sizing: border-box">تشكو المريضة من ألم في الحلق وحرارة منذ ثلاثة أيام، مع صعوبة خفيفة في البلع ودون سعال.
+
+بالفحص: احتقان في البلعوم وتضخم خفيف في اللوزتين، والتنفس طبيعي.
+
+الخطة: خافض للحرارة، سوائل دافئة وراحة، ومراجعة بعد ثلاثة أيام إن لم تتحسن.</textarea>
+        </label>
+      </article>
+
+      <aside style="flex: 1 1 340px; max-width: 460px; min-width: 0; display: flex; flex-direction: column; gap: var(--gap)">
+
+        <section aria-label="الوصفة" style="background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px">
+          <h2 style="margin: 0; font-size: 19px; font-weight: 600">الوصفة</h2>
+          
+            <div role="alert" style="display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--crit-b); border: 1px solid var(--crit-l); border-inline-start: 3px solid var(--crit-f); border-radius: 6px; color: var(--crit-f)">
+              <div style="display: flex; gap: 8px; align-items: flex-start; font-weight: 600; font-size: 15px">
+                <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 2px"><path d="M12 4l9 16H3zM12 10v5M12 17.5v.5"></path></svg>
+                <span>تنبيه حرج: <bdi dir="ltr">Amoxicillin</bdi> من زمرة البنسلين، والمريضة لديها حساسية منه.</span>
+              </div>
+              <button type="button" data-dc-on="click:1" style="align-self: flex-start; min-height: var(--ctl); padding-inline: 14px; border: 1px solid var(--crit-f); border-radius: 6px; background: var(--surface); color: var(--crit-f); font-weight: 600; font-size: 14px">إزالة الدواء من الوصفة</button>
+            </div>
+          
+          <div style="border: 1px solid var(--border); border-radius: 6px; overflow: hidden">
+            
+              <div class="band" style="display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; min-height: var(--row); justify-content: center">
+                <bdi dir="ltr" style="font-size: 16px; font-weight: 600; text-align: end">Amoxicillin 500 mg</bdi>
+                <span style="font-size: 14px; color: var(--muted)">كبسولة كل 8 ساعات · 7 أيام</span>
+              </div>
+            
+              <div class="band" style="display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; min-height: var(--row); justify-content: center">
+                <bdi dir="ltr" style="font-size: 16px; font-weight: 600; text-align: end">Paracetamol 500 mg</bdi>
+                <span style="font-size: 14px; color: var(--muted)">قرص عند الحرارة · حتى 4 مرات في اليوم</span>
+              </div>
+            
+          </div>
+          <button class="btn-s" type="button" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--ctl); border: 1px solid var(--primary); border-radius: 6px; background: transparent; color: var(--primary); font-weight: 500; font-size: 15px">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+            إضافة دواء
+          </button>
+        </section>
+
+        <section aria-label="الزيارات السابقة" style="background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px">
+          <h2 style="margin: 0 0 8px; font-size: 19px; font-weight: 600">الزيارات السابقة</h2>
+          <div style="display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 10px">
+            <span aria-hidden="true" style="position: relative; display: flex; justify-content: center"><span style="position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border)"></span><span style="position: relative; margin-top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--strong)"></span></span>
+            <div style="padding-bottom: 14px"><div style="font-size: 15px; font-weight: 500">مراجعة دورية</div><div style="font-size: 13px; color: var(--muted)"><bdi dir="ltr">12</bdi> أيلول <bdi dir="ltr">2026</bdi> · د. <span data-person="سامر الخطيب">سامر الخطيب</span></div></div>
+            <span aria-hidden="true" style="position: relative; display: flex; justify-content: center"><span style="position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border)"></span><span style="position: relative; margin-top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--strong)"></span></span>
+            <div><div style="font-size: 15px; font-weight: 500">التهاب قصبات</div><div style="font-size: 13px; color: var(--muted)"><bdi dir="ltr">3</bdi> حزيران <bdi dir="ltr">2026</bdi> · د. <span data-person="ريم الحلبي">ريم الحلبي</span></div></div>
+          </div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</div></div>
+<script type="application/json" id="dc-template">"\u003cdiv class=\"sh\" data-theme=\"{{theme}}\" data-density=\"{{density}}\" style=\"min-height: 900px; font-size: 16px; line-height: 1.6; display: flex; flex-direction: column\">\n\n  \u003cheader style=\"display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; min-height: 56px; padding: 8px 28px; background: var(--nav); color: var(--nav-text); box-sizing: border-box\">\n    \u003csvg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"var(--accent)\">\u003crect x=\"5\" y=\"5\" width=\"14\" height=\"14\"/>\u003crect x=\"5\" y=\"5\" width=\"14\" height=\"14\" transform=\"rotate(45 12 12)\"/>\u003c/svg>\n    \u003cspan style=\"font-family: 'Noto Naskh Arabic', serif; font-size: 22px; font-weight: 700\">شفاء\u003c/span>\n    \u003ca href=\"reception-queue.html\" style=\"display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding-inline: 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none; font-size: 15px\">\n      \u003csvg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\u003cpath d=\"M9 6l6 6l-6 6\"/>\u003c/svg>\n      دور اليوم\n    \u003c/a>\n    \u003cspan style=\"margin-inline-start: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--nav-dim)\">\n      \u003csvg width=\"16\" height=\"16\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\u003cpath d=\"M5 12.5l4.5 4.5L19 7.5\"/>\u003c/svg>\n      {{savedLine}}\n    \u003c/span>\n    \u003cspan style=\"font-size: 14px\">د. \u003cspan data-person=\"سامر الخطيب\">سامر الخطيب\u003c/span>\u003c/span>\n  \u003c/header>\n\n  \u003cmain style=\"flex: 1; padding: 24px 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap); max-width: 1440px; width: 100%; margin-inline: auto\">\n\n    \u003csection aria-label=\"المريضة\" style=\"display: flex; flex-wrap: wrap; align-items: center; gap: 16px 24px; padding: 20px 28px; background: var(--surface); border: 1.5px solid var(--focal-line); border-radius: 20px 20px 10px 10px\">\n      \u003cdiv style=\"position: relative; width: 76px; height: 76px; flex: none; display: flex; align-items: center; justify-content: center\">\n        \u003csvg width=\"76\" height=\"76\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"var(--accent-soft)\" stroke=\"var(--accent)\" stroke-width=\"0.6\" style=\"position: absolute; inset: 0\">\u003crect x=\"4.5\" y=\"4.5\" width=\"15\" height=\"15\"/>\u003crect x=\"4.5\" y=\"4.5\" width=\"15\" height=\"15\" transform=\"rotate(45 12 12)\"/>\u003crect x=\"5.2\" y=\"5.2\" width=\"13.6\" height=\"13.6\" stroke=\"none\"/>\u003c/svg>\n        \u003cspan style=\"position: relative; font-size: 32px; font-weight: 600; line-height: 1\">\u003cbdi dir=\"ltr\">7\u003c/bdi>\u003c/span>\n      \u003c/div>\n      \u003cdiv style=\"display: flex; flex-direction: column; gap: 2px; flex: 1 1 300px; min-width: 0\">\n        \u003cspan data-person=\"فاطمة أحمد النجار\" style=\"font-family: 'Noto Naskh Arabic', serif; font-size: 28px; font-weight: 700; line-height: 1.45\">فاطمة أحمد النجار\u003c/span>\n        \u003cspan style=\"font-size: 15px; color: var(--muted)\">\u003cbdi dir=\"ltr\">34\u003c/bdi> سنة · أنثى · ملف \u003cbdi dir=\"ltr\">2026-0147\u003c/bdi>\u003c/span>\n      \u003c/div>\n      \u003cspan class=\"seal s-crit\" role=\"img\" aria-label=\"تنبيه حرج: حساسية من البنسلين\" style=\"font-size: 15px; min-height: 36px\">\n        \u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\u003cpath d=\"M12 4l9 16H3zM12 10v5M12 17.5v.5\"/>\u003c/svg>\n        حساسية: \u003cbdi dir=\"ltr\">Penicillin\u003c/bdi>\n      \u003c/span>\n      \u003cspan class=\"{{visitSeal}}\">{{visitLabel}}\u003c/span>\n      \u003cbutton class=\"btn-p\" type=\"button\" onClick=\"{{finish}}\" disabled=\"{{finished}}\" style=\"display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 48px; padding-inline: 22px; border: 0; border-radius: 6px; background: var(--primary); color: var(--on-primary); font-size: 17px; font-weight: 600\">\n        \u003csvg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\">\u003cpath d=\"M5 12.5l4.5 4.5L19 7.5\"/>\u003c/svg>\n        إنهاء الزيارة\n      \u003c/button>\n    \u003c/section>\n\n    \u003cdiv style=\"display: flex; flex-wrap: wrap; gap: var(--gap); align-items: flex-start\">\n\n      \u003carticle aria-label=\"ملاحظة الزيارة\" style=\"flex: 999 1 520px; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px 40px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px\">\n        \u003cdiv style=\"display: flex; flex-direction: column; gap: 2px\">\n          \u003cspan style=\"font-size: 13px; font-weight: 600; color: var(--muted)\">سبب الزيارة\u003c/span>\n          \u003cspan style=\"font-size: 17px; font-weight: 500\">ألم في الحلق وحرارة منذ ثلاثة أيام\u003c/span>\n        \u003c/div>\n        \u003cdiv style=\"display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; border: 1px solid var(--border); border-radius: 6px; overflow: hidden\">\n          \u003cdiv style=\"padding: 10px 14px; background: var(--band)\">\u003cdiv style=\"font-size: 13px; color: var(--muted)\">الضغط\u003c/div>\u003cdiv style=\"font-size: 19px; font-weight: 600\">\u003cbdi dir=\"ltr\">118/76\u003c/bdi>\u003c/div>\u003c/div>\n          \u003cdiv style=\"padding: 10px 14px\">\u003cdiv style=\"font-size: 13px; color: var(--muted)\">النبض\u003c/div>\u003cdiv style=\"font-size: 19px; font-weight: 600\">\u003cbdi dir=\"ltr\">78\u003c/bdi> \u003cspan style=\"font-size: 13px; font-weight: 400; color: var(--muted)\">ن/د\u003c/span>\u003c/div>\u003c/div>\n          \u003cdiv style=\"padding: 10px 14px; background: var(--band)\">\u003cdiv style=\"font-size: 13px; color: var(--muted)\">الحرارة\u003c/div>\u003cdiv style=\"font-size: 19px; font-weight: 600; color: var(--amber-f)\">\u003cbdi dir=\"ltr\">37.9\u003c/bdi> \u003cspan style=\"font-size: 13px; font-weight: 400\">°م · مرتفعة\u003c/span>\u003c/div>\u003c/div>\n          \u003cdiv style=\"padding: 10px 14px\">\u003cdiv style=\"font-size: 13px; color: var(--muted)\">الوزن\u003c/div>\u003cdiv style=\"font-size: 19px; font-weight: 600\">\u003cbdi dir=\"ltr\">64\u003c/bdi> \u003cspan style=\"font-size: 13px; font-weight: 400; color: var(--muted)\">كغ\u003c/span>\u003c/div>\u003c/div>\n        \u003c/div>\n        \u003clabel style=\"display: flex; flex-direction: column; gap: 8px\">\n          \u003cspan style=\"font-size: 13px; font-weight: 600; color: var(--muted)\">الملاحظة\u003c/span>\n          \u003ctextarea rows=\"9\" style=\"font-family: 'Noto Naskh Arabic', serif; font-size: 19px; line-height: 1.75; color: var(--text); background: transparent; border: 0; border-top: 1px solid var(--border); padding: 14px 0 0; resize: vertical; width: 100%; box-sizing: border-box\">تشكو المريضة من ألم في الحلق وحرارة منذ ثلاثة أيام، مع صعوبة خفيفة في البلع ودون سعال.\n\nبالفحص: احتقان في البلعوم وتضخم خفيف في اللوزتين، والتنفس طبيعي.\n\nالخطة: خافض للحرارة، سوائل دافئة وراحة، ومراجعة بعد ثلاثة أيام إن لم تتحسن.\u003c/textarea>\n        \u003c/label>\n      \u003c/article>\n\n      \u003caside style=\"flex: 1 1 340px; max-width: 460px; min-width: 0; display: flex; flex-direction: column; gap: var(--gap)\">\n\n        \u003csection aria-label=\"الوصفة\" style=\"background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 12px\">\n          \u003ch2 style=\"margin: 0; font-size: 19px; font-weight: 600\">الوصفة\u003c/h2>\n          \u003csc-if value=\"{{conflict}}\" hint-placeholder-val=\"{{true}}\">\n            \u003cdiv role=\"alert\" style=\"display: flex; flex-direction: column; gap: 8px; padding: 12px; background: var(--crit-b); border: 1px solid var(--crit-l); border-inline-start: 3px solid var(--crit-f); border-radius: 6px; color: var(--crit-f)\">\n              \u003cdiv style=\"display: flex; gap: 8px; align-items: flex-start; font-weight: 600; font-size: 15px\">\n                \u003csvg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linecap=\"round\" stroke-linejoin=\"round\" style=\"flex: none; margin-top: 2px\">\u003cpath d=\"M12 4l9 16H3zM12 10v5M12 17.5v.5\"/>\u003c/svg>\n                \u003cspan>تنبيه حرج: \u003cbdi dir=\"ltr\">Amoxicillin\u003c/bdi> من زمرة البنسلين، والمريضة لديها حساسية منه.\u003c/span>\n              \u003c/div>\n              \u003cbutton type=\"button\" onClick=\"{{removeDrug}}\" style=\"align-self: flex-start; min-height: var(--ctl); padding-inline: 14px; border: 1px solid var(--crit-f); border-radius: 6px; background: var(--surface); color: var(--crit-f); font-weight: 600; font-size: 14px\">إزالة الدواء من الوصفة\u003c/button>\n            \u003c/div>\n          \u003c/sc-if>\n          \u003cdiv style=\"border: 1px solid var(--border); border-radius: 6px; overflow: hidden\">\n            \u003csc-for list=\"{{drugs}}\" as=\"d\" hint-placeholder-count=\"2\">\n              \u003cdiv class=\"band\" style=\"display: flex; flex-direction: column; gap: 2px; padding: 10px 14px; min-height: var(--row); justify-content: center\">\n                \u003cbdi dir=\"ltr\" style=\"font-size: 16px; font-weight: 600; text-align: end\">{{d.name}}\u003c/bdi>\n                \u003cspan style=\"font-size: 14px; color: var(--muted)\">{{d.dose}}\u003c/span>\n              \u003c/div>\n            \u003c/sc-for>\n          \u003c/div>\n          \u003cbutton class=\"btn-s\" type=\"button\" style=\"display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: var(--ctl); border: 1px solid var(--primary); border-radius: 6px; background: transparent; color: var(--primary); font-weight: 500; font-size: 15px\">\n            \u003csvg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" aria-hidden=\"true\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\">\u003cpath d=\"M12 5v14M5 12h14\"/>\u003c/svg>\n            إضافة دواء\n          \u003c/button>\n        \u003c/section>\n\n        \u003csection aria-label=\"الزيارات السابقة\" style=\"background: var(--raised); border: 1px solid var(--border); border-radius: 10px; padding: 16px; display: flex; flex-direction: column; gap: 4px\">\n          \u003ch2 style=\"margin: 0 0 8px; font-size: 19px; font-weight: 600\">الزيارات السابقة\u003c/h2>\n          \u003cdiv style=\"display: grid; grid-template-columns: 20px minmax(0, 1fr); column-gap: 10px\">\n            \u003cspan aria-hidden=\"true\" style=\"position: relative; display: flex; justify-content: center\">\u003cspan style=\"position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border)\">\u003c/span>\u003cspan style=\"position: relative; margin-top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--strong)\">\u003c/span>\u003c/span>\n            \u003cdiv style=\"padding-bottom: 14px\">\u003cdiv style=\"font-size: 15px; font-weight: 500\">مراجعة دورية\u003c/div>\u003cdiv style=\"font-size: 13px; color: var(--muted)\">\u003cbdi dir=\"ltr\">12\u003c/bdi> أيلول \u003cbdi dir=\"ltr\">2026\u003c/bdi> · د. \u003cspan data-person=\"سامر الخطيب\">سامر الخطيب\u003c/span>\u003c/div>\u003c/div>\n            \u003cspan aria-hidden=\"true\" style=\"position: relative; display: flex; justify-content: center\">\u003cspan style=\"position: absolute; top: 0; bottom: 0; width: 2px; background: var(--border)\">\u003c/span>\u003cspan style=\"position: relative; margin-top: 8px; width: 10px; height: 10px; border-radius: 50%; background: var(--strong)\">\u003c/span>\u003c/span>\n            \u003cdiv>\u003cdiv style=\"font-size: 15px; font-weight: 500\">التهاب قصبات\u003c/div>\u003cdiv style=\"font-size: 13px; color: var(--muted)\">\u003cbdi dir=\"ltr\">3\u003c/bdi> حزيران \u003cbdi dir=\"ltr\">2026\u003c/bdi> · د. \u003cspan data-person=\"ريم الحلبي\">ريم الحلبي\u003c/span>\u003c/div>\u003c/div>\n          \u003c/div>\n        \u003c/section>\n      \u003c/aside>\n    \u003c/div>\n  \u003c/main>\n\u003c/div>"</script>
+<script src="runtime.js"></script>
+<script>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { finished: false, amox: true };
+  }
+  renderVals() {
+    const { finished, amox } = this.state;
+    const drugs = [
+      { name: 'Amoxicillin 500 mg', dose: 'كبسولة كل 8 ساعات · 7 أيام', amox: true },
+      { name: 'Paracetamol 500 mg', dose: 'قرص عند الحرارة · حتى 4 مرات في اليوم' },
+    ].filter((d) => amox || !d.amox);
+    return {
+      theme: this.props.theme ?? 'light',
+      density: this.props.density ?? 'comfortable',
+      drugs,
+      conflict: amox,
+      finished,
+      visitSeal: finished ? 'seal s-done' : 'seal s-room',
+      visitLabel: finished ? 'انتهت الزيارة' : 'في الغرفة',
+      savedLine: finished ? 'حُفظت الزيارة' : 'محفوظ تلقائياً',
+      finish: () => this.setState({ finished: true }),
+      removeDrug: () => this.setState({ amox: false }),
+    };
+  }
+}
+DC.mount(Component);
+</script>
+</body>
+</html>

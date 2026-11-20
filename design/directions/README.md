@@ -16,10 +16,14 @@ Chosen: **C, Warm (الدافئ)**, by the owner on 2026-11-20. Its values are i
 Open a screen file in a browser; a build needs no server and makes no network request.
 
 - `reception-queue.html`: reception queue, desktop.
-- `doctor-visit.html`: doctor visit, desktop and 10-inch tablet.
+- `doctor-visit.html`: doctor visit, desktop; `doctor-visit-tablet.html`: the same visit on a 10-inch tablet (1280 × 800).
 - `patient-booking.html`: patient booking, phone.
 
-Each screen has switches for theme (`data-theme`: light, dark) and density (`data-density`: comfortable, compact). Every number is in Western digits (OD-20).
+The bar at the top of each page links the four screens and switches theme (`data-theme`: light, dark) and density (`data-density`: comfortable, compact). Every number is in Western digits (OD-20).
+
+## How the builds are made
+
+`source/` holds the sixteen artboards as drawn in the design canvas (`*.dc.html`; `Main.dc.html` is direction D's reception queue). `node scripts/design-directions-build.mjs` turns them into the builds: the first state rendered as plain HTML, a small `runtime.js` for the clicks, and the fonts of `packages/tokens/fonts/`. Change a source file and run the script again.
 
 ## Rules for a build
 

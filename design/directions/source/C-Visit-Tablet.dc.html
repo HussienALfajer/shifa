@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الدافئ — زيارة الطبيب على اللوحي</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<style>
+body{margin:0}
+a{color:#1f6f5c}a:hover{color:#134a3d}
+.sh{--app:#fbf8f1;--surface:#ffffff;--raised:#f4efe3;--border:#e6dfcf;--strong:#76857e;--text:#1d2a26;--muted:#5b6a63;--primary:#1f6f5c;--primary-h:#134a3d;--on-primary:#ffffff;--soft:#e2f0ea;--duo:#cfe6dc;--accent:#c8a24a;--accent-soft:#f7edd3;--nav:#134a3d;--nav-text:#e8f2ee;--nav-dim:#b5d6cb;--shadow:0 1px 2px rgba(29,42,38,.09);
+--crim-f:#c01b37;--crim-b:#f9ecee;--crim-l:#e9c4ca;--green-f:#1d744c;--green-b:#edf8f3;--amber-f:#8d5c07;--amber-b:#faf4ea;
+font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--text);background:var(--app);font-variant-numeric:tabular-nums}
+.sh[data-theme="dark"]{--app:#0e1513;--surface:#151e1b;--raised:#1c2824;--border:#2b3934;--text:#e6ede9;--muted:#a3b2ab;--primary:#6fc3ab;--primary-h:#9ad8c5;--on-primary:#0e1513;--soft:#12382f;--duo:#1d4a3f;--accent:#d4b463;--accent-soft:#3a2f14;--nav:#0c2a23;--nav-dim:#9cc0b5;--shadow:none;
+--crim-f:#df8190;--crim-b:#2f1318;--crim-l:#5b2932;--green-f:#42bb82;--green-b:#162c22;--amber-f:#db9824;--amber-b:#322611}
+.sh button{font:inherit;cursor:pointer;transition:background-color 150ms ease-out,border-color 150ms ease-out}
+.sh button:focus-visible,.sh textarea:focus-visible,.sh a:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sh .btn-p:hover{background:var(--primary-h)}
+.sh .btn-s:hover{background:var(--soft)}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;display:flex;align-items:center;gap:10px;font-size:20px;font-weight:600;line-height:30px}
+.tile{display:flex;flex-direction:column;padding:12px 16px;border-radius:12px;background:var(--raised)}
+.rise{animation:rise 240ms ease-out}
+@keyframes rise{from{opacity:.4;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sh *{transition:none!important}.rise{animation:none}}
+</style>
+</helmet>
+<div class="sh" data-theme="{{theme}}" data-density="{{density}}" style="width: 1280px; height: 800px; box-sizing: border-box; display: flex; flex-direction: column; overflow: hidden; font-size: 16px; line-height: 26px">
+
+  <header style="flex: none; display: flex; align-items: center; gap: 14px; height: 64px; padding-inline: 24px; background: var(--nav); color: var(--nav-text)">
+    <span aria-hidden="true" style="width: 40px; height: 40px; border-radius: 12px; background: var(--accent); display: inline-flex; align-items: center; justify-content: center; color: #1d2a26; font-family: 'Noto Naskh Arabic', serif; font-size: 24px; font-weight: 700; line-height: 1">ش</span>
+    <span style="font-size: 20px; font-weight: 700">الزيارة الحالية</span>
+    <span style="font-size: 15px; color: var(--nav-dim)">عيادة الياسمين · د. <span data-person="سامر الخطيب">سامر الخطيب</span></span>
+    <span style="margin-inline-start: auto; display: inline-flex; align-items: center; gap: 8px; height: 36px; padding-inline: 14px; border-radius: 999px; background: rgba(255,255,255,.1); font-size: 15px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity=".18"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>
+      {{saveLine}}
+    </span>
+  </header>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px">
+
+    <section aria-label="بيانات المريضة" style="display: flex; align-items: center; gap: 20px; padding: 20px 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow)">
+      <span aria-hidden="true" style="width: 72px; height: 72px; flex: none; border-radius: 50%; background: var(--accent-soft); display: inline-flex; align-items: center; justify-content: center">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.5" fill="var(--accent)" fill-opacity=".45"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+      </span>
+      <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0">
+        <h1 data-person="فاطمة أحمد النجار" style="margin: 0; font-size: 25px; font-weight: 700; line-height: 38px">فاطمة أحمد النجار</h1>
+        <span style="font-size: 15px; line-height: 24px; color: var(--muted)">أنثى · <bdi dir="ltr">34</bdi> سنة · ملف رقم <bdi dir="ltr">1047</bdi> · رقم الدور <bdi dir="ltr">7</bdi></span>
+      </div>
+      <div role="alert" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 8px 20px 8px 16px; border-radius: 999px; background: var(--crim-b); border: 1px solid var(--crim-l); color: var(--crim-f); font-weight: 700; font-size: 17px">
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 15H3z" fill="currentColor" fill-opacity=".2"/><path d="M12 10v4M12 16.5v.5"/></svg>
+        <span>تنبيه حرج: حساسية من <bdi dir="ltr">Penicillin</bdi></span>
+      </div>
+    </section>
+
+    <sc-if value="{{finished}}" hint-placeholder-val="{{false}}">
+      <div class="rise" role="status" style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; border-radius: 12px; background: var(--green-b); color: var(--green-f); font-weight: 600">
+        <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity=".2"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>
+        <span>انتهت الزيارة وحُفظت الملاحظة والوصفة. التالي في الدور: <span data-person="خالد مصطفى الحداد">خالد مصطفى الحداد</span></span>
+      </div>
+    </sc-if>
+
+    <section class="card">
+      <h2>
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20s-7-4.5-7-9.5A4 4 0 0 1 12 8a4 4 0 0 1 7 2.5c0 5-7 9.5-7 9.5z" fill="var(--duo)"/><path d="M4 13h4l2-3l3 5l2-2h5"/></svg>
+        العلامات الحيوية
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px">
+        <div class="tile">
+          <span style="font-size: 14px; line-height: 22px; color: var(--muted)">ضغط الدم</span>
+          <span style="font-size: 25px; font-weight: 700; line-height: 36px"><bdi dir="ltr">120/80</bdi></span>
+          <bdi dir="ltr" style="font-size: 14px; color: var(--muted); text-align: start">mmHg</bdi>
+        </div>
+        <div class="tile">
+          <span style="font-size: 14px; line-height: 22px; color: var(--muted)">النبض</span>
+          <span style="font-size: 25px; font-weight: 700; line-height: 36px"><bdi dir="ltr">78</bdi></span>
+          <span style="font-size: 14px; color: var(--muted)">نبضة في الدقيقة</span>
+        </div>
+        <div class="tile" style="background: var(--amber-b)">
+          <span style="font-size: 14px; line-height: 22px; color: var(--muted)">الحرارة</span>
+          <span style="font-size: 25px; font-weight: 700; line-height: 36px"><bdi dir="ltr">38.4</bdi></span>
+          <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--amber-f)">
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V6M6.5 11.5L12 6l5.5 5.5"/></svg>
+            مرتفعة · <bdi dir="ltr">°C</bdi>
+          </span>
+        </div>
+        <div class="tile">
+          <span style="font-size: 14px; line-height: 22px; color: var(--muted)">الوزن</span>
+          <span style="font-size: 25px; font-weight: 700; line-height: 36px"><bdi dir="ltr">64</bdi></span>
+          <span style="font-size: 14px; color: var(--muted)">كغ</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5h14v10H10l-5 4z" fill="var(--duo)"/></svg>
+        سبب الزيارة
+      </h2>
+      <p style="margin: 0; font-size: 17px; line-height: 28px">ألم في الحلق مع حرارة منذ ثلاثة أيام، وصعوبة في البلع.</p>
+    </section>
+
+    <section class="card">
+      <h2>
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 4h9l4 4v12H6z" fill="var(--duo)"/><path d="M9 11h7M9 14h7M9 17h4"/></svg>
+        <label for="ct-note">ملاحظة الطبيب</label>
+      </h2>
+      <textarea id="ct-note" rows="5" style="width: 100%; box-sizing: border-box; resize: vertical; padding: 14px 16px; border: 1px solid var(--strong); border-radius: 8px; background: var(--surface); color: var(--text); font-family: 'Noto Naskh Arabic', serif; font-size: 19px; line-height: 32px">المريضة تشكو من ألم في الحلق وحرارة منذ ثلاثة أيام. بالفحص: احتقان واضح في البلعوم مع تضخم اللوزتين، ولا توجد صعوبة في التنفس. الصدر سليم بالإصغاء. يُنصح بالراحة والإكثار من السوائل الدافئة، والمراجعة بعد خمسة أيام إن لم تتحسن الأعراض.</textarea>
+    </section>
+
+    <section class="card">
+      <h2>
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="9" width="17" height="7" rx="3.5" fill="var(--duo)" transform="rotate(-35 12 12.5)"/><path d="M9.5 8.5l6 7.5"/></svg>
+        الوصفة
+      </h2>
+      <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 16px; border-radius: 12px; background: var(--crim-b); border: 1px solid var(--crim-l)">
+        <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+          <bdi dir="ltr" style="font-size: 18px; font-weight: 600; text-align: start">Amoxicillin 500 mg</bdi>
+          <span style="font-size: 15px; line-height: 24px; color: var(--muted)">كبسولة كل <bdi dir="ltr">8</bdi> ساعات · <bdi dir="ltr">7</bdi> أيام</span>
+        </div>
+        <span style="display: inline-flex; align-items: center; gap: 8px; color: var(--crim-f); font-size: 16px; font-weight: 700">
+          <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l9 15H3z" fill="currentColor" fill-opacity=".2"/><path d="M12 10v4M12 16.5v.5"/></svg>
+          يتعارض مع حساسية <bdi dir="ltr">Penicillin</bdi>
+        </span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px; min-height: 64px; padding: 12px 16px; border-radius: 12px; background: var(--raised)">
+        <div style="display: flex; flex-direction: column; flex: 1; min-width: 0">
+          <bdi dir="ltr" style="font-size: 18px; font-weight: 600; text-align: start">Paracetamol 500 mg</bdi>
+          <span style="font-size: 15px; line-height: 24px; color: var(--muted)">قرص عند الحاجة، بحد أقصى <bdi dir="ltr">4</bdi> مرات يومياً</span>
+        </div>
+      </div>
+      <button class="btn-s" type="button" style="align-self: flex-start; display: inline-flex; align-items: center; gap: 8px; height: 48px; padding-inline: 20px; border: 1px solid var(--primary); border-radius: 12px; background: var(--surface); color: var(--primary); font-weight: 600; font-size: 17px">
+        <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="12" cy="12" r="9" fill="var(--duo)" stroke="none"/><path d="M12 7.5v9M7.5 12h9"/></svg>
+        إضافة دواء
+      </button>
+    </section>
+
+    <section class="card">
+      <h2>
+        <svg width="26" height="26" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--primary)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5" fill="var(--duo)"/><path d="M12 7.5V12l3 2"/></svg>
+        زيارات سابقة
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+        <div class="tile">
+          <span style="font-weight: 600">مراجعة دورية</span>
+          <span style="font-size: 15px; line-height: 24px; color: var(--muted)"><bdi dir="ltr">12</bdi> آب <bdi dir="ltr">2026</bdi> · د. <span data-person="ريم الحلبي">ريم الحلبي</span></span>
+        </div>
+        <div class="tile">
+          <span style="font-weight: 600">التهاب الجيوب الأنفية</span>
+          <span style="font-size: 15px; line-height: 24px; color: var(--muted)"><bdi dir="ltr">3</bdi> آذار <bdi dir="ltr">2026</bdi> · د. <span data-person="سامر الخطيب">سامر الخطيب</span></span>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer style="flex: none; display: flex; align-items: center; gap: 16px; padding: 14px 24px; background: var(--surface); border-top: 1px solid var(--border)">
+    <span style="font-size: 15px; color: var(--muted)">تُحفظ الملاحظة تلقائياً أثناء الكتابة.</span>
+    <button class="btn-p" type="button" onClick="{{finish}}" disabled="{{finished}}" style="margin-inline-start: auto; min-width: 320px; display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 56px; padding-inline: 28px; border: 0; border-radius: 12px; background: var(--primary); color: var(--on-primary); font-size: 19px; font-weight: 700">
+      <svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9" fill="currentColor" fill-opacity=".25"/><path d="M8 12.5l2.8 2.8L16 9.5"/></svg>
+      {{finishLabel}}
+    </button>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"density":{"editor":"enum","options":["comfortable","compact"],"default":"comfortable"},"$preview":{"width":1280,"height":800}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { finished: false };
+  }
+  renderVals() {
+    const finished = this.state.finished;
+    return {
+      theme: this.props.theme ?? 'light',
+      density: this.props.density ?? 'comfortable',
+      finished,
+      finishLabel: finished ? 'انتهت الزيارة' : 'إنهاء الزيارة',
+      saveLine: finished ? 'حُفظت الزيارة' : 'محفوظ تلقائياً',
+      finish: () => this.setState({ finished: true }),
+    };
+  }
+}
+</script>
+</body>
+</html>
