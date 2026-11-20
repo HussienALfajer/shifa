@@ -1,4 +1,5 @@
 {
+  "@phosphor-icons/react": "MIT",
   "@ui-sdk/core": "Apache-2.0",
   "@ui-sdk/react": "Apache-2.0",
   "clsx": "MIT",

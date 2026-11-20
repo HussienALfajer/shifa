@@ -3,7 +3,11 @@
   "compilerOptions": {
     "lib": ["es2024", "dom", "dom.iterable"],
     "jsx": "react-jsx",
+    // Bundled by Vite (Storybook, the apps). Bundler resolution also reads packages whose
+    // declaration files use extension-less relative imports (@phosphor-icons/react).
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "types": ["node"]
   },
-  "include": ["src", "test", "*.config.ts"]
+  "include": ["src", "test", ".storybook/**/*", "*.config.ts"]
 }

@@ -184,7 +184,16 @@ function moduleBoundaries(tsconfigRootDir, options) {
  */
 export function createConfig({ tsconfigRootDir, allowRawDb = [], moduleBoundaries: boundaries }) {
   return defineConfig(
-    { ignores: ['dist/**', 'coverage/**', '**/*.generated.*', '**/generated/**'] },
+    {
+      ignores: [
+        'dist/**',
+        'coverage/**',
+        'storybook-static/**',
+        '.vitest/**',
+        '**/*.generated.*',
+        '**/generated/**',
+      ],
+    },
     js.configs.recommended,
     tseslint.configs.strictTypeChecked,
     tseslint.configs.stylisticTypeChecked,

@@ -12,6 +12,9 @@ allowBuilds:
   # core-js-pure (via dcmjs, 0.3-S4) only prints a funding banner from its postinstall.
   core-js-pure: false
   cpu-features: false
+  # esbuild (via Storybook, 0.4-03) only checks its platform binary, which arrives as an optional
+  # dependency (@esbuild/<platform>).
+  esbuild: false
   protobufjs: false
   ssh2: false
 

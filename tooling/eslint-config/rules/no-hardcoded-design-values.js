@@ -7,8 +7,8 @@ import { classVisitors, splitClasses } from './class-strings.js';
 /** Utilities whose value is a spacing step. */
 const SPACING_UTILITY =
   /^(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|gap|gap-x|gap-y|space-x|space-y|inset|inset-x|inset-y|start|end|top|bottom|translate-x|translate-y|scroll-m[xyseb]?|scroll-p[xyseb]?|indent|w|h|size|min-w|min-h|max-w|max-h|basis)-(.+)$/;
-/** Sizing utilities, where 1px hairlines and keywords are fine. */
-const SIZING = /^(?:w|h|size|min-w|min-h|max-w|max-h|basis)-/;
+/** Sizing utilities and the 1 px press nudge (`translate-y-px`), where a 1px hairline is fine. */
+const SIZING = /^(?:w|h|size|min-w|min-h|max-w|max-h|basis|translate-x|translate-y)-/;
 const NUMERIC = /^\d+(?:\.\d+)?$/;
 const TOKEN_REFERENCE = /^(?:\(--shifa-[\w-]+\)|\[var\(--shifa-[\w-]+\)\])$/;
 

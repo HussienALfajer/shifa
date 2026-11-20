@@ -179,6 +179,9 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 - Lint (`tooling/eslint-config/rules/`, plugin `shifa`, every package): `no-physical-direction` (physical utilities in class lists, physical properties in `style`), `no-hardcoded-design-values` (arbitrary values other than a token reference, spacing steps the tokens do not offer, literal colours, lengths and fonts in `style`), `ui-sdk-only-in-ui` (`@ui-sdk/*` and Base UI outside `packages/ui`), `no-ui-sdk-agent` (`@ui-sdk/react/agent` anywhere). Class lists are read from `className`, `cn`/`clsx`/`twMerge` and `cva`/`tv`.
 - The Tailwind theme offers token values only: Tailwind's colours, spacing (with its multiplier), radius, shadows, fonts, sizes and easings are reset, so `p-14` or `bg-red-500` compile to nothing.
 - `DensityProvider` refuses `compact` on a coarse pointer (`(pointer: coarse)`) and falls back to comfortable with a development warning.
+- Icons: one `Icon` component over a curated list (`packages/ui/src/icons/icon.tsx`): Phosphor drawn duotone, a small Healthicons set kept as files with its licence. Arrows, carets and sign-out mirror in RTL; nothing else does. The second tone is 20 % of the stroke colour for now; the mint and gold `icon-tone` tokens join when navigation is built (backlog).
+- Storybook (`packages/ui/.storybook`) renders every story in the eight combinations of direction × theme × density, with the text states (long Arabic label, mixed direction, 200 % zoom, reduced motion) and axe on every story. Test helpers for the RTL gate live in `packages/ui/test/support/`.
+- Button (0.4-03, sheet approved 2026-11-20): primary, secondary (default), ghost, danger; sm, md, lg; the icon on the logical start; loading keeps focus and its label; the focus ring does not animate.
 - Core set (Phase 0.4): listed in spec 0.4, criterion 8.
 - Companions where UI SDK has gaps:
 

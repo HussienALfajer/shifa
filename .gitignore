@@ -18,6 +18,9 @@ node_modules/
 dist/
 build/
 coverage/
+# Storybook builds and Vitest browser failure screenshots (packages/ui, 0.4-03)
+storybook-static/
+.vitest/
 .next/
 .dart_tool/
 .fvm/
