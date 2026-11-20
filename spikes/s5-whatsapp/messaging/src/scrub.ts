@@ -75,7 +75,15 @@ const DIGIT_RUN = /\d(?:[ -]?\d){7,}/g;
 const ISO_TIME = /\d{4}-\d{2}-\d{2}(T[\d:.]+(Z|[+-]\d{2}:\d{2})?)?/g;
 const TOKEN =
   /(\d+)(?::\d+)?@(c\.us|s\.whatsapp\.net|lid|g\.us|newsletter|broadcast)|(\+?)(\d(?:[ -]?\d){7,})/g;
-const MESSAGE_ID = /^(true|false)_(.+)_([0-9A-Za-z]{6,})$/;
+/**
+ * `true|false_<chat>_<key>`; in groups a `_<participant>` follows the key (0.3-S5c security
+ * review: the old pattern missed it and left real group message keys in 12 fixtures).
+ */
+const MESSAGE_ID = /^(true|false)_([^_]+)_([0-9A-Za-z]{6,})(?:_([^_]+))?$/;
+/** A placeholder key as `Scrubber.key` writes it: `ABCDEF…` then a 4-digit hex counter. */
+const isPlaceholderKey = (run: string) =>
+  run.slice(0, -4) === 'ABCDEF'.repeat(8).slice(0, run.length - 4);
+const HEX_RUN = /[0-9A-F]{12,}/g;
 
 /** Placeholder digit blocks: phone-like, all synthetic Syriatel numbers with the `00` marker. */
 const BLOCK = { phone: '96393009', lid: '96393008', group: '96393007' } as const;
@@ -111,7 +119,10 @@ class Scrubber {
   structural(raw: string): string {
     const value = asciiDigits(raw);
     const id = MESSAGE_ID.exec(value);
-    if (id?.[1] && id[2] && id[3]) return `${id[1]}_${this.tokens(id[2])}_${this.key(id[3])}`;
+    if (id?.[1] && id[2] && id[3]) {
+      const participant = id[4] ? `_${this.tokens(id[4])}` : '';
+      return `${id[1]}_${this.tokens(id[2])}_${this.key(id[3])}${participant}`;
+    }
     if (/^evt_[0-9a-z]+$/.test(value)) {
       return this.map('event', value, (n) => `evt_${String(n).padStart(26, 'x')}`);
     }
@@ -214,7 +225,12 @@ function scan(value: unknown, key: string, path: string, out: string[]): void {
     const run = [...asciiDigits(value).replace(ISO_TIME, ' ').matchAll(DIGIT_RUN)]
       .map((m) => m[0].replace(/[ -]/g, ''))
       .find((digits) => !isSyntheticDigits(digits));
+    // A message key that is not a placeholder (a real key identifies a real message).
+    const hex = [...value.matchAll(HEX_RUN)]
+      .map((m) => m[0])
+      .find((h) => !/^\d+$/.test(h) && !isPlaceholderKey(h));
     if (run) out.push(`${path}: ${String(run.length)}-digit run`);
+    else if (hex) out.push(`${path}: message key that is not a placeholder`);
     else if (!STRUCTURAL.has(key) && !FIXTURE_FIELDS.has(key) && !PLACEHOLDER.test(value)) {
       out.push(`${path}: text that is not a placeholder`);
     }

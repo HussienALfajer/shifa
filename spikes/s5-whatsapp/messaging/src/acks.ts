@@ -6,6 +6,7 @@ import { tripBreaker } from './breaker.ts';
 import { type Ctx, ts } from './context.ts';
 import { type Client, rows } from './db.ts';
 import { settleAttempt } from './fallback.ts';
+import { messageKeyOf } from './normalise.ts';
 import { banCode } from './waha.ts';
 
 const RANK: Record<string, number> = { sent: 1, delivered: 2, read: 3 };
@@ -18,11 +19,17 @@ export async function handleAck(
   payload: { id?: unknown; ack?: unknown; _data?: unknown },
 ) {
   if (typeof payload.id !== 'string' || typeof payload.ack !== 'number') return;
+  // Manual day (2026-11-19): the real send returns `true_<phone>@c.us_<key>` but its acks carry
+  // `true_<lid>@lid_<key>`, so acks are matched by the message key (the part after the last `_`).
+  // Only acks of our own sends (`true_`): a `false_` read receipt carries someone else's key.
+  const key = payload.id.startsWith('true_') ? (messageKeyOf(payload.id) ?? '') : '';
   const attempt = (
     await rows<{ id: string; seq: string; status: string; clinic_id: string }>(
       client,
-      'select id, seq, status, clinic_id from s5.delivery_attempt where wa_message_id = $1 and session = $2 for update',
-      [payload.id, session],
+      `select id, seq, status, clinic_id from s5.delivery_attempt
+       where session = $2 and (wa_message_id = $1 or ($3 <> '' and wa_message_id like '%\\_' || $3))
+       for update`,
+      [payload.id, session, key],
     )
   )[0];
   if (!attempt) return;

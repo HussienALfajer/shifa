@@ -1,0 +1,42 @@
+{
+  "container": "platform",
+  "receivedAt": "2026-11-18T17:44:33.902Z",
+  "signature": {
+    "present": true,
+    "valid": true,
+    "algorithm": "sha512"
+  },
+  "body": {
+    "id": "evt_xxxxxxxxxxxxxxxxxxxxxxxxx2",
+    "timestamp": 1795023873896,
+    "event": "session.status",
+    "session": "platform",
+    "me": null,
+    "payload": {
+      "name": "platform",
+      "status": "SCAN_QR_CODE",
+      "statuses": [
+        {
+          "status": "STARTING",
+          "timestamp": 1795023872252
+        },
+        {
+          "status": "SCAN_QR_CODE",
+          "timestamp": 1795023873896
+        }
+      ],
+      "data": null
+    },
+    "engine": "GOWS",
+    "environment": {
+      "version": "2026.10.1",
+      "engine": "GOWS",
+      "tier": "CORE",
+      "browser": null,
+      "platform": "text-1",
+      "worker": {
+        "id": null
+      }
+    }
+  }
+}

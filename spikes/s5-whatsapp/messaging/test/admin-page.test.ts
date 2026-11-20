@@ -35,7 +35,12 @@ describe('admin page', () => {
       const started = await call(`${base}/platform/start`, page.token, 'POST');
       expect(started.status).toBe(200);
       const paths = (env.fakes.platform?.calls ?? []).map((c) => `${c.method} ${c.path}`);
-      expect(paths).toEqual(['POST /api/sessions/platform/start', 'POST /api/sessions']);
+      // The state check before a start (0.3-S5c: a FAILED session is stopped first).
+      expect(paths).toEqual([
+        'GET /api/sessions/platform',
+        'POST /api/sessions/platform/start',
+        'POST /api/sessions',
+      ]);
       const qr = await call(`${base}/platform/qr`, page.token);
       expect(qr.status).toBe(200);
       expect(((await qr.res.json()) as { value: string }).value).toMatch(/^fake-qr-/);

@@ -1,0 +1,71 @@
+{
+  "container": "platform",
+  "receivedAt": "2026-11-18T17:44:52.339Z",
+  "signature": {
+    "present": true,
+    "valid": true,
+    "algorithm": "sha512"
+  },
+  "body": {
+    "id": "evt_xxxxxxxxxxxxxxxxxxxxxxxxx3",
+    "timestamp": 1795023892332,
+    "event": "session.status",
+    "session": "platform",
+    "me": {
+      "id": "963930090001@c.us",
+      "pushName": "text-2",
+      "lid": "963930080001@lid",
+      "jid": "text-3",
+      "reachoutTimelock": null,
+      "messageCapping": {
+        "cappingStatus": "NONE",
+        "totalQuota": -1,
+        "usedQuota": 0,
+        "cycleStart": 1793484000,
+        "cycleEnd": 1796075999,
+        "mvStatus": "NOT_ELIGIBLE",
+        "oteStatus": "NOT_ELIGIBLE"
+      }
+    },
+    "payload": {
+      "name": "platform",
+      "status": "WORKING",
+      "statuses": [
+        {
+          "status": "STARTING",
+          "timestamp": 1795023872252
+        },
+        {
+          "status": "SCAN_QR_CODE",
+          "timestamp": 1795023873896
+        },
+        {
+          "status": "WORKING",
+          "timestamp": 1795023892332
+        }
+      ],
+      "data": {
+        "messageCapping": {
+          "cappingStatus": "NONE",
+          "totalQuota": -1,
+          "usedQuota": 0,
+          "cycleStart": 1793484000,
+          "cycleEnd": 1796075999,
+          "mvStatus": "NOT_ELIGIBLE",
+          "oteStatus": "NOT_ELIGIBLE"
+        }
+      }
+    },
+    "engine": "GOWS",
+    "environment": {
+      "version": "2026.10.1",
+      "engine": "GOWS",
+      "tier": "CORE",
+      "browser": null,
+      "platform": "text-1",
+      "worker": {
+        "id": null
+      }
+    }
+  }
+}

@@ -1,7 +1,7 @@
 // The fake's in-memory state: sessions with WAHA's state machine
 // (STOPPED → STARTING → SCAN_QR_CODE → WORKING, and FAILED/STOPPED), per-session send modes,
 // the LID table, the call log and hung requests.
-import type { Me, SessionStatus } from './events.ts';
+import { type Me, meOf, type SessionStatus } from './events.ts';
 
 export type SendMode = 'ok' | 'error463' | 'error475' | 'timeout' | 'hang';
 
@@ -51,7 +51,8 @@ export class FakeState {
     if (existing) return existing;
     this.count++;
     // The fake's own (clinic or platform) number: a fixed test range, never a patient's.
-    const me = { id: `9639900${String(this.count).padStart(5, '0')}@c.us`, pushName: name };
+    const n = String(this.count).padStart(5, '0');
+    const me = meOf(`9639900${n}@c.us`, `9639800${n}@lid`, name, Math.floor(this.now() / 1000));
     const s: FakeSession = {
       name,
       status: 'STOPPED',
