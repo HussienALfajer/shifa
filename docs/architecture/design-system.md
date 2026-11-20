@@ -162,7 +162,7 @@ Rules that come with it:
 - Light is the default theme; dark is a user choice and the waiting-room display's default.
 - Compact density is for pointer devices; the tablet and the phone stay comfortable.
 
-Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.paragraph.*`), the focus halo (`elevation.focus`, `shadow.focus`, outside the 2 px `color.border.focus` outline), icon colours (`color.icon.default`, `.muted`) and duotone second tones (`color.icon-tone.default` mint, `.current` gold), `color.text.disabled`, the overlay scrim (`color.bg.overlay`), a selection tint scale (`color.selection.subtle`, `.default`, `.strong`) and a six-hue avatar palette (`color.avatar.*`, never red). Every semantic and brand token carries a usage note, which the Shifa Design System shows. The status hues and alert severity names stay provisional until the owner confirms them on the screens.
+Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.paragraph.*`), the focus halo (`elevation.focus`, `shadow.focus`, outside the 2 px `color.border.focus` outline), icon colours (`color.icon.default`, `.muted`) and duotone second tones (`color.icon-tone.default` mint, `.current` gold), `color.text.disabled`, the overlay scrim (`color.bg.overlay`), a selection tint scale (`color.selection.subtle`, `.default`, `.strong`) and a six-hue avatar palette (`color.avatar.*`, never red). Every semantic and brand token carries a usage note, which the Shifa Design System shows. The status hues and alert severity names were confirmed by the owner on 2026-11-20: `danger` is brick, the clinical alerts are `info`/`warning`/`critical` with crimson for `critical` only, and `done`/`success`/`saved` share green.
 
 ## Clinic theming
 
