@@ -1,0 +1,28 @@
+{
+  "name": "@shifa/tokens",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The one source of design values (DTCG tokens) for the web theme and the Flutter theme.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./css/*": "./generated/css/*"
+  },
+  "scripts": {
+    "generate": "node ../../scripts/check-drift.mjs --fix",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "style-dictionary": "5.8.0"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "color": {
+    "$type": "color",
+    "brand": {
+      "$description": "The slots a clinic palette replaces (PLT-41). The server-side palette must meet the pairs declared for these slots in contrast-pairs.json.",
+      "primary": { "$value": "{color.jasmine.green.600}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } } },
+      "primary-hover": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } } },
+      "primary-pressed": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.200}" } } } },
+      "on-primary": { "$value": "{color.white}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
+      "primary-soft": { "$value": "{color.jasmine.green.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.900}" } } } },
+      "accent": {
+        "$description": "A fill, border or mark colour, never body text on a light surface.",
+        "$value": "{color.jasmine.gold.500}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.400}" } } }
+      },
+      "on-accent": { "$value": "{color.jasmine.ink.900}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
+      "accent-soft": { "$value": "{color.jasmine.gold.100}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } } }
+    }
+  }
+}

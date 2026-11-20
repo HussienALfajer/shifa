@@ -1,0 +1,71 @@
+{
+  "size": {
+    "$type": "dimension",
+    "$description": "Two densities (principle 3): comfortable for touch (44 px targets), compact for desktop data screens (32 px rows).",
+    "control": {
+      "sm": { "$value": "{space.9}", "$extensions": { "shifa": { "modes": { "compact": "{space.7}" } } } },
+      "md": { "$value": "{space.11}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
+      "lg": { "$value": "{space.13}", "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } } }
+    },
+    "row": { "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
+    "target-min": { "$value": "{space.11}" }
+  },
+  "inset": {
+    "$type": "dimension",
+    "control": { "$value": "{space.4}", "$extensions": { "shifa": { "modes": { "compact": "{space.3}" } } } },
+    "surface": { "$value": "{space.6}", "$extensions": { "shifa": { "modes": { "compact": "{space.4}" } } } }
+  },
+  "gap": {
+    "$type": "dimension",
+    "stack": { "$value": "{space.4}", "$extensions": { "shifa": { "modes": { "compact": "{space.2}" } } } },
+    "inline": { "$value": "{space.2}" }
+  },
+  "text": {
+    "family": {
+      "$type": "fontFamily",
+      "ui": { "$value": "{font.family.sans}" },
+      "reading": { "$value": "{font.family.serif}" },
+      "code": { "$value": "{font.family.mono}" }
+    },
+    "size": {
+      "$type": "dimension",
+      "caption": { "$value": "{font.size.100}" },
+      "data": { "$value": "{font.size.200}" },
+      "body": { "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.200}" } } } },
+      "heading-sm": { "$value": "{font.size.400}" },
+      "heading-md": { "$value": "{font.size.500}" },
+      "heading-lg": { "$value": "{font.size.600}" },
+      "display": { "$value": "{font.size.700}" }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "body": { "$value": "{font.weight.regular}" },
+      "label": { "$value": "{font.weight.medium}" },
+      "heading": { "$value": "{font.weight.semibold}" }
+    },
+    "leading": {
+      "$type": "number",
+      "body": { "$value": "{font.line-height.normal}" },
+      "heading": { "$value": "{font.line-height.tight}" },
+      "reading": { "$value": "{font.line-height.relaxed}" }
+    }
+  },
+  "shape": {
+    "$type": "dimension",
+    "radius": {
+      "control": { "$value": "{radius.md}" },
+      "surface": { "$value": "{radius.lg}" },
+      "pill": { "$value": "{radius.full}" }
+    },
+    "border": {
+      "default": { "$value": "{border.width.thin}" },
+      "focus": { "$value": "{border.width.thick}" }
+    }
+  },
+  "shadow": {
+    "$type": "shadow",
+    "raised": { "$value": "{elevation.1}" },
+    "overlay": { "$value": "{elevation.2}" },
+    "modal": { "$value": "{elevation.3}" }
+  }
+}

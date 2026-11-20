@@ -1,0 +1,12 @@
+{
+  "name": "@shifa/dart-ui",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Turborepo task wrapper for the Flutter package shifa_ui (see pubspec.yaml).",
+  "scripts": {
+    "generate": "node ../../scripts/check-drift.mjs --fix",
+    "typecheck": "node ../../scripts/dart.mjs dart analyze --fatal-infos",
+    "lint": "node ../../scripts/dart.mjs dart format --output=none --set-exit-if-changed lib/shifa_ui.dart test",
+    "test": "node ../../scripts/dart.mjs flutter test"
+  }
+}

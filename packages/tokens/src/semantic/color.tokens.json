@@ -1,0 +1,27 @@
+{
+  "color": {
+    "$type": "color",
+    "bg": {
+      "app": { "$value": "{color.jasmine.cream.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.950}" } } } },
+      "surface": { "$value": "{color.white}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.900}" } } } },
+      "surface-raised": { "$value": "{color.jasmine.cream.200}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.800}" } } } }
+    },
+    "text": {
+      "default": { "$value": "{color.jasmine.ink.900}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } } },
+      "muted": { "$value": "{color.jasmine.ink.500}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } } }
+    },
+    "border": {
+      "default": { "$value": "{color.jasmine.cream.300}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.night.700}" } } } },
+      "strong": {
+        "$description": "Borders that carry meaning alone (input outlines): 3 : 1 on every surface.",
+        "$value": "{color.jasmine.ink.400}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.400}" } } }
+      },
+      "focus": { "$value": "{color.jasmine.green.600}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.300}" } } } }
+    },
+    "nav": {
+      "bg": { "$value": "{color.jasmine.green.800}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.950}" } } } },
+      "text": { "$value": "{color.jasmine.green.50}", "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.50}" } } } }
+    }
+  }
+}

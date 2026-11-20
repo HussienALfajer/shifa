@@ -1,0 +1,36 @@
+{
+  "$description": "Component tokens point at semantic or brand tokens only. The set grows with packages/ui (slices 0.4-03 to 0.4-07).",
+  "focus-ring": {
+    "color": { "$type": "color", "$value": "{color.border.focus}" },
+    "width": { "$type": "dimension", "$value": "{shape.border.focus}" }
+  },
+  "button": {
+    "height": { "$type": "dimension", "$value": "{size.control.md}" },
+    "padding-inline": { "$type": "dimension", "$value": "{inset.control}" },
+    "radius": { "$type": "dimension", "$value": "{shape.radius.control}" },
+    "primary": {
+      "$type": "color",
+      "bg": { "$value": "{color.brand.primary}" },
+      "bg-hover": { "$value": "{color.brand.primary-hover}" },
+      "bg-pressed": { "$value": "{color.brand.primary-pressed}" },
+      "fg": { "$value": "{color.brand.on-primary}" }
+    }
+  },
+  "input": {
+    "height": { "$type": "dimension", "$value": "{size.control.md}" },
+    "radius": { "$type": "dimension", "$value": "{shape.radius.control}" },
+    "bg": { "$type": "color", "$value": "{color.bg.surface}" },
+    "fg": { "$type": "color", "$value": "{color.text.default}" },
+    "border": { "$type": "color", "$value": "{color.border.strong}" }
+  },
+  "card": {
+    "radius": { "$type": "dimension", "$value": "{shape.radius.surface}" },
+    "padding": { "$type": "dimension", "$value": "{inset.surface}" },
+    "bg": { "$type": "color", "$value": "{color.bg.surface}" },
+    "border": { "$type": "color", "$value": "{color.border.default}" },
+    "shadow": { "$type": "shadow", "$value": "{shadow.raised}" }
+  },
+  "table": {
+    "row-height": { "$type": "dimension", "$value": "{size.row}" }
+  }
+}
