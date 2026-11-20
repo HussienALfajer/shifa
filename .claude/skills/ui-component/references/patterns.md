@@ -11,7 +11,7 @@ Read with `ui-sdk.md`. Copy the closest component: Select (a field with a list),
 - The design-system bundle has no page reset: give buttons and inputs `border-0`, and inputs their own `font-ui text-body`.
 - Digits: show Western (`ar-SY-u-nu-latn`, `en-GB`; OD-20, OD-61); accept Arabic-Indic with `useWesternDigits()` on the input.
 - Typeahead text is the item's `label` (and the root `items` label); strip a title such as «د.»; show the full label through a children function (`SelectValue`).
-- `initialFocus` and `finalFocus` functions get no arguments: use a ref. Combobox hides non-matching items instead of removing them: render only the matches. The calendar is a `<table>`: no flex on its cells.
+- `initialFocus` and `finalFocus` functions get no arguments: use a ref. Combobox hides non-matching items instead of removing them: render only the matches, filtering by typed text only (`details.reason === 'input-change'`; UI SDK also sets the query to a chosen item's label), and match a query with spaces at a word start (`matchesWordStart`). The calendar is a `<table>`: no flex on its cells.
 
 ## Tests
 - `describe.each(['rtl', 'ltr'])` with `renderDir`; `expectArrow`, Home and End; `expectPopupSide`; focus in, trapped where it must be, back on the trigger; `expectDigitsAccepted`; `tokenColor`; `expectAxeClean` open and closed, light and dark. A check that does not apply is "n/a" with the reason in the results table.

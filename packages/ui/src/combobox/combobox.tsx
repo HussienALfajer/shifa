@@ -47,14 +47,15 @@ export interface ComboboxProps {
   className?: string | undefined;
 }
 
-/** True when a word of `label` starts with `query` (case-insensitive). */
+/**
+ * True when `query` starts at the start of a word of `label` (case-insensitive, runs of spaces as
+ * one): «سا» and «سامر ال» both find «سامر الحلبي»; «امر» does not.
+ */
 export function matchesWordStart(label: string, query: string): boolean {
-  const q = query.trim().toLocaleLowerCase();
+  const squash = (text: string) => text.trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
+  const q = squash(query);
   if (q === '') return true;
-  return label
-    .toLocaleLowerCase()
-    .split(/\s+/u)
-    .some((word) => word.startsWith(q));
+  return ` ${squash(label)}`.includes(` ${q}`);
 }
 
 const ITEM = cn(
@@ -102,8 +103,10 @@ export function Combobox({
         filter={(item: unknown, query: string) =>
           matchesWordStart((item as { label?: string }).label ?? String(item), query)
         }
-        onQueryChange={(next: string) => {
-          setQuery(next);
+        // Only typing narrows the list. UI SDK also sets the query to a chosen or controlled
+        // item's label, and then shows every item: filtering by that label would empty the list.
+        onQueryChange={(next: string, details: { reason: string }) => {
+          setQuery(details.reason === 'input-change' ? next : '');
         }}
         {...(value === undefined ? {} : { value })}
         {...(defaultValue === undefined ? {} : { defaultValue })}

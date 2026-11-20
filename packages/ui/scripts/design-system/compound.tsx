@@ -172,7 +172,7 @@ export function Menu({ triggerLabel, triggerIcon, items, ...aria }: MenuData) {
   return (
     <CodeMenu>
       {triggerLabel === undefined ? (
-        <MenuTrigger icon={triggerIcon ?? 'dots'} aria-label={aria['aria-label'] ?? ''} />
+        <MenuTrigger icon={triggerIcon ?? 'dots'} aria-label={aria['aria-label'] ?? 'إجراءات'} />
       ) : (
         <MenuTrigger icon={triggerIcon}>{triggerLabel}</MenuTrigger>
       )}

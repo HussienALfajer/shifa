@@ -83,8 +83,18 @@ export interface DialogContentProps {
 /** Where focus lands when the dialog opens: a field, else the safe action, else the close button. */
 function initialFocus(content: HTMLElement | null): HTMLElement | null {
   if (content === null) return null;
+  // A field a person can Tab to: not disabled, not hidden (UI SDK's Select keeps a hidden
+  // textarea for forms), and a Select's trigger counts as a field.
+  const field = [
+    ...content.querySelectorAll<HTMLElement>('input, textarea, select, [role="combobox"]'),
+  ].find(
+    (el) =>
+      el.tabIndex >= 0 &&
+      !el.matches(':disabled, [type="hidden"]') &&
+      el.closest('[aria-hidden="true"], [hidden], [inert]') === null,
+  );
   return (
-    content.querySelector<HTMLElement>('input:not([type=hidden]), textarea, select') ??
+    field ??
     content.querySelector<HTMLElement>('[data-slot="dialog-close"][data-safe]') ??
     content.querySelector<HTMLElement>('[data-slot="dialog-close"]')
   );
