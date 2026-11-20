@@ -220,12 +220,20 @@ Decided in [ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.m
 
 | Part | Type | Holds | Changed by |
 |---|---|---|---|
-| Shifa Design System | Design System, synced from code (read-only), the account's default | Brand book, tokens in both themes, type, spacing, radius, shadows, fonts, logo and icons, the components of `packages/ui` with live previews and guidelines | The repository only: token output and `/design-sync` |
+| Shifa Design System | Design System, synced from code (read-only); not the account's default (that setting covers every project on the account), so sessions name it | Brand book, tokens in both themes, type, spacing, radius, shadows, fonts, logo and icons, the components of `packages/ui` with live previews and guidelines | The repository only: token output and `/design-sync` |
 | Shifa Guide | Design canvas | One guide page drawn from the tokens: the layer flow, then 01 Foundations, 02 Theme, 03 Tokens, 04 Effects, 05 Typography, 06 Rules | Redrawn after a token change |
 | Shifa Components (proposals) | Design canvas, one page per batch | The sheet of a component batch before it is coded | The session with the owner |
 | Shifa Screens | One Design canvas per app (clinic web, admin, display, booking pages, patient app), one page per module | Screens, assembled from the design system's components | The session with the owner |
 
 The layers of the guide are the token layers: Foundations = primitive, Theme = brand, Tokens = semantic, Layers = component. Artifacts are private to the owner's account; their links are not committed here.
+
+### Designing in the project
+
+Every new design for Shifa (a component sheet, a screen, a prototype, a deck) follows these steps, in any session:
+1. **Use the Shifa Design System.** Find it by name among the account's Design System artifacts (it is not the account default, so name it), read its `project/README.md` first, and install it on the canvas so its tokens, type styles, fonts and (from 0.4-03) components are the ones drawn with. Never another design system, a look-alike or an own palette.
+2. **Keep the Shifa Guide's rules** (06 Rules, the README's usage rules): meanings not palette steps; status never by colour alone; red for critical clinical alerts only; locked colours never themed; contrast in light and dark; Arabic RTL first with Western digits; synthetic data only.
+3. **Missing value or component:** do not invent one on the canvas. Add it in `packages/tokens` or `packages/ui`, regenerate, sync, and then draw with it.
+4. **Exploration outside the system** (for example comparing palettes) is allowed only on a separate canvas, never inside the Shifa Design System, and the owner's choice then goes into code first.
 
 ### Direction of flow
 
