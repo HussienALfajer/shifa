@@ -137,6 +137,16 @@ const BASH_RULES = [
     re: /(--dangerously-skip-permissions|--permission-mode[\s=]+bypassPermissions)/,
     why: 'Claude never starts a session that skips permissions; the owner chooses the permission mode (ADR-0027).',
   },
+  // ADR-0041 (OD-60): setup prompts in node_modules and on the web ask agents to fetch skills at
+  // run time and to install with npm, outside the lockfile and the 24-hour release age.
+  {
+    re: /(?:^|[\s;&|(])(?:npx|bunx|pnpm\s+dlx|yarn\s+dlx)\s+(?:-{1,2}[\w-]+\s+)*skills(?:@\S*)?(?:\s|$)/,
+    why: 'Agent skills are not fetched at run time; a skill is written in this repository and reviewed (ADR-0041).',
+  },
+  {
+    re: /(?:^|[\s;&|(])(?:npm\s+(?:i|install|add|ci)|yarn\s+add)(?:\s|$)/,
+    why: 'Packages are installed with pnpm only (lockfile, exact pins, 24-hour release age); never npm or yarn (ADR-0041).',
+  },
 ];
 
 /** @returns {string | null} reason the command is blocked */

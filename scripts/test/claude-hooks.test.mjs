@@ -172,6 +172,18 @@ describe('checkBash', () => {
     'git push origin HEAD:main',
     'claude --dangerously-skip-permissions',
     'claude --permission-mode bypassPermissions',
+    // installs outside pnpm and remote agent skills (ADR-0041, OD-60)
+    'npx skills@latest add vercel-labs/ui --skill ui-sdk',
+    'npx -y skills add vercel-labs/ui',
+    'npx --yes skills@1.2.3 add x',
+    'pnpm dlx skills add vercel-labs/ui',
+    'bunx skills add x',
+    'npm i -D vitest jsdom @testing-library/react',
+    'npm install',
+    'npm add react',
+    'npm ci',
+    'cd packages/ui && npm install left-pad',
+    'yarn add react',
   ];
   for (const cmd of blocked) {
     it(`blocks: ${cmd}`, () => assert.notEqual(checkBash(cmd), null));
@@ -199,6 +211,14 @@ describe('checkBash', () => {
     "cat <<'EOF' > /tmp/notes.md\nwrites go > apps/web via Edit\nEOF",
     "sed -i 's/a/b/' docs/myapps/x.md",
     'grep -rn bypassPermissions .claude/',
+    // pnpm installs and npm's read-only commands stay allowed
+    'pnpm install --frozen-lockfile',
+    'pnpm --filter @shifa/ui add -D vitest',
+    'npm view @ui-sdk/react version',
+    'npx tsc -p tsconfig.json',
+    'pnpm exec playwright install chromium',
+    'git commit -m "docs: never run npx skills add or npm install"',
+    "grep -rn 'npm install' docs",
   ];
   for (const cmd of allowed) {
     it(`allows: ${cmd}`, () => assert.equal(checkBash(cmd), null));
