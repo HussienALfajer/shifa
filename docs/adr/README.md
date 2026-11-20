@@ -48,7 +48,7 @@ What we will do, stated precisely.
 | [0008](0008-custom-fields.md) | Custom fields: definitions registry + JSONB with fixed limits | Accepted |
 | [0009](0009-clinical-templates-specialty-packs.md) | Versioned clinical templates + specialty packs; Release 1 = general, dental, orthopedics | Accepted |
 | [0010](0010-web-apps-stack.md) | Web apps: React 19 + Vite + TanStack Router SPA/PWA; Next.js 16 for booking pages | Accepted |
-| [0011](0011-design-system-base-ui.md) | Custom design system on Base UI with DTCG tokens shared with Flutter | Accepted |
+| [0011](0011-design-system-base-ui.md) | Custom design system on Base UI with DTCG tokens shared with Flutter | Accepted (amended by 0039) |
 | [0012](0012-flutter-patient-app.md) | Patient app in Flutter (official MVVM + Riverpod 3) | Accepted |
 | [0013](0013-api-contract-openapi-zod.md) | REST + OpenAPI 3.1 from named Zod schemas; generated TS and Dart clients | Accepted |
 | [0014](0014-offline-sync-engine.md) | Offline reception and patient app; sync engine chosen by spike | Accepted (engine in 0031) |
@@ -76,3 +76,4 @@ What we will do, stated precisely.
 | [0036](0036-whatsapp-gateway-pacing-and-reverse-verification.md) | WhatsApp gateway, pacing and reverse verification: WAHA GOWS with PostgreSQL storage, one container per role, signed webhooks, `@lid` resolution, acks by message key, pg-boss pacing, admin-confirmed breaker, phrase-bound codes; amends 0016 and 0017 | Accepted |
 | [0037](0037-voice-silma-self-hosted.md) | Voice calling with self-hosted SILMA TTS and no cloud vendor; generation, fallback, normalisation and display playback rules; amends 0020 | Accepted |
 | [0038](0038-push-send-policy-device-state-and-inbox.md) | Push send policy, device-state reporting, receipts and inbox rule; FCM stays primary on emulator evidence until the real-phone run; amends 0017 | Accepted |
+| [0039](0039-ui-sdk-headless-base.md) | UI SDK as the headless base of `packages/ui` with an RTL gate and Base UI fallback; code-first design source, light and dark together; amends 0011 | Accepted |

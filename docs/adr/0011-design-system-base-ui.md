@@ -1,6 +1,6 @@
 # ADR-0011: Custom design system on Base UI with DTCG tokens shared with Flutter (no shadcn/ui)
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner
+Status: Accepted (amended by 0039) · Date: 2026-11-08 · Deciders: product owner
 
 ## Context
 The owner wants Shifa's own professional UI/UX identity rather than a re-skinned kit. Base UI (MUI/Radix team) is headless, MIT-licensed, stable since v1.0.0 (2025-12-11), latest v1.9.0 (2026-10-09), 37 components plus `DirectionProvider` [RN-19 §A1–§A3]. The web apps and the Flutter app must look like one product.
