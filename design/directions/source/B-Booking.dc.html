@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الهادئ — حجز المريض</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<style>
+body{margin:0}
+a{color:#1f6f5c}a:hover{color:#134a3d}
+.sh{--app:#fbf8f1;--surface:#ffffff;--raised:#f4efe3;--border:#e6dfcf;--strong:#76857e;--text:#1d2a26;--muted:#5b6a63;--primary:#1f6f5c;--primary-h:#134a3d;--on-primary:#ffffff;--soft:#e2f0ea;--accent:#c8a24a;--green-f:#1d744c;--green-b:#edf8f3;--gap:20px;
+font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--text);background:var(--app);font-variant-numeric:tabular-nums}
+.sh[data-theme="dark"]{--app:#0e1513;--surface:#151e1b;--raised:#1c2824;--border:#2b3934;--text:#e6ede9;--muted:#a3b2ab;--primary:#6fc3ab;--primary-h:#9ad8c5;--on-primary:#0e1513;--soft:#12382f;--accent:#d4b463;--green-f:#42bb82;--green-b:#162c22}
+.sh[data-density="compact"]{--gap:14px}
+.sh button{font:inherit;cursor:pointer;transition:background-color 100ms ease-out,color 100ms ease-out,border-color 100ms ease-out}
+.sh button:focus-visible,.sh a:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sh .btn-p:hover{background:var(--primary-h)}
+.sh .btn-p:disabled{background:var(--raised);color:var(--muted);cursor:default}
+.sh .chip{height:48px;border-radius:6px;border:1px solid var(--strong);background:var(--surface);color:var(--text);font-size:16px;font-weight:500}
+.sh .chip:hover{background:var(--raised)}
+.sh .chip.on{background:var(--primary);border-color:var(--primary);color:var(--on-primary)}
+.sh .chip:disabled{border-color:var(--border);background:transparent;color:var(--muted);text-decoration:line-through;cursor:default}
+.sh .day{display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;height:64px;border-radius:8px;border:0;background:transparent;color:var(--muted);font-size:13px;line-height:20px}
+.sh .day.on{background:var(--soft);color:var(--primary)}
+.sh .lbl{font-size:13px;line-height:20px;font-weight:500;color:var(--muted)}
+.step{animation:fade 200ms ease-out}
+@keyframes fade{from{opacity:.3}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.sh *{transition:none!important}.step{animation:none}}
+</style>
+</helmet>
+<div class="sh" data-theme="{{theme}}" data-density="{{density}}" style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; display: flex; flex-direction: column; font-size: 16px; line-height: 24px">
+
+  <header style="padding: 20px 20px 12px; display: flex; flex-direction: column; gap: 2px">
+    <span style="font-size: 19px; font-weight: 600; line-height: 30px">عيادة الياسمين</span>
+    <span style="font-size: 14px; line-height: 22px; color: var(--muted)">[عنوان العيادة]</span>
+  </header>
+
+  <sc-if value="{{isTime}}" hint-placeholder-val="{{true}}">
+    <div class="step" style="flex: 1; min-height: 0; display: flex; flex-direction: column">
+      <ol aria-label="خطوات الحجز" style="list-style: none; margin: 0; padding: 0 20px 16px; display: flex; gap: 8px; font-size: 13px; line-height: 20px; color: var(--muted)">
+        <li>الطبيب</li><li aria-hidden="true">·</li>
+        <li>اليوم</li><li aria-hidden="true">·</li>
+        <li aria-current="step" style="color: var(--primary); font-weight: 600">الوقت</li><li aria-hidden="true">·</li>
+        <li>التأكيد</li>
+      </ol>
+
+      <main style="flex: 1; min-height: 0; background: var(--surface); border-radius: 12px 12px 0 0; padding: 20px; display: flex; flex-direction: column; gap: var(--gap)">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--soft); color: var(--primary)">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zM5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+          </span>
+          <div style="display: flex; flex-direction: column; margin-inline-end: auto">
+            <span style="font-weight: 600">د. <span data-person="سامر الخطيب">سامر الخطيب</span></span>
+            <span style="font-size: 14px; line-height: 22px; color: var(--muted)">الأجرة: [الأجرة]</span>
+          </div>
+          <a href="#b-day" style="font-size: 14px; font-weight: 500; min-height: 44px; display: inline-flex; align-items: center">تغيير</a>
+        </div>
+
+        <div id="b-day" style="display: flex; flex-direction: column; gap: 8px">
+          <span class="lbl">اليوم</span>
+          <div style="display: flex; gap: 4px; justify-content: space-between">
+            <button class="day on" type="button" aria-pressed="true"><span>الخميس</span><span style="font-size: 19px; font-weight: 600; line-height: 26px"><bdi dir="ltr">20</bdi></span></button>
+            <button class="day" type="button" aria-pressed="false"><span>السبت</span><span style="font-size: 19px; font-weight: 500; line-height: 26px; color: var(--text)"><bdi dir="ltr">22</bdi></span></button>
+            <button class="day" type="button" aria-pressed="false"><span>الأحد</span><span style="font-size: 19px; font-weight: 500; line-height: 26px; color: var(--text)"><bdi dir="ltr">23</bdi></span></button>
+            <button class="day" type="button" aria-pressed="false"><span>الاثنين</span><span style="font-size: 19px; font-weight: 500; line-height: 26px; color: var(--text)"><bdi dir="ltr">24</bdi></span></button>
+            <button class="day" type="button" aria-pressed="false"><span>الثلاثاء</span><span style="font-size: 19px; font-weight: 500; line-height: 26px; color: var(--text)"><bdi dir="ltr">25</bdi></span></button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <span class="lbl">اختر الوقت</span>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{times}}" as="t" hint-placeholder-count="9">
+              <button class="{{t.cls}}" type="button" onClick="{{t.pick}}" disabled="{{t.taken}}" aria-pressed="{{t.on}}"><bdi dir="ltr">{{t.label}}</bdi></button>
+            </sc-for>
+          </div>
+          <span style="font-size: 13px; line-height: 20px; color: var(--muted)">الأوقات المشطوبة محجوزة.</span>
+        </div>
+
+        <div style="margin-top: auto; display: flex; flex-direction: column; gap: 10px">
+          <span style="font-size: 14px; line-height: 22px; color: var(--muted); text-align: center">{{summary}}</span>
+          <button class="btn-p" type="button" onClick="{{confirm}}" disabled="{{noPick}}" style="height: 52px; border: 0; border-radius: 6px; background: var(--primary); color: var(--on-primary); font-size: 17px; font-weight: 600">تأكيد الحجز</button>
+        </div>
+      </main>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isDone}}" hint-placeholder-val="{{false}}">
+    <main class="step" style="flex: 1; min-height: 0; background: var(--surface); border-radius: 12px 12px 0 0; padding: 32px 20px 20px; display: flex; flex-direction: column; align-items: stretch; gap: 20px">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center">
+        <span style="display: inline-flex; align-items: center; gap: 8px; height: 32px; padding-inline: 12px; border-radius: 999px; background: var(--green-b); color: var(--green-f); font-size: 14px; font-weight: 600">
+          <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+          تم الحجز
+        </span>
+        <h1 style="margin: 0; font-size: 23px; font-weight: 600; line-height: 34px">موعدك مؤكَّد يا <span data-person="سارة إبراهيم الأحمد">سارة إبراهيم الأحمد</span></h1>
+      </div>
+
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 24px; border-radius: 12px; background: var(--soft)">
+        <span style="font-size: 14px; line-height: 22px; color: var(--primary); font-weight: 500">رقم دورك</span>
+        <span style="font-size: 64px; font-weight: 500; line-height: 1.1; color: var(--primary)"><bdi dir="ltr">12</bdi></span>
+      </div>
+
+      <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 10px 16px; font-size: 15px; line-height: 24px">
+        <dt style="color: var(--muted)">الطبيب</dt><dd style="margin: 0; font-weight: 500">د. <span data-person="سامر الخطيب">سامر الخطيب</span></dd>
+        <dt style="color: var(--muted)">الموعد</dt><dd style="margin: 0; font-weight: 500">الخميس <bdi dir="ltr">20</bdi> تشرين الثاني · <bdi dir="ltr">{{picked}}</bdi></dd>
+        <dt style="color: var(--muted)">العيادة</dt><dd style="margin: 0; font-weight: 500">عيادة الياسمين · [عنوان العيادة]</dd>
+        <dt style="color: var(--muted)">الأجرة</dt><dd style="margin: 0; font-weight: 500">[الأجرة]</dd>
+      </dl>
+
+      <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 14px; line-height: 22px; color: var(--muted); text-align: center">سنذكّرك قبل الموعد برسالة.</span>
+        <button type="button" onClick="{{back}}" style="height: 48px; border: 1px solid var(--strong); border-radius: 6px; background: transparent; color: var(--primary); font-size: 16px; font-weight: 500">تغيير الوقت</button>
+      </div>
+    </main>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"density":{"editor":"enum","options":["comfortable","compact"],"default":"comfortable"},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { picked: '11:30', step: 'time' };
+  }
+  renderVals() {
+    const { picked, step } = this.state;
+    const slots = ['10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '16:00', '16:30', '17:00'];
+    const taken = ['10:30', '12:00', '16:30'];
+    const times = slots.map((label) => {
+      const on = label === picked;
+      return {
+        label,
+        on,
+        taken: taken.includes(label),
+        cls: on ? 'chip on' : 'chip',
+        pick: () => this.setState({ picked: label }),
+      };
+    });
+    return {
+      theme: this.props.theme ?? 'light',
+      density: this.props.density ?? 'comfortable',
+      times,
+      picked: picked ?? '',
+      noPick: !picked,
+      summary: picked ? `الخميس 20 تشرين الثاني · الساعة ${picked}` : 'اختر وقتاً للمتابعة',
+      isTime: step === 'time',
+      isDone: step === 'done',
+      confirm: () => this.setState({ step: 'done' }),
+      back: () => this.setState({ step: 'time' }),
+    };
+  }
+}
+</script>
+</body>
+</html>

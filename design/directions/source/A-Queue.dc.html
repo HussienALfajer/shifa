@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>الدقيق — دور الاستقبال</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<style>
+body{margin:0}
+a{color:#1f6f5c}a:hover{color:#134a3d}
+.sh{--app:#fbf8f1;--surface:#ffffff;--raised:#f4efe3;--border:#e6dfcf;--strong:#76857e;--text:#1d2a26;--muted:#5b6a63;--primary:#1f6f5c;--primary-h:#134a3d;--on-primary:#ffffff;--soft:#e2f0ea;--accent:#c8a24a;--accent-soft:#f7edd3;--nav:#134a3d;--nav-text:#e8f2ee;--nav-dim:#a9cfc3;--row:44px;--gap:16px;--ctl:40px;--pad:16px;
+--slate-f:#58676f;--slate-b:#f1f3f3;--blue-f:#1f64b2;--blue-b:#ecf2f8;--cyan-f:#16707e;--cyan-b:#ecf7f8;--amber-f:#8d5c07;--amber-b:#faf4ea;--violet-f:#7b43c8;--violet-b:#f1edf7;--green-f:#1d744c;--green-b:#edf8f3;--brick-f:#aa4418;--brick-b:#f9f0ec;--sand-f:#75614b;--sand-b:#f4f2f0;--crimson-f:#c01b37;--crimson-b:#f9ecee;
+font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--text);background:var(--app);font-variant-numeric:tabular-nums}
+.sh[data-theme="dark"]{--app:#0e1513;--surface:#151e1b;--raised:#1c2824;--border:#2b3934;--text:#e6ede9;--muted:#a3b2ab;--primary:#6fc3ab;--primary-h:#9ad8c5;--on-primary:#0e1513;--soft:#12382f;--accent:#d4b463;--accent-soft:#3a2f14;--nav:#0c2a23;--nav-dim:#8fb5aa;
+--slate-f:#95a1a7;--slate-b:#1f2223;--blue-f:#70a0d7;--blue-b:#14202e;--cyan-f:#38b4c7;--cyan-b:#142b2e;--amber-f:#db9824;--amber-b:#322611;--violet-f:#ac8fd3;--violet-b:#1f172b;--green-f:#42bb82;--green-b:#162c22;--brick-f:#d98a68;--brick-b:#2f1c13;--sand-f:#ad9d8a;--sand-b:#25211d;--crimson-f:#df8190;--crimson-b:#2f1318}
+.sh[data-density="compact"]{--row:32px;--gap:12px;--ctl:32px;--pad:12px}
+.sh button{font:inherit;cursor:pointer;transition:background-color 70ms linear,border-color 70ms linear}
+.sh button:focus-visible,.sh input:focus-visible,.sh a:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sh .btn-p:hover{background:var(--primary-h)}
+.sh .btn-p:disabled{opacity:.55;cursor:default}
+.sh .btn-s:hover{background:var(--soft)}
+.sh .rail-i:hover{background:rgba(255,255,255,.08)}
+.tag{display:inline-flex;align-items:center;gap:5px;height:22px;padding-inline:6px 8px;border-radius:2px;border:1px solid var(--f);background:var(--b);color:var(--f);font-size:12.5px;line-height:20px;font-weight:500;white-space:nowrap}
+.s-booked{--f:var(--slate-f);--b:var(--slate-b)}.s-confirmed{--f:var(--blue-f);--b:var(--blue-b)}.s-arrived{--f:var(--cyan-f);--b:var(--cyan-b)}.s-waiting{--f:var(--amber-f);--b:var(--amber-b)}.s-room{--f:var(--violet-f);--b:var(--violet-b)}.s-done{--f:var(--green-f);--b:var(--green-b)}.s-noshow{--f:var(--brick-f);--b:var(--brick-b)}
+.lrow{display:grid;grid-template-columns:2px 60px minmax(190px,1.7fr) minmax(140px,1.1fr) 80px 88px 140px;align-items:stretch;min-height:var(--row);border-bottom:1px solid var(--border);font-size:14px;line-height:20px}
+.lrow>span{display:flex;align-items:center;padding-inline:12px;border-inline-end:1px solid var(--border);min-width:0}
+.lrow>span:first-child{padding:0;border:0}
+.lrow>span:last-child{border-inline-end:0}
+.lrow:hover{background:var(--raised)}
+.lrow.cur{background:var(--soft)}
+.lrow.cur>span:first-child{background:var(--accent)}
+.lrow.past .dim{color:var(--muted)}
+.lhead{position:sticky;top:0;background:var(--raised);font-size:12.5px;font-weight:600;color:var(--muted);min-height:32px;border-bottom:1px solid var(--strong)}
+.lhead:hover{background:var(--raised)}
+.cell{display:flex;flex-direction:column;justify-content:center;gap:2px;padding:var(--pad);border-inline-end:1px solid var(--border);min-width:0}
+.cell:last-child{border-inline-end:0}
+.k{font-size:12.5px;line-height:18px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.sh *{transition:none!important}}
+</style>
+</helmet>
+<div class="sh" data-theme="{{theme}}" data-density="{{density}}" style="display: flex; flex-wrap: wrap; min-height: 900px; font-size: 15px; line-height: 22px">
+
+  <nav aria-label="التنقل الرئيسي" style="flex: 1 1 76px; max-width: 84px; background: var(--nav); color: var(--nav-text); display: flex; flex-direction: column; align-items: stretch; gap: 2px; padding: 10px 6px; box-sizing: border-box">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 6px 0 12px; border-bottom: 1px solid rgba(255,255,255,.14); margin-bottom: 6px">
+      <span style="font-size: 18px; font-weight: 700; line-height: 24px">شفاء</span>
+      <span style="width: 20px; height: 2px; background: var(--accent)"></span>
+    </div>
+    <a class="rail-i" href="#queue" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 4px; background: rgba(255,255,255,.12); color: var(--nav-text); text-decoration: none; font-size: 12.5px; font-weight: 600; line-height: 18px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01"/></svg>
+      الدور
+    </a>
+    <a class="rail-i" href="#queue" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 4px; color: var(--nav-dim); text-decoration: none; font-size: 12.5px; line-height: 18px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 6h14v13H5zM5 10h14M9 4v4M15 4v4"/></svg>
+      المواعيد
+    </a>
+    <a class="rail-i" href="#queue" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 4px; color: var(--nav-dim); text-decoration: none; font-size: 12.5px; line-height: 18px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zM5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>
+      المرضى
+    </a>
+    <a class="rail-i" href="#queue" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 4px; color: var(--nav-dim); text-decoration: none; font-size: 12.5px; line-height: 18px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M7 4h10v16l-2.5-1.5L12 20l-2.5-1.5L7 20zM10 9h4M10 13h4"/></svg>
+      الفواتير
+    </a>
+    <a class="rail-i" href="#queue" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; border-radius: 4px; color: var(--nav-dim); text-decoration: none; font-size: 12.5px; line-height: 18px">
+      <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19V5M5 19h14M9 16v-5M13 16V8M17 16v-3"/></svg>
+      التقارير
+    </a>
+  </nav>
+
+  <main id="queue" style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 20px; background: var(--surface); border-bottom: 1px solid var(--border)">
+      <div style="display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; margin-inline-end: auto">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600; line-height: 28px">دور اليوم</h1>
+        <span style="font-size: 14px; line-height: 20px; color: var(--muted)">عيادة الياسمين · الخميس <bdi dir="ltr">20</bdi> تشرين الثاني <bdi dir="ltr">2026</bdi></span>
+      </div>
+      <span class="tag s-done"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>محفوظ · <bdi dir="ltr">10:42</bdi></span>
+      <label style="display: flex; align-items: center; gap: 6px; height: var(--ctl); padding-inline: 10px; border: 1px solid var(--strong); border-radius: 2px; background: var(--surface); min-width: 230px; box-sizing: border-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">بحث عن مراجع</span>
+        <input type="search" placeholder="بحث بالاسم أو رقم الملف" style="border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; flex: 1; min-width: 0; outline-offset: 6px">
+      </label>
+      <button class="btn-s" type="button" style="display: inline-flex; align-items: center; gap: 6px; height: var(--ctl); padding-inline: 12px; border: 1px solid var(--primary); border-radius: 4px; background: transparent; color: var(--primary); font-weight: 500; font-size: 14px">
+        <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        مراجع بلا موعد
+      </button>
+    </header>
+
+    <div style="padding: var(--gap) 20px 24px; display: flex; flex-direction: column; gap: var(--gap)">
+
+      <section aria-label="المراجع في الغرفة الآن" style="display: flex; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--strong); border-radius: 4px">
+        <div class="cell" style="align-items: center; flex: 0 0 auto">
+          <span class="k">الرقم</span>
+          <span style="display: flex; align-items: center; justify-content: center; min-width: 64px; height: 52px; border: 1px solid var(--text); border-radius: 2px; font-size: 36px; font-weight: 600; line-height: 1"><bdi dir="ltr">{{cur.num}}</bdi></span>
+        </div>
+        <div class="cell" style="flex: 2 1 240px">
+          <span class="k">الآن في الغرفة</span>
+          <span data-person="{{cur.name}}" style="font-size: 20px; font-weight: 600; line-height: 28px">{{cur.name}}</span>
+        </div>
+        <div class="cell" style="flex: 1 1 150px">
+          <span class="k">الطبيب</span>
+          <span>د. <span data-person="{{cur.doctor}}">{{cur.doctor}}</span></span>
+        </div>
+        <div class="cell" style="flex: 0 1 100px">
+          <span class="k">الوصول</span>
+          <span><bdi dir="ltr">{{cur.arrived}}</bdi></span>
+        </div>
+        <div class="cell" style="flex: 2 1 260px">
+          <span class="k">التالون</span>
+          <span style="font-size: 14px; line-height: 20px">{{nextLine}}</span>
+        </div>
+        <div class="cell" style="flex: 0 1 190px; justify-content: center">
+          <button class="btn-p" type="button" onClick="{{callNext}}" disabled="{{atEnd}}" style="display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding-inline: 18px; border: 1px solid var(--primary); border-radius: 4px; background: var(--primary); color: var(--on-primary); font-size: 16px; font-weight: 600">
+            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l5 4V6l-5 4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+            نادِ التالي
+          </button>
+        </div>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; font-size: 14px; line-height: 20px; color: var(--muted)">
+        <span style="font-weight: 600; color: var(--text)">القائمة</span>
+        <span>في القائمة <bdi dir="ltr">10</bdi></span>
+        <span>انتهى <bdi dir="ltr">{{doneCount}}</bdi></span>
+        <span>ينتظر <bdi dir="ltr">{{waitCount}}</bdi></span>
+      </div>
+
+      <section aria-label="قائمة الدور" style="background: var(--surface); border: 1px solid var(--strong); border-radius: 4px; overflow-x: auto">
+        <div style="min-width: 800px">
+          <div class="lrow lhead">
+            <span></span><span>الرقم</span><span>المراجع</span><span>الطبيب</span><span>الوصول</span><span>الانتظار</span><span>الحالة</span>
+          </div>
+          <sc-for list="{{rows}}" as="row" hint-placeholder-count="10">
+            <div class="{{row.cls}}">
+              <span aria-hidden="true"></span>
+              <span class="dim" style="font-size: 16px; font-weight: 600"><bdi dir="ltr">{{row.num}}</bdi></span>
+              <span class="dim" data-person="{{row.name}}" style="font-weight: 500; overflow-wrap: anywhere">{{row.name}}</span>
+              <span class="dim">د.&nbsp;<span data-person="{{row.doctor}}">{{row.doctor}}</span></span>
+              <span class="dim"><bdi dir="ltr">{{row.arrived}}</bdi></span>
+              <span class="dim">{{row.wait}}</span>
+              <span><span class="{{row.tag}}"><svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{row.icon}}"/></svg>{{row.label}}</span></span>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"density":{"editor":"enum","options":["comfortable","compact"],"default":"comfortable"},"$preview":{"width":1366,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cur: 4 };
+  }
+  renderVals() {
+    const S = {
+      booked: ['محجوز', 's-booked', 'M5 6h14v13H5zM5 10h14M9 4v4M15 4v4'],
+      confirmed: ['مؤكَّد', 's-confirmed', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM8.5 12.5l2.5 2.5l4.5-5'],
+      arrived: ['وصل', 's-arrived', 'M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10zM12 9.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3z'],
+      waiting: ['ينتظر', 's-waiting', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM12 7v5l3 2'],
+      room: ['في الغرفة', 's-room', 'M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zM5 20c0-3.5 3-6 7-6s7 2.5 7 6'],
+      done: ['انتهى', 's-done', 'M5 12.5l4.5 4.5L19 7.5'],
+      noshow: ['لم يحضر', 's-noshow', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM9 9l6 6M15 9l-6 6'],
+    };
+    const D1 = 'سامر الخطيب';
+    const D2 = 'ريم الحلبي';
+    const base = [
+      [3, 'زينب علي العمر', D1, '08:40', 'done'],
+      [4, 'إبراهيم محمود يلماز', D2, '08:55', 'done'],
+      [5, 'نور خالد الإدلبي', D1, '—', 'noshow'],
+      [6, 'عبد الله حسين الحمصي', D2, '09:10', 'done'],
+      [7, 'فاطمة أحمد النجار', D1, '09:25', 'room'],
+      [8, 'خالد مصطفى الحداد', D1, '09:40', 'waiting'],
+      [9, 'مريم يوسف الشامي', D2, '09:50', 'waiting'],
+      [10, 'عمر حسن أوزتورك', D1, '10:30', 'arrived'],
+      [11, 'هبة عمر الجاسم', D2, '—', 'confirmed'],
+      [12, 'سارة إبراهيم الأحمد', D1, '—', 'booked'],
+    ];
+    const cur = this.state.cur;
+    const rows = base.map((r, i) => {
+      let st = r[4];
+      if (i < cur) st = st === 'noshow' ? 'noshow' : 'done';
+      else if (i === cur) st = 'room';
+      else if (st === 'done' || st === 'room') st = 'waiting';
+      return {
+        st,
+        num: r[0],
+        name: r[1],
+        doctor: r[2],
+        arrived: i <= cur && r[3] === '—' && st !== 'noshow' ? '10:35' : r[3],
+        wait: st === 'waiting' ? `${(i - cur) * 12 + 8} د` : '—',
+        label: S[st][0],
+        tag: `tag ${S[st][1]}`,
+        icon: S[st][2],
+        cls: `lrow${i === cur ? ' cur' : ''}${i < cur ? ' past' : ''}`,
+      };
+    });
+    const after = rows.slice(cur + 1, cur + 4);
+    return {
+      theme: this.props.theme ?? 'light',
+      density: this.props.density ?? 'comfortable',
+      rows,
+      cur: rows[cur],
+      atEnd: after.length === 0,
+      doneCount: rows.filter((r) => r.st === 'done').length,
+      waitCount: rows.filter((r) => r.st === 'waiting').length,
+      nextLine: after.length ? after.map((r) => `${r.num} ${r.name}`).join(' · ') : 'لا مراجعين بعده اليوم',
+      callNext: () => this.setState({ cur: Math.min(cur + 1, base.length - 1) }),
+    };
+  }
+}
+</script>
+</body>
+</html>

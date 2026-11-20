@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>أرض الديار — دور الاستقبال</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap">
+<style>
+body{margin:0}
+a{color:#1f6f5c}a:hover{color:#134a3d}
+.sh{--app:#fbf8f1;--surface:#ffffff;--raised:#f4efe3;--band:#fbf8f1;--border:#e6dfcf;--strong:#76857e;--text:#1d2a26;--muted:#5b6a63;--primary:#1f6f5c;--primary-h:#134a3d;--on-primary:#ffffff;--soft:#e2f0ea;--accent:#c8a24a;--accent-soft:#f7edd3;--nav:#134a3d;--nav-text:#e8f2ee;--nav-dim:#a9cfc3;--focal-line:#1f6f5c;--row:44px;--gap:20px;--ctl:44px;
+--slate-f:#58676f;--slate-b:#f1f3f3;--blue-f:#1f64b2;--blue-b:#ecf2f8;--cyan-f:#16707e;--cyan-b:#ecf7f8;--amber-f:#8d5c07;--amber-b:#faf4ea;--violet-f:#7b43c8;--violet-b:#f1edf7;--green-f:#1d744c;--green-b:#edf8f3;--brick-f:#aa4418;--brick-b:#f9f0ec;--sand-f:#75614b;--sand-b:#f4f2f0;
+font-family:'IBM Plex Sans Arabic',system-ui,sans-serif;color:var(--text);background:var(--app);font-variant-numeric:tabular-nums}
+.sh[data-theme="dark"]{--app:#0e1513;--surface:#151e1b;--raised:#1c2824;--band:#1c2824;--border:#2b3934;--text:#e6ede9;--muted:#a3b2ab;--primary:#6fc3ab;--primary-h:#9ad8c5;--on-primary:#0e1513;--soft:#12382f;--accent:#d4b463;--accent-soft:#3a2f14;--nav:#0c2a23;--nav-dim:#8fb5aa;--focal-line:#d4b463;
+--slate-f:#95a1a7;--slate-b:#1f2223;--blue-f:#70a0d7;--blue-b:#14202e;--cyan-f:#38b4c7;--cyan-b:#142b2e;--amber-f:#db9824;--amber-b:#322611;--violet-f:#ac8fd3;--violet-b:#1f172b;--green-f:#42bb82;--green-b:#162c22;--brick-f:#d98a68;--brick-b:#2f1c13;--sand-f:#ad9d8a;--sand-b:#25211d}
+.sh[data-density="compact"]{--row:32px;--gap:14px;--ctl:32px}
+.sh button{font:inherit;cursor:pointer;transition:background-color 100ms ease-out,border-color 100ms ease-out}
+.sh button:focus-visible,.sh input:focus-visible,.sh a:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.sh .btn-p:hover{background:var(--primary-h)}
+.sh .btn-s:hover{background:var(--soft)}
+.sh .nav-i:hover{background:rgba(255,255,255,.07)}
+.seal{display:inline-flex;align-items:center;gap:6px;height:26px;padding-inline:8px 10px;border-radius:6px;border-inline-start:2px solid var(--f);background:var(--b);color:var(--f);font-size:13px;font-weight:500;white-space:nowrap}
+.s-booked{--f:var(--slate-f);--b:var(--slate-b)}.s-confirmed{--f:var(--blue-f);--b:var(--blue-b)}.s-arrived{--f:var(--cyan-f);--b:var(--cyan-b)}.s-waiting{--f:var(--amber-f);--b:var(--amber-b)}.s-room{--f:var(--violet-f);--b:var(--violet-b)}.s-done{--f:var(--green-f);--b:var(--green-b)}.s-noshow{--f:var(--brick-f);--b:var(--brick-b)}
+.qrow{display:grid;grid-template-columns:56px 64px minmax(180px,1.6fr) minmax(140px,1.1fr) 84px 84px 150px;align-items:center;min-height:var(--row);transition:background-color 160ms ease-out}
+.qrow.odd{background:var(--band)}.qrow.even{background:var(--surface)}
+.qrow.cur{background:var(--soft)}
+.qrow.past .fade{opacity:.62}
+.knot{width:10px;height:10px;border-radius:50%;border:2px solid var(--strong);background:var(--surface);box-sizing:border-box}
+.past .knot{background:var(--strong)}
+.focal{animation:settle 220ms ease-out}
+@keyframes settle{from{opacity:.4;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.sh *{transition:none!important}.focal{animation:none}}
+</style>
+</helmet>
+<div class="sh" data-theme="{{theme}}" data-density="{{density}}" style="display: flex; flex-wrap: wrap; min-height: 900px; font-size: 16px; line-height: 1.6">
+
+  <nav aria-label="التنقل الرئيسي" style="flex: 1 1 220px; max-width: 248px; background: var(--nav); color: var(--nav-text); display: flex; flex-direction: column; gap: 4px; padding: 20px 12px; box-sizing: border-box">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 4px 10px 18px">
+      <svg width="30" height="30" viewBox="0 0 24 24" aria-hidden="true" fill="var(--accent)"><rect x="5" y="5" width="14" height="14"/><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg>
+      <div style="display: flex; flex-direction: column; line-height: 1.25">
+        <span style="font-family: 'Noto Naskh Arabic', serif; font-size: 24px; font-weight: 700">شفاء</span>
+        <span style="font-size: 13px; color: var(--nav-dim)">عيادة الياسمين</span>
+      </div>
+    </div>
+    <a class="nav-i" href="#queue" aria-current="page" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding-inline: 10px; border-radius: 6px; background: rgba(255,255,255,.1); color: var(--nav-text); text-decoration: none; font-weight: 600">
+      <svg width="12" height="12" viewBox="0 0 24 24" aria-hidden="true" fill="var(--accent)"><rect x="5" y="5" width="14" height="14"/><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg>
+      دور اليوم
+    </a>
+    <a class="nav-i" href="#queue" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding-inline: 32px 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none">المواعيد</a>
+    <a class="nav-i" href="#queue" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding-inline: 32px 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none">المرضى</a>
+    <a class="nav-i" href="#queue" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding-inline: 32px 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none">الفواتير</a>
+    <a class="nav-i" href="#queue" style="display: flex; align-items: center; gap: 10px; min-height: 44px; padding-inline: 32px 10px; border-radius: 6px; color: var(--nav-dim); text-decoration: none">التقارير</a>
+    <div style="margin-top: auto; display: flex; align-items: center; gap: 8px; padding: 12px 10px 0; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px; color: var(--nav-dim)">
+      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+      <span>محفوظ · آخر مزامنة <bdi dir="ltr">10:42</bdi></span>
+    </div>
+  </nav>
+
+  <main id="queue" style="flex: 999 1 560px; min-width: 0; padding: 24px 28px 32px; box-sizing: border-box; display: flex; flex-direction: column; gap: var(--gap)">
+
+    <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px">
+      <div style="display: flex; flex-direction: column; margin-inline-end: auto">
+        <h1 style="margin: 0; font-size: 28px; font-weight: 600; line-height: 1.3">دور اليوم</h1>
+        <span style="font-size: 14px; color: var(--muted)">الخميس <bdi dir="ltr">20</bdi> تشرين الثاني <bdi dir="ltr">2026</bdi> · <bdi dir="ltr">10</bdi> مراجعين في القائمة</span>
+      </div>
+      <label style="display: flex; align-items: center; gap: 8px; height: var(--ctl); padding-inline: 12px; border: 1px solid var(--strong); border-radius: 6px; background: var(--surface); min-width: 220px">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="var(--muted)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l4 4"/></svg>
+        <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">بحث عن مراجع</span>
+        <input type="search" placeholder="بحث بالاسم أو رقم الملف" style="border: 0; background: transparent; color: var(--text); font: inherit; font-size: 14px; flex: 1; min-width: 0; outline-offset: 6px">
+      </label>
+      <button class="btn-s" type="button" style="display: inline-flex; align-items: center; gap: 8px; height: var(--ctl); padding-inline: 14px; border: 1px solid var(--primary); border-radius: 6px; background: transparent; color: var(--primary); font-weight: 500; font-size: 15px">
+        <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        مراجع بلا موعد
+      </button>
+    </header>
+
+    <section class="focal" aria-label="المراجع في الغرفة الآن" style="display: flex; flex-wrap: wrap; align-items: center; gap: 20px 28px; padding: 24px 28px; background: var(--surface); border: 1.5px solid var(--focal-line); border-radius: 20px 20px 10px 10px">
+      <div style="position: relative; width: 96px; height: 96px; flex: none; display: flex; align-items: center; justify-content: center">
+        <svg width="96" height="96" viewBox="0 0 24 24" aria-hidden="true" fill="var(--accent-soft)" stroke="var(--accent)" stroke-width="0.6" style="position: absolute; inset: 0"><rect x="4.5" y="4.5" width="15" height="15"/><rect x="4.5" y="4.5" width="15" height="15" transform="rotate(45 12 12)"/><rect x="5.2" y="5.2" width="13.6" height="13.6" stroke="none"/></svg>
+        <span style="position: relative; font-size: 40px; font-weight: 600; line-height: 1"><bdi dir="ltr">{{cur.num}}</bdi></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 280px; min-width: 0">
+        <span style="font-size: 14px; color: var(--muted)">الآن في الغرفة</span>
+        <span data-person="{{cur.name}}" style="font-family: 'Noto Naskh Arabic', serif; font-size: 28px; font-weight: 700; line-height: 1.45">{{cur.name}}</span>
+        <span style="font-size: 15px; color: var(--muted)">د. <span data-person="{{cur.doctor}}">{{cur.doctor}}</span> · وصلت <bdi dir="ltr">{{cur.arrived}}</bdi></span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: stretch; flex: 0 1 300px">
+        <button class="btn-p" type="button" onClick="{{callNext}}" disabled="{{atEnd}}" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 52px; padding-inline: 22px; border: 0; border-radius: 6px; background: var(--primary); color: var(--on-primary); font-size: 18px; font-weight: 600">
+          <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10v4h3l5 4V6l-5 4H4zM16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/></svg>
+          نادِ التالي
+        </button>
+        <span style="font-size: 14px; color: var(--muted); text-align: center">{{nextLine}}</span>
+      </div>
+    </section>
+
+    <section aria-label="قائمة الدور" style="background: var(--surface); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto">
+      <div style="min-width: 820px">
+        <div class="qrow" style="min-height: 40px; background: var(--raised); border-bottom: 1px solid var(--border); font-size: 13px; font-weight: 600; color: var(--muted)">
+          <span></span><span>الرقم</span><span>المراجع</span><span>الطبيب</span><span>الوصول</span><span>الانتظار</span><span>الحالة</span>
+        </div>
+        <sc-for list="{{rows}}" as="row" hint-placeholder-count="10">
+          <div class="{{row.cls}}">
+            <span style="position: relative; align-self: stretch; display: flex; align-items: center; justify-content: center">
+              <span aria-hidden="true" style="position: absolute; top: 0; bottom: 0; inset-inline-start: 50%; width: 2px; margin-inline-start: -1px; background: var(--border)"></span>
+              <sc-if value="{{row.isCur}}" hint-placeholder-val="{{false}}">
+                <svg width="22" height="22" viewBox="0 0 24 24" role="img" aria-label="الآن" fill="var(--accent)" style="position: relative"><rect x="5" y="5" width="14" height="14"/><rect x="5" y="5" width="14" height="14" transform="rotate(45 12 12)"/></svg>
+              </sc-if>
+              <sc-if value="{{row.notCur}}" hint-placeholder-val="{{true}}">
+                <span class="knot" aria-hidden="true" style="position: relative"></span>
+              </sc-if>
+            </span>
+            <span class="fade" style="font-size: 18px; font-weight: 600"><bdi dir="ltr">{{row.num}}</bdi></span>
+            <span class="fade" data-person="{{row.name}}" style="font-size: 15px; font-weight: 500; overflow-wrap: anywhere">{{row.name}}</span>
+            <span class="fade" style="font-size: 14px; color: var(--muted)">د. <span data-person="{{row.doctor}}">{{row.doctor}}</span></span>
+            <span class="fade" style="font-size: 14px"><bdi dir="ltr">{{row.arrived}}</bdi></span>
+            <span class="fade" style="font-size: 14px; color: var(--muted)">{{row.wait}}</span>
+            <span><span class="{{row.seal}}"><svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{row.icon}}"/></svg>{{row.label}}</span></span>
+          </div>
+        </sc-for>
+      </div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"density":{"editor":"enum","options":["comfortable","compact"],"default":"comfortable"},"$preview":{"width":1366,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cur: 4 };
+  }
+  renderVals() {
+    const S = {
+      booked: ['محجوز', 's-booked', 'M5 6h14v13H5zM5 10h14M9 4v4M15 4v4'],
+      confirmed: ['مؤكَّد', 's-confirmed', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM8.5 12.5l2.5 2.5l4.5-5'],
+      arrived: ['وصل', 's-arrived', 'M12 21s-6-5.2-6-10a6 6 0 0 1 12 0c0 4.8-6 10-6 10zM12 9.5a1.5 1.5 0 1 0 0 3a1.5 1.5 0 0 0 0-3z'],
+      waiting: ['ينتظر', 's-waiting', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM12 7v5l3 2'],
+      room: ['في الغرفة', 's-room', 'M12 4a3.5 3.5 0 1 0 0 7a3.5 3.5 0 0 0 0-7zM5 20c0-3.5 3-6 7-6s7 2.5 7 6'],
+      done: ['انتهى', 's-done', 'M5 12.5l4.5 4.5L19 7.5'],
+      noshow: ['لم يحضر', 's-noshow', 'M12 3a9 9 0 1 0 0 18a9 9 0 0 0 0-18zM9 9l6 6M15 9l-6 6'],
+    };
+    const D1 = 'سامر الخطيب';
+    const D2 = 'ريم الحلبي';
+    const base = [
+      [3, 'زينب علي العمر', D1, '08:40', 'done'],
+      [4, 'إبراهيم محمود يلماز', D2, '08:55', 'done'],
+      [5, 'نور خالد الإدلبي', D1, '—', 'noshow'],
+      [6, 'عبد الله حسين الحمصي', D2, '09:10', 'done'],
+      [7, 'فاطمة أحمد النجار', D1, '09:25', 'room'],
+      [8, 'خالد مصطفى الحداد', D1, '09:40', 'waiting'],
+      [9, 'مريم يوسف الشامي', D2, '09:50', 'waiting'],
+      [10, 'عمر حسن أوزتورك', D1, '10:30', 'arrived'],
+      [11, 'هبة عمر الجاسم', D2, '—', 'confirmed'],
+      [12, 'سارة إبراهيم الأحمد', D1, '—', 'booked'],
+    ];
+    const cur = this.state.cur;
+    const rows = base.map((r, i) => {
+      let st = r[4];
+      if (i < cur) st = st === 'noshow' ? 'noshow' : 'done';
+      else if (i === cur) st = 'room';
+      else if (st === 'done' || st === 'room') st = 'waiting';
+      const waits = st === 'waiting' ? `${(i - cur) * 12 + 8} د` : '—';
+      return {
+        num: r[0],
+        name: r[1],
+        doctor: r[2],
+        arrived: i <= cur && r[3] === '—' && st !== 'noshow' ? '10:35' : r[3],
+        wait: waits,
+        label: S[st][0],
+        seal: `seal ${S[st][1]}`,
+        icon: S[st][2],
+        isCur: i === cur,
+        notCur: i !== cur,
+        cls: `qrow ${i % 2 ? 'odd' : 'even'}${i === cur ? ' cur' : ''}${i < cur ? ' past' : ''}`,
+      };
+    });
+    const next = rows[cur + 1];
+    return {
+      theme: this.props.theme ?? 'light',
+      density: this.props.density ?? 'comfortable',
+      rows,
+      cur: rows[cur],
+      atEnd: !next,
+      nextLine: next ? `التالي: ${next.name} · رقم ${next.num}` : 'لا مراجعين بعده اليوم',
+      callNext: () => this.setState({ cur: Math.min(cur + 1, base.length - 1) }),
+    };
+  }
+}
+</script>
+</body>
+</html>

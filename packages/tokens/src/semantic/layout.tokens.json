@@ -8,7 +8,12 @@
       "lg": { "$value": "{space.13}", "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } } }
     },
     "row": { "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
-    "target-min": { "$value": "{space.11}" }
+    "target-min": { "$value": "{space.11}" },
+    "icon": {
+      "$description": "Phosphor icons, duotone: sm in rows and controls, md in navigation and cards.",
+      "sm": { "$value": "{space.5}" },
+      "md": { "$value": "{space.6}" }
+    }
   },
   "inset": {
     "$type": "dimension",
@@ -30,18 +35,20 @@
     "size": {
       "$type": "dimension",
       "caption": { "$value": "{font.size.100}" },
-      "data": { "$value": "{font.size.200}" },
-      "body": { "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.200}" } } } },
-      "heading-sm": { "$value": "{font.size.400}" },
-      "heading-md": { "$value": "{font.size.500}" },
-      "heading-lg": { "$value": "{font.size.600}" },
-      "display": { "$value": "{font.size.700}" }
+      "data": { "$value": "{font.size.250}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.200}" } } } },
+      "body": { "$value": "{font.size.300}", "$extensions": { "shifa": { "modes": { "compact": "{font.size.250}" } } } },
+      "body-lg": { "$description": "Body text on the phone and long reading text.", "$value": "{font.size.400}" },
+      "heading-sm": { "$value": "{font.size.500}" },
+      "heading-md": { "$value": "{font.size.600}" },
+      "heading-lg": { "$value": "{font.size.700}" },
+      "display": { "$description": "Queue numbers and other large numerals.", "$value": "{font.size.800}" }
     },
     "weight": {
       "$type": "fontWeight",
       "body": { "$value": "{font.weight.regular}" },
       "label": { "$value": "{font.weight.medium}" },
-      "heading": { "$value": "{font.weight.semibold}" }
+      "heading": { "$value": "{font.weight.semibold}" },
+      "display": { "$value": "{font.weight.bold}" }
     },
     "leading": {
       "$type": "number",
@@ -53,9 +60,12 @@
   "shape": {
     "$type": "dimension",
     "radius": {
-      "control": { "$value": "{radius.md}" },
-      "surface": { "$value": "{radius.lg}" },
-      "pill": { "$value": "{radius.full}" }
+      "mark": { "$description": "Checkboxes and other small marks.", "$value": "{radius.xs}" },
+      "input": { "$description": "Inputs and chips.", "$value": "{radius.sm}" },
+      "control": { "$description": "Buttons.", "$value": "{radius.md}" },
+      "surface": { "$description": "Cards.", "$value": "{radius.md}" },
+      "overlay": { "$description": "Dialogs, sheets and popovers.", "$value": "{radius.lg}" },
+      "pill": { "$description": "Status pills and round badges.", "$value": "{radius.full}" }
     },
     "border": {
       "default": { "$value": "{border.width.thin}" },
@@ -64,6 +74,9 @@
   },
   "shadow": {
     "$type": "shadow",
+    "$description": "Named by job. A card also has a border, which carries it in the dark theme.",
+    "card": { "$value": "{elevation.1}" },
+    "dropdown": { "$value": "{elevation.2}" },
     "raised": { "$value": "{elevation.1}" },
     "overlay": { "$value": "{elevation.2}" },
     "modal": { "$value": "{elevation.3}" }
