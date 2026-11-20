@@ -149,10 +149,21 @@ describe('verifySteps', () => {
     ]);
   });
 
-  it('fast mode has no build or boot; full mode ends with them', () => {
+  it('fast mode has no build, boot or browser step; full mode ends with them', () => {
     assert.ok(!names('fast').includes('build'));
     assert.ok(!names('fast').includes('boot'));
-    assert.deepEqual(names('full').slice(-2), ['build', 'boot']);
+    assert.deepEqual(
+      names('fast').filter((n) => n.startsWith('ui-')),
+      [],
+    );
+    assert.deepEqual(names('full').slice(-6), [
+      'build',
+      'boot',
+      'ui-browser',
+      'ui-storybook',
+      'ui-storybook-build',
+      'ui-screenshots',
+    ]);
   });
 
   it('keeps the serialisations: pub-get before drift and turbo, turbo before build', () => {

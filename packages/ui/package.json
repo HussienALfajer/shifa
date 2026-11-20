@@ -15,7 +15,8 @@
     "test:browser": "vitest run --project browser",
     "test:storybook": "vitest run --project storybook",
     "storybook": "storybook dev -p 6006",
-    "storybook:build": "storybook build -o storybook-static"
+    "storybook:build": "storybook build -o storybook-static",
+    "screenshots": "node scripts/screenshots.ts"
   },
   "dependencies": {
     "@phosphor-icons/react": "2.1.10",
@@ -29,6 +30,7 @@
     "tailwindcss": "4.3.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.65.1",
     "@shifa/eslint-config": "workspace:*",
     "@shifa/testing": "workspace:*",
     "@shifa/tsconfig": "workspace:*",

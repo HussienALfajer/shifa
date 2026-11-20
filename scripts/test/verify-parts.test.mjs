@@ -32,6 +32,10 @@ describe('verify parts', () => {
       'docs:lint-root',
       'docs:scripts-test',
       'node:typecheck+lint+test',
+      'ui:ui-browser',
+      'ui:ui-screenshots',
+      'ui:ui-storybook',
+      'ui:ui-storybook-build',
     ]);
     const fullNames = new Set(verifySteps('full').map((s) => s.name));
     assert.deepEqual(new Set(covered.map((c) => c.split(':')[1])), fullNames);
@@ -77,6 +81,33 @@ describe('verify parts', () => {
     assert.equal(turboOf(steps).requires, 'pub-get');
     assert.equal(turboOf(part('node')).requires, undefined);
     assert.equal(part('build').find((s) => s.name === 'boot')?.requires, 'build');
+  });
+
+  // Slice 0.4-03: the browser checks of packages/ui (component tests, Storybook test run with axe,
+  // Storybook build, screenshots in Docker) are their own part; fast mode stays without a browser.
+  it('ui runs the four UI steps, in full mode only, screenshots after the Storybook build', () => {
+    const ui = part('ui');
+    assert.deepEqual(
+      ui.map((s) => [s.name, s.cmd, ...s.args]),
+      [
+        ['ui-browser', 'pnpm', '--filter', '@shifa/ui', 'test:browser'],
+        ['ui-storybook', 'pnpm', '--filter', '@shifa/ui', 'test:storybook'],
+        ['ui-storybook-build', 'pnpm', '--filter', '@shifa/ui', 'storybook:build'],
+        ['ui-screenshots', 'pnpm', '--filter', '@shifa/ui', 'screenshots'],
+      ],
+    );
+    assert.equal(ui.find((s) => s.name === 'ui-screenshots')?.requires, 'ui-storybook-build');
+    const fullNames = verifySteps('full').map((s) => s.name);
+    for (const s of ui) assert.ok(fullNames.includes(s.name), `full without a part runs ${s.name}`);
+    const fastNames = verifySteps('fast').map((s) => s.name);
+    assert.deepEqual(
+      fastNames.filter((n) => n.startsWith('ui-')),
+      [],
+    );
+    assert.deepEqual(
+      verifySteps('docs').filter((s) => s.name.startsWith('ui-')),
+      [],
+    );
   });
 
   it('refuses a part outside full mode, an unknown part or no Dart packages', () => {

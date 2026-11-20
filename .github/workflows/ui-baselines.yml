@@ -1,0 +1,43 @@
+# Produces the screenshot baselines of packages/ui (slice 0.4-03) where Docker is blocked, such as
+# the sandboxed WSL2 session (OD-24). It renders every story in the Playwright image pinned in
+# packages/ui/scripts/screenshot-image.ts, writes the baselines and uploads them as an artifact:
+# download it, copy the files into packages/ui/screenshots/baselines/, look at them and commit
+# them yourself. This workflow never commits or pushes and has read access only.
+# Third-party actions are pinned to full commit SHAs (tag in the trailing comment).
+name: ui-baselines
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  baselines:
+    name: ui screenshot baselines
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@73e46992e05b19abd31f2f3c20e0e7370d762115 # v6.1.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          package-manager-cache: false
+      # Lockfile must match; minimumReleaseAge in pnpm-workspace.yaml refuses packages younger than 24 h.
+      - run: pnpm install --frozen-lockfile
+      - name: Pull the screenshot image
+        run: docker pull --quiet "$(node packages/ui/scripts/screenshot-image.ts)"
+      - name: Build Storybook
+        run: pnpm --filter @shifa/ui storybook:build
+      - name: Write the baselines
+        run: pnpm --filter @shifa/ui screenshots --update
+      - name: Upload the baselines
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: ui-screenshot-baselines
+          path: packages/ui/screenshots/baselines/
+          retention-days: 7
+          if-no-files-found: error

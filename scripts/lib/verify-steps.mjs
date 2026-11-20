@@ -34,9 +34,14 @@
  * repository-level steps) the parts cover every full step:
  *   node  — Turborepo typecheck/lint/test of every package outside the pub workspace;
  *   dart  — pub-get, drift and Turborepo typecheck/lint/test of the pub workspace packages;
- *   build — build and the API boot check.
+ *   build — build and the API boot check;
+ *   ui    — the browser checks of packages/ui: component tests, the Storybook test run (axe),
+ *           the Storybook build and the screenshot comparison in the pinned image (Docker).
  */
-export const PARTS = Object.freeze(['node', 'dart', 'build']);
+export const PARTS = Object.freeze(['node', 'dart', 'build', 'ui']);
+
+/** The steps of the `ui` part, in order (full mode only; fast mode runs no browser). */
+const UI_STEPS = ['ui-browser', 'ui-storybook', 'ui-storybook-build', 'ui-screenshots'];
 
 /**
  * @param {'fast' | 'full' | 'docs'} mode
@@ -54,6 +59,7 @@ export function verifySteps(mode, { affected = [], part, dartPackages = [] } = {
   const byName = Object.fromEntries(steps.map((s) => [s.name, s]));
   const turbo = byName['typecheck+lint+test'];
   if (part === 'build') return [byName.build, byName.boot];
+  if (part === 'ui') return UI_STEPS.map((name) => byName[name]);
   if (part === 'node') {
     // No pub-get here: no task outside the pub workspace runs Dart.
     const nodeTurbo = {
@@ -157,6 +163,37 @@ function allSteps(mode, affected) {
       requires: 'build',
       cmd: 'pnpm',
       args: ['--filter', '@shifa/api', 'run', 'boot-check'],
+    },
+    // Full only (slice 0.4-03): packages/ui in Chromium. Each waits for the one before, so two
+    // browsers and two Vite servers never compete for the machine; the screenshots compare the
+    // Storybook just built, in the pinned Playwright image (needs Docker).
+    {
+      name: 'ui-browser',
+      full: true,
+      after: ['build'],
+      cmd: 'pnpm',
+      args: ['--filter', '@shifa/ui', 'test:browser'],
+    },
+    {
+      name: 'ui-storybook',
+      full: true,
+      after: ['ui-browser'],
+      cmd: 'pnpm',
+      args: ['--filter', '@shifa/ui', 'test:storybook'],
+    },
+    {
+      name: 'ui-storybook-build',
+      full: true,
+      after: ['ui-storybook'],
+      cmd: 'pnpm',
+      args: ['--filter', '@shifa/ui', 'storybook:build'],
+    },
+    {
+      name: 'ui-screenshots',
+      full: true,
+      requires: 'ui-storybook-build',
+      cmd: 'pnpm',
+      args: ['--filter', '@shifa/ui', 'screenshots'],
     },
   ];
   return all.filter((step) => (mode === 'docs' ? step.docs : mode === 'full' || !step.full));

@@ -9,5 +9,5 @@
     "moduleResolution": "bundler",
     "types": ["node"]
   },
-  "include": ["src", "test", ".storybook/**/*", "*.config.ts"]
+  "include": ["src", "test", "scripts", "screenshots", ".storybook/**/*", "*.config.ts"]
 }
