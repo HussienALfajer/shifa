@@ -1,0 +1,20 @@
+{
+  "kind": "state",
+  "app": "compliant",
+  "pkg": "dev.shifa.spike.s7push",
+  "image": "system-images;android-36;google_apis_playstore;x86_64",
+  "state": "foreground",
+  "serial": "emulator-5556",
+  "sdk": 36,
+  "grading": "graded",
+  "installId": "inst-36",
+  "startedAt": "2026-11-20T10:09:50.000Z",
+  "endedAt": "2026-11-20T10:13:00.000Z",
+  "skew": {
+    "beforeMs": -20,
+    "afterMs": -90,
+    "skewMs": -55,
+    "driftMs": 70,
+    "flagged": true
+  }
+}

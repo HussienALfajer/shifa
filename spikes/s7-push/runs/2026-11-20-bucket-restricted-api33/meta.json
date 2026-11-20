@@ -1,0 +1,35 @@
+{
+  "kind": "state",
+  "state": "bucket-restricted",
+  "app": "compliant",
+  "pkg": "dev.shifa.spike.s7push",
+  "serial": "emulator-5554",
+  "installId": "a6613739e47ced23c10a56f6a3cea858",
+  "sdk": 33,
+  "build": "google/sdk_gphone64_x86_64/emu64x:13/TE1A.240213.009/12342917:user/release-keys",
+  "grading": "excluded",
+  "exclusion": "restricted",
+  "count": 20,
+  "gapS": 30,
+  "startedAt": "2026-11-20T05:48:42.227Z",
+  "endedAt": "2026-11-20T06:01:06.794Z",
+  "skew": {
+    "beforeMs": -797.051448,
+    "afterMs": -801.38808,
+    "skewMs": -799.2197639999999,
+    "driftMs": 4.336631999999895,
+    "flagged": false
+  },
+  "device": {
+    "tokenHash": "0c7f1f816329",
+    "permission": "granted",
+    "channels": {
+      "appointments": "high",
+      "general": "default"
+    },
+    "appVersion": "0.0.1+compliant",
+    "sdkInt": 33,
+    "model": "sdk_gphone64_x86_64",
+    "reportedAt": "2026-11-20T05:48:55.309Z"
+  }
+}

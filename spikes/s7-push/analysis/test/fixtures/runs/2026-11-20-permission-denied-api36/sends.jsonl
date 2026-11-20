@@ -1,0 +1,2 @@
+{"s7id":"s7-c1","installId":"inst-36","kind":"reminder","label":"s7_reminder","appointmentId":"perm-appt-0","collapse":true,"ttl":"7200s","sentAt":"2026-11-20T10:00:00.000Z","httpStatus":200,"fcmName":"projects/demo/messages/s7-c1","attempts":1,"durationMs":40}
+{"s7id":"s7-c2","installId":"inst-36","kind":"reminder","label":"s7_reminder","appointmentId":"perm-appt-1","collapse":true,"ttl":"7200s","sentAt":"2026-11-20T10:00:30.000Z","httpStatus":200,"fcmName":"projects/demo/messages/s7-c2","attempts":1,"durationMs":40}

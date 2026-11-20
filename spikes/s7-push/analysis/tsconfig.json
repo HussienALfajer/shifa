@@ -1,0 +1,10 @@
+{
+  "extends": "@shifa/tsconfig/library.json",
+  "compilerOptions": {
+    "types": ["node"],
+    // The slice's locked analysis test (0.3-S7b) reads results by state name from a record
+    // (`by.doze`); its assertions are unchanged.
+    "noPropertyAccessFromIndexSignature": false
+  },
+  "include": ["src", "test", "scripts", "*.config.ts"]
+}

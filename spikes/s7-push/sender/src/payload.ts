@@ -35,7 +35,8 @@ export interface FcmMessage {
     priority: 'HIGH' | 'NORMAL';
     ttl: string;
     collapse_key?: string;
-    notification?: { channel_id: string };
+    /** `ticker` carries the s7id: the host-side watcher (0.3-S7b) reads it from `dumpsys`. */
+    notification?: { channel_id: string; ticker: string };
   };
   fcm_options: { analytics_label: string };
   data: MessageData;
@@ -95,7 +96,7 @@ export function buildMessage(input: PayloadInput): { message: FcmMessage } {
   const android: FcmMessage['android'] = {
     priority: 'HIGH',
     ttl,
-    notification: { channel_id: 'appointments' },
+    notification: { channel_id: 'appointments', ticker: input.s7id },
   };
   if (input.collapse ?? true) android.collapse_key = `appt_${input.appointmentId}`;
   return {

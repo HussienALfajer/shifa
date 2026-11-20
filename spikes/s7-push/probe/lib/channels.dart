@@ -150,6 +150,8 @@ class LocalNotificationsPlatform implements ChannelPlatform {
         priority: spec.importance == ChannelImportance.high
             ? Priority.high
             : Priority.defaultPriority,
+        // The host-side watcher (0.3-S7b) reads the s7id from the ticker in `dumpsys`.
+        ticker: message.s7id,
       ),
     );
   }

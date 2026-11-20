@@ -1,0 +1,29 @@
+{
+  "name": "@shifa-spike/s7-scenarios",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "run-state": "node src/cli.ts run",
+    "run-day": "node src/cli.ts day",
+    "devices": "node src/cli.ts devices",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test:spike": "vitest run"
+  },
+  "dependencies": {
+    "@shifa-spike/s7-receiver": "workspace:*",
+    "@shifa-spike/s7-sender": "workspace:*"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vitest": "5.1.0"
+  }
+}
