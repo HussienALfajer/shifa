@@ -111,9 +111,9 @@ Rules: gold is a fill, border or mark colour, with `ink.900` text on top; it is 
 
 Contrast is declared, not guessed: `packages/tokens/src/contrast-pairs.json` lists each text or icon colour with a surface it is drawn on and its class (`body` 4.5 : 1; `large` and `ui` 3 : 1). The contrast test computes every pair in light and in dark and fails the build below the minimum; a text or icon colour that is in no pair fails the schema test. A clinic brand palette (PLT-41) must meet the pairs declared for the `color.brand.*` slots.
 
-### Dark theme (provisional, OD-56)
+### Dark theme (OD-56)
 
-Derived from the same palette in slice 0.4-01; shown on the direction screens of slice 0.4-02; drawn again, side by side with light, in the Shifa Guide (slice 0.4-02b); the owner's word on it is asked with the Button sheet in slice 0.4-03. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
+Derived from the same palette in slice 0.4-01; shown on the direction screens of slice 0.4-02; drawn again, side by side with light, in the Shifa Guide (slice 0.4-02b). Confirmed by the owner on 2026-11-20 after comparing it with four alternatives on the reception queue screen (warm brown-charcoal, deep teal, neutral graphite, a lighter dim night): the current "night jasmine" values below stay. Steps added to the palette for it: `night` 950–700, `ink` 100, 300 and 400, `green` 200, 300, 900 and 950, `gold` 400 and 900.
 
 | Semantic token | Dark value |
 |---|---|
