@@ -61,12 +61,13 @@ describe('design directions', () => {
         }
       });
 
-      it('has the theme, density and digit switches', () => {
+      // No digit switch: Western digits only (OD-20, closed 2026-11-20).
+      it('has the theme and density switches', () => {
         const text = listFiles(dir)
           .filter((p) => TEXT_FILE.test(p))
           .map((p) => readFileSync(p, 'utf8'))
           .join('\n');
-        for (const attribute of ['data-theme', 'data-density', 'data-digits']) {
+        for (const attribute of ['data-theme', 'data-density']) {
           assert.ok(text.includes(attribute), `${id}: ${attribute}`);
         }
       });

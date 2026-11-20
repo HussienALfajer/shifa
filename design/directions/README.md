@@ -19,7 +19,7 @@ Open a screen file in a browser; a build needs no server and makes no network re
 - `doctor-visit.html`: doctor visit, desktop and 10-inch tablet.
 - `patient-booking.html`: patient booking, phone.
 
-Each screen has switches for theme (`data-theme`: light, dark), density (`data-density`: comfortable, compact) and digit style (`data-digits`: western, arabic-indic; OD-20).
+Each screen has switches for theme (`data-theme`: light, dark) and density (`data-density`: comfortable, compact). Every number is in Western digits (OD-20).
 
 ## Rules for a build
 

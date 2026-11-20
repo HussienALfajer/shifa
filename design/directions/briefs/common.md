@@ -34,7 +34,8 @@ A small bar outside the design itself sets attributes on `<html>`:
 |---|---|---|
 | `data-theme` | `light` (default), `dark` | Both must be finished, not inverted. |
 | `data-density` | `comfortable` (44 px targets), `compact` (32 px rows) | Compact is for pointer devices; the tablet and phone views stay comfortable. |
-| `data-digits` | `western` (default), `arabic-indic` | Changes every number on the screen (OD-20). |
+
+Every number on every screen is in Western digits, 0–9 (OD-20), with tabular figures in tables and queue numbers.
 
 ## The three screens
 

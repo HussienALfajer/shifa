@@ -168,7 +168,7 @@ Status colours in dark use the 300 step for text, 900 for the soft fill, 800 for
 - Use logical sides for floating elements (`inline-start` / `inline-end`); test keyboard navigation in RTL for every interactive component (RTL keyboard fixes were still landing in 2026).
 - Wrap Latin fragments inside Arabic text (drug names, units, IDs, phone numbers, tooth numbers) in isolated spans so they render in the correct direction.
 - Fonts: IBM Plex Sans Arabic for UI, Noto Naskh Arabic for long text and print, self-hosted and subsetted (licences to confirm). Type scale tuned for Arabic x-height; minimum 14 px for data, 16 px for body text.
-- Digits: Western or Arabic-Indic per clinic setting (OD-20); dates and currency through i18next/ICU with explicit numbering system.
+- Digits: Western (0–9) only, everywhere (OD-20, closed 2026-11-20); dates and currency through i18next/ICU with the numbering system set to `latn`. Inputs accept typed Arabic-Indic digits and store Western ones. Numbers in tables and queue numbers use the UI font's digits, which are tabular.
 
 ## Flutter design system
 

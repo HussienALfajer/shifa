@@ -167,5 +167,5 @@ Purpose: one shared vocabulary for code, docs and the Arabic UI. Code and docs u
 - Arabic-first, right-to-left; Modern Standard Arabic with Syrian everyday terms where they are clearer to receptionists (e.g. الدور، السكرتيرة، وصل، حسم).
 - Avoid Egyptian/Gulf variants in UI copy (روشتة، كشفية، خلع، معمل) unless clinics ask for them.
 - Latin fragments (drug names, units, IDs, phone numbers) are bidi-isolated.
-- Digits: Western (0–9) vs Arabic-Indic (٠–٩) is a per-tenant setting; default pending OD-20.
+- Digits: Western (0–9) only on every surface (OD-20, closed 2026-11-20); typed Arabic-Indic digits (٠–٩) are accepted and stored as Western.
 - Turkish UI for Azaz is a later language pack (OD-16); voice announcements may add Turkish earlier (OD-11).

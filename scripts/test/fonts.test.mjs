@@ -133,17 +133,21 @@ describe('font files', () => {
     }
   });
 
-  it('gives each digit set one width in the UI family, so numbers line up in tables', () => {
+  // Western digits only: the product shows no Arabic-Indic digits (OD-20, closed 2026-11-20),
+  // and IBM Plex Sans Arabic sets those proportionally.
+  it('gives the Western digits one width in the UI family, so numbers line up in tables', () => {
     const ui = manifest().families.find((f) => f.role === 'ui');
+    const checked = new Set();
     for (const file of ui.files) {
       const info = readFontInfo(join(fontsDir, file.path));
-      for (const [name, digits] of [
-        ['Western', WESTERN_DIGITS],
-        ['Arabic-Indic', ARABIC_INDIC_DIGITS],
-      ]) {
-        if (!digits.every((cp) => info.codePoints.has(cp))) continue;
-        const widths = new Set(info.tabularWidths(digits));
-        assert.equal(widths.size, 1, `${file.path}: ${name} digits have ${widths.size} widths`);
+      if (!WESTERN_DIGITS.every((cp) => info.codePoints.has(cp))) continue;
+      const widths = new Set(info.tabularWidths(WESTERN_DIGITS));
+      assert.equal(widths.size, 1, `${file.path}: digits have ${widths.size} widths`);
+      checked.add(`${file.format} ${file.weight}`);
+    }
+    for (const format of ['woff2', 'ttf']) {
+      for (const weight of FAMILIES.ui.weights) {
+        assert.ok(checked.has(`${format} ${weight}`), `no ${format} with digits at ${weight}`);
       }
     }
   });

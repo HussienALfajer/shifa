@@ -18,7 +18,7 @@ Related: [messaging and verification](messaging-and-verification.md) · [schedul
   - APK under 30 MB per ABI split (target, to measure).
 - PAT-05 The UI is Arabic-first RTL, built on Shifa's own design system generated from shared design tokens, the same source as the web (ADR-0011). There is no stock Material look.
 - PAT-06 "Professional and creative": a few signature Rive animations (booking confirmed, your turn), purposeful motion, and accessible type sizes. Motion is reduced when the system "reduce motion" setting is on.
-- PAT-07 Digits use one consistent style app-wide. The default (Latin or Arabic-Indic) is decided in OD-20.
+- PAT-07 Digits use one consistent style app-wide. The style is Western digits, 0–9 (OD-20, closed 2026-11-20).
 - PAT-08 The app tolerates being offline: appointments, tickets and the medical file are cached in drift (SQLCipher-encrypted), and actions taken offline are queued as pending writes.
 
 ## 2. Account and family
