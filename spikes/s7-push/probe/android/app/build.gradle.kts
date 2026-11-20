@@ -15,7 +15,8 @@ if (file("google-services.json").exists()) {
 
 android {
     namespace = "dev.shifa.spike.s7push"
-    compileSdk = flutter.compileSdkVersion
+    // flutter_local_notifications 23 and androidx.core 1.19 need compileSdk 37 (Flutter's default is 36).
+    compileSdk = 37
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
