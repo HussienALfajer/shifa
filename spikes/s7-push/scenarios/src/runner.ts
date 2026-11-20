@@ -97,7 +97,13 @@ export async function pollUntil(
   untilMs: number,
 ): Promise<void> {
   for (;;) {
-    for (const w of watchers) await w.poll();
+    for (const w of watchers) {
+      // One failed `dumpsys` must not end a run: latency comes from the post time in the dump, so
+      // the next poll still records the notification correctly.
+      await w.poll().catch((e: unknown) => {
+        process.stderr.write(`poll skipped: ${e instanceof Error ? e.message : String(e)}\n`);
+      });
+    }
     const left = untilMs - deps.now().getTime();
     if (left <= 0) return;
     await deps.sleep(Math.min(1000, left));

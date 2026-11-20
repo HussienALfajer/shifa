@@ -36,7 +36,10 @@ export function systemAdb(bin = process.env['ADB'] ?? 'adb'): Adb {
           [...args],
           { timeout: 120_000, maxBuffer: 64 * 1024 * 1024, windowsHide: true },
           (error, stdout, stderr) => {
-            if (error) reject(new Error(`adb ${args.join(' ')} failed: ${stderr.trim()}`));
+            if (error)
+              reject(
+                new Error(`adb ${args.join(' ')} failed: ${stderr.trim() || error.message.trim()}`),
+              );
             else resolve(stdout);
           },
         );
