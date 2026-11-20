@@ -12,6 +12,8 @@ export default defineConfig(
       'apps/**',
       'packages/**',
       'spikes/**',
+      // Design-direction prototypes exported from the design project (slice 0.4-02).
+      'design/directions/**',
       'node_modules/**',
       '.turbo/**',
       '.verify/**',

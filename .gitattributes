@@ -22,5 +22,11 @@ pubspec.lock linguist-generated
 # Generated artefacts of drift checks: OpenAPI, clients (also refused by the edit hook)
 **/generated/** linguist-generated
 
+# Design-direction prototypes exported from the design project (slice 0.4-02)
+design/directions/a/** linguist-generated
+design/directions/b/** linguist-generated
+design/directions/c/** linguist-generated
+design/directions/d/** linguist-generated
+
 # drizzle-kit snapshots (also refused by the edit hook)
 **/migrations/*/snapshot.json linguist-generated
