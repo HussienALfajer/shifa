@@ -9,7 +9,7 @@ Four interactive prototypes of Shifa's design language, each on the same three s
 | `c/` | Warm (الدافئ) | [briefs/c.md](briefs/c.md) |
 | `d/` | Courtyard (أرض الديار) | [briefs/d.md](briefs/d.md) |
 
-Chosen: not yet.
+Chosen: **C, Warm (الدافئ)**, by the owner on 2026-11-20. Its values are in `docs/architecture/design-system.md` ("Design language") and in `packages/tokens`.
 
 ## Opening a build
 

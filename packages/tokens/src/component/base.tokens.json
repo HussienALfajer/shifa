@@ -18,7 +18,7 @@
   },
   "input": {
     "height": { "$type": "dimension", "$value": "{size.control.md}" },
-    "radius": { "$type": "dimension", "$value": "{shape.radius.control}" },
+    "radius": { "$type": "dimension", "$value": "{shape.radius.input}" },
     "bg": { "$type": "color", "$value": "{color.bg.surface}" },
     "fg": { "$type": "color", "$value": "{color.text.default}" },
     "border": { "$type": "color", "$value": "{color.border.strong}" }
@@ -28,7 +28,7 @@
     "padding": { "$type": "dimension", "$value": "{inset.surface}" },
     "bg": { "$type": "color", "$value": "{color.bg.surface}" },
     "border": { "$type": "color", "$value": "{color.border.default}" },
-    "shadow": { "$type": "shadow", "$value": "{shadow.raised}" }
+    "shadow": { "$type": "shadow", "$value": "{shadow.card}" }
   },
   "table": {
     "row-height": { "$type": "dimension", "$value": "{size.row}" }

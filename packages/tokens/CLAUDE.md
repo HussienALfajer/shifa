@@ -21,7 +21,8 @@ The one source of design values (W3C Design Tokens, DTCG 2025.10) for the web th
 - Do not rename a token a component uses; add one and migrate.
 - Tailwind gets semantic and brand colours only (`bg-bg-surface`, `text-text-muted`), never a palette step. A new token group needs a line in `THEME` of `scripts/formats.ts` to become a Tailwind name; otherwise use `var(--shifa-…)`.
 - A new token type needs a validator in `src/schema.ts` and a CSS and a Dart form in `scripts/values.ts`.
-- Type scale, radius, elevation, motion and density values are provisional until slice 0.4-02 records the owner's design language.
+- Type scale, radius, elevation and motion hold the Warm design language the owner chose (OD-57; design doc, "Design language"); change them only with the owner.
+- `fonts/`: the self-hosted families (WOFF2 subsets, static TTFs, OFL, `fonts.json`). Rebuild with `node scripts/fonts-subset.mjs`; `scripts/test/fonts.test.mjs` holds the 60 KB budget.
 
 ## Commands
 - `pnpm --filter @shifa/tokens test` — schema, contrast and build tests.

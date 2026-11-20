@@ -106,6 +106,7 @@
   --spacing-16: var(--shifa-space-16);
   --spacing-0-5: var(--shifa-space-0-5);
   --radius-none: var(--shifa-radius-none);
+  --radius-xs: var(--shifa-radius-xs);
   --radius-sm: var(--shifa-radius-sm);
   --radius-md: var(--shifa-radius-md);
   --radius-lg: var(--shifa-radius-lg);
@@ -119,11 +120,13 @@
   --font-weight-bold: var(--shifa-font-weight-bold);
   --text-100: var(--shifa-font-size-100);
   --text-200: var(--shifa-font-size-200);
+  --text-250: var(--shifa-font-size-250);
   --text-300: var(--shifa-font-size-300);
   --text-400: var(--shifa-font-size-400);
   --text-500: var(--shifa-font-size-500);
   --text-600: var(--shifa-font-size-600);
   --text-700: var(--shifa-font-size-700);
+  --text-800: var(--shifa-font-size-800);
   --leading-tight: var(--shifa-font-line-height-tight);
   --leading-normal: var(--shifa-font-line-height-normal);
   --leading-relaxed: var(--shifa-font-line-height-relaxed);
@@ -139,6 +142,7 @@
   --text-caption: var(--shifa-text-size-caption);
   --text-data: var(--shifa-text-size-data);
   --text-body: var(--shifa-text-size-body);
+  --text-body-lg: var(--shifa-text-size-body-lg);
   --text-heading-sm: var(--shifa-text-size-heading-sm);
   --text-heading-md: var(--shifa-text-size-heading-md);
   --text-heading-lg: var(--shifa-text-size-heading-lg);
@@ -146,12 +150,18 @@
   --font-weight-body: var(--shifa-text-weight-body);
   --font-weight-label: var(--shifa-text-weight-label);
   --font-weight-heading: var(--shifa-text-weight-heading);
+  --font-weight-display: var(--shifa-text-weight-display);
   --leading-body: var(--shifa-text-leading-body);
   --leading-heading: var(--shifa-text-leading-heading);
   --leading-reading: var(--shifa-text-leading-reading);
+  --radius-mark: var(--shifa-shape-radius-mark);
+  --radius-input: var(--shifa-shape-radius-input);
   --radius-control: var(--shifa-shape-radius-control);
   --radius-surface: var(--shifa-shape-radius-surface);
+  --radius-overlay: var(--shifa-shape-radius-overlay);
   --radius-pill: var(--shifa-shape-radius-pill);
+  --shadow-card: var(--shifa-shadow-card);
+  --shadow-dropdown: var(--shifa-shadow-dropdown);
   --shadow-raised: var(--shifa-shadow-raised);
   --shadow-overlay: var(--shifa-shadow-overlay);
   --shadow-modal: var(--shifa-shadow-modal);
