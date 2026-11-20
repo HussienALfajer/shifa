@@ -1,11 +1,11 @@
 # Messaging and Phone Verification
 
-Status: Draft · Last updated: 2026-11-11 · Owner: product owner
+Status: Draft · Last updated: 2026-11-20 · Owner: product owner
 Sources: RN-10, RN-03, RN-06, RN-16, RN-17
 
 Purpose: defines how Shifa reaches patients and staff, and how patients prove they own a phone number, under the owner's decisions:
 - **no SMS at all**;
-- **FCM push (owner-confirmed working in Syria and Azaz) plus an in-app inbox** as the primary channel;
+- **FCM push plus an in-app inbox** as the primary channel (owner-confirmed working in Syria and Azaz; spike S7 passed on emulators, real phones before the pilot, ADR-0038);
 - **WhatsApp through a self-hosted unofficial gateway** as a secondary channel.
 
 The official WhatsApp Business Platform is not available for Syria [RN-10 §2] [RN-03]. Built in **Phase A**.
@@ -91,6 +91,10 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
 - MSG-28 The app shows an Arabic battery-optimisation guide for each phone brand (Samsung, Xiaomi/Redmi/POCO, Oppo/Realme, Tecno/Infinix, Huawei). It never requests a battery-optimisation exemption directly, because Play policy forbids it.
 - MSG-29 Every send carries an `analyticsLabel`. FCM's aggregated delivery data is reviewed weekly.
 - MSG-30 Live queue tracking also works over a websocket or polling while the app is open, so it does not depend on push.
+- MSG-33 Send policy (ADR-0038, spike S7 [result](../spikes/s7-push.md)): the inbox record is written before any push; appointment and queue events are visible high-priority notifications on "مواعيد"; one `collapse_key` per appointment (120 non-collapsible messages to an offline phone left one shown, consistent with FCM's 100 pending limit); the TTL ends when the message stops being true (the appointment, or minutes for "turn near"/"called"); `UNREGISTERED` marks the token dead.
+- MSG-34 On every open and token refresh the app reports its token, notification permission, the "مواعيد" channel importance, app version, SDK level and brand; the report time is the device's "last seen". The app acknowledges each push it receives; FCM's `200` is not delivery.
+- MSG-35 A time-critical message without a receipt after the fallback window, or to a device reporting permission denied or channel off, or not seen for too long, takes the next channel at once. Starting values in ADR-0038, tuned in the pilot (OD-12).
+- MSG-36 The app cancels its own stale notifications (a called turn, a past reminder), because Android hides a package's notifications past 50 posted ones.
 - MSG-31 Huawei Push Kit, for devices without Google services (Later; only if data shows it matters).
 
 ## Key entities
@@ -102,7 +106,8 @@ The realistic risk is **losing a clinic's or the platform's number**, not legal 
 - `message_template`: key, language, variants, placeholders.
 - `manual_send_task`: receptionist fallback item with a pre-filled `wa.me` link.
 - `phone_verification`: nonce, device, method (reverse WhatsApp / reception), status, expiry.
-- `device`: FCM token, platform, notification permission state.
+- `device`: patient app install, FCM token (hash in logs), platform, notification permission, "مواعيد" channel importance, app version, SDK level, brand, last seen (MSG-34).
+- `push_receipt`: message id, device, receive time, app state (MSG-34).
 
 ## Verification notes
 

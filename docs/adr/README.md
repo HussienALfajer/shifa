@@ -54,7 +54,7 @@ What we will do, stated precisely.
 | [0014](0014-offline-sync-engine.md) | Offline reception and patient app; sync engine chosen by spike | Accepted (engine in 0031) |
 | [0015](0015-realtime-centrifugo.md) | Realtime with Centrifugo fed from the outbox | Accepted |
 | [0016](0016-identity-better-auth-reverse-whatsapp.md) | Better Auth; reverse WhatsApp phone verification; no SMS | Accepted |
-| [0017](0017-notifications-push-whatsapp.md) | Push + in-app inbox primary; WhatsApp via self-hosted WAHA secondary | Accepted |
+| [0017](0017-notifications-push-whatsapp.md) | Push + in-app inbox primary; WhatsApp via self-hosted WAHA secondary | Accepted (amended by 0036, 0038) |
 | [0018](0018-money-three-currencies.md) | Money: SYP/TRY/USD, minor units, clinic rates, mixed-currency receipts, cash sessions | Accepted |
 | [0019](0019-imaging-orthanc-ohif.md) | Imaging: unmodified Orthanc per tenant behind our gateway; OHIF viewer | Accepted (amended by 0035) |
 | [0020](0020-voice-calling-voice-packs.md) | Voice calling with pre-generated TTS voice packs played locally | Accepted (amended by 0037) |
@@ -75,3 +75,4 @@ What we will do, stated precisely.
 | [0035](0035-imaging-storage-upload-and-edge-push.md) | Imaging storage, upload and edge push: Garage bucket and key per tenant, encrypted objects, own chunked resumable upload, Transfers through the gateway with an edge queue; amends 0019 | Accepted |
 | [0036](0036-whatsapp-gateway-pacing-and-reverse-verification.md) | WhatsApp gateway, pacing and reverse verification: WAHA GOWS with PostgreSQL storage, one container per role, signed webhooks, `@lid` resolution, acks by message key, pg-boss pacing, admin-confirmed breaker, phrase-bound codes; amends 0016 and 0017 | Accepted |
 | [0037](0037-voice-silma-self-hosted.md) | Voice calling with self-hosted SILMA TTS and no cloud vendor; generation, fallback, normalisation and display playback rules; amends 0020 | Accepted |
+| [0038](0038-push-send-policy-device-state-and-inbox.md) | Push send policy, device-state reporting, receipts and inbox rule; FCM stays primary on emulator evidence until the real-phone run; amends 0017 | Proposed (owner acceptance) |

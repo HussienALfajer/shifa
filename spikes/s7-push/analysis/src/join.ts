@@ -36,7 +36,8 @@ function detectability(run: Run): Detectability | undefined {
     return device?.permission === 'denied' ? 'permission in device state' : 'not detectable';
   if (exclusion === 'channel-off')
     return device?.channels.appointments === 'none' ? 'channel in device state' : 'not detectable';
-  // Force-stopped and `restricted` apps run no code: only a stale "last seen" shows them.
+  // A force-stopped app runs no code until opened, and a `restricted` one may not (it did on
+  // API 33): the backend can only rely on a stale "last seen" for them.
   return 'last seen only';
 }
 
