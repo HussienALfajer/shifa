@@ -7,6 +7,7 @@ import { join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle } from '../scripts/design-system/bundle.ts';
+import { PARTS } from '../scripts/design-system/compound.tsx';
 import * as ui from '../src/index.ts';
 
 let out: string;
@@ -20,14 +21,22 @@ afterAll(() => {
   rmSync(out, { recursive: true, force: true });
 });
 
-/** The public components: PascalCase function exports that are not providers. */
-const PUBLIC = Object.entries(ui)
+/** PascalCase function exports that are not providers. */
+const EXPORTED = Object.entries(ui)
   .filter(([name, value]) => /^[A-Z]/.test(name) && typeof value === 'function')
   .map(([name]) => name)
-  .filter((name) => !name.endsWith('Provider'))
-  .sort();
+  .filter((name) => !name.endsWith('Provider'));
+/** The public components: the exports that are not a part of a composed component (Tab…). */
+const PUBLIC = EXPORTED.filter((name) => !(name in PARTS)).sort();
 
 describe('design-system bundle', () => {
+  it('lists only real exports as parts, each of a public component', () => {
+    for (const [part, family] of Object.entries(PARTS)) {
+      expect(EXPORTED, part).toContain(part);
+      expect(PUBLIC, part).toContain(family);
+    }
+  });
+
   it('is one classic script with the @ds-bundle header naming every public component', () => {
     const js = read('components/bundle.js');
     const header = /^\/\* @ds-bundle: (\{.*\}) \*\/\n/.exec(js);

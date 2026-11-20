@@ -6,8 +6,25 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from './button/button.tsx';
+export {
+  Combobox,
+  type ComboboxItem,
+  type ComboboxProps,
+} from './combobox/combobox.tsx';
+export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
+export {
+  Dialog,
+  DialogActions,
+  DialogClose,
+  type DialogCloseProps,
+  DialogContent,
+  type DialogContentProps,
+  type DialogProps,
+  DialogTrigger,
+  type DialogTriggerProps,
+} from './dialog/dialog.tsx';
 export {
   DIRECTIONAL_ICONS,
   HEALTH_ICONS,
@@ -19,8 +36,40 @@ export {
 export { cn } from './lib/cn.ts';
 export { toWesternDigits } from './lib/digits.ts';
 export {
+  Menu,
+  MenuContent,
+  MenuItem,
+  type MenuItemProps,
+  type MenuProps,
+  MenuSeparator,
+  MenuTrigger,
+  type MenuTriggerProps,
+  Submenu,
+  type SubmenuProps,
+} from './menu/menu.tsx';
+export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
+export {
+  Popover,
+  PopoverContent,
+  type PopoverContentProps,
+  type PopoverProps,
+  PopoverTrigger,
+  type PopoverTriggerProps,
+} from './popover/popover.tsx';
+export {
   type Direction,
   DirectionProvider,
   useDirection,
 } from './providers/direction-provider.tsx';
 export { type Theme, ThemeProvider, useTheme } from './providers/theme-provider.tsx';
+export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
+export {
+  Tab,
+  TabList,
+  type TabListProps,
+  TabPanel,
+  type TabPanelProps,
+  type TabProps,
+  Tabs,
+  type TabsProps,
+} from './tabs/tabs.tsx';

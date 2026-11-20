@@ -18,6 +18,24 @@ const chromium = () => ({
   viewport: { width: 1280, height: 800 },
 });
 
+// The UI SDK entries the components use, pre-bundled before the first test: found mid-run, Vite
+// re-optimises them and reloads the page, and that run fails (duplicate React, missing module).
+const optimizeDeps = {
+  include: [
+    'button',
+    'calendar',
+    'combobox',
+    'date-picker',
+    'dialog',
+    'field',
+    'menu',
+    'number-input',
+    'popover',
+    'select',
+    'tabs',
+  ].map((entry) => `@ui-sdk/react/${entry}`),
+};
+
 export default defineConfig({
   test: {
     projects: [
@@ -30,6 +48,7 @@ export default defineConfig({
       },
       {
         plugins: [react(), tailwindcss()],
+        optimizeDeps,
         test: {
           name: 'browser',
           include: ['test/**/*.test.tsx', 'src/**/*.test.tsx'],
@@ -40,6 +59,7 @@ export default defineConfig({
       {
         // addon-vitest applies the preview and the a11y annotations itself (Storybook 10.3+).
         plugins: [tailwindcss(), storybookTest({ configDir: '.storybook' })],
+        optimizeDeps,
         test: {
           name: 'storybook',
           browser: chromium(),

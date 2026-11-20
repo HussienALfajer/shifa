@@ -2,6 +2,9 @@
  * Order: Tailwind, the token custom properties, the token theme (which removes Tailwind's own
  * colours, spacing, radius, shadows, fonts, sizes and easings, so only token values compile),
  * then the self-hosted font faces. */
+/* UI SDK adds a little CSS of its own (closed popups hidden, popover box reset) in the `ui-sdk`
+ * layer. Declared first, it is the lowest layer, so our utilities always win over it. */
+@layer ui-sdk;
 @import "tailwindcss";
 @import "@shifa/tokens/css/tokens.css";
 @import "@shifa/tokens/css/tailwind-theme.css";

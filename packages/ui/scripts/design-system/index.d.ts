@@ -71,7 +71,117 @@ export interface IconProps {
   label?: string;
 }
 
+type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+
+/** Tabs of one thing (a patient record): the selected tab green, heavier and underlined. */
+export interface TabsProps {
+  'aria-label': string;
+  items: { value: string; label: string; panel?: string; disabled?: boolean }[];
+  defaultValue?: string;
+}
+
+/** A button that opens a modal dialog: title, description, the safe action, then the main one. */
+export interface DialogProps {
+  triggerLabel: string;
+  triggerVariant?: Variant;
+  triggerIcon?: IconName;
+  title: string;
+  description?: string;
+  cancelLabel: string;
+  confirmLabel: string;
+  confirmVariant?: Variant;
+  defaultOpen?: boolean;
+}
+
+/** A button that opens a small panel under it, at its logical start. */
+export interface PopoverProps {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  title: string;
+  text: string;
+  defaultOpen?: boolean;
+}
+
+/** A button that opens a list of actions. */
+export interface MenuProps {
+  triggerLabel?: string;
+  triggerIcon?: IconName;
+  'aria-label'?: string;
+  items: (
+    | {
+        value: string;
+        label: string;
+        icon?: IconName;
+        danger?: boolean;
+        disabled?: boolean;
+        hint?: string;
+      }
+    | { separator: true }
+    | { label: string; icon?: IconName; items: { value: string; label: string }[] }
+  )[];
+}
+
+interface FieldProps {
+  label: string;
+  hint?: string;
+  /** Marks the field invalid; read with it. */
+  error?: string;
+  disabled?: boolean;
+}
+
+/** Choose one of a short, known list. */
+export interface SelectProps extends FieldProps {
+  items: { value: string; label: string; disabled?: boolean; hint?: string }[];
+  defaultValue?: string | null;
+  placeholder?: string;
+}
+
+/** Search a long list as you type (a word of the name starts with the text). */
+export interface ComboboxProps extends FieldProps {
+  items: { value: string; label: string; description?: string; disabled?: boolean }[];
+  defaultValue?: string | null;
+  emptyMessage: string;
+  placeholder?: string;
+}
+
+/** A number with − and + (or an amount with a unit and no steppers); Western digits. */
+export interface NumberInputProps extends FieldProps {
+  defaultValue?: number | null;
+  min?: number;
+  max?: number;
+  step?: number;
+  unit?: string;
+  steppers?: boolean;
+}
+
+/** A Gregorian date, dd/mm/yyyy, the week from Saturday (OD-61); the value is an ISO date. */
+export interface DatePickerProps extends FieldProps {
+  defaultValue?: string | null;
+  min?: string;
+  max?: string;
+}
+
+type Name =
+  | 'Button'
+  | 'Icon'
+  | 'Tabs'
+  | 'Dialog'
+  | 'Popover'
+  | 'Menu'
+  | 'Select'
+  | 'Combobox'
+  | 'NumberInput'
+  | 'DatePicker';
+
 /** Renders a component into an element with the bundle's React; returns the unmount. */
-export function mount(element: Element, name: 'Button' | 'Icon', props?: object): () => void;
+export function mount(element: Element, name: Name, props?: object): () => void;
 export declare const Button: (props: ButtonProps) => unknown;
 export declare const Icon: (props: IconProps) => unknown;
+export declare const Tabs: (props: TabsProps) => unknown;
+export declare const Dialog: (props: DialogProps) => unknown;
+export declare const Popover: (props: PopoverProps) => unknown;
+export declare const Menu: (props: MenuProps) => unknown;
+export declare const Select: (props: SelectProps) => unknown;
+export declare const Combobox: (props: ComboboxProps) => unknown;
+export declare const NumberInput: (props: NumberInputProps) => unknown;
+export declare const DatePicker: (props: DatePickerProps) => unknown;

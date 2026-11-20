@@ -1,0 +1,43 @@
+<!-- @dsCard group="Forms" height=300 subtitle="Type «عب» to see the suggestions · empty, chosen, invalid, disabled · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  // Names from the synthetic generator of packages/testing (test/fixtures.ts), never real ones.
+  var ITEMS = [
+    { value: '1061', label: 'عبد الكريم الحسين', description: 'ملف 1061' },
+    { value: '1063', label: 'عبد الكريم العلي', description: 'ملف 1063' },
+    { value: '1065', label: 'عبد الكريم العمر', description: 'ملف 1065' },
+    { value: '1000', label: 'روان الجاسم', description: 'ملف 1000' },
+    { value: '1001', label: 'بلال عطار', description: 'ملف 1001' },
+    { value: '1002', label: 'خديجة النجار', description: 'ملف 1002' }
+  ];
+  var BASE = { items: ITEMS, emptyMessage: 'لا يوجد مريض بهذا الاسم', placeholder: 'ابحث بالاسم' };
+  var FIELDS = [
+    { label: 'المريض' },
+    { label: 'المريض المحوَّل', defaultValue: '1061' },
+    { label: 'المرافق', error: 'اختر مريضاً مسجلاً' },
+    { label: 'صاحب الملف', disabled: true }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    FIELDS.forEach(function (field) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'Combobox', Object.assign({}, BASE, field));
+    });
+  });
+</script>
+</body>
+</html>

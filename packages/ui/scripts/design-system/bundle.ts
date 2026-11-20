@@ -21,7 +21,18 @@ const pkg = join(here, '..', '..');
 const root = join(pkg, '..', '..');
 
 /** The public components, in the order of bundle-entry.tsx; each has a folder in ./components. */
-export const BUNDLE_COMPONENTS = ['Button', 'Icon'] as const;
+export const BUNDLE_COMPONENTS = [
+  'Button',
+  'Icon',
+  'Tabs',
+  'Dialog',
+  'Popover',
+  'Menu',
+  'Select',
+  'Combobox',
+  'NumberInput',
+  'DatePicker',
+] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */
 function inlineSafe(js: string): string {

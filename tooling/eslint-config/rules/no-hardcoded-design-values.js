@@ -1,7 +1,9 @@
 // Spec 0.4 criterion 6: colours, spacing and fonts come from the tokens. In class lists that
 // means no arbitrary value (`p-[13px]`, `bg-[#fff]`) and no spacing step the token theme does
 // not offer (`p-14`, `gap-2.5`); in inline styles no literal colour, length or font family.
-// A reference to a token custom property (`h-(--shifa-…)`, `var(--shifa-…)`) is allowed.
+// A reference to a token custom property (`h-(--shifa-…)`, `var(--shifa-…)`) is allowed, and so
+// is one to the sizes UI SDK measures for a popup at run time (`min-w-(--anchor-width)`), which
+// are not design values.
 import { classVisitors, splitClasses } from './class-strings.js';
 
 /** Utilities whose value is a spacing step. */
@@ -12,7 +14,8 @@ const SPACING_UTILITY =
 const SIZING =
   /^(?:w|h|size|min-w|min-h|max-w|max-h|inline|min-inline|max-inline|block|min-block|max-block|basis|translate-x|translate-y)-/;
 const NUMERIC = /^\d+(?:\.\d+)?$/;
-const TOKEN_REFERENCE = /^(?:\(--shifa-[\w-]+\)|\[var\(--shifa-[\w-]+\)\])$/;
+const TOKEN_REFERENCE =
+  /^(?:\((?:--shifa-[\w-]+|--(?:anchor-width|anchor-height|available-width|available-height))\)|\[var\(--shifa-[\w-]+\)\])$/;
 
 const COLOUR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
 const LENGTH = /(?:^|[\s(,])-?\d*\.?\d+(?:px|rem|em|pt|vh|vw|ch|ex)\b/;

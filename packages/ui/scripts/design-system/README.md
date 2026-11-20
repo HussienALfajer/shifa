@@ -59,6 +59,16 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 
 - **Button**: primary (one per view), secondary (the default), ghost, danger (brick, never red); sm, md, lg; an icon on the logical start; loading keeps its label and focus.
 - **Icon**: the curated Phosphor and Healthicons set by name.
+- **Tabs**: views of one record; the selected tab green, heavier and underlined.
+- **Dialog**: a modal decision or short form; the main action last, the safe one focused first.
+- **Popover**: a small panel under a button, at its logical start.
+- **Menu**: actions from a button; the danger item last; a submenu opens toward the logical end.
+- **Select**: one of a short list; the chosen option has a check; typing finds a name without «د.».
+- **Combobox**: search a long list; a word of the name starts with what was typed.
+- **NumberInput**: − at the logical start, + at the end; Western digits with comma grouping.
+- **DatePicker**: dd/mm/yyyy, Gregorian, the week from Saturday, Levantine month names.
+
+Tabs, Dialog, Popover and Menu take their content as data here (`items`, `title`…); in code they are composed from parts.
 
 ## Logo
 
@@ -66,6 +76,6 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 
 ## Not synced yet
 
-- Components after Button and Icon: they arrive batch by batch, after each sheet is approved and the code passes its tests (slices 0.4-04 to 0.4-07).
+- The rest of the core set (inputs and forms, more overlays, data display): they arrive batch by batch, after each sheet is approved and the code passes its tests (slices 0.4-05 to 0.4-07).
 - Motion durations and easings: this format has no motion section.
 - Compact density: shown in each token's note and in the component stylesheet, not as separate token values.

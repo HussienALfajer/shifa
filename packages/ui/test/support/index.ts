@@ -2,6 +2,6 @@
 // test/helpers.test.tsx proves each one fails on a deliberately wrong fixture.
 export { expectAxeClean } from './axe.ts';
 export { type Align, expectPopupSide, type Side } from './geometry.ts';
-export { arrows, expectArrow, expectDigitsAccepted, typeArabic } from './keyboard.ts';
+export { arrows, expectArrow, expectDigitsAccepted, pressKeys, typeArabic } from './keyboard.ts';
 export { type Region, renderDir } from './render.tsx';
 export { tokenColor } from './tokens.ts';

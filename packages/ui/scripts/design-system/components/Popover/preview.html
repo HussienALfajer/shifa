@@ -1,0 +1,27 @@
+<!-- @dsCard group="Overlays" height=260 subtitle="Open under its trigger, at the logical start · RTL light, LTR dark" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; min-height: 220px; }
+  .panel { padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"><div data-slot="ar"></div></section>
+  <section class="panel" data-theme="dark" dir="ltr" lang="en"><div data-slot="en"></div></section>
+</div>
+<script>
+  var PROPS = {
+    ar: { triggerLabel: 'ملاحظة سريعة', triggerIcon: 'pencil', title: 'ملاحظة للطبيب', text: 'يفضّل موعداً بعد الظهر.', defaultOpen: true },
+    en: { triggerLabel: 'Quick note', triggerIcon: 'pencil', title: 'Note for the doctor', text: 'Prefers an afternoon visit.', defaultOpen: true }
+  };
+  document.querySelectorAll('[data-slot]').forEach(function (slot) {
+    window.Shifa.mount(slot, 'Popover', PROPS[slot.getAttribute('data-slot')]);
+  });
+</script>
+</body>
+</html>

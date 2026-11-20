@@ -29,6 +29,8 @@ abstract final class ShifaTokens {
   static const double space13 = 52;
   static const double space16 = 64;
   static const double space05 = 2;
+  static const double width80 = 320;
+  static const double width120 = 480;
   static const double radiusNone = 0;
   static const double radiusXs = 4;
   static const double radiusSm = 8;
@@ -74,6 +76,8 @@ abstract final class ShifaTokens {
   static const double zPopover = 500;
   static const double zToast = 600;
   static const double zTooltip = 700;
+  static const double sizePopover = 320;
+  static const double sizeDialog = 480;
   static const double sizeTargetMin = 44;
   static const double sizeIconSm = 20;
   static const double sizeIconMd = 24;
