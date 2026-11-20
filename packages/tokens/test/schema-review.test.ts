@@ -102,6 +102,7 @@ describe('hue rules', () => {
     const problems = broken((s) => {
       withCrimson(s);
       group(s.layers.semantic['color'])['alert'] = {
+        $description: 'Clinical alerts.',
         critical: { fg: locked('{color.signal.crimson.700}', '{color.signal.crimson.300}') },
       };
       s.pairs.push({ text: 'color.alert.critical.fg', surface: 'color.bg.surface', class: 'body' });

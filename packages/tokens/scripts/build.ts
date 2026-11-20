@@ -3,6 +3,8 @@
 //                                                       then what changes in dark and in compact
 //   packages/tokens/generated/css/tailwind-theme.css  — Tailwind v4 theme names → those properties
 //   packages/shifa_ui/lib/src/generated/tokens.g.dart — Dart constants: both themes, both densities
+//   packages/tokens/generated/design-system/tokens.json — the Shifa Design System's tokens
+//                                                       (design-system.ts; ADR-0040)
 // Style Dictionary resolves references, names tokens and runs the value transforms of values.ts,
 // once per mode (light, dark, compact); the three results are laid out by formats.ts.
 // `build()` is pure (tests use it); the CLI is what the `tokens` drift check runs:
@@ -22,6 +24,7 @@ import {
   type Sources,
   valueIn,
 } from '../src/index.ts';
+import { designSystem, type FontFamily, loadFonts } from './design-system.ts';
 import { css, dart, tailwind } from './formats.ts';
 import { cssValue, dartValue } from './values.ts';
 
@@ -30,6 +33,7 @@ export const OUTPUTS = {
   css: 'packages/tokens/generated/css/tokens.css',
   tailwind: 'packages/tokens/generated/css/tailwind-theme.css',
   dart: 'packages/shifa_ui/lib/src/generated/tokens.g.dart',
+  designSystem: 'packages/tokens/generated/design-system/tokens.json',
 } as const;
 
 /** One token after Style Dictionary: named, resolved and written for its platform. */
@@ -120,8 +124,14 @@ async function platforms(
   return { css: await read('css'), dart: await read('dart') };
 }
 
-/** Repository-relative output path → file content. Throws when the source is not valid. */
-export async function build(sources: Sources): Promise<Record<string, string>> {
+/**
+ * Repository-relative output path → file content. Throws when the source is not valid. `fonts`
+ * (from `fonts/fonts.json`) only feeds the design-system file; tests may leave it out.
+ */
+export async function build(
+  sources: Sources,
+  fonts: FontFamily[] = [],
+): Promise<Record<string, string>> {
   const problems = [...checkSchema(sources), ...contrastProblems(sources)];
   if (problems.length > 0) {
     throw new Error(`the token source is not valid:\n${problems.map((p) => `  ${p}`).join('\n')}`);
@@ -138,12 +148,15 @@ export async function build(sources: Sources): Promise<Record<string, string>> {
     [OUTPUTS.css]: css(web),
     [OUTPUTS.tailwind]: tailwind(web.light),
     [OUTPUTS.dart]: dart(flutter),
+    [OUTPUTS.designSystem]: `${JSON.stringify(designSystem(tokens, light.css, fonts), null, 2)}\n`,
   };
 }
 
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const outRoot = resolve(process.argv[2] ?? join(import.meta.dirname, '..', '..', '..'));
-  const files = await build(loadSources(process.argv[3]));
+  const sourceDir = process.argv[3];
+  const fontsDir = sourceDir === undefined ? undefined : join(sourceDir, '..', 'fonts');
+  const files = await build(loadSources(sourceDir), loadFonts(fontsDir));
   for (const [path, text] of Object.entries(files)) {
     mkdirSync(dirname(join(outRoot, path)), { recursive: true });
     writeFileSync(join(outRoot, path), text);

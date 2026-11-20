@@ -19,6 +19,8 @@ export interface FlatToken {
   /** `$extensions.shifa.modes`: the value in dark or in compact density. */
   modes: Record<string, unknown>;
   locked: boolean;
+  /** Usage note: the `$description` of the token or of the nearest group above it. */
+  description: string | undefined;
 }
 
 const REFERENCE = /^\{([^{}]+)\}$/;
@@ -40,9 +42,12 @@ function walk(
   layer: Layer,
   path: string[],
   type: string | undefined,
+  note: string | undefined,
   out: FlatToken[],
 ): void {
   const own = typeof tree['$type'] === 'string' ? tree['$type'] : type;
+  const described = typeof tree['$description'] === 'string' ? tree['$description'].trim() : '';
+  const description = described === '' ? note : described;
   if ('$value' in tree) {
     const extensions = isObject(tree['$extensions']) ? tree['$extensions']['shifa'] : undefined;
     const shifa = isObject(extensions) ? extensions : {};
@@ -53,19 +58,20 @@ function walk(
       value: tree['$value'],
       modes: isObject(shifa['modes']) ? shifa['modes'] : {},
       locked: shifa['locked'] === true,
+      description,
     });
     // No return: a token nested inside a token is still listed, so the schema can refuse it.
   }
   for (const [key, child] of Object.entries(tree)) {
     if (key.startsWith('$') || !isObject(child)) continue;
-    walk(child, layer, [...path, key], own, out);
+    walk(child, layer, [...path, key], own, description, out);
   }
 }
 
 /** Every token of every layer, in layer order then source order. */
 export function flatten(sources: Sources): FlatToken[] {
   const out: FlatToken[] = [];
-  for (const layer of LAYERS) walk(sources.layers[layer], layer, [], undefined, out);
+  for (const layer of LAYERS) walk(sources.layers[layer], layer, [], undefined, undefined, out);
   return out;
 }
 

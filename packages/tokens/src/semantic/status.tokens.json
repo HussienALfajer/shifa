@@ -4,6 +4,7 @@
     "status": {
       "$description": "Locked: one meaning everywhere, no clinic theme changes them, never the only signal (icon or label too). Red (crimson) is for clinical alerts only; danger is brick.",
       "success": {
+        "$description": "Done right: saved, paid, completed.",
         "fg": { "$value": "{color.signal.green.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.300}" } } } },
         "bg": { "$value": "{color.signal.green.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.900}" } } } },
         "border": { "$value": "{color.signal.green.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.800}" } } } },
@@ -11,6 +12,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "warning": {
+        "$description": "Needs attention soon: a balance due, a slot about to start, a weak connection.",
         "fg": { "$value": "{color.signal.amber.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.300}" } } } },
         "bg": { "$value": "{color.signal.amber.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.900}" } } } },
         "border": { "$value": "{color.signal.amber.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.800}" } } } },
@@ -18,6 +20,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "danger": {
+        "$description": "Failed or destructive: an error, a delete, a refused payment (brick, not red).",
         "fg": { "$value": "{color.signal.brick.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.brick.300}" } } } },
         "bg": { "$value": "{color.signal.brick.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.brick.900}" } } } },
         "border": { "$value": "{color.signal.brick.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.brick.800}" } } } },
@@ -25,6 +28,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "info": {
+        "$description": "Neutral information and tips.",
         "fg": { "$value": "{color.signal.blue.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.300}" } } } },
         "bg": { "$value": "{color.signal.blue.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.900}" } } } },
         "border": { "$value": "{color.signal.blue.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.800}" } } } },
@@ -32,6 +36,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "neutral": {
+        "$description": "No judgement: drafts, archived items, counts.",
         "fg": { "$value": "{color.signal.slate.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.300}" } } } },
         "bg": { "$value": "{color.signal.slate.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.900}" } } } },
         "border": { "$value": "{color.signal.slate.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.800}" } } } },
@@ -42,14 +47,17 @@
     "sync": {
       "$description": "Saved, offline and syncing: the record state a user must always see (principle 2).",
       "saved": {
+        "$description": "The record is saved on the server.",
         "fg": { "$value": "{color.signal.green.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.300}" } } } },
         "bg": { "$value": "{color.signal.green.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.900}" } } } }
       },
       "offline": {
+        "$description": "Offline: changes are kept on this device.",
         "fg": { "$value": "{color.signal.slate.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.300}" } } } },
         "bg": { "$value": "{color.signal.slate.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.900}" } } } }
       },
       "syncing": {
+        "$description": "Changes are being sent.",
         "fg": { "$value": "{color.signal.blue.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.300}" } } } },
         "bg": { "$value": "{color.signal.blue.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.900}" } } } }
       }
@@ -57,6 +65,7 @@
     "alert": {
       "$description": "Clinical alert severities. Critical is the only red in the product.",
       "info": {
+        "$description": "A clinical note to read (no risk).",
         "fg": { "$value": "{color.signal.blue.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.300}" } } } },
         "bg": { "$value": "{color.signal.blue.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.900}" } } } },
         "border": { "$value": "{color.signal.blue.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.800}" } } } },
@@ -64,6 +73,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "warning": {
+        "$description": "A clinical caution: an interaction or a value out of range.",
         "fg": { "$value": "{color.signal.amber.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.300}" } } } },
         "bg": { "$value": "{color.signal.amber.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.900}" } } } },
         "border": { "$value": "{color.signal.amber.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.800}" } } } },
@@ -71,6 +81,7 @@
         "on-solid": { "$value": "{color.white}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.jasmine.night.950}" } } } }
       },
       "critical": {
+        "$description": "A clinical danger: an allergy or a critical value. The only red in the product.",
         "fg": { "$value": "{color.signal.crimson.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.crimson.300}" } } } },
         "bg": { "$value": "{color.signal.crimson.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.crimson.900}" } } } },
         "border": { "$value": "{color.signal.crimson.200}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.crimson.800}" } } } },
@@ -81,34 +92,42 @@
     "queue": {
       "$description": "Visit statuses of SCH-18: booked → confirmed → arrived → waiting → in room → done; exits no-show and cancelled.",
       "booked": {
+        "$description": "Booked, not yet confirmed.",
         "fg": { "$value": "{color.signal.slate.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.300}" } } } },
         "bg": { "$value": "{color.signal.slate.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.slate.900}" } } } }
       },
       "confirmed": {
+        "$description": "Confirmed by the patient or the clinic.",
         "fg": { "$value": "{color.signal.blue.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.300}" } } } },
         "bg": { "$value": "{color.signal.blue.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.blue.900}" } } } }
       },
       "arrived": {
+        "$description": "Checked in at reception.",
         "fg": { "$value": "{color.signal.cyan.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.cyan.300}" } } } },
         "bg": { "$value": "{color.signal.cyan.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.cyan.900}" } } } }
       },
       "waiting": {
+        "$description": "In the waiting room.",
         "fg": { "$value": "{color.signal.amber.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.300}" } } } },
         "bg": { "$value": "{color.signal.amber.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.amber.900}" } } } }
       },
       "in-room": {
+        "$description": "With the doctor.",
         "fg": { "$value": "{color.signal.violet.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.violet.300}" } } } },
         "bg": { "$value": "{color.signal.violet.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.violet.900}" } } } }
       },
       "done": {
+        "$description": "Visit finished.",
         "fg": { "$value": "{color.signal.green.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.300}" } } } },
         "bg": { "$value": "{color.signal.green.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.green.900}" } } } }
       },
       "no-show": {
+        "$description": "Did not come.",
         "fg": { "$value": "{color.signal.brick.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.brick.300}" } } } },
         "bg": { "$value": "{color.signal.brick.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.brick.900}" } } } }
       },
       "cancelled": {
+        "$description": "Cancelled by the patient or the clinic.",
         "fg": { "$value": "{color.signal.sand.700}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.sand.300}" } } } },
         "bg": { "$value": "{color.signal.sand.50}", "$extensions": { "shifa": { "locked": true, "modes": { "dark": "{color.signal.sand.900}" } } } }
       }

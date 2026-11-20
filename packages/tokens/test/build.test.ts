@@ -25,11 +25,12 @@ describe('build (fixture)', () => {
     dart = files[OUTPUTS.dart] ?? '';
   });
 
-  it('writes exactly the three outputs at their repository paths', () => {
+  it('writes exactly the four outputs at their repository paths', () => {
     expect(OUTPUTS).toEqual({
       css: 'packages/tokens/generated/css/tokens.css',
       tailwind: 'packages/tokens/generated/css/tailwind-theme.css',
       dart: 'packages/shifa_ui/lib/src/generated/tokens.g.dart',
+      designSystem: 'packages/tokens/generated/design-system/tokens.json',
     });
     expect(Object.keys(files).sort()).toEqual(Object.values(OUTPUTS).sort());
   });

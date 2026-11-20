@@ -98,6 +98,16 @@
         "blur": { "value": 20, "unit": "px" },
         "spread": { "value": -4, "unit": "px" }
       }
+    },
+    "focus": {
+      "$description": "A soft green halo outside the 2 px focus outline; it softens the ring, the outline carries the contrast.",
+      "$value": {
+        "color": { "colorSpace": "srgb", "components": [0.1216, 0.4353, 0.3608], "alpha": 0.24, "hex": "#1f6f5c" },
+        "offsetX": { "value": 0, "unit": "px" },
+        "offsetY": { "value": 0, "unit": "px" },
+        "blur": { "value": 0, "unit": "px" },
+        "spread": { "value": 4, "unit": "px" }
+      }
     }
   },
   "motion": {

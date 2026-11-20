@@ -37,6 +37,11 @@
         "800": { "$value": { "colorSpace": "srgb", "components": [0.1098, 0.1569, 0.1412], "hex": "#1c2824" } },
         "900": { "$value": { "colorSpace": "srgb", "components": [0.0824, 0.1176, 0.1059], "hex": "#151e1b" } },
         "950": { "$value": { "colorSpace": "srgb", "components": [0.0549, 0.0824, 0.0745], "hex": "#0e1513" } }
+      },
+      "scrim": {
+        "$description": "Translucent ink behind dialogs and sheets: 40 % ink in light, 64 % night in dark.",
+        "light": { "$value": { "colorSpace": "srgb", "components": [0.1137, 0.1647, 0.149], "alpha": 0.4, "hex": "#1d2a26" } },
+        "dark": { "$value": { "colorSpace": "srgb", "components": [0.0549, 0.0824, 0.0745], "alpha": 0.64, "hex": "#0e1513" } }
       }
     },
     "signal": {
