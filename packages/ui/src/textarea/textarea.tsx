@@ -89,6 +89,8 @@ export function Textarea({
       {maxLength !== undefined && (
         <span
           aria-hidden="true"
+          // A count reads left to right («42 / 500») in Arabic too.
+          dir="ltr"
           className={cn(FIELD_TEXT.hint, 'self-end tabular-nums')}
         >{`${String(length)} / ${String(maxLength)}`}</span>
       )}

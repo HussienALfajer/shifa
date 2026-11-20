@@ -125,7 +125,11 @@ export function TimeInput({
                   onValueChange(next);
                 },
               })}
-          className="flex flex-1 items-center gap-0.5 tabular-nums"
+          // Left to right inside; in Arabic the time sits at the line's start, the right.
+          className={cn(
+            'flex flex-1 items-center tabular-nums',
+            dir === 'rtl' ? 'justify-end' : 'justify-start',
+          )}
         >
           {(state: { segments: Segment[] }) =>
             state.segments.map((segment, index) => {
@@ -137,7 +141,9 @@ export function TimeInput({
                   segment={segment as never}
                   {...(unit === 'literal' ? {} : { 'aria-label': names[unit] })}
                   className={cn(
-                    'rounded-mark px-0.5 outline-none data-[type=dayPeriod]:ms-1',
+                    // A segment is an input: as wide as its text, no box of its own.
+                    'field-sizing-content min-w-6 border-0 bg-transparent p-0 text-center font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none',
+                    'rounded-mark px-0.5 data-[type=literal]:min-w-0 data-[type=literal]:px-0 data-[type=dayPeriod]:ms-1',
                     'focus:bg-selection-strong data-empty:text-text-muted',
                     'data-disabled:text-text-disabled',
                   )}
