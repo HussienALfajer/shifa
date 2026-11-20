@@ -8,9 +8,9 @@ import {
   Dialog as BaseDialog,
   DialogClose as BaseDialogClose,
   DialogContent as BaseDialogContent,
+  DialogTrigger as BaseDialogTrigger,
   DialogDescription,
   DialogTitle,
-  DialogTrigger as BaseDialogTrigger,
 } from '@ui-sdk/react/dialog';
 import { type ReactNode, useRef } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';

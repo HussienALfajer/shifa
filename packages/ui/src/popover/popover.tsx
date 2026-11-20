@@ -7,8 +7,8 @@
 import {
   Popover as BasePopover,
   PopoverContent as BasePopoverContent,
-  PopoverTitle,
   PopoverTrigger as BasePopoverTrigger,
+  PopoverTitle,
 } from '@ui-sdk/react/popover';
 import type { ReactNode } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';
@@ -17,7 +17,7 @@ import { cn } from '../lib/cn.ts';
 
 /** The box of every floating panel (popover, menu, select and combobox lists, calendar). */
 export const FLOATING_BOX = cn(
-  'm-0 box-border overflow-auto rounded-surface border border-border-default bg-bg-surface p-2',
+  'm-0 overflow-auto rounded-surface border border-border-default bg-bg-surface p-2',
   'font-ui text-body leading-heading text-text-default shadow-dropdown',
   // A fade only: no rise, so the panel is in its place from the first frame (geometry, tests).
   'transition-opacity duration-(--shifa-motion-duration-base) ease-enter',

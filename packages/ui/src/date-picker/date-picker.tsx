@@ -8,6 +8,7 @@
 // focus returns to the calendar button. Typed Arabic-Indic digits are made Western first
 // (UI SDK accepts them only in a locale that also shows them; RTL gate, fixed by a wrapper).
 import {
+  DatePicker as BaseDatePicker,
   CalendarDay,
   CalendarGrid,
   CalendarHeading,
@@ -16,7 +17,6 @@ import {
   CalendarWeekday,
   CalendarWeekdays,
   CalendarWeeks,
-  DatePicker as BaseDatePicker,
   DatePickerContent,
   DatePickerInput,
   DatePickerTrigger,
@@ -35,8 +35,18 @@ export const DATE_LOCALE = { rtl: 'ar-SY-u-nu-latn', ltr: 'en-GB' } as const;
 const SATURDAY = 6;
 
 const LABELS = {
-  rtl: { open: 'فتح التقويم', calendar: 'اختيار التاريخ', previous: 'الشهر السابق', next: 'الشهر التالي' },
-  ltr: { open: 'فتح التقويم', calendar: 'Choose a date', previous: 'Previous month', next: 'Next month' },
+  rtl: {
+    open: 'فتح التقويم',
+    calendar: 'اختيار التاريخ',
+    previous: 'الشهر السابق',
+    next: 'الشهر التالي',
+  },
+  ltr: {
+    open: 'فتح التقويم',
+    calendar: 'Choose a date',
+    previous: 'Previous month',
+    next: 'Next month',
+  },
 } as const;
 
 export interface DatePickerProps {
@@ -59,7 +69,7 @@ export interface DatePickerProps {
 }
 
 const NAV = cn(
-  'inline-flex size-(--shifa-size-control-sm) cursor-pointer items-center justify-center rounded-control',
+  'inline-flex size-(--shifa-size-control-sm) cursor-pointer items-center justify-center rounded-control border-0',
   'bg-transparent text-text-default hover:bg-selection-subtle',
   'focus-visible:shadow-focus focus-visible:outline-2 focus-visible:outline-border-focus',
   'data-disabled:cursor-not-allowed data-disabled:text-text-disabled',
@@ -110,6 +120,7 @@ export function DatePicker({
       <BaseDatePicker
         locale={DATE_LOCALE[dir]}
         weekStartsOn={SATURDAY}
+        weekdayFormat="narrow"
         showOutsideDays
         {...(value === undefined ? {} : { value })}
         {...(defaultValue === undefined ? {} : { defaultValue })}
@@ -127,7 +138,7 @@ export function DatePicker({
         <div ref={setField} data-slot="date-picker-field" className={cn(FIELD_BOX, 'ps-3 pe-1')}>
           <DatePickerInput
             ref={westernDigits}
-            className="min-w-0 flex-1 bg-transparent text-inherit tabular-nums outline-none placeholder:text-text-muted"
+            className="min-w-0 flex-1 border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none placeholder:text-text-muted"
           />
           <DatePickerTrigger aria-label={openLabel ?? labels.open} className={NAV}>
             <Icon name="calendar" className="text-icon-muted" />

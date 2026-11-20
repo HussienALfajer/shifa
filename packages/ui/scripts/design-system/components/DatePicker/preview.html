@@ -1,0 +1,33 @@
+<!-- @dsCard group="Forms" height=300 subtitle="Chosen, empty, an error, disabled; press the calendar button · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var FIELDS = [
+    { label: 'تاريخ الموعد', defaultValue: '2026-11-24', min: '2026-11-20' },
+    { label: 'تاريخ الميلاد', defaultValue: null, hint: 'يمكن الكتابة مباشرة' },
+    { label: 'تاريخ المتابعة', defaultValue: '2026-11-12', error: 'اختر تاريخاً من اليوم فصاعداً' },
+    { label: 'تاريخ التسجيل', defaultValue: '2025-02-03', disabled: true }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    FIELDS.forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'DatePicker', props);
+    });
+  });
+</script>
+</body>
+</html>

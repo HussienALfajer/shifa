@@ -9,12 +9,12 @@ import {
   Menu as BaseMenu,
   MenuContent as BaseMenuContent,
   MenuItem as BaseMenuItem,
-  MenuItemIcon,
   MenuSeparator as BaseMenuSeparator,
+  MenuTrigger as BaseMenuTrigger,
+  MenuItemIcon,
   MenuSub,
   MenuSubContent,
   MenuSubTrigger,
-  MenuTrigger as BaseMenuTrigger,
 } from '@ui-sdk/react/menu';
 import type { ReactNode } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';

@@ -6,11 +6,23 @@
 // Direction, theme and density come from the page: dir, data-theme and data-density on an ancestor.
 import { type ComponentType, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
-import { Button, Icon } from '../../src/index.ts';
+import { Button, Combobox, DatePicker, Icon, NumberInput, Select } from '../../src/index.ts';
 import './bundle.css';
+import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 
-/** The public components, in the order the system lists them. */
-const COMPONENTS = { Button, Icon } as const;
+/** The public components, in the order the system lists them (bundle.ts BUNDLE_COMPONENTS). */
+const COMPONENTS = {
+  Button,
+  Icon,
+  Tabs,
+  Dialog,
+  Popover,
+  Menu,
+  Select,
+  Combobox,
+  NumberInput,
+  DatePicker,
+} as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;
 
@@ -65,7 +77,7 @@ function island(name: Name) {
 
 const target = (typeof window === 'undefined' ? globalThis : window) as unknown as Props;
 target['Shifa'] = {
-  version: '0.4-03',
+  version: '0.4-04',
   mount,
   ...Object.fromEntries(Object.keys(COMPONENTS).map((name) => [name, island(name as Name)])),
 };

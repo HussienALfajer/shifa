@@ -1,0 +1,44 @@
+<!-- @dsCard group="Actions" height=200 subtitle="Icon-only and labelled triggers; press one to open · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .row { display: flex; gap: 12px; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <p class="label">اضغط زراً لفتح القائمة · السهم الأيسر يفتح «طباعة»</p>
+  <div class="row" dir="rtl" lang="ar"><span data-slot="icon"></span><span data-slot="label"></span></div>
+  <div class="row" dir="ltr" lang="en"><span data-slot="en"></span></div>
+</div>
+<script>
+  var ITEMS = [
+    { value: 'edit', label: 'تعديل الموعد', icon: 'pencil' },
+    { value: 'copy', label: 'نسخ رابط الحجز' },
+    { label: 'طباعة', icon: 'printer', items: [{ value: 'small', label: 'إيصال صغير' }, { value: 'page', label: 'ورقة كاملة' }] },
+    { separator: true },
+    { value: 'move', label: 'نقل إلى طبيب آخر', disabled: true, hint: 'لا طبيب متاح' },
+    { separator: true },
+    { value: 'cancel', label: 'إلغاء الموعد', icon: 'trash', danger: true }
+  ];
+  var PROPS = {
+    icon: { triggerIcon: 'dots', 'aria-label': 'إجراءات الموعد', items: ITEMS },
+    label: { triggerLabel: 'إجراءات', items: ITEMS },
+    en: { triggerLabel: 'Actions', items: [
+      { value: 'edit', label: 'Edit appointment', icon: 'pencil' },
+      { label: 'Print', icon: 'printer', items: [{ value: 'small', label: 'Small receipt' }] },
+      { separator: true },
+      { value: 'cancel', label: 'Cancel appointment', icon: 'trash', danger: true }
+    ] }
+  };
+  document.querySelectorAll('[data-slot]').forEach(function (slot) {
+    window.Shifa.mount(slot, 'Menu', PROPS[slot.getAttribute('data-slot')]);
+  });
+</script>
+</body>
+</html>

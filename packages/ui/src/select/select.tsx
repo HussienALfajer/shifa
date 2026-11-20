@@ -7,8 +7,8 @@
 // value, focus returns to the field. Typing matches the name without a title such as «د.».
 import {
   Select as BaseSelect,
-  SelectContent,
   SelectItem as BaseSelectItem,
+  SelectContent,
   SelectItemIndicator,
   SelectTrigger,
   SelectValue,
@@ -103,7 +103,10 @@ export function Select({
             })}
       >
         <SelectTrigger
-          className={cn(FIELD_BOX_SELF, 'cursor-pointer justify-between px-3 text-start outline-none')}
+          className={cn(
+            FIELD_BOX_SELF,
+            'cursor-pointer justify-between px-3 text-start outline-none',
+          )}
         >
           <SelectValue className="min-w-0 flex-1 truncate data-placeholder:text-text-muted">
             {(state) =>

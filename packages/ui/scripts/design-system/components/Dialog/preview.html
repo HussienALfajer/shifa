@@ -1,0 +1,36 @@
+<!-- @dsCard group="Overlays" height=200 subtitle="A danger trigger and a confirmation; press it to open · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <p class="label">اضغط الزر لفتح الحوار · Esc يغلقه</p>
+  <div dir="rtl" lang="ar" data-slot="ar"></div>
+  <div dir="ltr" lang="en" data-slot="en"></div>
+</div>
+<script>
+  var PROPS = {
+    ar: {
+      triggerLabel: 'إلغاء الموعد', triggerVariant: 'danger', triggerIcon: 'trash',
+      title: 'إلغاء الموعد؟', description: 'موعد الثلاثاء 24/11/2026 الساعة 10:30. سيصل المريضَ إشعار بالإلغاء.',
+      cancelLabel: 'رجوع', confirmLabel: 'تأكيد الإلغاء', confirmVariant: 'danger'
+    },
+    en: {
+      triggerLabel: 'Cancel appointment', triggerVariant: 'danger', triggerIcon: 'trash',
+      title: 'Cancel the appointment?', description: 'Tuesday 24/11/2026 at 10:30. The patient is told.',
+      cancelLabel: 'Back', confirmLabel: 'Cancel it', confirmVariant: 'danger'
+    }
+  };
+  document.querySelectorAll('[data-slot]').forEach(function (slot) {
+    window.Shifa.mount(slot, 'Dialog', PROPS[slot.getAttribute('data-slot')]);
+  });
+</script>
+</body>
+</html>

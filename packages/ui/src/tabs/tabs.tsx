@@ -70,7 +70,7 @@ export interface TabProps {
 const TAB = cn(
   // The 2 px underline sits just above the list's 1 px line.
   'relative inline-flex min-h-(--shifa-size-control-md) shrink-0 items-center gap-2 px-4',
-  'rounded-t-input border-b-2 border-transparent bg-transparent',
+  'rounded-t-input border-0 border-b-2 border-transparent bg-transparent',
   'font-ui text-body font-medium leading-heading whitespace-nowrap text-text-muted in-data-[density=compact]:text-250',
   'cursor-pointer select-none transition-colors duration-(--shifa-motion-duration-fast) motion-reduce:transition-none',
   'hover:bg-selection-subtle hover:text-text-default',

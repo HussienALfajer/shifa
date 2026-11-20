@@ -11,11 +11,11 @@
 // - The control is a plain text input; it gets role=spinbutton and its value, minimum and
 //   maximum, as the spinbutton pattern asks.
 import {
+  NumberInput as BaseNumberInput,
   NumberInputControl,
   NumberInputDecrement,
   NumberInputGroup,
   NumberInputIncrement,
-  NumberInput as BaseNumberInput,
 } from '@ui-sdk/react/number-input';
 import { type ReactNode, useState } from 'react';
 import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
@@ -51,7 +51,7 @@ export interface NumberInputProps {
 
 const STEPPER = cn(
   'inline-flex w-(--shifa-input-height) shrink-0 cursor-pointer items-center justify-center self-stretch',
-  'bg-transparent text-text-default outline-none hover:bg-selection-subtle active:bg-selection-default',
+  'border-0 bg-transparent text-text-default outline-none hover:bg-selection-subtle active:bg-selection-default',
   'data-disabled:cursor-not-allowed data-disabled:bg-transparent data-disabled:text-text-disabled',
   'disabled:cursor-not-allowed disabled:bg-transparent disabled:text-text-disabled',
 );
@@ -120,7 +120,7 @@ export function NumberInput({
             {...(min === undefined ? {} : { 'aria-valuemin': min })}
             {...(max === undefined ? {} : { 'aria-valuemax': max })}
             className={cn(
-              'min-w-0 flex-1 self-stretch bg-transparent text-inherit tabular-nums outline-none',
+              'min-w-0 flex-1 self-stretch border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none',
               steppers ? 'px-2 text-center' : 'text-start',
             )}
           />

@@ -175,6 +175,12 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 ## Web components
 
 - `packages/ui` wraps UI SDK (`@ui-sdk/react` and `@ui-sdk/core`, a beta when adopted, pinned to an exact version; ADR-0039). Only `packages/ui` imports `@ui-sdk/*`. Eight components pass an Arabic RTL gate before the core set is built; a component that fails is built on Base UI (`@base-ui/react`, exact pin) behind the same API and listed here with the upstream issue. The UI SDK agent bridge is not used.
+- **RTL gate result (slice 0.4-04, 2026-11-20, UI SDK 0.1.0-beta.13):** Tabs, Dialog, Popover, Menu, Select, Combobox, Number Input and Date Picker all pass in Arabic RTL and English LTR, so the set stays on UI SDK (the results table is in the slice file). Four checks passed after a fix inside `packages/ui`, which the next components reuse:
+  - typed Arabic-Indic digits are turned into Western ones before UI SDK's number and date fields see them (`useWesternDigits`; UI SDK accepts them only in a locale that also shows them);
+  - Number Input's control gets `role=spinbutton`;
+  - Combobox renders only the matching names (UI SDK hides the others) and its list is placed against the whole field.
+  Dates and numbers use `ar-SY-u-nu-latn` (Levantine month names, Western digits) and `en-GB`, the week from Saturday (OD-61).
+- **Base UI fallbacks:** none.
 - Styling with Tailwind v4 logical utilities (`ms-*`, `pe-*`, `start-*`) only; physical left/right utilities are lint errors.
 - Lint (`tooling/eslint-config/rules/`, plugin `shifa`, every package): `no-physical-direction` (physical utilities in class lists, physical properties in `style`), `no-hardcoded-design-values` (arbitrary values other than a token reference, spacing steps the tokens do not offer, literal colours, lengths and fonts in `style`), `ui-sdk-only-in-ui` (`@ui-sdk/*` and Base UI outside `packages/ui`), `no-ui-sdk-agent` (`@ui-sdk/react/agent` anywhere). Class lists are read from `className`, `cn`/`clsx`/`twMerge` and `cva`/`tv`.
 - The Tailwind theme offers token values only: Tailwind's colours, spacing (with its multiplier), radius, shadows, fonts, sizes and easings are reset, so `p-14` or `bg-red-500` compile to nothing.
