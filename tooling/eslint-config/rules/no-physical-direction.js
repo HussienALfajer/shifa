@@ -62,7 +62,7 @@ export const noPhysicalDirectionRule = {
     },
   },
   create(context) {
-    return classVisitors({
+    return classVisitors(context, {
       onClasses(node, text) {
         for (const { raw } of splitClasses(text)) {
           const logical = physicalClass(raw);

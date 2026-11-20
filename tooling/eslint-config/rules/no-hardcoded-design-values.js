@@ -6,9 +6,11 @@ import { classVisitors, splitClasses } from './class-strings.js';
 
 /** Utilities whose value is a spacing step. */
 const SPACING_UTILITY =
-  /^(?:p|px|py|ps|pe|pt|pb|m|mx|my|ms|me|mt|mb|gap|gap-x|gap-y|space-x|space-y|inset|inset-x|inset-y|start|end|top|bottom|translate-x|translate-y|scroll-m[xyseb]?|scroll-p[xyseb]?|indent|w|h|size|min-w|min-h|max-w|max-h|basis)-(.+)$/;
+  // Longer names first: `gap-x-14` must not stop at `gap` with the value `x-14`.
+  /^(?:p|px|py|ps|pe|pt|pb|pbs|pbe|m|mx|my|ms|me|mt|mb|mbs|mbe|gap-x|gap-y|gap|space-x|space-y|inset-x|inset-y|inset-s|inset-e|inset-bs|inset-be|inset|start|end|top|bottom|translate-x|translate-y|scroll-mbs|scroll-mbe|scroll-pbs|scroll-pbe|scroll-m[xyseb]?|scroll-p[xyseb]?|indent|w|h|size|min-w|min-h|max-w|max-h|inline|min-inline|max-inline|block|min-block|max-block|basis)-(.+)$/;
 /** Sizing utilities and the 1 px press nudge (`translate-y-px`), where a 1px hairline is fine. */
-const SIZING = /^(?:w|h|size|min-w|min-h|max-w|max-h|basis|translate-x|translate-y)-/;
+const SIZING =
+  /^(?:w|h|size|min-w|min-h|max-w|max-h|inline|min-inline|max-inline|block|min-block|max-block|basis|translate-x|translate-y)-/;
 const NUMERIC = /^\d+(?:\.\d+)?$/;
 const TOKEN_REFERENCE = /^(?:\(--shifa-[\w-]+\)|\[var\(--shifa-[\w-]+\)\])$/;
 
@@ -99,7 +101,7 @@ export const noHardcodedDesignValuesRule = {
   create(context) {
     const spacing = new Set(context.options[0]?.spacing ?? []);
     const steps = [...spacing].join(', ');
-    return classVisitors({
+    return classVisitors(context, {
       onClasses(node, text) {
         for (const { raw } of splitClasses(text)) {
           const problem = hardcodedClass(raw, spacing);

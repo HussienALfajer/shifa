@@ -26,7 +26,13 @@ const root = resolve(dirArg);
 const port = Number(portArg);
 
 createServer((request, response) => {
-  const path = decodeURIComponent(new URL(request.url ?? '/', 'http://localhost').pathname);
+  let path: string;
+  try {
+    path = decodeURIComponent(new URL(request.url ?? '/', 'http://localhost').pathname);
+  } catch {
+    response.writeHead(400).end();
+    return;
+  }
   let file = normalize(join(root, path));
   if (file !== root && !file.startsWith(root + sep)) {
     response.writeHead(403).end();

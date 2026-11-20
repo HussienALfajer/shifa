@@ -137,23 +137,87 @@ const BASH_RULES = [
     re: /(--dangerously-skip-permissions|--permission-mode[\s=]+bypassPermissions)/,
     why: 'Claude never starts a session that skips permissions; the owner chooses the permission mode (ADR-0027).',
   },
-  // ADR-0041 (OD-60): setup prompts in node_modules and on the web ask agents to fetch skills at
-  // run time and to install with npm, outside the lockfile and the 24-hour release age.
+  // ADR-0041 (OD-60): setup prompts in node_modules and on the web ask agents to fetch skills
+  // and packages at run time, outside the lockfile and the 24-hour release age.
   {
-    re: /(?:^|[\s;&|(])(?:npx|bunx|pnpm\s+dlx|yarn\s+dlx)\s+(?:-{1,2}[\w-]+\s+)*skills(?:@\S*)?(?:\s|$)/,
-    why: 'Agent skills are not fetched at run time; a skill is written in this repository and reviewed (ADR-0041).',
+    test: (cmd) => commandSegments(cmd).some(fetchesAndRuns),
+    why: 'Packages are not fetched and run at run time (npx -y, npx <pkg>@<version>, npm exec, pnpm/yarn dlx, bunx); add an exact pin with pnpm, and write agent skills in this repository (ADR-0041).',
   },
   {
-    re: /(?:^|[\s;&|(])(?:npm\s+(?:i|install|add|ci)|yarn\s+add)(?:\s|$)/,
-    why: 'Packages are installed with pnpm only (lockfile, exact pins, 24-hour release age); never npm or yarn (ADR-0041).',
+    test: (cmd) => commandSegments(cmd).some(installsOutsidePnpm),
+    why: 'Packages are installed with pnpm only (lockfile, exact pins, 24-hour release age); never npm, yarn or bun (ADR-0041).',
   },
 ];
+
+/** Each simple command of a shell line: its program (no path, quotes or .cmd/.exe) and words. */
+function commandSegments(cmd) {
+  // A quoted string with spaces or separators is an argument (a grep pattern, a message), never
+  // a command; a short quoted word ("npm", "skills@latest") stays, unquoted below.
+  const masked = cmd.replace(/"[^"]*[\s;&|`(][^"]*"|'[^']*[\s;&|`(][^']*'/g, 'Q');
+  return masked.split(/[;&|\n]+|\$\(|`|\(/).map((segment) => {
+    const words = segment
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean)
+      .map((w) => w.replace(/^["']+|["']+$/g, ''));
+    let i = 0;
+    const wrappers = new Set(['sudo', 'command', 'exec', 'env', 'time', 'nice']);
+    while (i < words.length && (/^\w+=/.test(words[i]) || wrappers.has(words[i]))) i += 1;
+    const program = (words[i] ?? '')
+      .split(/[\\/]/)
+      .pop()
+      .replace(/\.(cmd|exe|ps1)$/i, '')
+      .toLowerCase();
+    return { program, args: words.slice(i + 1) };
+  });
+}
+
+const NPM_INSTALL = new Set([
+  'i',
+  'in',
+  'ins',
+  'inst',
+  'insta',
+  'instal',
+  'install',
+  'isnt',
+  'isntall',
+  'add',
+  'ci',
+]);
+
+function installsOutsidePnpm({ program, args }) {
+  if (program === 'npm') return args.some((a) => NPM_INSTALL.has(a));
+  if (program === 'yarn')
+    return args.length === 0 || args.some((a) => ['add', 'install'].includes(a));
+  if (program === 'bun') return args.some((a) => ['add', 'install', 'i'].includes(a));
+  return false;
+}
+
+function fetchesAndRuns({ program, args }) {
+  if (program === 'bunx') return true;
+  if (program === 'npm') return args.some((a) => ['exec', 'x'].includes(a));
+  if (program === 'pnpm' || program === 'yarn' || program === 'bun') {
+    return args.includes('dlx') || (program === 'bun' && args.includes('x'));
+  }
+  if (program !== 'npx') return false;
+  // `npx <local bin>` runs what the lockfile installed. npx's own options come before the
+  // command; `-y`, `--package` or a versioned or `skills` command fetch from the registry.
+  for (const a of args) {
+    if (a.startsWith('-')) {
+      if (/^(-y|--yes|-p|--package(=.*)?)$/.test(a)) return true;
+      continue;
+    }
+    return /^skills(@.*)?$/.test(a) || /^(@[\w.-]+\/)?[\w.-]+@[^\s/]*$/.test(a);
+  }
+  return false;
+}
 
 /** @returns {string | null} reason the command is blocked */
 export function checkBash(command) {
   const cmd = stripPayload(command);
   for (const rule of BASH_RULES) {
-    if (rule.re.test(cmd)) return rule.why;
+    if (rule.re ? rule.re.test(cmd) : rule.test(cmd)) return rule.why;
   }
   return null;
 }

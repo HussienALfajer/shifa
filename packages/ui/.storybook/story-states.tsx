@@ -17,6 +17,7 @@ export const TEXT_STATES = {
 type Render = (label: string) => ReactElement;
 
 /** Fixture geometry, not a design value: the width of a narrow column. */
+// eslint-disable-next-line shifa/no-hardcoded-design-values -- story fixture: a 256 px column where a long label must wrap
 const NARROW: CSSProperties = { width: 256 };
 
 /** Four stories of `render`: LongArabicLabel, MixedDirection, Zoom200 and ReducedMotion. */

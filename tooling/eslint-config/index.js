@@ -221,6 +221,15 @@ export function createConfig({ tsconfigRootDir, allowRawDb = [], moduleBoundarie
       plugins: { shifa: shifaPlugin },
       rules: uiRules(),
     },
+    // Test fixtures draw geometry on purpose (a popup on the physical left, a 256 px column);
+    // the import rules still apply to tests.
+    {
+      files: TEST_FILES,
+      rules: {
+        'shifa/no-physical-direction': 'off',
+        'shifa/no-hardcoded-design-values': 'off',
+      },
+    },
     ...moduleBoundaries(tsconfigRootDir, boundaries),
     {
       files: ['**/*.js', '**/*.mjs'],

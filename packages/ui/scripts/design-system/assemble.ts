@@ -55,9 +55,19 @@ export const ICONS: readonly PhosphorName[] = [
   'sign-out',
 ];
 
-/** The ink of the icon files: `shifa-color-icon-default` in light. */
-export const ICON_INK = '#5b6a63';
+/** The token whose light value inks the icon files. */
+export const ICON_INK_TOKEN = 'shifa-color-icon-default';
 const ICON_SIZE = 48;
+
+/** The light hex of a colour token, following aliases (`{shifa-color-jasmine-ink-500}`). */
+export function lightHex(tokens: DsTokens, name: string, hops = 0): string {
+  const token = tokens.color.tokens.find((t) => t.name === name);
+  if (token === undefined || hops > 8) throw new Error(`design-system: no colour token ${name}`);
+  const first = tokens.color.themes[0]?.id ?? 'light';
+  const value = typeof token.value === 'string' ? token.value : (token.value[first] ?? '');
+  const alias = /^\{([\w.-]+)\}$/.exec(value);
+  return alias ? lightHex(tokens, alias[1] ?? '', hops + 1) : value;
+}
 
 interface FontFamily {
   family: string;
@@ -96,19 +106,19 @@ function fonts(out: string) {
 }
 
 /** One icon file, drawn in the ink, with its own size. */
-function iconSvg(name: PhosphorName): string {
+function iconSvg(name: PhosphorName, ink: string): string {
   const markup = renderToStaticMarkup(
-    createElement(PHOSPHOR[name], { weight: 'duotone', size: ICON_SIZE, color: ICON_INK }),
+    createElement(PHOSPHOR[name], { weight: 'duotone', size: ICON_SIZE, color: ink }),
   );
   return markup.includes('xmlns=')
     ? markup
     : markup.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
 }
 
-function healthSvg(name: string): string {
+function healthSvg(name: string, ink: string): string {
   const source = readFileSync(join(pkg, 'src', 'icons', 'health', `${name}.svg`), 'utf8');
   return source
-    .replaceAll('currentColor', ICON_INK)
+    .replaceAll('currentColor', ink)
     .replace(/width="24" height="24"/, `width="${String(ICON_SIZE)}" height="${String(ICON_SIZE)}"`)
     .replace(/^<svg ((?:(?!xmlns)[^>])*)>/, '<svg xmlns="http://www.w3.org/2000/svg" $1>');
 }
@@ -120,17 +130,20 @@ export async function assembleDesignSystem(out: string): Promise<void> {
     'utf8',
   );
   write(out, 'README.md', readFileSync(join(here, 'README.md'), 'utf8'));
+  const tokens = JSON.parse(tokensJson) as DsTokens;
   write(out, 'tokens.json', tokensJson);
-  write(out, 'tokens.css', compileTokensCss(JSON.parse(tokensJson) as DsTokens, TITLE));
+  write(out, 'tokens.css', compileTokensCss(tokens, TITLE));
   fonts(out);
   write(out, 'assets/Logos/README.md', readFileSync(join(here, 'logos.md'), 'utf8'));
   for (const logo of LOGOS) {
     mkdirSync(join(out, 'assets', 'Logos'), { recursive: true });
     copyFileSync(join(logoDir, logo), join(out, 'assets', 'Logos', logo));
   }
-  write(out, 'assets/Icons/README.md', readFileSync(join(here, 'icons.md'), 'utf8'));
-  for (const icon of ICONS) write(out, `assets/Icons/${icon}.svg`, `${iconSvg(icon)}\n`);
-  for (const icon of HEALTH_FILES) write(out, `assets/Icons/${icon}.svg`, healthSvg(icon));
+  const ink = lightHex(tokens, ICON_INK_TOKEN);
+  const iconsNote = readFileSync(join(here, 'icons.md'), 'utf8').replaceAll('{{ink}}', ink);
+  write(out, 'assets/Icons/README.md', iconsNote);
+  for (const icon of ICONS) write(out, `assets/Icons/${icon}.svg`, `${iconSvg(icon, ink)}\n`);
+  for (const icon of HEALTH_FILES) write(out, `assets/Icons/${icon}.svg`, healthSvg(icon, ink));
   write(out, 'components/Cover/preview.html', readFileSync(join(here, 'cover.html'), 'utf8'));
   await Promise.resolve();
 }

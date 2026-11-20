@@ -24,8 +24,9 @@ export default defineConfig({
   },
   use: {
     baseURL: `http://localhost:${String(PORT)}`,
-    // The browser in the image reaches this machine's localhost through the connection.
-    connectOptions: { wsEndpoint, exposeNetwork: '<loopback>' },
+    // The browser in the image reaches this machine through the connection, on the Storybook
+    // port only (never the other local services: databases, Grafana, Docker).
+    connectOptions: { wsEndpoint, exposeNetwork: `localhost:${String(PORT)}` },
     viewport: { width: 1280, height: 800 },
     deviceScaleFactor: 1,
     reducedMotion: 'reduce',

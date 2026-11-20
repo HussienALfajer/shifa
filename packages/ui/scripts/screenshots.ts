@@ -6,9 +6,14 @@
 // this machine connects to it, and the image reaches the Storybook served here through the
 // connection, so the pixels come from the image on every machine. Without Docker (the
 // sandboxed WSL2 session, OD-24) run the `ui-baselines` workflow instead.
+// The server is the lockfile-pinned playwright-core of this checkout, mounted read-only (nothing
+// is downloaded in the container), run as the image's unprivileged user with no capabilities,
+// behind a random path, and stopped on every exit.
 import { spawnSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { randomUUID } from 'node:crypto';
+import { existsSync, readFileSync, realpathSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
 import { PLAYWRIGHT_IMAGE, PLAYWRIGHT_VERSION } from './screenshot-image.ts';
 
 const pkg = join(import.meta.dirname, '..');
@@ -19,54 +24,102 @@ if (args.some((a) => a !== '--update')) {
   process.exit(2);
 }
 
-function fail(message: string): never {
-  process.stderr.write(`screenshots: ${message}\n`);
-  process.exit(1);
-}
-
-const manifest = JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8')) as {
-  devDependencies: Record<string, string>;
-};
-if (manifest.devDependencies['playwright'] !== PLAYWRIGHT_VERSION) {
-  fail(`the image is Playwright ${PLAYWRIGHT_VERSION} but packages/ui pins another playwright`);
-}
-if (!existsSync(join(pkg, 'storybook-static', 'index.json'))) {
-  fail('no built Storybook; run `pnpm --filter @shifa/ui storybook:build` first');
-}
+class Failure extends Error {}
 
 const docker = (dockerArgs: string[]) => spawnSync('docker', dockerArgs, { encoding: 'utf8' });
-if (docker(['version', '--format', '{{.Server.Version}}']).status !== 0) {
-  fail('Docker is not running; it holds the pinned browser (or run the ui-baselines workflow)');
+
+/** The playwright-core the lockfile installed (playwright's own dependency, same version). */
+function playwrightCore(): string {
+  const fromPlaywright = createRequire(
+    createRequire(join(pkg, 'package.json')).resolve('playwright/package.json'),
+  );
+  const dir = realpathSync(dirname(fromPlaywright.resolve('playwright-core/package.json')));
+  const { version } = JSON.parse(readFileSync(join(dir, 'package.json'), 'utf8')) as {
+    version: string;
+  };
+  if (version !== PLAYWRIGHT_VERSION) {
+    throw new Failure(
+      `playwright-core ${version} is installed, the image is ${PLAYWRIGHT_VERSION}`,
+    );
+  }
+  return dir;
 }
 
-const started = docker([
-  'run',
-  '--detach',
-  '--rm',
-  '--init',
-  '--publish',
-  '127.0.0.1::3000',
-  PLAYWRIGHT_IMAGE,
-  '/bin/sh',
-  '-c',
-  `cd /tmp && npx -y playwright@${PLAYWRIGHT_VERSION} run-server --port 3000 --host 0.0.0.0`,
-]);
-if (started.status !== 0) fail(`could not start the browser image:\n${started.stderr}`);
-const container = started.stdout.trim();
+let container: string | null = null;
+function stop() {
+  if (container === null) return;
+  docker(['stop', '--time', '2', container]);
+  container = null;
+}
+process.on('exit', stop);
+for (const signal of ['SIGINT', 'SIGTERM'] as const) {
+  process.on(signal, () => {
+    stop();
+    process.exit(130);
+  });
+}
 
 async function main(): Promise<number> {
+  const manifest = JSON.parse(readFileSync(join(pkg, 'package.json'), 'utf8')) as {
+    devDependencies: Record<string, string>;
+  };
+  if (manifest.devDependencies['playwright'] !== PLAYWRIGHT_VERSION) {
+    throw new Failure(
+      `the image is Playwright ${PLAYWRIGHT_VERSION} but packages/ui pins another playwright`,
+    );
+  }
+  if (!existsSync(join(pkg, 'storybook-static', 'index.json'))) {
+    throw new Failure('no built Storybook; run `pnpm --filter @shifa/ui storybook:build` first');
+  }
+  if (docker(['version', '--format', '{{.Server.Version}}']).status !== 0) {
+    throw new Failure(
+      'Docker is not running; it holds the pinned browser (or run the ui-baselines workflow)',
+    );
+  }
+  const secret = `/${randomUUID()}`;
+  const started = docker([
+    'run',
+    '--detach',
+    '--rm',
+    '--init',
+    '--user',
+    'pwuser',
+    '--cap-drop',
+    'ALL',
+    '--security-opt',
+    'no-new-privileges',
+    '--volume',
+    `${playwrightCore()}:/pw:ro`,
+    '--publish',
+    '127.0.0.1::3000',
+    PLAYWRIGHT_IMAGE,
+    'node',
+    '/pw/cli.js',
+    'run-server',
+    '--port',
+    '3000',
+    '--host',
+    '0.0.0.0',
+    '--path',
+    secret,
+  ]);
+  if (started.status !== 0)
+    throw new Failure(`could not start the browser image:\n${started.stderr}`);
+  container = started.stdout.trim();
+
   const mapped = docker(['port', container, '3000/tcp']).stdout.trim().split('\n')[0] ?? '';
   const port = /:(\d+)$/.exec(mapped)?.[1];
-  if (port === undefined) fail(`no published port for the browser (${mapped})`);
-  // The server answers any HTTP request once it listens; `npx` may first download Playwright.
-  const deadline = Date.now() + 180_000;
+  if (port === undefined) throw new Failure(`no published port for the browser (${mapped})`);
+  // The server answers any HTTP request once it listens.
+  const deadline = Date.now() + 60_000;
   for (;;) {
     try {
       await fetch(`http://127.0.0.1:${port}/`);
       break;
     } catch {
-      if (Date.now() > deadline) fail('the browser server did not start within 3 minutes');
-      await new Promise((r) => setTimeout(r, 1000));
+      if (Date.now() > deadline)
+        throw new Failure('the browser server did not start within a minute');
+      await new Promise((r) => setTimeout(r, 500));
     }
   }
   const run = spawnSync(
@@ -83,13 +136,18 @@ async function main(): Promise<number> {
       cwd: pkg,
       stdio: 'inherit',
       shell: process.platform === 'win32',
-      env: { ...process.env, SHIFA_PW_WS: `ws://127.0.0.1:${port}/` },
+      env: { ...process.env, SHIFA_PW_WS: `ws://127.0.0.1:${port}${secret}` },
     },
   );
   return run.status ?? 1;
 }
 
-const status = await main().finally(() => {
-  docker(['stop', '--time', '2', container]);
-});
-process.exit(status);
+try {
+  process.exitCode = await main();
+} catch (error) {
+  if (!(error instanceof Failure)) throw error;
+  process.stderr.write(`screenshots: ${error.message}\n`);
+  process.exitCode = 1;
+} finally {
+  stop();
+}

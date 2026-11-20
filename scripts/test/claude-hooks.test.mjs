@@ -184,6 +184,27 @@ describe('checkBash', () => {
     'npm ci',
     'cd packages/ui && npm install left-pad',
     'yarn add react',
+    // bypasses found by the 0.4-03 reviews
+    'npm --prefix packages/ui install left-pad',
+    'npm -D i vitest',
+    'npm in react',
+    'npm -g install x',
+    'npm.cmd install',
+    '"npm" install',
+    '/usr/bin/npm install',
+    'npm exec skills add x',
+    'npm x -- skills',
+    'npx --package=skills skills add x',
+    'npx -p skills skills add x',
+    'npx -y "skills@latest"',
+    'npx.cmd skills',
+    'npx shadcn@latest add button',
+    'yarn',
+    'yarn install',
+    'yarn dlx skills',
+    'bun add react',
+    'bun install',
+    'sudo npm install -g x',
   ];
   for (const cmd of blocked) {
     it(`blocks: ${cmd}`, () => assert.notEqual(checkBash(cmd), null));
@@ -219,6 +240,14 @@ describe('checkBash', () => {
     'pnpm exec playwright install chromium',
     'git commit -m "docs: never run npx skills add or npm install"',
     "grep -rn 'npm install' docs",
+    'echo use npm ci',
+    'grep -n "playwright run-server\\|npx -y" docs/process/ui-screenshots.md',
+    "rg 'npm install; yarn add' docs",
+    'npm run build',
+    'npm audit',
+    'npx vitest run --project node',
+    'pnpm --filter @shifa/ui exec playwright install --with-deps chromium',
+    `npx ${'--- '.repeat(40)}tsc`,
   ];
   for (const cmd of allowed) {
     it(`allows: ${cmd}`, () => assert.equal(checkBash(cmd), null));

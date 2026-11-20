@@ -90,6 +90,10 @@ describe('design-system bundle', () => {
     expect(css).toContain('--shifa-button-primary-bg');
     expect(css).toMatch(/\[data-density=['"]compact['"]\]/);
     expect(css).not.toMatch(/\*,\s*::after,\s*::before/);
+    // Markers of Tailwind's preflight that survive minification (the selector above does not).
+    expect(css).not.toMatch(/box-sizing:\s*border-box/);
+    expect(css).not.toContain('-webkit-text-size-adjust');
+    expect(css).not.toMatch(/html,\s*:host/);
     expect(css).not.toMatch(/<\/style/i);
   });
 
