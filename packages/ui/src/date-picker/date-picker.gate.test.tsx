@@ -7,7 +7,7 @@
 // apply (n/a).
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { arrows, expectAxeClean, expectPopupSide, renderDir } from '../../test/support/index.ts';
+import { arrows, expectAxeClean, renderDir, waitForPopupSide } from '../../test/support/index.ts';
 import { DatePicker } from './date-picker.tsx';
 
 const DIRS = ['rtl', 'ltr'] as const;
@@ -74,7 +74,7 @@ describe.each(DIRS)('Date Picker gate in %s', (dir) => {
     const { screen, input } = await openCalendar(dir);
     const field = input.closest('[data-slot="date-picker-field"]') ?? input;
     const popup = screen.getByRole('dialog').element();
-    expectPopupSide({ dir, trigger: field, popup, side: 'bottom', align: 'start' });
+    await waitForPopupSide({ dir, trigger: field, popup, side: 'bottom', align: 'start' });
   });
 
   it('is Gregorian, starts the week on Saturday and names the month in the reading language', async () => {

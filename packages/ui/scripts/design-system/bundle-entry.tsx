@@ -17,6 +17,7 @@ import {
   NumberInput,
   OtpInput,
   PasswordInput,
+  SegmentedControl,
   Select,
   Switch,
   Textarea,
@@ -24,7 +25,10 @@ import {
 } from '../../src/index.ts';
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
+import { CommandPalette } from './compound-command.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
+import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
+import { Toast } from './compound-toast.tsx';
 
 /** The public components, in the order the system lists them (bundle.ts BUNDLE_COMPONENTS). */
 const COMPONENTS = {
@@ -49,6 +53,13 @@ const COMPONENTS = {
   TimeInput,
   Field,
   Form,
+  Tooltip,
+  Accordion,
+  SegmentedControl,
+  AlertDialog,
+  Drawer,
+  Toast,
+  CommandPalette,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;
@@ -104,7 +115,7 @@ function island(name: Name) {
 
 const target = (typeof window === 'undefined' ? globalThis : window) as unknown as Props;
 target['Shifa'] = {
-  version: '0.4-05',
+  version: '0.4-06',
   mount,
   ...Object.fromEntries(Object.keys(COMPONENTS).map((name) => [name, island(name as Name)])),
 };

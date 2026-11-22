@@ -56,3 +56,25 @@ export function expectPopupSide({
       }[align];
   if (!aligned) fail(`is not aligned to the trigger's ${align} edge`);
 }
+
+/**
+ * `expectPopupSide`, retried until the popup has settled (within `timeout` ms). A popup is placed
+ * again after it opens: a list that narrows as a person types, or a font that finishes loading,
+ * moves it a frame later. CI caught a Combobox list measured before that second placement
+ * (slice 0.4-06); a popup in the wrong place still fails, once the time is up.
+ */
+export async function waitForPopupSide(
+  args: Parameters<typeof expectPopupSide>[0],
+  timeout = 1000,
+): Promise<void> {
+  const end = performance.now() + timeout;
+  for (;;) {
+    try {
+      expectPopupSide(args);
+      return;
+    } catch (error) {
+      if (performance.now() >= end) throw error;
+      await new Promise((resolve) => requestAnimationFrame(resolve));
+    }
+  }
+}

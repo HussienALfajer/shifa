@@ -74,8 +74,15 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **TimeInput**: hour and minute (and ص/م on the 12-hour clock, a clinic setting, OD-62), left to right; the value is "HH:mm".
 - **Field**: label, required asterisk, hint and error around a control.
 - **Form**: a whole form in one state; in code React Hook Form with the server's Zod schema, errors as i18n keys.
+- **Tooltip**: a dark ink bubble above its trigger, 240 px at most; keyboard focus opens it at once, hover after 500 ms, touch never; never the only copy of what a person needs.
+- **Accordion**: sections of a record in one card; 48 px headers in headings, the caret at the logical end turned over and the text heavier when open; one open at a time unless `multiple`.
+- **SegmentedControl**: one choice of two to five that switches a view at once; the chosen segment white, raised and heavier; the arrows choose as they move.
+- **AlertDialog**: the Dialog's panel for a question that needs an answer; a danger or info mark before the title, «رجوع» focused first, the action last; no close button and no closing by a press outside.
+- **Drawer**: a 400 px panel from the logical end (the left in Arabic), radius 16 on its inner edge; `side="bottom"` on a tablet or phone with a named grabber.
+- **Toast**: a small white card at the bottom, at the logical end (the bottom left in Arabic), three at most, the newest at the bottom; status toasts carry their icon; errors stay until closed. In code one `ToastProvider` and `useToast()`.
+- **CommandPalette**: one search over patients and actions in a 560 px panel near the top; an Arabic name is found whatever its alef form or diacritics, and the match is marked in gold.
 
-Tabs, Dialog, Popover, Menu, RadioGroup, Field and Form take their content as data here (`items`, `fields`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer, Toast and CommandPalette take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 
@@ -83,6 +90,6 @@ Tabs, Dialog, Popover, Menu, RadioGroup, Field and Form take their content as da
 
 ## Not synced yet
 
-- The rest of the core set (more overlays, data display): they arrive batch by batch, after each sheet is approved and the code passes its tests (slices 0.4-06 and 0.4-07).
+- The rest of the core set (data display): it arrives after its sheet is approved and the code passes its tests (slice 0.4-07).
 - Motion durations and easings: this format has no motion section.
 - Compact density: shown in each token's note and in the component stylesheet, not as separate token values.

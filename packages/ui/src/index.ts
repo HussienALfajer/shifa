@@ -1,6 +1,24 @@
 // The public API of @shifa/ui. It never exposes which library is underneath (spec 0.4, edge
 // cases): components wrap UI SDK (or Base UI as the per-component fallback) behind our props.
 export {
+  Accordion,
+  AccordionItem,
+  type AccordionItemProps,
+  type AccordionProps,
+} from './accordion/accordion.tsx';
+export {
+  AlertDialog,
+  AlertDialogAction,
+  type AlertDialogActionProps,
+  AlertDialogCancel,
+  type AlertDialogCancelProps,
+  AlertDialogContent,
+  type AlertDialogContentProps,
+  type AlertDialogProps,
+  AlertDialogTrigger,
+  type AlertDialogTriggerProps,
+} from './alert-dialog/alert-dialog.tsx';
+export {
   Button,
   type ButtonProps,
   type ButtonSize,
@@ -12,6 +30,13 @@ export {
   type ComboboxItem,
   type ComboboxProps,
 } from './combobox/combobox.tsx';
+export {
+  CommandPalette,
+  type CommandPaletteGroup,
+  type CommandPaletteItem,
+  type CommandPaletteProps,
+  normaliseForSearch,
+} from './command-palette/command-palette.tsx';
 export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
@@ -26,6 +51,18 @@ export {
   DialogTrigger,
   type DialogTriggerProps,
 } from './dialog/dialog.tsx';
+export {
+  Drawer,
+  DrawerActions,
+  DrawerClose,
+  type DrawerCloseProps,
+  DrawerContent,
+  type DrawerContentProps,
+  type DrawerProps,
+  type DrawerSide,
+  DrawerTrigger,
+  type DrawerTriggerProps,
+} from './drawer/drawer.tsx';
 export { Field, type FieldProps } from './field/field.tsx';
 export {
   Form,
@@ -89,6 +126,11 @@ export {
   type RadioGroupProps,
   type RadioProps,
 } from './radio/radio.tsx';
+export {
+  SegmentedControl,
+  type SegmentedControlItem,
+  type SegmentedControlProps,
+} from './segmented-control/segmented-control.tsx';
 export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
 export { Switch, type SwitchProps } from './switch/switch.tsx';
 export {
@@ -103,3 +145,12 @@ export {
 } from './tabs/tabs.tsx';
 export { Textarea, type TextareaProps } from './textarea/textarea.tsx';
 export { TimeInput, type TimeInputProps } from './time-input/time-input.tsx';
+export {
+  type ToastApi,
+  type ToastOptions,
+  ToastProvider,
+  type ToastProviderProps,
+  type ToastType,
+  useToast,
+} from './toast/toast.tsx';
+export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';

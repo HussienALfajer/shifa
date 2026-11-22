@@ -143,6 +143,7 @@
   { "text": "button.primary.fg", "surface": "button.primary.bg", "class": "body" },
   { "text": "button.primary.fg", "surface": "button.primary.bg-hover", "class": "body" },
   { "text": "button.primary.fg", "surface": "button.primary.bg-pressed", "class": "body" },
+  { "text": "tooltip.fg", "surface": "tooltip.bg", "class": "body" },
   { "text": "input.fg", "surface": "input.bg", "class": "body" },
 
   { "text": "color.status.danger.on-solid", "surface": "color.status.danger.fg", "class": "body" },

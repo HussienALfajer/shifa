@@ -170,6 +170,91 @@ export interface IconButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md';
   disabled?: boolean;
+  /** Shows the label in a tooltip on hover and keyboard focus. */
+  tooltip?: boolean;
+}
+
+/** A short explanation in a dark ink bubble above its trigger; never the only copy of it. */
+export interface TooltipProps {
+  content: string;
+  /** A text trigger, which the tooltip describes. Leave out for an icon button named by `content`. */
+  triggerLabel?: string;
+  triggerIcon?: IconName;
+  side?: 'top' | 'bottom';
+  defaultOpen?: boolean;
+}
+
+/** Sections of one record that fold away; one open at a time unless `multiple`. */
+export interface AccordionProps {
+  items: { value: string; title: string; content: string; badge?: string; disabled?: boolean }[];
+  defaultValue?: string[];
+  multiple?: boolean;
+}
+
+/** One choice of two to five that switches a view at once; the chosen segment white and raised. */
+export interface SegmentedControlProps {
+  'aria-label': string;
+  items: { value: string; label: string; icon?: IconName; count?: number; disabled?: boolean }[];
+  defaultValue?: string;
+  disabled?: boolean;
+}
+
+/** A question that needs an explicit answer: «رجوع» focused first, the action last; no close button. */
+export interface AlertDialogProps {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  title: string;
+  description?: string;
+  /** The mark before the title: danger (default) or info. */
+  tone?: 'danger' | 'info';
+  cancelLabel: string;
+  actionLabel: string;
+  /** danger (default) for a deletion, primary for an ordinary confirmation. */
+  actionVariant?: 'danger' | 'primary';
+  errorText?: string;
+  defaultOpen?: boolean;
+}
+
+/** A panel from the logical end (default), the start, or the bottom (tablet, phone). */
+export interface DrawerProps {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  side?: 'start' | 'end' | 'bottom';
+  title: string;
+  description?: string;
+  /** Fields in the body, each an Input. */
+  fields?: { label: string; value?: string }[];
+  cancelLabel?: string;
+  saveLabel?: string;
+  defaultOpen?: boolean;
+}
+
+/**
+ * Toasts at the bottom of the screen, at the logical end; this card shows the ones it is given
+ * and stays. In code: one ToastProvider and `useToast().show(...)`.
+ */
+export interface ToastProps {
+  toasts: {
+    type?: 'default' | 'success' | 'info' | 'warning' | 'error';
+    title: string;
+    description?: string;
+    actionLabel?: string;
+  }[];
+  triggerLabel?: string;
+}
+
+/** One search over patients and actions in a modal panel; Arabic matching folds alef forms. */
+export interface CommandPaletteProps {
+  triggerLabel?: string;
+  title: string;
+  inputLabel: string;
+  groups: {
+    label: string;
+    items: { value: string; label: string; description?: string; icon?: IconName }[];
+  }[];
+  /** The empty state; {query} is replaced by the typed text. */
+  emptyText: string;
+  defaultOpen?: boolean;
 }
 
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
@@ -307,7 +392,14 @@ type Name =
   | 'OtpInput'
   | 'TimeInput'
   | 'Field'
-  | 'Form';
+  | 'Form'
+  | 'Tooltip'
+  | 'Accordion'
+  | 'SegmentedControl'
+  | 'AlertDialog'
+  | 'Drawer'
+  | 'Toast'
+  | 'CommandPalette';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -332,3 +424,10 @@ export declare const OtpInput: (props: OtpInputProps) => unknown;
 export declare const TimeInput: (props: TimeInputProps) => unknown;
 export declare const Field: (props: FieldComponentProps) => unknown;
 export declare const Form: (props: FormProps) => unknown;
+export declare const Tooltip: (props: TooltipProps) => unknown;
+export declare const Accordion: (props: AccordionProps) => unknown;
+export declare const SegmentedControl: (props: SegmentedControlProps) => unknown;
+export declare const AlertDialog: (props: AlertDialogProps) => unknown;
+export declare const Drawer: (props: DrawerProps) => unknown;
+export declare const Toast: (props: ToastProps) => unknown;
+export declare const CommandPalette: (props: CommandPaletteProps) => unknown;

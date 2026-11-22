@@ -9,6 +9,14 @@ export async function expectAxeClean(container: Element): Promise<void> {
   // Popups fade in and colours transition: axe reads colours, so let running animations and
   // transitions end first (under load it caught a calendar and a dialog mid-fade; slice 0.4-05).
   // A spinner runs forever: wait only for animations that end.
+  // A popup in its first frame (data-starting-style, opacity 0) has no transition running yet,
+  // so the wait below would see nothing: let it leave that frame first (CI caught the command
+  // palette there; slice 0.4-06).
+  const frame = () => new Promise((resolve) => requestAnimationFrame(resolve));
+  for (let i = 0; i < 30 && document.querySelector('[data-starting-style]') !== null; i++) {
+    await frame();
+  }
+  await frame();
   const ending = document
     .getAnimations()
     .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);

@@ -13,6 +13,7 @@ import {
   expectPopupSide,
   renderDir,
   typeArabic,
+  waitForPopupSide,
 } from './support/index.ts';
 
 const DIRS = ['rtl', 'ltr'] as const;
@@ -170,6 +171,17 @@ describe.each(DIRS)('helpers in %s', (dir) => {
     expect(call('top', 'start')).toThrow();
     if (dir === 'rtl') expect(call('bottom', 'start')).toThrow();
     else expect(call('bottom', 'end')).toThrow();
+  });
+
+  it('waitForPopupSide passes a settled popup and still fails a misplaced one', async () => {
+    const screen = await renderDir(<Popup />, { dir });
+    const args = {
+      dir,
+      trigger: screen.getByTestId('trigger').element(),
+      popup: screen.getByTestId('popup').element(),
+    };
+    await waitForPopupSide({ ...args, side: 'bottom', align: 'start' });
+    await expect(waitForPopupSide({ ...args, side: 'top', align: 'start' }, 100)).rejects.toThrow();
   });
 
   it('typeArabic passes when the field keeps the Arabic text', async () => {

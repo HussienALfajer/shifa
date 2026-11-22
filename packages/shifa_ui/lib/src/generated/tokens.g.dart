@@ -29,8 +29,12 @@ abstract final class ShifaTokens {
   static const double space13 = 52;
   static const double space16 = 64;
   static const double space05 = 2;
+  static const double width60 = 240;
   static const double width80 = 320;
+  static const double width90 = 360;
+  static const double width100 = 400;
   static const double width120 = 480;
+  static const double width140 = 560;
   static const double radiusNone = 0;
   static const double radiusXs = 4;
   static const double radiusSm = 8;
@@ -78,6 +82,10 @@ abstract final class ShifaTokens {
   static const double zTooltip = 700;
   static const double sizePopover = 320;
   static const double sizeDialog = 480;
+  static const double sizeTooltip = 240;
+  static const double sizeToast = 360;
+  static const double sizeDrawer = 400;
+  static const double sizeCommand = 560;
   static const double sizeTargetMin = 44;
   static const double sizeIconSm = 20;
   static const double sizeIconMd = 24;
@@ -315,6 +323,8 @@ abstract final class ShifaColorsLight {
   static const Color inputBorder = Color(0xFF76857E);
   static const Color cardBg = Color(0xFFFFFFFF);
   static const Color cardBorder = Color(0xFFE6DFCF);
+  static const Color tooltipBg = Color(0xFF1D2A26);
+  static const Color tooltipFg = Color(0xFFFFFFFF);
 }
 
 /// Colours of the dark theme.
@@ -430,4 +440,6 @@ abstract final class ShifaColorsDark {
   static const Color inputBorder = Color(0xFF76857E);
   static const Color cardBg = Color(0xFF151E1B);
   static const Color cardBorder = Color(0xFF2B3934);
+  static const Color tooltipBg = Color(0xFFE6EDE9);
+  static const Color tooltipFg = Color(0xFF151E1B);
 }

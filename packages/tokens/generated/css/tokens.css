@@ -217,8 +217,12 @@
   --shifa-space-13: 52px;
   --shifa-space-16: 64px;
   --shifa-space-0-5: 2px;
+  --shifa-width-60: 240px;
   --shifa-width-80: 320px;
+  --shifa-width-90: 360px;
+  --shifa-width-100: 400px;
   --shifa-width-120: 480px;
+  --shifa-width-140: 560px;
   --shifa-radius-none: 0px;
   --shifa-radius-xs: 4px;
   --shifa-radius-sm: 8px;
@@ -270,6 +274,10 @@
   --shifa-size-row: 48px;
   --shifa-size-popover: 320px;
   --shifa-size-dialog: 480px;
+  --shifa-size-tooltip: 240px;
+  --shifa-size-toast: 360px;
+  --shifa-size-drawer: 400px;
+  --shifa-size-command: 560px;
   --shifa-size-target-min: 44px;
   --shifa-size-icon-sm: 20px;
   --shifa-size-icon-md: 24px;
@@ -372,6 +380,8 @@
   --shifa-card-bg: #ffffff;
   --shifa-card-border: #e6dfcf;
   --shifa-card-shadow: 0px 1px 2px 0px rgb(29 42 38 / 0.08);
+  --shifa-tooltip-bg: #1d2a26;
+  --shifa-tooltip-fg: #ffffff;
   --shifa-table-row-height: 48px;
 }
 
@@ -483,6 +493,8 @@
   --shifa-input-fg: #e6ede9;
   --shifa-card-bg: #151e1b;
   --shifa-card-border: #2b3934;
+  --shifa-tooltip-bg: #e6ede9;
+  --shifa-tooltip-fg: #151e1b;
 }
 
 [data-density='compact'] {

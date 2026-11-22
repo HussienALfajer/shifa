@@ -19,8 +19,11 @@ export default defineConfig({
   forbidOnly: true,
   reporter: [['list']],
   expect: {
-    // Strict: a one-pixel style change fails (slice 0.4-03, red/green proof).
-    toHaveScreenshot: { maxDiffPixels: 0, threshold: 0.1, animations: 'disabled', scale: 'css' },
+    // Strict: a style change fails (slice 0.4-03, red/green proof); a 1 px border or colour change
+    // moves hundreds of pixels. Up to 4 differing pixels pass: the anti-aliasing of one icon edge
+    // came out 2 pixels different between runs of the same image (Password Input, CI, 0.4-05 and
+    // 0.4-06).
+    toHaveScreenshot: { maxDiffPixels: 4, threshold: 0.1, animations: 'disabled', scale: 'css' },
   },
   use: {
     baseURL: `http://localhost:${String(PORT)}`,

@@ -28,6 +28,15 @@ import { Tabs as CodeTabs, Tab, TabList, TabPanel } from '../../src/tabs/tabs.ts
 
 /** Exports of packages/ui that are parts of a composed component, by the component they belong to. */
 export const PARTS: Record<string, string> = {
+  AccordionItem: 'Accordion',
+  AlertDialogTrigger: 'AlertDialog',
+  AlertDialogContent: 'AlertDialog',
+  AlertDialogCancel: 'AlertDialog',
+  AlertDialogAction: 'AlertDialog',
+  DrawerTrigger: 'Drawer',
+  DrawerContent: 'Drawer',
+  DrawerActions: 'Drawer',
+  DrawerClose: 'Drawer',
   Tab: 'Tabs',
   TabList: 'Tabs',
   TabPanel: 'Tabs',
@@ -45,6 +54,11 @@ export const PARTS: Record<string, string> = {
   Radio: 'RadioGroup',
   FormField: 'Form',
   FormSubmit: 'Form',
+};
+
+/** Cards of the design system that stand for a provider export, by the provider's name. */
+export const PROVIDED: Record<string, string> = {
+  Toast: 'ToastProvider',
 };
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';

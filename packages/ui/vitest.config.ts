@@ -22,12 +22,16 @@ const chromium = () => ({
 // re-optimises them and reloads the page, and that run fails (duplicate React, missing module).
 const optimizeDeps = {
   include: [
+    'accordion',
+    'alert-dialog',
     'button',
     'calendar',
     'checkbox',
     'combobox',
+    'command',
     'date-picker',
     'dialog',
+    'drawer',
     'field',
     'input',
     'menu',
@@ -36,11 +40,14 @@ const optimizeDeps = {
     'password-input',
     'popover',
     'radio',
+    'segmented-control',
     'select',
     'switch',
     'tabs',
     'textarea',
     'time-input',
+    'toast',
+    'tooltip',
   ]
     .map((entry) => `@ui-sdk/react/${entry}`)
     .concat(['react-hook-form', '@hookform/resolvers/zod', 'zod']),
