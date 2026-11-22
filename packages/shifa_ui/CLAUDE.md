@@ -13,9 +13,10 @@ Shifa's Flutter design system for the patient app (spec 0.4 criterion 10, slice 
 
 ## Tests
 - `test/support/harness.dart`: `pumpPhone` (a widget on a 390 × 844 Arabic RTL phone) and `pumpScreen` (a whole screen in a `Navigator`). Every widget test checks semantics, the 48 dp target, disabled behaviour and 200 % text.
-- Goldens (`test/goldens/`, tag `golden`): `shifaGoldenTest` draws each state light beside dark, RTL, animations off; `pressAll` holds a press. CI goldens (`test/goldens/ci/`, text as blocks) are committed and compared in `verify`; platform goldens are git-ignored, for looking at.
+- Goldens (`test/goldens/`, tag `golden`): `shifaGoldenTest` draws each state light beside dark, RTL, animations off; `pressAll` holds a press. CI goldens (`test/goldens/ci/`, text as blocks) are the **Linux** images: edge smoothing differs a little between operating systems, so `flutter test` compares them only on Linux (CI, WSL2) and skips them on Windows and macOS. Platform goldens are git-ignored, for looking at.
 
 ## Commands
-- `node ../../scripts/dart.mjs flutter test` — all tests (goldens compared).
-- `node ../../scripts/dart.mjs flutter test --update-goldens --tags golden` — rewrite the CI goldens after an approved change; look at each changed image.
+- `node ../../scripts/dart.mjs flutter test` — all tests (CI goldens compared on Linux only).
+- On Linux: `node ../../scripts/dart.mjs flutter test --update-goldens --tags golden` rewrites the CI goldens after an approved change; look at each changed image.
+- Elsewhere: `pnpm --filter @shifa/dart-ui goldens [--update]` compares or rewrites them in Docker (`scripts/goldens.mjs`: the pinned Ubuntu image, the `.fvmrc` SDK checked against `FLUTTER_SHA256`); difference images land in `test/goldens/failures/`.
 - `SHIFA_PLATFORM_GOLDENS=1 node ../../scripts/dart.mjs flutter test --update-goldens --tags golden` — also write readable images to `test/goldens/<os>/`.

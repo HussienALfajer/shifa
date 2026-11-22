@@ -7,6 +7,7 @@
     "generate": "node ../../scripts/check-drift.mjs --fix",
     "typecheck": "node ../../scripts/dart.mjs dart analyze --fatal-infos",
     "lint": "node ../../scripts/dart.mjs dart format --output=none --set-exit-if-changed lib/shifa_ui.dart lib/src/fonts.dart lib/src/theme lib/src/widgets test",
-    "test": "node ../../scripts/dart.mjs flutter test"
+    "test": "node ../../scripts/dart.mjs flutter test",
+    "goldens": "node scripts/goldens.mjs"
   }
 }

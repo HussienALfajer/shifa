@@ -1,9 +1,12 @@
 // Runs before every test file (flutter_test's hook): alchemist's golden
 // settings and the real fonts.
 //
-// CI goldens (text drawn as blocks, the same on every OS) are committed under
-// goldens/ci/ and compared in verify. Platform goldens with readable text are
-// for looking at locally only (git-ignored):
+// CI goldens (text drawn as blocks) are committed under goldens/ci/. They are
+// the Linux ones: edge smoothing differs a little between operating systems,
+// so they are compared only on Linux (CI, WSL2); elsewhere run
+// `node scripts/goldens.mjs` (Docker) to compare or `--update` them.
+// Platform goldens with readable text are for looking at locally only
+// (git-ignored):
 //   SHIFA_PLATFORM_GOLDENS=1 node ../../scripts/dart.mjs flutter test \
 //     --update-goldens test/goldens
 import 'dart:async';
@@ -24,7 +27,10 @@ Future<void> testExecutable(FutureOr<void> Function() testMain) async {
         enabled: platform,
         filePathResolver: _beside,
       ),
-      ciGoldensConfig: const CiGoldensConfig(filePathResolver: _beside),
+      ciGoldensConfig: CiGoldensConfig(
+        enabled: Platform.isLinux,
+        filePathResolver: _beside,
+      ),
     ),
     run: testMain,
   );
