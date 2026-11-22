@@ -17,6 +17,9 @@ dev_dependencies:
   # Golden tests (exact pin). A dev dependency only: it brings material_ui and cupertino_ui
   # into tests, never into lib/.
   alchemist: 0.15.0
+  # Arabic widgets localizations (right to left) for the test harness.
+  flutter_localizations:
+    sdk: flutter
   flutter_test:
     sdk: flutter
   very_good_analysis: ^11.0.0
