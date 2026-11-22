@@ -43,7 +43,7 @@ function toColumnDefs<Row extends object>(
       render: column.cell as ((row: unknown) => ReactNode) | undefined,
       header: column.header,
     };
-    return helper.accessor((row: Row) => column.value?.(row) ?? null, {
+    return helper.accessor((row: Row) => column.value?.(row), {
       id: column.id,
       header: column.header,
       enableSorting: column.sortable === true,
@@ -83,8 +83,12 @@ export interface TableStateOptions<Row extends object> {
 
 const toSelection = (ids: readonly string[] | undefined): RowSelectionState =>
   Object.fromEntries((ids ?? []).map((id) => [id, true as const]));
-const toVisibility = (ids: readonly string[] | undefined): ColumnVisibilityState =>
-  Object.fromEntries((ids ?? []).map((id) => [id, false]));
+/** Hidden columns; the first column never hides, whatever the caller passes. */
+const toVisibility = (
+  ids: readonly string[] | undefined,
+  first: string | undefined,
+): ColumnVisibilityState =>
+  Object.fromEntries((ids ?? []).filter((id) => id !== first).map((id) => [id, false]));
 
 /** State that is the caller's when `value` is given, the table's otherwise. */
 function useMaybeControlled<T>(value: T | undefined, initial: T) {
@@ -103,8 +107,8 @@ export function useTableState<Row extends object>(o: TableStateOptions<Row>): Ta
     toSelection(o.defaultSelected),
   );
   const [visibility, setVisibility] = useMaybeControlled<ColumnVisibilityState>(
-    o.hiddenColumns === undefined ? undefined : toVisibility(o.hiddenColumns),
-    toVisibility(o.defaultHiddenColumns),
+    o.hiddenColumns === undefined ? undefined : toVisibility(o.hiddenColumns, o.columns[0]?.id),
+    toVisibility(o.defaultHiddenColumns, o.columns[0]?.id),
   );
   return useTable({
     features: FEATURES,
@@ -125,7 +129,11 @@ export function useTableState<Row extends object>(o: TableStateOptions<Row>): Ta
     onRowSelectionChange: (updater) => {
       const next = typeof updater === 'function' ? updater(selection) : updater;
       setSelection(next);
-      o.onSelectedChange?.(o.rows.map((row) => o.getRowId(row)).filter((id) => next[id] === true));
+      // Every selected id, the shown rows first: a selection kept from other pages or a narrower
+      // list is reported too (review B2).
+      const shownIds = o.rows.map((row) => o.getRowId(row));
+      const kept = Object.keys(next).filter((id) => next[id] === true && !shownIds.includes(id));
+      o.onSelectedChange?.([...shownIds.filter((id) => next[id] === true), ...kept]);
     },
     onColumnVisibilityChange: (updater) => {
       const next = typeof updater === 'function' ? updater(visibility) : updater;

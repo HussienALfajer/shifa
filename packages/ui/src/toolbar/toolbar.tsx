@@ -96,23 +96,38 @@ export function Toolbar({
     const ids = [...el.querySelectorAll<HTMLElement>('[data-toolbar-slot]')]
       .map((n) => n.dataset['toolbarSlot'])
       .filter((id): id is string => id !== undefined);
-    const fixed = [...el.querySelectorAll<HTMLElement>('[data-slot="toolbar-separator"]')].reduce(
-      (sum, n) => sum + n.getBoundingClientRect().width + gap,
-      0,
+    // A separator takes its width and its inline margins; n items are split by n - 1 gaps.
+    const separators = [...el.querySelectorAll<HTMLElement>('[data-slot="toolbar-separator"]')];
+    const fixed = separators.reduce((sum, n) => {
+      const m = getComputedStyle(n);
+      return (
+        sum +
+        n.getBoundingClientRect().width +
+        Number.parseFloat(m.marginInlineStart) +
+        Number.parseFloat(m.marginInlineEnd)
+      );
+    }, 0);
+    const widthOf = (id: string) => widths.current.get(id) ?? 0;
+    const span = (items: number, sum: number) => sum + gap * Math.max(0, items - 1);
+    const all = span(
+      ids.length + separators.length,
+      ids.reduce((sum, id) => sum + widthOf(id), fixed),
     );
-    const widthOf = (id: string) => (widths.current.get(id) ?? 0) + gap;
-    const all = ids.reduce((sum, id) => sum + widthOf(id), fixed);
     if (all <= inner) {
       setHidden((prev) => (prev.size === 0 ? prev : new Set()));
       return;
     }
-    const more = (widths.current.get('__more') ?? 44) + gap;
-    let used = fixed + more;
+    const more = widths.current.get('__more') ?? 44;
+    let shown = 0;
+    let sum = fixed + more;
     const next = new Set<string>();
     let full = false;
     for (const id of ids) {
-      if (!full && used + widthOf(id) <= inner) used += widthOf(id);
-      else {
+      const fits = span(shown + 1 + separators.length + 1, sum + widthOf(id)) <= inner;
+      if (!full && fits) {
+        sum += widthOf(id);
+        shown += 1;
+      } else {
         full = true;
         next.add(id);
       }
@@ -130,6 +145,8 @@ export function Toolbar({
       fit();
     });
     observer.observe(el);
+    // The strip fills its parent; watching the parent too catches a row that grows again.
+    if (el.parentElement !== null) observer.observe(el.parentElement);
     return () => {
       observer.disconnect();
     };
@@ -147,7 +164,7 @@ export function Toolbar({
         aria-label={label}
         loop={false}
         className={cn(
-          'flex min-w-0 items-center gap-1 overflow-hidden rounded-control border border-border-default bg-bg-surface p-1',
+          'flex w-full min-w-0 items-center gap-1 overflow-hidden rounded-control border border-border-default bg-bg-surface p-1',
           'font-ui text-text-default',
           className,
         )}

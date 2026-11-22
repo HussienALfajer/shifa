@@ -114,6 +114,8 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     overscan: 8,
     getItemKey: (index) => shown[index]?.id ?? index,
     scrollMargin: body.current?.offsetTop ?? 0,
+    // Rows scrolled to from the keyboard stop below the sticky header, never under it (review B3).
+    scrollPaddingStart: body.current?.offsetTop ?? 0,
     // The active row stays drawn, so keyboard focus survives scrolling it out of view and back.
     rangeExtractor: (range) => {
       const indexes = defaultRangeExtractor(range);
@@ -133,8 +135,9 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     },
     onSpace: (cell: Cell) => {
       if (!selectable) return;
-      if (cell.row === 0) table.toggleAllRowsSelected(!table.getIsAllRowsSelected());
-      else shown[cell.row - 1]?.toggleSelected();
+      if (cell.row === 0) {
+        table.toggleAllRowsSelected(!(shown.length > 0 && shown.every((r) => r.getIsSelected())));
+      } else shown[cell.row - 1]?.toggleSelected();
     },
     onEnter: (cell: Cell, element: HTMLElement) => {
       if (cell.row === 0) {
@@ -155,7 +158,7 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
   // Controls inside cells are reached with Enter, never with Tab: keep them out of the Tab order.
   useLayoutEffect(() => {
     for (const el of grid.current?.querySelectorAll<HTMLElement>(
-      '[data-cell] a[href], [data-cell] button, [data-cell] input',
+      '[data-cell] a[href], [data-cell] button, [data-cell] input, [data-cell] select, [data-cell] textarea, [data-cell] [tabindex]:not([data-cell])',
     ) ?? []) {
       el.tabIndex = -1;
     }

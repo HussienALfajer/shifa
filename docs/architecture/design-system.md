@@ -196,11 +196,12 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 | Need | Choice |
 |---|---|
 | Date / time picking | UI SDK Date Picker and Time Input (Gregorian, Arabic locale); react-day-picker only if the gate fails |
-| Data tables | TanStack Table + TanStack Virtual |
+| Data tables | TanStack Table v9 + TanStack Virtual (`DataTable`, slice 0.4-07; no TanStack type in the public API) |
 | Forms | React Hook Form + Zod (shared schemas) |
 | File upload | UI SDK File Input (plus resumable upload for imaging) |
 | Command palette | UI SDK Command |
 
+- **Data table keyboard model** (slice 0.4-07, the APG data grid pattern): `role="grid"` with one Tab stop, a roving `tabindex` on the active cell (the header is row 0). The arrows move the active cell in the reading direction (Left is the next column in Arabic) and stop at the edges; Home and End reach the row's first and last cell, Ctrl+Home and Ctrl+End the table's; PageUp and PageDown move by the rows that fit in the scroll box. Space selects the row (select-all on the header cell, `aria-checked="mixed"` when some rows are selected). Enter sorts on a sortable header (`aria-sort` on the column header), goes into a link or button inside a cell (Escape returns to the cell; such controls are kept out of the Tab order), and otherwise runs the row action, as a press on the row does. Rows are virtualised; the active row is always kept drawn, so focus survives scrolling it out of view and back; `aria-rowcount` counts every row with the header and each row carries `aria-rowindex`. The columns menu sits under the table, after the grid in the Tab order.
 - Clinical widgets (odontogram, perio grid, skeleton/body chart) are custom SVG components in their domain packages, using the same tokens; they must also print correctly ([dental](../domain/dental.md), [orthopedics](../domain/orthopedics.md)).
 
 ## RTL and typography

@@ -17,14 +17,15 @@ export type SpinnerSize = keyof typeof SIZE;
 const DELAY_MS = 400;
 const MIN_SHOWN_MS = 400;
 
-// Petals from the top-start corner, clockwise: each starts its fade a quarter of the cycle later.
-// The resting opacities draw the same moment of the cycle, so the mark still reads as the spinner
-// under reduced motion.
+// Petals from the top-left corner, clockwise; the light moves clockwise, so each petal fades a
+// quarter of the cycle after the one before it. The resting opacities are the animation's first
+// frame (the lit petal, then its fading trail behind it), so the still mark under reduced motion
+// points the same way as the moving one (review: the sheet's still drawing had the trail reversed).
 const PETALS = [
   { cx: 12, cy: 12, rotate: -45, className: 'opacity-100 animate-petal-1' },
-  { cx: 28, cy: 12, rotate: 45, className: 'opacity-55 animate-petal-2' },
+  { cx: 28, cy: 12, rotate: 45, className: 'opacity-15 animate-petal-2' },
   { cx: 28, cy: 28, rotate: -45, className: 'opacity-30 animate-petal-3' },
-  { cx: 12, cy: 28, rotate: 45, className: 'opacity-15 animate-petal-4' },
+  { cx: 12, cy: 28, rotate: 45, className: 'opacity-55 animate-petal-4' },
 ] as const;
 
 /** The petals alone, hidden from assistive technology: inside a control that says it is busy. */

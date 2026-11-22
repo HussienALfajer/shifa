@@ -31,8 +31,11 @@ export function HeaderRow<Row extends object>({
   tab,
   columnsStyle,
 }: RowsCommon & { table: TableLike<Row> }) {
-  const all = table.getIsAllRowsSelected();
-  const some = table.getIsSomeRowsSelected() && !all;
+  // Select-all speaks for the shown rows only: a selection kept from rows that are gone does not
+  // make it mixed (review B2).
+  const shown = table.getRowModel().rows;
+  const all = shown.length > 0 && shown.every((r) => r.getIsSelected());
+  const some = !all && shown.some((r) => r.getIsSelected());
   const firstData = selectable ? 1 : 0;
   return (
     <div
