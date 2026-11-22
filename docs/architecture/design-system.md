@@ -214,8 +214,10 @@ Filled in slice 0.4-02b: named type styles (`text.style.title.*`, `.label.*`, `.
 
 ## Flutter design system
 
-- `packages/shifa_ui`: theme extensions generated from the same tokens, plus Shifa widgets (buttons, fields, cards, queue position card, doctor card, appointment card, record items).
-- Built on Flutter's own widgets, not on Material defaults (Material/Cupertino became separate packages in Flutter 3.47) [RN-19].
+- `packages/shifa_ui`: the theme generated from the same tokens, plus Shifa widgets (buttons, fields, cards, queue position card, doctor card, appointment card, record items).
+- Built on Flutter's own widgets, not on Material defaults (Material/Cupertino became separate packages in Flutter 3.47) [RN-19]. The theme is `ShifaTheme` / `ShifaThemeData` (light and dark: colours, locked status colours, type, spacing, shapes, motion), read with `context.shifa`; there is no Material `ThemeData` (slice 0.4-08).
+- **Ships now (0.4-08):** `ShifaButton` (primary, secondary, ghost, danger; loading), `ShifaTextField` (Arabic-Indic digits typed are stored Western), `ShifaCard`, `ShifaChip`, `ShifaListItem`, `ShifaAppBar` with `ShifaIconButton`, `ShifaBottomSheet` (`showShifaBottomSheet`), `ShifaSnackbar` (`ShifaSnackbarHost`), with `ShifaSpinner` (the jasmine petals) and `ShifaGlyph`; the fonts (Shifa Sans Arabic, Noto Naskh Arabic) and their OFL. Touch targets 48 dp, text to 200 %, alchemist goldens in RTL, light and dark. The approved phone sheet is the visual reference.
+- **Waits for Phase A (the patient app):** queue position card, doctor card, appointment card, record items, Rive animations, a text selection toolbar for `ShifaTextField` (copy and paste), and the clinic palette at runtime.
 - Motion: a small set of signature animations in Rive (queue progress, "you are called", booking confirmation); everything else uses implicit animations; respect reduced-motion settings.
 - Performance budget for low-end Android: 60 fps scrolling on a 2–3 GB RAM device; image and animation sizes checked in CI where possible.
 

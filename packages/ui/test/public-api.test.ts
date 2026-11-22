@@ -35,10 +35,13 @@ function emitDeclarations(): Map<string, string> {
 describe('public API of @shifa/ui', () => {
   let declarations: Map<string, string>;
   let api: Record<string, unknown>;
+  // A full declaration emit of the package, which grew with 0.4-07: it took 128 s alone on a
+  // Windows laptop and passed 60 s beside the other verify tasks on a CI runner (0.4-08,
+  // PR #110), so it gets 300 s.
   beforeAll(async () => {
     declarations = emitDeclarations();
     api = await import('../src/index.ts');
-  }, 60_000);
+  }, 300_000);
 
   it('emits declarations for the entry', () => {
     expect([...declarations.keys()].some((f) => f.endsWith('index.d.ts'))).toBe(true);

@@ -1,0 +1,3 @@
+# Golden tests (alchemist) carry the `golden` tag: `flutter test --tags golden` runs only them.
+tags:
+  golden:

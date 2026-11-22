@@ -1,11 +1,11 @@
 name: shifa_ui
-description: Shifa's Flutter design system. Today the tokens generated from packages/tokens; theme extensions and widgets come in slice 0.4-08.
+description: Shifa's Flutter design system for the patient app — tokens generated from packages/tokens, the light and dark ShifaTheme, and Shifa's base widgets.
 publish_to: none
 version: 0.0.0
 
 environment:
   sdk: ^3.13.0
-  flutter: 3.47.9
+  flutter: 3.50.1
 
 resolution: workspace
 
@@ -14,5 +14,37 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  test: ^1.33.0
+  # Golden tests (exact pin). A dev dependency only: it brings material_ui and cupertino_ui
+  # into tests, never into lib/.
+  alchemist: 0.15.0
+  # Arabic widgets localizations (right to left) for the test harness.
+  flutter_localizations:
+    sdk: flutter
+  flutter_test:
+    sdk: flutter
   very_good_analysis: ^11.0.0
+
+# fonts/ is written by the tokens build (packages/tokens/scripts/build.ts) from
+# packages/tokens/fonts: the unmodified upstream TTFs and their OFL. "Shifa Sans Arabic" is the
+# family name the tokens use (OD-59); the files themselves are IBM Plex Sans Arabic.
+flutter:
+  assets:
+    - fonts/ibm-plex-sans-arabic-OFL.txt
+    - fonts/noto-naskh-arabic-OFL.txt
+  fonts:
+    - family: Shifa Sans Arabic
+      fonts:
+        - asset: fonts/ibm-plex-sans-arabic-400.ttf
+          weight: 400
+        - asset: fonts/ibm-plex-sans-arabic-500.ttf
+          weight: 500
+        - asset: fonts/ibm-plex-sans-arabic-600.ttf
+          weight: 600
+        - asset: fonts/ibm-plex-sans-arabic-700.ttf
+          weight: 700
+    - family: Noto Naskh Arabic
+      fonts:
+        - asset: fonts/noto-naskh-arabic-400.ttf
+          weight: 400
+        - asset: fonts/noto-naskh-arabic-700.ttf
+          weight: 700

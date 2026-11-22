@@ -24,6 +24,11 @@ storybook-static/
 packages/ui/screenshots/results/
 # The Shifa Design System's files, rebuilt by `pnpm design-system:build` (0.4-03)
 packages/ui/design-system/
+# shifa_ui goldens: CI goldens (goldens/ci/) are committed; readable platform goldens and
+# failure images are for local viewing only (0.4-08)
+packages/shifa_ui/test/goldens/*/
+!packages/shifa_ui/test/goldens/ci/
+packages/shifa_ui/test/goldens/**/failures/
 .next/
 .dart_tool/
 .fvm/

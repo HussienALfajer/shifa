@@ -80,6 +80,12 @@ describe('checkEdit', () => {
     assert.match(checkEdit('apps/patient_app/lib/foo.freezed.dart', branchOnly), /generated/);
     assert.match(checkEdit('apps/patient_app/test/foo.mocks.dart', branchOnly), /generated/);
     assert.match(checkEdit('pubspec.lock', branchOnly), /generated/);
+    // The tokens build copies the TTFs and their OFL into shifa_ui (slice 0.4-08).
+    assert.match(
+      checkEdit('packages/shifa_ui/fonts/noto-naskh-arabic-OFL.txt', branchOnly),
+      /generated/,
+    );
+    assert.equal(checkEdit('packages/shifa_ui/pubspec.yaml', branchOnly), null);
     assert.equal(checkEdit('packages/shifa_testing/lib/src/fixed_clock.dart', merged), null);
   });
 

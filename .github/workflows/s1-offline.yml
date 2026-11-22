@@ -21,8 +21,8 @@ permissions: {}
 
 # Flutter pins: the same values as ci.yml (the install step checks them against .fvmrc).
 env:
-  FLUTTER_VERSION: 3.47.9
-  FLUTTER_SHA256: 25ed8c3c29d51a7353f2a944310b478af8214920639524b19c50a19e6c044c5a
+  FLUTTER_VERSION: 3.50.1
+  FLUTTER_SHA256: 4ad17fc8462fbcef2ba19ff4a78c0a16b7147fde1add8578e267ea62cdb92678
 
 jobs:
   # Server (Testcontainers PostgreSQL through the @shifa/db harness) and web (fake IndexedDB)

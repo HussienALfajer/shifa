@@ -1,7 +1,5 @@
-// package:test, not flutter_test: flutter_test pins test_api to a version the
-// workspace's build_runner cannot share (docs/backlog.md). `flutter test` runs it.
+import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
-import 'package:test/test.dart';
 
 void main() {
   group('generated tokens', () {

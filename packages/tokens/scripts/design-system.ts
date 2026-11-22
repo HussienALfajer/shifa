@@ -62,13 +62,17 @@ export interface DesignSystemTokens {
 
 /** One family of packages/tokens/fonts/fonts.json. */
 export interface FontFamily {
+  /** `ibm-plex-sans-arabic`: the folder under `fonts/`. */
+  id?: string;
   family: string;
+  /** The family's `OFL.txt`, relative to `fonts/`. */
+  licence?: string;
   /** The family name the CSS uses (OD-59: IBM Plex Sans Arabic is served as Shifa Sans Arabic). */
   webFamily?: string;
   files: { path: string; format: string; weight: number }[];
 }
 
-const FONTS_DIR = join(import.meta.dirname, '..', 'fonts');
+export const FONTS_DIR = join(import.meta.dirname, '..', 'fonts');
 
 /** The self-hosted families of `fonts/fonts.json`. */
 export function loadFonts(dir: string = FONTS_DIR): FontFamily[] {
