@@ -199,6 +199,22 @@ export interface SegmentedControlProps {
   disabled?: boolean;
 }
 
+/** A question that needs an explicit answer: «رجوع» focused first, the action last; no close button. */
+export interface AlertDialogProps {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  title: string;
+  description?: string;
+  /** The mark before the title: danger (default) or info. */
+  tone?: 'danger' | 'info';
+  cancelLabel: string;
+  actionLabel: string;
+  /** danger (default) for a deletion, primary for an ordinary confirmation. */
+  actionVariant?: 'danger' | 'primary';
+  errorText?: string;
+  defaultOpen?: boolean;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -337,7 +353,8 @@ type Name =
   | 'Form'
   | 'Tooltip'
   | 'Accordion'
-  | 'SegmentedControl';
+  | 'SegmentedControl'
+  | 'AlertDialog';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -365,3 +382,4 @@ export declare const Form: (props: FormProps) => unknown;
 export declare const Tooltip: (props: TooltipProps) => unknown;
 export declare const Accordion: (props: AccordionProps) => unknown;
 export declare const SegmentedControl: (props: SegmentedControlProps) => unknown;
+export declare const AlertDialog: (props: AlertDialogProps) => unknown;

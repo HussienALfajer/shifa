@@ -1,0 +1,50 @@
+<!-- @dsCard group="Overlays" height=200 subtitle="A deletion and an ordinary confirmation; press one to open · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <p class="label">اضغط زراً لفتح السؤال · Esc أو «رجوع» يغلقه · النقر خارجه لا يغلقه</p>
+  <div class="row" dir="rtl" lang="ar" data-slot="ar"></div>
+  <div class="row" dir="ltr" lang="en" data-slot="en"></div>
+</div>
+<script>
+  var PROPS = {
+    ar: [
+      {
+        triggerLabel: 'حذف الوصفة', triggerIcon: 'trash',
+        title: 'حذف وصفة المريض؟', description: 'وصفة 12/11/2026، ثلاثة أدوية. لا يمكن التراجع عن الحذف.',
+        cancelLabel: 'رجوع', actionLabel: 'حذف الوصفة'
+      },
+      {
+        triggerLabel: 'إنهاء الزيارة', tone: 'info', actionVariant: 'primary',
+        title: 'إنهاء زيارة المريض؟', description: 'تُرسل الفاتورة إلى الاستقبال ويُستدعى المريض التالي.',
+        cancelLabel: 'رجوع', actionLabel: 'إنهاء الزيارة'
+      }
+    ],
+    en: [
+      {
+        triggerLabel: 'Delete prescription', triggerIcon: 'trash',
+        title: 'Delete this prescription?', description: '12/11/2026, three medicines. This cannot be undone.',
+        cancelLabel: 'Back', actionLabel: 'Delete it'
+      }
+    ]
+  };
+  document.querySelectorAll('[data-slot]').forEach(function (row) {
+    PROPS[row.getAttribute('data-slot')].forEach(function (props) {
+      var slot = document.createElement('span');
+      row.appendChild(slot);
+      window.Shifa.mount(slot, 'AlertDialog', props);
+    });
+  });
+</script>
+</body>
+</html>

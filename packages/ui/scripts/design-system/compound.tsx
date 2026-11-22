@@ -29,6 +29,10 @@ import { Tabs as CodeTabs, Tab, TabList, TabPanel } from '../../src/tabs/tabs.ts
 /** Exports of packages/ui that are parts of a composed component, by the component they belong to. */
 export const PARTS: Record<string, string> = {
   AccordionItem: 'Accordion',
+  AlertDialogTrigger: 'AlertDialog',
+  AlertDialogContent: 'AlertDialog',
+  AlertDialogCancel: 'AlertDialog',
+  AlertDialogAction: 'AlertDialog',
   Tab: 'Tabs',
   TabList: 'Tabs',
   TabPanel: 'Tabs',

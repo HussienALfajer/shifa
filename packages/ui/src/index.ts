@@ -7,6 +7,18 @@ export {
   type AccordionProps,
 } from './accordion/accordion.tsx';
 export {
+  AlertDialog,
+  AlertDialogAction,
+  type AlertDialogActionProps,
+  AlertDialogCancel,
+  type AlertDialogCancelProps,
+  AlertDialogContent,
+  type AlertDialogContentProps,
+  type AlertDialogProps,
+  AlertDialogTrigger,
+  type AlertDialogTriggerProps,
+} from './alert-dialog/alert-dialog.tsx';
+export {
   Button,
   type ButtonProps,
   type ButtonSize,

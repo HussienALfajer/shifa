@@ -2,6 +2,13 @@
 // hands the bundle plain values only, so each takes its content as data and builds the parts of
 // packages/ui inside. The props are documented in index.d.ts.
 import { AccordionItem, Accordion as CodeAccordion } from '../../src/accordion/accordion.tsx';
+import {
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogTrigger,
+  AlertDialog as CodeAlertDialog,
+} from '../../src/alert-dialog/alert-dialog.tsx';
 import { Button } from '../../src/button/button.tsx';
 import { IconButton } from '../../src/icon-button/icon-button.tsx';
 import type { IconName } from '../../src/icons/icon.tsx';
@@ -31,6 +38,57 @@ export function Accordion({ items, defaultValue, multiple }: AccordionData) {
         </AccordionItem>
       ))}
     </CodeAccordion>
+  );
+}
+
+export interface AlertDialogData {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  title: string;
+  description?: string;
+  tone?: 'danger' | 'info';
+  cancelLabel: string;
+  actionLabel: string;
+  actionVariant?: 'danger' | 'primary';
+  errorText?: string;
+  defaultOpen?: boolean;
+}
+
+export function AlertDialog({
+  triggerLabel,
+  triggerIcon,
+  title,
+  description,
+  tone,
+  cancelLabel,
+  actionLabel,
+  actionVariant,
+  errorText,
+  defaultOpen,
+}: AlertDialogData) {
+  const danger = (actionVariant ?? 'danger') === 'danger';
+  return (
+    <CodeAlertDialog {...(defaultOpen === undefined ? {} : { defaultOpen })}>
+      <AlertDialogTrigger
+        variant={danger ? 'danger' : 'secondary'}
+        {...(triggerIcon === undefined ? {} : { startIcon: triggerIcon })}
+      >
+        {triggerLabel}
+      </AlertDialogTrigger>
+      <AlertDialogContent
+        title={title}
+        {...(description === undefined ? {} : { description })}
+        {...(tone === undefined ? {} : { tone })}
+      >
+        <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
+        <AlertDialogAction
+          {...(actionVariant === undefined ? {} : { variant: actionVariant })}
+          {...(errorText === undefined ? {} : { errorText })}
+        >
+          {actionLabel}
+        </AlertDialogAction>
+      </AlertDialogContent>
+    </CodeAlertDialog>
   );
 }
 
