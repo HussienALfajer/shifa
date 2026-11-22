@@ -44,6 +44,7 @@ export const BUNDLE_COMPONENTS = [
   'Field',
   'Form',
   'Tooltip',
+  'Accordion',
 ] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */

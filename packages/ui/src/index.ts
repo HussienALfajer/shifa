@@ -1,6 +1,12 @@
 // The public API of @shifa/ui. It never exposes which library is underneath (spec 0.4, edge
 // cases): components wrap UI SDK (or Base UI as the per-component fallback) behind our props.
 export {
+  Accordion,
+  AccordionItem,
+  type AccordionItemProps,
+  type AccordionProps,
+} from './accordion/accordion.tsx';
+export {
   Button,
   type ButtonProps,
   type ButtonSize,

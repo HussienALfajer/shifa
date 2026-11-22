@@ -184,6 +184,13 @@ export interface TooltipProps {
   defaultOpen?: boolean;
 }
 
+/** Sections of one record that fold away; one open at a time unless `multiple`. */
+export interface AccordionProps {
+  items: { value: string; title: string; content: string; badge?: string; disabled?: boolean }[];
+  defaultValue?: string[];
+  multiple?: boolean;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -320,7 +327,8 @@ type Name =
   | 'TimeInput'
   | 'Field'
   | 'Form'
-  | 'Tooltip';
+  | 'Tooltip'
+  | 'Accordion';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -346,3 +354,4 @@ export declare const TimeInput: (props: TimeInputProps) => unknown;
 export declare const Field: (props: FieldComponentProps) => unknown;
 export declare const Form: (props: FormProps) => unknown;
 export declare const Tooltip: (props: TooltipProps) => unknown;
+export declare const Accordion: (props: AccordionProps) => unknown;

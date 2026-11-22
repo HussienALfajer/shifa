@@ -1,0 +1,32 @@
+<!-- @dsCard group="Navigation" height=460 subtitle="One section open, a count, a disabled section · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var PROPS = {
+    defaultValue: ['allergies'],
+    items: [
+      { value: 'allergies', title: 'الحساسية والأمراض المزمنة', content: 'حساسية من البنسلين · ارتفاع ضغط، منذ 2019' },
+      { value: 'medicines', title: 'الأدوية الحالية', content: 'أملوديبين 5 ملغ، مرة يومياً' },
+      { value: 'visits', title: 'الزيارات السابقة', badge: '4', content: 'آخر زيارة 12/11/2026 · فحص دوري' },
+      { value: 'insurance', title: 'ملاحظات التأمين (غير متاحة)', content: 'لا تأمين', disabled: true }
+    ]
+  };
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    window.Shifa.mount(panel, 'Accordion', PROPS);
+  });
+</script>
+</body>
+</html>
