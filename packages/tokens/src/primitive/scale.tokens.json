@@ -21,9 +21,13 @@
   },
   "width": {
     "$type": "dimension",
-    "$description": "Widths of floating boxes, in 4 px units like space (slice 0.4-04 sheet).",
+    "$description": "Widths of floating boxes, in 4 px units like space (slice 0.4-04 and 0.4-06 sheets).",
+    "60": { "$value": { "value": 240, "unit": "px" } },
     "80": { "$value": { "value": 320, "unit": "px" } },
-    "120": { "$value": { "value": 480, "unit": "px" } }
+    "90": { "$value": { "value": 360, "unit": "px" } },
+    "100": { "$value": { "value": 400, "unit": "px" } },
+    "120": { "$value": { "value": 480, "unit": "px" } },
+    "140": { "$value": { "value": 560, "unit": "px" } }
   },
   "radius": {
     "$type": "dimension",

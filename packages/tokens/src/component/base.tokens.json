@@ -30,6 +30,12 @@
     "border": { "$type": "color", "$value": "{color.border.default}" },
     "shadow": { "$type": "shadow", "$value": "{shadow.card}" }
   },
+  "tooltip": {
+    "$type": "color",
+    "$description": "A dark ink bubble that inverts in the dark theme (OD-63): the text and surface colours swapped.",
+    "bg": { "$value": "{color.text.default}" },
+    "fg": { "$value": "{color.bg.surface}" }
+  },
   "table": {
     "row-height": { "$type": "dimension", "$value": "{size.row}" }
   }
