@@ -9,7 +9,7 @@ Related: [messaging and verification](messaging-and-verification.md) · [schedul
 
 ## 1. Platform and quality targets
 
-- PAT-01 The app is built with Flutter 3.47.x using the official MVVM layering (views → view models → repositories → services), with Riverpod 3, go_router and freezed. The API client is generated from the NestJS OpenAPI spec (swagger_parser) into its own package (ADR-0013) [RN-19 §B2–B4].
+- PAT-01 The app is built with Flutter (the version pinned in `.fvmrc`; 3.50.x since slice 0.4-08) using the official MVVM layering (views → view models → repositories → services), with Riverpod 3, go_router and freezed. The API client is generated from the NestJS OpenAPI spec (swagger_parser) into its own package (ADR-0013) [RN-19 §B2–B4].
 - PAT-02 Release 1 ships an Android build only. The iOS app comes Later. iPhone users use the public booking pages until then.
 - PAT-03 The app is distributed through Google Play from the owner's existing developer account, with a signed direct APK as a fallback.
 - PAT-04 Performance budget, tested on a 2–3 GB RAM Android device:

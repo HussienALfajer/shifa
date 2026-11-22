@@ -19,5 +19,7 @@ dev_dependencies:
   retrofit_generator: 10.3.3
   # Pure Dart OpenAPI generator (no Java). 2.x is newer than the 24-hour rule allows today.
   swagger_parser: 1.46.0
-  test: ^1.33.0
+  # 1.32.0: the newest test on Flutter 3.50.1's test_api 0.7.14 (flutter_test shares the
+  # workspace resolution); raise it with the Flutter pin (.claude/rules/dart.md).
+  test: 1.32.0
   very_good_analysis: ^11.0.0
