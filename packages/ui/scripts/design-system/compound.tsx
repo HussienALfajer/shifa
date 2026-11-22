@@ -54,6 +54,15 @@ export const PARTS: Record<string, string> = {
   Radio: 'RadioGroup',
   FormField: 'Form',
   FormSubmit: 'Form',
+  CardHeader: 'Card',
+  CardBody: 'Card',
+  CardFooter: 'Card',
+  CardLink: 'Card',
+  SkeletonText: 'Skeleton',
+  SkeletonGroup: 'Skeleton',
+  AvatarGroup: 'Avatar',
+  ToolbarButton: 'Toolbar',
+  ToolbarSeparator: 'Toolbar',
 };
 
 /** Cards of the design system that stand for a provider export, by the provider's name. */

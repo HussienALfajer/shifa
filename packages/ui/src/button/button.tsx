@@ -4,8 +4,8 @@
 import { Button as BaseButton } from '@ui-sdk/react/button';
 import type { ComponentProps, MouseEvent, ReactNode } from 'react';
 import { Icon, type IconName } from '../icons/icon.tsx';
-import { Spinner } from '../icons/spinner.tsx';
 import { cn } from '../lib/cn.ts';
+import { SpinnerMark } from '../spinner/spinner.tsx';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger';
 export type ButtonSize = 'sm' | 'md' | 'lg';
@@ -190,7 +190,7 @@ export function Button({
         <>
           {loading || state.pending ? (
             <span data-slot="spinner" className="inline-flex shrink-0">
-              <Spinner size={box.icon} className={box.iconClass} />
+              <SpinnerMark size={box.icon} className={box.iconClass} />
             </span>
           ) : (
             startIcon !== undefined && (

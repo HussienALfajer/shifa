@@ -9,6 +9,44 @@
 /* Themes switch by attribute (ThemeProvider), not by the system setting. */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Looping animations (slice 0.4-07, OD-64). The spinner: the four jasmine petals of the logo light
+ * in turn, 200 ms apart, an 800 ms cycle; each petal runs the same fade, started a quarter later.
+ * The skeleton: a soft pulse of 1.2 s each way. Both stop under reduced motion (motion-reduce:). */
+@theme {
+  --animate-petal-1: shifa-petal 800ms var(--shifa-motion-easing-exit) 0ms infinite;
+  --animate-petal-2: shifa-petal 800ms var(--shifa-motion-easing-exit) -600ms infinite;
+  --animate-petal-3: shifa-petal 800ms var(--shifa-motion-easing-exit) -400ms infinite;
+  --animate-petal-4: shifa-petal 800ms var(--shifa-motion-easing-exit) -200ms infinite;
+  --animate-skeleton: shifa-skeleton 1200ms var(--shifa-motion-easing-standard) infinite alternate;
+
+  @keyframes shifa-petal {
+    0% {
+      opacity: 1;
+    }
+    25% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 0.3;
+    }
+    75% {
+      opacity: 0.15;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes shifa-skeleton {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0.5;
+    }
+  }
+}
+
 /* Reduced motion: the system setting, or a region marked data-motion="reduce" (stories, a
  * setting in the app later). */
 @custom-variant motion-reduce {

@@ -109,4 +109,11 @@ describe('licences', () => {
     expect(licences['@ui-sdk/react']).toBe('Apache-2.0');
     expect(licences['@ui-sdk/core']).toBe('Apache-2.0');
   });
+
+  it('holds the data table libraries under MIT, exactly pinned (ADR-0039, slice 0.4-07)', () => {
+    for (const name of ['@tanstack/react-table', '@tanstack/react-virtual']) {
+      expect(licences[name], name).toBe('MIT');
+      expect(manifest.dependencies?.[name], name).toMatch(/^\d+\.\d+\.\d+$/);
+    }
+  });
 });

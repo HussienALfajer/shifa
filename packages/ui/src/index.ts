@@ -19,11 +19,39 @@ export {
   type AlertDialogTriggerProps,
 } from './alert-dialog/alert-dialog.tsx';
 export {
+  Avatar,
+  AvatarGroup,
+  type AvatarGroupPerson,
+  type AvatarGroupProps,
+  type AvatarProps,
+  type AvatarSize,
+  avatarInitials,
+} from './avatar/avatar.tsx';
+export {
+  Badge,
+  type BadgeProps,
+  type BadgeSize,
+  type BadgeTone,
+  CountBadge,
+  type CountBadgeProps,
+  type CountBadgeTone,
+} from './badge/badge.tsx';
+export {
   Button,
   type ButtonProps,
   type ButtonSize,
   type ButtonVariant,
 } from './button/button.tsx';
+export {
+  Card,
+  CardBody,
+  CardFooter,
+  CardHeader,
+  type CardHeaderProps,
+  CardLink,
+  type CardLinkProps,
+  type CardProps,
+} from './card/card.tsx';
 export { Checkbox, type CheckboxProps } from './checkbox/checkbox.tsx';
 export {
   Combobox,
@@ -37,6 +65,16 @@ export {
   type CommandPaletteProps,
   normaliseForSearch,
 } from './command-palette/command-palette.tsx';
+export {
+  DataTable,
+  type DataTableCellValue,
+  type DataTableColumn,
+  type DataTableColumnKind,
+  type DataTableColumnWidth,
+  type DataTableProps,
+  type DataTableSort,
+  type DataTableSortDirection,
+} from './data-table/data-table.tsx';
 export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
@@ -63,6 +101,12 @@ export {
   DrawerTrigger,
   type DrawerTriggerProps,
 } from './drawer/drawer.tsx';
+export {
+  EmptyState,
+  type EmptyStateArt,
+  type EmptyStateProps,
+  type EmptyStateSize,
+} from './empty-state/empty-state.tsx';
 export { Field, type FieldProps } from './field/field.tsx';
 export {
   Form,
@@ -103,6 +147,12 @@ export {
 export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
 export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
 export {
+  type PageItem,
+  Pagination,
+  type PaginationProps,
+  pageItems,
+} from './pagination/pagination.tsx';
+export {
   PasswordInput,
   type PasswordInputProps,
 } from './password-input/password-input.tsx';
@@ -132,6 +182,16 @@ export {
   type SegmentedControlProps,
 } from './segmented-control/segmented-control.tsx';
 export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
+export {
+  Skeleton,
+  SkeletonGroup,
+  type SkeletonGroupProps,
+  type SkeletonProps,
+  type SkeletonShape,
+  SkeletonText,
+  type SkeletonTextProps,
+} from './skeleton/skeleton.tsx';
+export { Spinner, type SpinnerProps, type SpinnerSize } from './spinner/spinner.tsx';
 export { Switch, type SwitchProps } from './switch/switch.tsx';
 export {
   Tab,
@@ -153,4 +213,11 @@ export {
   type ToastType,
   useToast,
 } from './toast/toast.tsx';
+export {
+  Toolbar,
+  ToolbarButton,
+  type ToolbarButtonProps,
+  type ToolbarProps,
+  ToolbarSeparator,
+} from './toolbar/toolbar.tsx';
 export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';

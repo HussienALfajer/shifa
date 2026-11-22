@@ -22,6 +22,20 @@
     "toast": { "$description": "Width of a toast (the screen less a margin on a phone).", "$value": "{width.90}" },
     "drawer": { "$description": "Width of a drawer from the side (capped by the screen).", "$value": "{width.100}" },
     "command": { "$description": "Width of the command palette (capped by the screen, less a margin).", "$value": "{width.140}" },
+    "avatar": {
+      "$description": "Avatars (slice 0.4-07, OD-64): xs in dense rows, sm in table rows and groups, md beside a name, lg on a card, xl on a record's header.",
+      "xs": { "$value": "{space.6}" },
+      "sm": { "$value": "{space.8}" },
+      "md": { "$value": "{space.10}" },
+      "lg": { "$value": "{width.14}" },
+      "xl": { "$value": "{width.20}" }
+    },
+    "illustration": {
+      "$description": "The line drawing of an empty state (slice 0.4-07): md in a panel, lg on a whole page.",
+      "md": { "$value": "{space.16}" },
+      "lg": { "$value": "{width.24}" }
+    },
+    "table": { "$description": "Height of a data table's scroll box: rows past it scroll under the sticky header (slice 0.4-07).", "$value": "{width.140}" },
     "target-min": { "$description": "The smallest touch target, in every density.", "$value": "{space.11}" },
     "icon": {
       "$description": "Phosphor icons, duotone: sm in rows and controls, md in navigation and cards.",

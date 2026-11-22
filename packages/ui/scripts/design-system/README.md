@@ -81,8 +81,17 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **Drawer**: a 400 px panel from the logical end (the left in Arabic), radius 16 on its inner edge; `side="bottom"` on a tablet or phone with a named grabber.
 - **Toast**: a small white card at the bottom, at the logical end (the bottom left in Arabic), three at most, the newest at the bottom; status toasts carry their icon; errors stay until closed. In code one `ToastProvider` and `useToast()`.
 - **CommandPalette**: one search over patients and actions in a 560 px panel near the top; an Arabic name is found whatever its alef form or diacritics, and the match is marked in gold.
+- **Spinner**: the four jasmine petals of the logo lighting in turn, for waits without a known shape; shows after 400 ms, stays at least 400 ms, still under reduced motion; inside a busy Button it is the button's mark.
+- **Badge**: a small mark; neutral, brand and outline follow the clinic; status and visit-queue tones are locked and always carry their icon. **CountBadge**: tabular Western digits, «99+» at most, nothing at 0, or a dot.
+- **Avatar**: a picture, or the first letters of the first and last names on one of the six avatar hues picked from the name; sizes 24 to 80; a group overlaps toward the logical end and ends with «+3».
+- **Skeleton**: blocks, lines and circles on the raised surface for content of a known shape; a soft pulse, still under reduced motion.
+- **Card**: a white surface with header, body and footer; a link card opens its record from anywhere on it.
+- **EmptyState**: the jasmine or star line drawing (or an icon for search and errors), a title, a description, up to two buttons.
+- **Toolbar**: light buttons in a bordered strip with one Tab stop; what does not fit goes into «المزيد».
+- **Pagination**: previous at the logical start, numbers with ellipses, the current one green, the page-size select and «عرض 51–75 من 312».
+- **DataTable**: a dense grid of 48 px rows (32 compact) with a sticky header, the first column pinned at the logical start, sorting, selection and column visibility, fast with thousands of rows; one Tab stop and arrows in the reading direction.
 
-Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer, Toast and CommandPalette take their content as data here (`items`, `fields`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer, Toast, CommandPalette, Card, Skeleton, EmptyState, Toolbar, Pagination and DataTable take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 
@@ -90,6 +99,5 @@ Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertD
 
 ## Not synced yet
 
-- The rest of the core set (data display): it arrives after its sheet is approved and the code passes its tests (slice 0.4-07).
 - Motion durations and easings: this format has no motion section.
 - Compact density: shown in each token's note and in the component stylesheet, not as separate token values.
