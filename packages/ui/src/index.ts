@@ -95,6 +95,11 @@ export {
   type RadioGroupProps,
   type RadioProps,
 } from './radio/radio.tsx';
+export {
+  SegmentedControl,
+  type SegmentedControlItem,
+  type SegmentedControlProps,
+} from './segmented-control/segmented-control.tsx';
 export { Select, type SelectItem, type SelectProps } from './select/select.tsx';
 export { Switch, type SwitchProps } from './switch/switch.tsx';
 export {

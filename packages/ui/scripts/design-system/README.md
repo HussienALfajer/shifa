@@ -76,6 +76,7 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **Form**: a whole form in one state; in code React Hook Form with the server's Zod schema, errors as i18n keys.
 - **Tooltip**: a dark ink bubble above its trigger, 240 px at most; keyboard focus opens it at once, hover after 500 ms, touch never; never the only copy of what a person needs.
 - **Accordion**: sections of a record in one card; 48 px headers in headings, the caret at the logical end turned over and the text heavier when open; one open at a time unless `multiple`.
+- **SegmentedControl**: one choice of two to five that switches a view at once; the chosen segment white, raised and heavier; the arrows choose as they move.
 
 Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip and Accordion take their content as data here (`items`, `fields`…); in code they are composed from parts.
 

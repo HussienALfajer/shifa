@@ -17,6 +17,7 @@ import {
   NumberInput,
   OtpInput,
   PasswordInput,
+  SegmentedControl,
   Select,
   Switch,
   Textarea,
@@ -52,6 +53,7 @@ const COMPONENTS = {
   Form,
   Tooltip,
   Accordion,
+  SegmentedControl,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

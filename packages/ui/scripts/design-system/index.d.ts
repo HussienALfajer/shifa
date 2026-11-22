@@ -191,6 +191,14 @@ export interface AccordionProps {
   multiple?: boolean;
 }
 
+/** One choice of two to five that switches a view at once; the chosen segment white and raised. */
+export interface SegmentedControlProps {
+  'aria-label': string;
+  items: { value: string; label: string; icon?: IconName; count?: number; disabled?: boolean }[];
+  defaultValue?: string;
+  disabled?: boolean;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -328,7 +336,8 @@ type Name =
   | 'Field'
   | 'Form'
   | 'Tooltip'
-  | 'Accordion';
+  | 'Accordion'
+  | 'SegmentedControl';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -355,3 +364,4 @@ export declare const Field: (props: FieldComponentProps) => unknown;
 export declare const Form: (props: FormProps) => unknown;
 export declare const Tooltip: (props: TooltipProps) => unknown;
 export declare const Accordion: (props: AccordionProps) => unknown;
+export declare const SegmentedControl: (props: SegmentedControlProps) => unknown;
