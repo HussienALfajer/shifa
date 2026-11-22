@@ -1,0 +1,24 @@
+<!-- @dsCard group="Overlays" height=320 subtitle="Success, info with an action, warning at the bottom corner (the left in Arabic) · RTL light" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; min-height: 320px; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { padding: 16px; }
+</style>
+</head>
+<body>
+<div class="board" data-theme="light" dir="rtl" lang="ar"></div>
+<script>
+  window.Shifa.mount(document.querySelector('.board'), 'Toast', {
+    triggerLabel: 'إظهار الإشعارات',
+    toasts: [
+      { type: 'success', title: 'حُفظت الوصفة', description: 'ثلاثة أدوية' },
+      { type: 'info', title: 'نُقل الموعد إلى الخميس 26/11', actionLabel: 'تراجع' },
+      { type: 'warning', title: 'لم يُرسل التذكير بعد', description: 'سيُعاد الإرسال عند عودة الاتصال' }
+    ]
+  });
+</script>
+</body>
+</html>

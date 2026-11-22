@@ -138,4 +138,12 @@ export {
 } from './tabs/tabs.tsx';
 export { Textarea, type TextareaProps } from './textarea/textarea.tsx';
 export { TimeInput, type TimeInputProps } from './time-input/time-input.tsx';
+export {
+  type ToastApi,
+  type ToastOptions,
+  ToastProvider,
+  type ToastProviderProps,
+  type ToastType,
+  useToast,
+} from './toast/toast.tsx';
 export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';

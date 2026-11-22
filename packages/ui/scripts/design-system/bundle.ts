@@ -48,6 +48,7 @@ export const BUNDLE_COMPONENTS = [
   'SegmentedControl',
   'AlertDialog',
   'Drawer',
+  'Toast',
 ] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */

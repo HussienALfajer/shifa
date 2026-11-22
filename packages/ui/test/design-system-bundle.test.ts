@@ -7,7 +7,7 @@ import { join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { buildBundle } from '../scripts/design-system/bundle.ts';
-import { PARTS } from '../scripts/design-system/compound.tsx';
+import { PARTS, PROVIDED } from '../scripts/design-system/compound.tsx';
 import * as ui from '../src/index.ts';
 
 let out: string;
@@ -26,10 +26,19 @@ const EXPORTED = Object.entries(ui)
   .filter(([name, value]) => /^[A-Z]/.test(name) && typeof value === 'function')
   .map(([name]) => name)
   .filter((name) => !name.endsWith('Provider'));
-/** The public components: the exports that are not a part of a composed component (Tab…). */
-const PUBLIC = EXPORTED.filter((name) => !(name in PARTS)).sort();
+/**
+ * The public components: the exports that are not a part of a composed component (Tab…), and the
+ * cards that stand for a provider (Toast for ToastProvider).
+ */
+const PUBLIC = [...EXPORTED.filter((name) => !(name in PARTS)), ...Object.keys(PROVIDED)].sort();
 
 describe('design-system bundle', () => {
+  it('names a real provider export for each provider card', () => {
+    for (const [card, provider] of Object.entries(PROVIDED)) {
+      expect(typeof (ui as Record<string, unknown>)[provider], card).toBe('function');
+    }
+  });
+
   it('lists only real exports as parts, each of a public component', () => {
     for (const [part, family] of Object.entries(PARTS)) {
       expect(EXPORTED, part).toContain(part);

@@ -56,6 +56,11 @@ export const PARTS: Record<string, string> = {
   FormSubmit: 'Form',
 };
 
+/** Cards of the design system that stand for a provider export, by the provider's name. */
+export const PROVIDED: Record<string, string> = {
+  Toast: 'ToastProvider',
+};
+
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface TabsData {

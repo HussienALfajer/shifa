@@ -27,6 +27,7 @@ import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
+import { Toast } from './compound-toast.tsx';
 
 /** The public components, in the order the system lists them (bundle.ts BUNDLE_COMPONENTS). */
 const COMPONENTS = {
@@ -56,6 +57,7 @@ const COMPONENTS = {
   SegmentedControl,
   AlertDialog,
   Drawer,
+  Toast,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

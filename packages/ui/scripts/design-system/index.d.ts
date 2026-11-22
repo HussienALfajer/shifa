@@ -229,6 +229,20 @@ export interface DrawerProps {
   defaultOpen?: boolean;
 }
 
+/**
+ * Toasts at the bottom of the screen, at the logical end; this card shows the ones it is given
+ * and stays. In code: one ToastProvider and `useToast().show(...)`.
+ */
+export interface ToastProps {
+  toasts: {
+    type?: 'default' | 'success' | 'info' | 'warning' | 'error';
+    title: string;
+    description?: string;
+    actionLabel?: string;
+  }[];
+  triggerLabel?: string;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -369,7 +383,8 @@ type Name =
   | 'Accordion'
   | 'SegmentedControl'
   | 'AlertDialog'
-  | 'Drawer';
+  | 'Drawer'
+  | 'Toast';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -399,3 +414,4 @@ export declare const Accordion: (props: AccordionProps) => unknown;
 export declare const SegmentedControl: (props: SegmentedControlProps) => unknown;
 export declare const AlertDialog: (props: AlertDialogProps) => unknown;
 export declare const Drawer: (props: DrawerProps) => unknown;
+export declare const Toast: (props: ToastProps) => unknown;

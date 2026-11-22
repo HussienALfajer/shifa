@@ -79,8 +79,9 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **SegmentedControl**: one choice of two to five that switches a view at once; the chosen segment white, raised and heavier; the arrows choose as they move.
 - **AlertDialog**: the Dialog's panel for a question that needs an answer; a danger or info mark before the title, «رجوع» focused first, the action last; no close button and no closing by a press outside.
 - **Drawer**: a 400 px panel from the logical end (the left in Arabic), radius 16 on its inner edge; `side="bottom"` on a tablet or phone with a named grabber.
+- **Toast**: a small white card at the bottom, at the logical end (the bottom left in Arabic), three at most, the newest at the bottom; status toasts carry their icon; errors stay until closed. In code one `ToastProvider` and `useToast()`.
 
-Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog and Drawer take their content as data here (`items`, `fields`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer and Toast take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 
