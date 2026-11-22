@@ -121,6 +121,9 @@ describe('design-system bundle', () => {
       expect(preview.split('\n')[0], name).toMatch(/^<!-- @dsCard group="[^"]+" height=\d+/);
       expect(preview, name).toContain(`Shifa.mount(`);
       expect(preview, name).not.toMatch(/<script[^>]*\bsrc=/);
+      // bundle.css carries no page reset, so each preview document sizes its own boxes: without
+      // this, a full-width field adds its padding and border to its column and overlaps the next.
+      expect(preview, name).toContain('*, *::before, *::after { box-sizing: border-box; }');
       const guide = read(`components/${name}/README.md`);
       expect(guide.trim().length, name).toBeGreaterThan(100);
     }
