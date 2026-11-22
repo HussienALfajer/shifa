@@ -2,10 +2,21 @@
 // bottom corner, so the toasts are shown by play stories (one region per story); the trigger
 // renders in the eight combinations of direction × theme × density.
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { useEffect } from 'react';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { storyStates } from '../../.storybook/story-states.tsx';
 import { Button } from '../button/button.tsx';
 import { type ToastOptions, ToastProvider, useToast } from './toast.tsx';
+
+/** Shows `toasts` once, when it mounts: a screenshot of toasts with no play step. */
+function ShowOnMount({ toasts }: { toasts: ToastOptions[] }) {
+  const toast = useToast();
+  // biome-ignore lint/correctness/useExhaustiveDependencies: shown once, when the story mounts.
+  useEffect(() => {
+    for (const options of toasts) toast.show(options);
+  }, []);
+  return null;
+}
 
 const meta = {
   title: 'Components/Toast',
@@ -79,6 +90,38 @@ async function showAll(canvasElement: HTMLElement, count: number) {
 
 /** The trigger at rest. */
 export const Default: Story = { render: () => <Page /> };
+
+/** Shown from the start, for the screenshot: success, info with an action, warning. */
+export const Shown: Story = {
+  parameters: { matrix: false },
+  render: () => (
+    <ToastProvider>
+      <ShowOnMount toasts={STATUSES} />
+    </ToastProvider>
+  ),
+};
+
+/** Shown from the start, in English, for the screenshot: the bottom right. */
+export const ShownLtr: Story = {
+  parameters: { matrix: false },
+  render: () => (
+    <div dir="ltr" lang="en">
+      <ToastProvider label="Notifications" closeLabel="Close notification">
+        <ShowOnMount
+          toasts={[
+            {
+              type: 'success',
+              title: 'Prescription saved',
+              description: 'Three medicines',
+              duration: Infinity,
+            },
+            { type: 'error', title: 'Could not save the invoice', action: { label: 'Try again' } },
+          ]}
+        />
+      </ToastProvider>
+    </div>
+  ),
+};
 
 /** Success, info with an action, warning: three at the bottom corner. */
 export const Statuses: Story = {

@@ -59,6 +59,18 @@ export const Open: Story = {
   },
 };
 
+/** Shown from the start, for the screenshot: the icon button's name above it. */
+export const Shown: Story = {
+  parameters: { matrix: false },
+  render: () => (
+    <div className="p-16">
+      <Tooltip content="طباعة الوصفة" type="label" defaultOpen>
+        <IconButton icon="printer" label="طباعة الوصفة" />
+      </Tooltip>
+    </div>
+  ),
+};
+
 /** Below the trigger, as at the top of a screen. */
 export const Below: Story = {
   parameters: { matrix: false },

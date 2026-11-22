@@ -33,9 +33,20 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function EditAppointment({ side, title = 'تعديل الموعد' }: { side?: DrawerSide; title?: string }) {
+function EditAppointment({
+  side,
+  title = 'تعديل الموعد',
+  open,
+}: {
+  side?: DrawerSide;
+  title?: string;
+  open?: boolean;
+}) {
   return (
-    <Drawer {...(side === undefined ? {} : { side })}>
+    <Drawer
+      {...(side === undefined ? {} : { side })}
+      {...(open === undefined ? {} : { defaultOpen: open })}
+    >
       <DrawerTrigger startIcon="pencil">تعديل الموعد</DrawerTrigger>
       <DrawerContent title={title} description="الثلاثاء 24/11/2026 الساعة 10:30">
         <Input label="الهاتف" dir="auto" defaultValue="0944 123 456" />
@@ -49,9 +60,9 @@ function EditAppointment({ side, title = 'تعديل الموعد' }: { side?: D
   );
 }
 
-function AppointmentActions() {
+function AppointmentActions({ open }: { open?: boolean }) {
   return (
-    <Drawer side="bottom">
+    <Drawer side="bottom" {...(open === undefined ? {} : { defaultOpen: open })}>
       <DrawerTrigger>إجراءات الموعد</DrawerTrigger>
       <DrawerContent title="موعد الثلاثاء" description="24/11/2026 · 10:30">
         <div className="-mx-6 flex flex-col">
@@ -78,6 +89,18 @@ async function openIt(canvasElement: HTMLElement, name: string) {
 
 /** The trigger at rest. */
 export const Default: Story = { render: () => <EditAppointment /> };
+
+/** Shown from the start, for the screenshot: from the logical end. */
+export const ShownEnd: Story = {
+  parameters: { matrix: false },
+  render: () => <EditAppointment open />,
+};
+
+/** Shown from the start, for the screenshot: from the bottom. */
+export const ShownBottom: Story = {
+  parameters: { matrix: false },
+  render: () => <AppointmentActions open />,
+};
 
 /** Open from the logical end, focus in the first field. */
 export const OpenEnd: Story = {

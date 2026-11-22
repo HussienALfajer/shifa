@@ -130,10 +130,11 @@ export function AccordionItem({
     >
       <BaseAccordionHeader className="relative m-0">
         <BaseAccordionTrigger
-          className={cn(TRIGGER, badge !== undefined && 'pe-16')}
+          className={TRIGGER}
           {...(badge === undefined ? {} : { 'aria-describedby': badgeId })}
         >
-          <span className="min-w-0">{title}</span>
+          {/* Room before the caret for the badge drawn over the button. */}
+          <span className={cn('min-w-0', badge !== undefined && 'pe-16')}>{title}</span>
           <Icon name="caret-down" className={CARET} />
         </BaseAccordionTrigger>
         {badge !== undefined && (

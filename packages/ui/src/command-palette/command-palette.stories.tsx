@@ -83,6 +83,21 @@ async function openWith(canvasElement: HTMLElement, text: string) {
 /** The trigger at rest. */
 export const Default: Story = { render: () => <Palette /> };
 
+/** Shown from the start, for the screenshot. */
+export const Shown: Story = {
+  parameters: { matrix: false },
+  render: () => (
+    <CommandPalette
+      defaultOpen
+      title="بحث وأوامر"
+      inputLabel="ابحث عن مريض أو إجراء"
+      groups={GROUPS}
+      onAction={() => undefined}
+      emptyText={(query) => `لا نتائج لـ «${query}»`}
+    />
+  ),
+};
+
 /** Open, every option. */
 export const Open: Story = {
   parameters: { matrix: false },
