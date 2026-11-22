@@ -74,9 +74,43 @@ export interface EmptyStateProps {
   actions?: ActionData[];
 }
 
+export interface AvatarProps {
+  /** One person: the name gives the initials, the colour and the accessible name. */
+  name?: string;
+  /** The picture; the initials stand while it loads or when it fails. */
+  src?: string;
+  /** xs 24, sm 32, md 40 (default), lg 56, xl 80 px. */
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
+  /** A group instead: overlapping avatars and «و3 آخرون». */
+  people?: { name: string; src?: string }[];
+  max?: number;
+  /** What the group is: «الأطباء المناوبون». */
+  label?: string;
+}
+
+export interface ToolbarProps {
+  'aria-label': string;
+  /** Groups of buttons split by separators; what does not fit goes into «المزيد». */
+  groups: { label: string; icon?: IconName; pressed?: boolean; disabled?: boolean }[][];
+}
+
+export interface PaginationProps {
+  totalItems: number;
+  defaultPage?: number;
+  /** 25 by default. */
+  pageSize?: number;
+  /** The page-size choices: 25, 50, 100. */
+  pageSizes?: number[];
+  /** numbers (default) or compact («الصفحة 3 من 13»). */
+  form?: 'numbers' | 'compact';
+}
+
 export declare const Spinner: (props: SpinnerProps) => unknown;
 export declare const Badge: (props: BadgeProps) => unknown;
 export declare const CountBadge: (props: CountBadgeProps) => unknown;
 export declare const Skeleton: (props: SkeletonProps) => unknown;
 export declare const Card: (props: CardProps) => unknown;
 export declare const EmptyState: (props: EmptyStateProps) => unknown;
+export declare const Avatar: (props: AvatarProps) => unknown;
+export declare const Toolbar: (props: ToolbarProps) => unknown;
+export declare const Pagination: (props: PaginationProps) => unknown;

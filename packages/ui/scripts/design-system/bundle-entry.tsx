@@ -29,7 +29,7 @@ import {
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 import { CommandPalette } from './compound-command.tsx';
-import { Card, EmptyState, Skeleton } from './compound-data.tsx';
+import { Avatar, Card, EmptyState, Pagination, Skeleton, Toolbar } from './compound-data.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
 import { Toast } from './compound-toast.tsx';
@@ -70,6 +70,9 @@ const COMPONENTS = {
   Skeleton,
   Card,
   EmptyState,
+  Avatar,
+  Toolbar,
+  Pagination,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;
@@ -125,7 +128,7 @@ function island(name: Name) {
 
 const target = (typeof window === 'undefined' ? globalThis : window) as unknown as Props;
 target['Shifa'] = {
-  version: '0.4-06',
+  version: '0.4-07',
   mount,
   ...Object.fromEntries(Object.keys(COMPONENTS).map((name) => [name, island(name as Name)])),
 };

@@ -1,20 +1,28 @@
 // The data-display components of the design-system bundle (slice 0.4-07) that are composed from
-// parts in code (Card, Skeleton) or take buttons (EmptyState), as data: only text crosses from a
-// Design canvas into the bundle's React (bundle-entry.tsx).
+// parts in code (Card, Skeleton, Toolbar), take buttons (EmptyState) or need state (Pagination),
+// as data: only text crosses from a Design canvas into the bundle's React (bundle-entry.tsx).
+import { Fragment, useState } from 'react';
 import {
+  AvatarGroup,
+  type AvatarSize,
   Button,
   CardBody,
   CardFooter,
   CardHeader,
   CardLink,
+  Avatar as CodeAvatar,
   Card as CodeCard,
   EmptyState as CodeEmptyState,
+  Pagination as CodePagination,
   Skeleton as CodeSkeleton,
+  Toolbar as CodeToolbar,
   type EmptyStateArt,
   type EmptyStateSize,
   type IconName,
   SkeletonGroup,
   SkeletonText,
+  ToolbarButton,
+  ToolbarSeparator,
 } from '../../src/index.ts';
 
 type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
@@ -118,6 +126,88 @@ export function EmptyState({ actions, ...rest }: EmptyStateData) {
     <CodeEmptyState
       {...rest}
       {...(actions === undefined ? {} : { actions: <Actions actions={actions} /> })}
+    />
+  );
+}
+
+export interface AvatarData {
+  /** One person: their name (and picture). */
+  name?: string;
+  src?: string;
+  size?: AvatarSize;
+  /** A group instead: the people, how many show, and what the group is. */
+  people?: { name: string; src?: string }[];
+  max?: number;
+  label?: string;
+}
+
+export function Avatar({ name, src, size, people, max, label }: AvatarData) {
+  if (people !== undefined) {
+    return (
+      <AvatarGroup
+        label={label ?? ''}
+        people={people.map((p, i) => ({ id: String(i), name: p.name, src: p.src }))}
+        {...(max === undefined ? {} : { max })}
+        {...(size === undefined ? {} : { size })}
+      />
+    );
+  }
+  return <CodeAvatar name={name ?? ''} src={src} {...(size === undefined ? {} : { size })} />;
+}
+
+export interface ToolbarData {
+  'aria-label': string;
+  /** Groups of buttons, split by separators. */
+  groups: { label: string; icon?: IconName; pressed?: boolean; disabled?: boolean }[][];
+}
+
+export function Toolbar({ groups, ...aria }: ToolbarData) {
+  return (
+    <CodeToolbar aria-label={aria['aria-label']}>
+      {groups.map((group, g) => (
+        <Fragment key={group.map((b) => b.label).join('|')}>
+          {g > 0 && <ToolbarSeparator />}
+          {group.map((b) => (
+            <ToolbarButton
+              key={b.label}
+              {...(b.icon === undefined ? {} : { icon: b.icon })}
+              {...(b.pressed === undefined ? {} : { pressed: b.pressed })}
+              {...(b.disabled === undefined ? {} : { disabled: b.disabled })}
+            >
+              {b.label}
+            </ToolbarButton>
+          ))}
+        </Fragment>
+      ))}
+    </CodeToolbar>
+  );
+}
+
+export interface PaginationData {
+  totalItems: number;
+  defaultPage?: number;
+  pageSize?: number;
+  pageSizes?: number[];
+  form?: 'numbers' | 'compact';
+}
+
+export function Pagination({
+  totalItems,
+  defaultPage = 1,
+  pageSize: initialSize = 25,
+  pageSizes,
+  form,
+}: PaginationData) {
+  const [page, setPage] = useState(defaultPage);
+  const [pageSize, setPageSize] = useState(initialSize);
+  return (
+    <CodePagination
+      page={page}
+      onPageChange={setPage}
+      pageSize={pageSize}
+      totalItems={totalItems}
+      {...(pageSizes === undefined ? {} : { pageSizes, onPageSizeChange: setPageSize })}
+      {...(form === undefined ? {} : { form })}
     />
   );
 }

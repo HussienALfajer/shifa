@@ -23,6 +23,7 @@ const chromium = () => ({
 const optimizeDeps = {
   include: [
     'accordion',
+    'avatar',
     'alert-dialog',
     'button',
     'calendar',
@@ -37,6 +38,7 @@ const optimizeDeps = {
     'menu',
     'number-input',
     'otp-input',
+    'pagination',
     'password-input',
     'popover',
     'radio',
@@ -47,6 +49,7 @@ const optimizeDeps = {
     'textarea',
     'time-input',
     'toast',
+    'toolbar',
     'tooltip',
   ]
     .map((entry) => `@ui-sdk/react/${entry}`)

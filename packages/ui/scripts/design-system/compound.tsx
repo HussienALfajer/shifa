@@ -60,6 +60,9 @@ export const PARTS: Record<string, string> = {
   CardLink: 'Card',
   SkeletonText: 'Skeleton',
   SkeletonGroup: 'Skeleton',
+  AvatarGroup: 'Avatar',
+  ToolbarButton: 'Toolbar',
+  ToolbarSeparator: 'Toolbar',
 };
 
 /** Cards of the design system that stand for a provider export, by the provider's name. */

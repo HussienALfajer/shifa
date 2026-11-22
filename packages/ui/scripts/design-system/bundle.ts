@@ -56,6 +56,9 @@ export const BUNDLE_COMPONENTS = [
   'Skeleton',
   'Card',
   'EmptyState',
+  'Avatar',
+  'Toolbar',
+  'Pagination',
 ] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */

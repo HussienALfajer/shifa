@@ -19,6 +19,15 @@ export {
   type AlertDialogTriggerProps,
 } from './alert-dialog/alert-dialog.tsx';
 export {
+  Avatar,
+  AvatarGroup,
+  type AvatarGroupPerson,
+  type AvatarGroupProps,
+  type AvatarProps,
+  type AvatarSize,
+  avatarInitials,
+} from './avatar/avatar.tsx';
+export {
   Badge,
   type BadgeProps,
   type BadgeSize,
@@ -128,6 +137,12 @@ export {
 export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
 export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
 export {
+  type PageItem,
+  Pagination,
+  type PaginationProps,
+  pageItems,
+} from './pagination/pagination.tsx';
+export {
   PasswordInput,
   type PasswordInputProps,
 } from './password-input/password-input.tsx';
@@ -188,4 +203,11 @@ export {
   type ToastType,
   useToast,
 } from './toast/toast.tsx';
+export {
+  Toolbar,
+  ToolbarButton,
+  type ToolbarButtonProps,
+  type ToolbarProps,
+  ToolbarSeparator,
+} from './toolbar/toolbar.tsx';
 export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';

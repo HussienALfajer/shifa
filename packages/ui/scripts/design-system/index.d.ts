@@ -415,7 +415,10 @@ type Name =
   | 'CountBadge'
   | 'Skeleton'
   | 'Card'
-  | 'EmptyState';
+  | 'EmptyState'
+  | 'Avatar'
+  | 'Toolbar'
+  | 'Pagination';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
