@@ -17,9 +17,13 @@ class ShifaPressable extends StatefulWidget {
     this.focusNode,
     this.autofocus = false,
     this.selected,
+    this.semanticLabel,
     this.semanticHint,
     super.key,
   });
+
+  /// The name for a control whose content says nothing (an icon button).
+  final String? semanticLabel;
 
   /// Draws the area for its state.
   final Widget Function(BuildContext context, ShifaPressState state) builder;
@@ -76,6 +80,7 @@ class _ShifaPressableState extends State<ShifaPressable> {
         button: true,
         enabled: enabled || busy,
         selected: widget.selected,
+        label: widget.semanticLabel,
         hint: widget.semanticHint,
         onTap: onPressed,
         child: FocusableActionDetector(

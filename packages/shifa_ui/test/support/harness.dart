@@ -29,7 +29,10 @@ Widget harness(
       textDirection: TextDirection.rtl,
       child: ShifaTheme(
         data: theme ?? ShifaThemeData.light(),
+        // A new Overlay per harness: its entries are read only once, so a
+        // second pump in one test would keep showing the first child.
         child: Overlay(
+          key: UniqueKey(),
           initialEntries: [
             OverlayEntry(
               builder: (context) => ColoredBox(
@@ -49,6 +52,47 @@ Widget harness(
     ),
   ),
 );
+
+/// [child] as a whole phone screen inside a [Navigator] (routes, sheets),
+/// Arabic RTL, in [theme] (light by default); [padding] is the system's
+/// safe-area insets.
+Future<void> pumpScreen(
+  WidgetTester tester,
+  Widget child, {
+  ShifaThemeData? theme,
+  bool reduceMotion = false,
+  EdgeInsets padding = EdgeInsets.zero,
+}) async {
+  tester.view.physicalSize = phone;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+  await tester.pumpWidget(
+    MediaQuery(
+      data: MediaQueryData(
+        size: phone,
+        padding: padding,
+        disableAnimations: reduceMotion,
+      ),
+      child: Localizations(
+        locale: const Locale('ar'),
+        delegates: const [GlobalWidgetsLocalizations.delegate],
+        child: Directionality(
+          textDirection: TextDirection.rtl,
+          child: ShifaTheme(
+            data: theme ?? ShifaThemeData.light(),
+            child: Navigator(
+              onGenerateRoute: (settings) => PageRouteBuilder<void>(
+                settings: settings,
+                pageBuilder: (context, _, _) =>
+                    ColoredBox(color: context.shifa.colors.bgApp, child: child),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
+}
 
 /// Pumps [harness] for a phone-sized surface.
 Future<void> pumpPhone(
