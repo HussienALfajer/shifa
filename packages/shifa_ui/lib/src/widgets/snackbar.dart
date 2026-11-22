@@ -234,7 +234,12 @@ class _ShifaSnackbarHostState extends State<ShifaSnackbarHost> {
       _current = message;
       _shown++;
     });
-    if (message.tone != ShifaSnackbarTone.error) {
+    // An error stays; so does a message with an action while a screen reader
+    // is on, so its user can reach «تراجع» (WCAG 2.2.1).
+    final waitsForReader =
+        message.actionLabel != null &&
+        MediaQuery.maybeAccessibleNavigationOf(context) == true;
+    if (message.tone != ShifaSnackbarTone.error && !waitsForReader) {
       _timer = Timer(duration, _hide);
     }
   }
@@ -288,8 +293,9 @@ class _ShifaSnackbarHostState extends State<ShifaSnackbarHost> {
                     onAction: onAction == null
                         ? null
                         : () {
-                            onAction();
+                            // Hide first: the action may show a follow-up.
                             _hide();
+                            onAction();
                           },
                     onClose: current.tone == ShifaSnackbarTone.error
                         ? _hide

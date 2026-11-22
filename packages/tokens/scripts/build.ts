@@ -12,7 +12,7 @@
 // `build()` is pure (tests use it); the CLI is what the `tokens` drift check runs:
 //   node packages/tokens/scripts/build.ts [outRoot] [sourceDir]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join, resolve } from 'node:path';
+import { basename, dirname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import StyleDictionary from 'style-dictionary';
 import {
@@ -165,17 +165,26 @@ export function flutterFonts(
   fonts: FontFamily[],
   fontsDir: string = FONTS_DIR,
 ): Record<string, Uint8Array> {
+  // fonts.json names the files: read only inside the fonts folder, write only plain names.
+  const root = resolve(fontsDir);
+  const inside = (path: string): string => {
+    const full = resolve(root, path);
+    if (!full.startsWith(root + sep)) throw new Error(`fonts.json: ${path} is outside ${root}`);
+    return full;
+  };
   const files: Record<string, Uint8Array> = {};
   for (const family of fonts) {
     for (const file of family.files.filter((f) => f.format === 'ttf')) {
-      files[`${FLUTTER_FONTS_DIR}/${basename(file.path)}`] = readFileSync(
-        join(fontsDir, file.path),
-      );
+      const path = inside(file.path);
+      const name = basename(path);
+      if (!/^[a-z0-9-]+\.ttf$/.test(name)) {
+        throw new Error(`fonts.json: ${name} is not a .ttf name`);
+      }
+      files[`${FLUTTER_FONTS_DIR}/${name}`] = readFileSync(path);
     }
     if (family.id !== undefined && family.licence !== undefined) {
-      files[`${FLUTTER_FONTS_DIR}/${family.id}-OFL.txt`] = readFileSync(
-        join(fontsDir, family.licence),
-      );
+      if (!/^[a-z0-9-]+$/.test(family.id)) throw new Error(`fonts.json: font id ${family.id}`);
+      files[`${FLUTTER_FONTS_DIR}/${family.id}-OFL.txt`] = readFileSync(inside(family.licence));
     }
   }
   return files;

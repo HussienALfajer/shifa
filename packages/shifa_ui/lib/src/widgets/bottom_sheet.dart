@@ -244,20 +244,45 @@ class _SheetRoute<T> extends PopupRoute<T> {
   @override
   Duration get transitionDuration => duration;
 
+  /// True from the first drag until the sheet has settled: the sheet then
+  /// moves with the finger (raw progress), not along the entry curve.
+  bool _dragged = false;
+
+  /// Closes this sheet, even when another route was pushed above it.
   void _close() {
-    if (isActive) navigator?.pop();
+    if (isCurrent) {
+      navigator?.pop();
+    } else if (isActive) {
+      navigator?.removeRoute(this);
+    }
   }
 
   void _drag(DragUpdateDetails details) {
+    final controller = this.controller;
+    if (controller == null) return;
+    if (!_dragged) {
+      _dragged = true;
+      controller.addStatusListener(_settled);
+    }
     final height = _sheetKey.currentContext?.size?.height ?? 1;
-    controller?.value -= details.primaryDelta! / height;
+    controller.value -= details.primaryDelta! / height;
+  }
+
+  void _settled(AnimationStatus status) {
+    // Settled open or closed: the next open uses the entry curve again.
+    if (!status.isAnimating) {
+      _dragged = false;
+      controller?.removeStatusListener(_settled);
+    }
   }
 
   void _release(DragEndDetails details) {
     final controller = this.controller;
     if (controller == null) return;
-    final flung = details.primaryVelocity! > 700;
-    if (flung || controller.value < 0.6) {
+    final velocity = details.primaryVelocity ?? 0;
+    final close =
+        velocity > 700 || (velocity >= -700 && controller.value < 0.6);
+    if (close) {
       _close();
     } else {
       controller.forward();
@@ -273,28 +298,28 @@ class _SheetRoute<T> extends PopupRoute<T> {
     data: theme,
     child: Align(
       alignment: Alignment.bottomCenter,
-      child: GestureDetector(
-        onVerticalDragUpdate: _drag,
-        onVerticalDragEnd: _release,
-        child: KeyedSubtree(key: _sheetKey, child: sheet(context, _close)),
+      // The sheet slides by its own height, so a drag of n pixels moves it
+      // n pixels.
+      child: AnimatedBuilder(
+        animation: animation,
+        builder: (context, child) {
+          final t = animation.value;
+          final shown = _dragged
+              ? t
+              : animation.status == AnimationStatus.reverse
+              ? theme.motion.exit.transform(t)
+              : theme.motion.enter.transform(t);
+          return FractionalTranslation(
+            translation: Offset(0, 1 - shown),
+            child: child,
+          );
+        },
+        child: GestureDetector(
+          onVerticalDragUpdate: _drag,
+          onVerticalDragEnd: _release,
+          child: KeyedSubtree(key: _sheetKey, child: sheet(context, _close)),
+        ),
       ),
     ),
-  );
-
-  @override
-  Widget buildTransitions(
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) => SlideTransition(
-    position: Tween(begin: const Offset(0, 1), end: Offset.zero).animate(
-      CurvedAnimation(
-        parent: animation,
-        curve: theme.motion.enter,
-        reverseCurve: theme.motion.exit,
-      ),
-    ),
-    child: child,
   );
 }

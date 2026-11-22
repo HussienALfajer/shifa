@@ -56,8 +56,13 @@ class ShifaTextField extends StatefulWidget {
     this.onSubmitted,
     this.autofocus = false,
     this.focusNode,
+    this.maxLines = 1,
     super.key,
   });
+
+  /// Lines the box shows before it scrolls; 1 makes the keyboard's action
+  /// submit, null lets a note grow and the return key break lines.
+  final int? maxLines;
 
   /// The key of the box (tests measure it).
   static const Key boxKey = ValueKey('ShifaTextField.box');
@@ -106,6 +111,11 @@ class _ShifaTextFieldState extends State<ShifaTextField>
     implements TextSelectionGestureDetectorBuilderDelegate {
   TextEditingController? _ownController;
   FocusNode? _ownFocus;
+  final FocusNode _disabledFocus = FocusNode(
+    debugLabel: 'ShifaTextField (disabled)',
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
   late final _gestures = TextSelectionGestureDetectorBuilder(delegate: this);
 
   @override
@@ -126,7 +136,6 @@ class _ShifaTextFieldState extends State<ShifaTextField>
   void initState() {
     super.initState();
     _focus.addListener(_refresh);
-    _syncFocusable();
   }
 
   @override
@@ -136,12 +145,27 @@ class _ShifaTextFieldState extends State<ShifaTextField>
       (oldWidget.focusNode ?? _ownFocus)?.removeListener(_refresh);
       _focus.addListener(_refresh);
     }
-    _syncFocusable();
+    final oldController = oldWidget.controller;
+    if (oldController != null && widget.controller == null) {
+      // The caller let go of its controller: keep what was typed.
+      _ownController = TextEditingController.fromValue(oldController.value);
+    } else if (oldController == null && widget.controller != null) {
+      _ownController?.dispose();
+      _ownController = null;
+    }
+    if (!widget.enabled && _focus.hasFocus) _focus.unfocus();
   }
 
-  void _syncFocusable() {
-    _focus.canRequestFocus = widget.enabled;
-    if (!widget.enabled && _focus.hasFocus) _focus.unfocus();
+  /// A screen reader's double tap: focus, the caret at the end.
+  void _activate() {
+    if (!widget.enabled) return;
+    final controller = _controller;
+    if (!controller.selection.isValid) {
+      controller.selection = TextSelection.collapsed(
+        offset: controller.text.length,
+      );
+    }
+    _focus.requestFocus();
   }
 
   void _refresh() => setState(() {});
@@ -151,6 +175,7 @@ class _ShifaTextFieldState extends State<ShifaTextField>
     _focus.removeListener(_refresh);
     _ownController?.dispose();
     _ownFocus?.dispose();
+    _disabledFocus.dispose();
     super.dispose();
   }
 
@@ -177,7 +202,9 @@ class _ShifaTextFieldState extends State<ShifaTextField>
     final editable = EditableText(
       key: editableTextKey,
       controller: _controller,
-      focusNode: _focus,
+      // Disabled: a node of our own that never takes focus, so the caller's
+      // node is never changed.
+      focusNode: widget.enabled ? _focus : _disabledFocus,
       readOnly: !widget.enabled,
       autofocus: widget.autofocus,
       style: textStyle,
@@ -189,7 +216,7 @@ class _ShifaTextFieldState extends State<ShifaTextField>
       inputFormatters: const [ShifaWesternDigitsFormatter()],
       onChanged: widget.onChanged,
       onSubmitted: widget.onSubmitted,
-      maxLines: null,
+      maxLines: widget.maxLines,
       rendererIgnoresPointer: true,
     );
 
@@ -237,6 +264,9 @@ class _ShifaTextFieldState extends State<ShifaTextField>
       ignoring: !widget.enabled,
       child: MergeSemantics(
         child: Semantics(
+          enabled: widget.enabled,
+          onTap: widget.enabled ? _activate : null,
+          onFocus: widget.enabled ? _activate : null,
           label: widget.label,
           hint: below,
           validationResult: error != null
@@ -248,7 +278,7 @@ class _ShifaTextFieldState extends State<ShifaTextField>
             children: [
               ExcludeSemantics(
                 child: GestureDetector(
-                  onTap: _focus.requestFocus,
+                  onTap: _activate,
                   child: Text(
                     widget.label,
                     style: type.labelSm.copyWith(
@@ -261,7 +291,7 @@ class _ShifaTextFieldState extends State<ShifaTextField>
               GestureDetector(
                 behavior: HitTestBehavior.opaque,
                 excludeFromSemantics: true,
-                onTap: _focus.requestFocus,
+                onTap: _activate,
                 child: box,
               ),
               if (below != null) ...[

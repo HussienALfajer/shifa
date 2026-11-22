@@ -45,7 +45,7 @@ class ShifaListItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onPressed = this.onPressed;
-    if (onPressed == null && enabled) {
+    if (onPressed == null) {
       return _row(context, pressed: false, focused: false, pressable: false);
     }
     return ShifaPressable(
