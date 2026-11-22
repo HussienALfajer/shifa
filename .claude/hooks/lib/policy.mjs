@@ -32,6 +32,8 @@ const GENERATED = [
   /\.g\.dart$/i,
   /\.freezed\.dart$/i,
   /\.mocks\.dart$/i,
+  // The tokens build copies the TTFs and their OFL here (slice 0.4-08).
+  /(^|\/)packages\/shifa_ui\/fonts\//i,
   // drizzle-kit output: per-migration snapshots (1.0 layout) and the pre-1.0 meta/ journal.
   /(^|\/)migrations\/[^/]+\/snapshot\.json$/i,
   /(^|\/)migrations\/meta\/[^/]+\.json$/i,

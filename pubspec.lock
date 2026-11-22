@@ -9,6 +9,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "111.0.0"
+  alchemist:
+    dependency: transitive
+    description:
+      name: alchemist
+      sha256: a83a511d731671c7f50623ce0dc70b4d6d3588bd8375243fc7978546c1556776
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.15.0"
   analyzer:
     dependency: transitive
     description:
@@ -169,6 +177,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.0.8"
+  cupertino_ui:
+    dependency: transitive
+    description:
+      name: cupertino_ui
+      sha256: c3eaf7f5bdfee36deb0b14a4cbf7602f1b6b8d8b8576b81f38fc08c25881c94c
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.7"
   dart_style:
     dependency: transitive
     description:
@@ -193,6 +209,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.2"
+  equatable:
+    dependency: transitive
+    description:
+      name: equatable
+      sha256: ea36e500cbf0ec18361deabca755434f73e42fe53c5130021c7e2d6b5ebe1702
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.0.0"
   fake_async:
     dependency: transitive
     description:
@@ -226,6 +250,11 @@ packages:
     source: hosted
     version: "1.1.1"
   flutter:
+    dependency: transitive
+    description: flutter
+    source: sdk
+    version: "0.0.0"
+  flutter_localizations:
     dependency: transitive
     description: flutter
     source: sdk
@@ -275,6 +304,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.1.2"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: "1ca20c894b1717686a2319b8548763d812bc0aabdac580420a44c5178c57a867"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.20.3"
   io:
     dependency: transitive
     description:
@@ -355,6 +392,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.13.0"
+  material_ui:
+    dependency: transitive
+    description:
+      name: material_ui
+      sha256: a6b19012df437a356cbc01f8ea22a105e07194c47c9a6009da0032a0ce35c4ab
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.1"
   meta:
     dependency: transitive
     description:

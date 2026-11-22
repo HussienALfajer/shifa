@@ -1,12 +1,18 @@
-/// Shifa's Flutter design system.
+/// Shifa's Flutter design system for the patient app.
 ///
-/// Today it holds the design tokens generated from `packages/tokens`: colours
-/// of the light and the dark theme, sizes of both densities and the shared
-/// scales. Theme extensions and widgets arrive in slice 0.4-08.
+/// The design tokens generated from `packages/tokens`, the light and dark
+/// `ShifaTheme` built from them, and Shifa's base widgets. Built on Flutter's
+/// widgets layer, not on Material.
 library;
 
 // The generated constants are `Color` values; exporting the type lets a
 // consumer use them without importing dart:ui itself.
 export 'dart:ui' show Color;
 
+export 'src/fonts.dart';
 export 'src/generated/tokens.g.dart';
+export 'src/theme/colors.dart';
+export 'src/theme/metrics.dart';
+export 'src/theme/status_colors.dart';
+export 'src/theme/theme.dart';
+export 'src/theme/typography.dart';

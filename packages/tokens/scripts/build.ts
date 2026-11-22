@@ -5,12 +5,14 @@
 //   packages/shifa_ui/lib/src/generated/tokens.g.dart — Dart constants: both themes, both densities
 //   packages/tokens/generated/design-system/tokens.json — the Shifa Design System's tokens
 //                                                       (design-system.ts; ADR-0040)
+//   packages/shifa_ui/fonts/                           — the static TTFs of fonts.json and their
+//                                                       OFL, copied as they are for Flutter
 // Style Dictionary resolves references, names tokens and runs the value transforms of values.ts,
 // once per mode (light, dark, compact); the three results are laid out by formats.ts.
 // `build()` is pure (tests use it); the CLI is what the `tokens` drift check runs:
 //   node packages/tokens/scripts/build.ts [outRoot] [sourceDir]
-import { mkdirSync, writeFileSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import StyleDictionary from 'style-dictionary';
 import {
@@ -24,7 +26,7 @@ import {
   type Sources,
   valueIn,
 } from '../src/index.ts';
-import { designSystem, type FontFamily, loadFonts } from './design-system.ts';
+import { designSystem, FONTS_DIR, type FontFamily, loadFonts } from './design-system.ts';
 import { css, dart, tailwind } from './formats.ts';
 import { cssValue, dartValue } from './values.ts';
 
@@ -35,6 +37,9 @@ export const OUTPUTS = {
   dart: 'packages/shifa_ui/lib/src/generated/tokens.g.dart',
   designSystem: 'packages/tokens/generated/design-system/tokens.json',
 } as const;
+
+/** Repository-relative directory of the Flutter font copies (`flutterFonts`, binary). */
+export const FLUTTER_FONTS_DIR = 'packages/shifa_ui/fonts';
 
 /** One token after Style Dictionary: named, resolved and written for its platform. */
 export interface BuiltToken {
@@ -152,11 +157,39 @@ export async function build(
   };
 }
 
+/**
+ * The Flutter copies of the fonts: every static TTF of `fonts.json` and each family's OFL
+ * (`<id>-OFL.txt`), byte for byte, for `packages/shifa_ui/pubspec.yaml` to declare.
+ */
+export function flutterFonts(
+  fonts: FontFamily[],
+  fontsDir: string = FONTS_DIR,
+): Record<string, Uint8Array> {
+  const files: Record<string, Uint8Array> = {};
+  for (const family of fonts) {
+    for (const file of family.files.filter((f) => f.format === 'ttf')) {
+      files[`${FLUTTER_FONTS_DIR}/${basename(file.path)}`] = readFileSync(
+        join(fontsDir, file.path),
+      );
+    }
+    if (family.id !== undefined && family.licence !== undefined) {
+      files[`${FLUTTER_FONTS_DIR}/${family.id}-OFL.txt`] = readFileSync(
+        join(fontsDir, family.licence),
+      );
+    }
+  }
+  return files;
+}
+
 if (process.argv[1] !== undefined && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const outRoot = resolve(process.argv[2] ?? join(import.meta.dirname, '..', '..', '..'));
   const sourceDir = process.argv[3];
-  const fontsDir = sourceDir === undefined ? undefined : join(sourceDir, '..', 'fonts');
-  const files = await build(loadSources(sourceDir), loadFonts(fontsDir));
+  const fontsDir = sourceDir === undefined ? FONTS_DIR : join(sourceDir, '..', 'fonts');
+  const fonts = loadFonts(fontsDir);
+  const files = {
+    ...(await build(loadSources(sourceDir), fonts)),
+    ...flutterFonts(fonts, fontsDir),
+  };
   for (const [path, text] of Object.entries(files)) {
     mkdirSync(dirname(join(outRoot, path)), { recursive: true });
     writeFileSync(join(outRoot, path), text);

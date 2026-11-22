@@ -2,7 +2,15 @@
 // against a temp copy of the token source, so a changed token without regenerated outputs fails
 // check-drift (spec 0.4, criterion 2).
 import assert from 'node:assert/strict';
-import { cpSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  appendFileSync,
+  cpSync,
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, it } from 'node:test';
@@ -16,6 +24,8 @@ const CSS = 'packages/tokens/generated/css/tokens.css';
 const TAILWIND = 'packages/tokens/generated/css/tailwind-theme.css';
 const DART = 'packages/shifa_ui/lib/src/generated/tokens.g.dart';
 const DESIGN_SYSTEM = 'packages/tokens/generated/design-system/tokens.json';
+const FLUTTER_FONTS = 'packages/shifa_ui/fonts';
+const NASKH_TTF = 'noto-naskh-arabic/ttf/noto-naskh-arabic-400.ttf';
 
 let root;
 
@@ -26,8 +36,10 @@ beforeEach(() => {
     'packages/tokens/fonts',
     'packages/tokens/generated',
     'packages/shifa_ui/lib/src/generated',
+    FLUTTER_FONTS,
   ]) {
-    cpSync(join(repo, dir), join(root, dir), { recursive: true });
+    // The Flutter fonts are a generated output: before the build writes them there is nothing to copy.
+    if (existsSync(join(repo, dir))) cpSync(join(repo, dir), join(root, dir), { recursive: true });
   }
 });
 
@@ -61,14 +73,14 @@ const changeGreen = () =>
   });
 
 describe('tokensCheck', () => {
-  it('is registered, owns the four outputs and names the fix', () => {
+  it('is registered, owns the outputs (web, Dart, Flutter fonts) and names the fix', () => {
     const check = config.find((c) => c.name === 'tokens');
     assert.ok(check, 'no `tokens` entry in scripts/drift.config.mjs');
-    assert.deepEqual(check.outputs, ['packages/tokens/generated', DART]);
+    assert.deepEqual(check.outputs, ['packages/tokens/generated', DART, FLUTTER_FONTS]);
     assert.deepEqual(check.inputs, [
       'packages/tokens/src',
       'packages/tokens/scripts',
-      'packages/tokens/fonts/fonts.json',
+      'packages/tokens/fonts',
     ]);
     assert.match(check.hint, /check-drift\.mjs --fix/);
     assert.notEqual(check.full, true, 'the tokens check must run in fast verify');
@@ -125,6 +137,43 @@ describe('tokensCheck', () => {
     assert.equal(code, 1);
     assert.deepEqual(results[0].missing, [DART]);
     assert.deepEqual(results[0].extra, ['packages/tokens/generated/css/old.css']);
+  });
+
+  it('the Flutter fonts are the TTFs and licences of fonts.json, byte for byte', () => {
+    const fonts = join(repo, FLUTTER_FONTS);
+    for (const file of [
+      'ibm-plex-sans-arabic-400.ttf',
+      'ibm-plex-sans-arabic-500.ttf',
+      'ibm-plex-sans-arabic-600.ttf',
+      'ibm-plex-sans-arabic-700.ttf',
+      'noto-naskh-arabic-400.ttf',
+      'noto-naskh-arabic-700.ttf',
+    ]) {
+      const family = file.replace(/-\d+\.ttf$/, '');
+      assert.deepEqual(
+        readFileSync(join(fonts, file)),
+        readFileSync(join(repo, 'packages/tokens/fonts', family, 'ttf', file)),
+        file,
+      );
+    }
+    assert.match(
+      readFileSync(join(fonts, 'ibm-plex-sans-arabic-OFL.txt'), 'utf8'),
+      /SIL OPEN FONT LICENSE/i,
+    );
+    assert.match(
+      readFileSync(join(fonts, 'noto-naskh-arabic-OFL.txt'), 'utf8'),
+      /SIL OPEN FONT LICENSE/i,
+    );
+  });
+
+  it('red: a changed font file without regenerated Flutter fonts reports DRIFT tokens', async () => {
+    appendFileSync(join(root, 'packages/tokens/fonts', NASKH_TTF), Buffer.from([0]));
+    const { code, results } = await drift();
+    assert.equal(code, 1);
+    assert.deepEqual(results[0].stale, [`${FLUTTER_FONTS}/noto-naskh-arabic-400.ttf`]);
+    const fixed = await drift({ fix: true });
+    assert.equal(fixed.code, 0);
+    assert.equal((await drift()).code, 0);
   });
 
   it('a token source that breaks the schema crashes the check instead of writing outputs', async () => {
