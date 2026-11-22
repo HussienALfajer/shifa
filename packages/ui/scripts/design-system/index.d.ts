@@ -243,6 +243,20 @@ export interface ToastProps {
   triggerLabel?: string;
 }
 
+/** One search over patients and actions in a modal panel; Arabic matching folds alef forms. */
+export interface CommandPaletteProps {
+  triggerLabel?: string;
+  title: string;
+  inputLabel: string;
+  groups: {
+    label: string;
+    items: { value: string; label: string; description?: string; icon?: IconName }[];
+  }[];
+  /** The empty state; {query} is replaced by the typed text. */
+  emptyText: string;
+  defaultOpen?: boolean;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -384,7 +398,8 @@ type Name =
   | 'SegmentedControl'
   | 'AlertDialog'
   | 'Drawer'
-  | 'Toast';
+  | 'Toast'
+  | 'CommandPalette';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -415,3 +430,4 @@ export declare const SegmentedControl: (props: SegmentedControlProps) => unknown
 export declare const AlertDialog: (props: AlertDialogProps) => unknown;
 export declare const Drawer: (props: DrawerProps) => unknown;
 export declare const Toast: (props: ToastProps) => unknown;
+export declare const CommandPalette: (props: CommandPaletteProps) => unknown;

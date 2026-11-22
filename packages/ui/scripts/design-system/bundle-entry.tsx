@@ -25,6 +25,7 @@ import {
 } from '../../src/index.ts';
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
+import { CommandPalette } from './compound-command.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
 import { Toast } from './compound-toast.tsx';
@@ -58,6 +59,7 @@ const COMPONENTS = {
   AlertDialog,
   Drawer,
   Toast,
+  CommandPalette,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

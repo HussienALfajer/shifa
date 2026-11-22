@@ -30,6 +30,13 @@ export {
   type ComboboxItem,
   type ComboboxProps,
 } from './combobox/combobox.tsx';
+export {
+  CommandPalette,
+  type CommandPaletteGroup,
+  type CommandPaletteItem,
+  type CommandPaletteProps,
+  normaliseForSearch,
+} from './command-palette/command-palette.tsx';
 export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
