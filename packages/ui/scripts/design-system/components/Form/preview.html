@@ -1,11 +1,12 @@
-<!-- @dsCard group="Forms" height=820 subtitle="Registration after a failed submit, sign-in while submitting · RTL light, LTR dark" -->
+<!-- @dsCard group="Forms" height=1200subtitle="Registration after a failed submit, sign-in while submitting · RTL light, LTR dark" -->
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <style>
+  *, *::before, *::after { box-sizing: border-box; }
   body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
-  .board { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 2fr); gap: 16px; padding: 16px; align-items: start; }
+  .board { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(360px, 100%), 1fr)); gap: 16px; padding: 16px; align-items: start; }
   .panel { padding: 24px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-surface); color: var(--shifa-color-text-default); }
 </style>
 </head>
