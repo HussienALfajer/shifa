@@ -1,0 +1,82 @@
+// The data-display components of the Shifa Design System (slice 0.4-07), as documentation;
+// bundle.ts appends this file to index.d.ts. The source of truth is packages/ui/src.
+import type { IconName } from './index.d.ts';
+
+/** Queue states of a visit (locked colours). */
+type QueueState = 'booked' | 'confirmed' | 'arrived' | 'waiting' | 'in-room' | 'done';
+type BadgeTone =
+  | 'neutral'
+  | 'brand'
+  | 'outline'
+  | 'success'
+  | 'warning'
+  | 'danger'
+  | 'info'
+  | `queue-${QueueState | 'no-show' | 'cancelled'}`;
+
+export interface BadgeProps {
+  /** neutral (default), brand, outline follow the clinic's theme; success, warning, danger, info and the queue-* tones are locked colours with their icon. */
+  tone?: BadgeTone;
+  /** sm 24 px (default), md 28 px. */
+  size?: 'sm' | 'md';
+  /** An icon before the word on a themed tone. */
+  icon?: IconName;
+  children: string;
+}
+
+export interface CountBadgeProps {
+  /** What screen readers hear: «12 رسالة غير مقروءة». */
+  label: string;
+  /** The count; nothing at 0, «99+» above `max`. */
+  count?: number;
+  max?: number;
+  /** A dot without a number. */
+  dot?: boolean;
+  tone?: 'neutral' | 'brand' | 'danger';
+}
+
+export interface SkeletonProps {
+  /** What screen readers hear while it loads. */
+  label: string;
+  /** A circle before two short lines, as a person's row. */
+  avatar?: boolean;
+  /** Lines of text (3 by default; the last one shorter). */
+  lines?: number;
+  /** A block for a picture or a chart. */
+  block?: boolean;
+}
+
+export interface ActionData {
+  label: string;
+  variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+}
+
+export interface CardProps {
+  title: string;
+  description?: string;
+  /** Makes it a link card: a press anywhere on it follows the title's link. */
+  href?: string;
+  body?: string[];
+  /** Footer buttons, the main one first. */
+  footer?: ActionData[];
+}
+
+export interface EmptyStateProps {
+  title: string;
+  description?: string;
+  /** A line drawing for an empty list or page. */
+  art?: 'jasmine' | 'star';
+  /** An icon instead: search without results, a load that failed. */
+  icon?: IconName;
+  /** panel (default) or page. */
+  size?: 'panel' | 'page';
+  /** Up to two buttons, the main one first. */
+  actions?: ActionData[];
+}
+
+export declare const Spinner: (props: SpinnerProps) => unknown;
+export declare const Badge: (props: BadgeProps) => unknown;
+export declare const CountBadge: (props: CountBadgeProps) => unknown;
+export declare const Skeleton: (props: SkeletonProps) => unknown;
+export declare const Card: (props: CardProps) => unknown;
+export declare const EmptyState: (props: EmptyStateProps) => unknown;

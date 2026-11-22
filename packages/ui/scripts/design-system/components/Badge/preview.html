@@ -1,0 +1,41 @@
+<!-- @dsCard group="Data display" height=320 subtitle="Themed, status and queue tones · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var BADGES = [
+    { children: 'مسودة' },
+    { tone: 'brand', children: 'أسنان' },
+    { tone: 'outline', children: 'تأمين خاص' },
+    { tone: 'success', children: 'مدفوعة' },
+    { tone: 'warning', children: 'جزئية' },
+    { tone: 'danger', children: 'ملغاة' },
+    { tone: 'info', children: 'مرسلة' },
+    { tone: 'queue-waiting', children: 'بالانتظار' },
+    { tone: 'queue-in-room', children: 'في الغرفة' },
+    { tone: 'queue-done', children: 'انتهت' },
+    { tone: 'queue-no-show', children: 'لم يحضر' },
+    { tone: 'success', size: 'md', children: 'مدفوعة' }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    BADGES.forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'Badge', props);
+    });
+  });
+</script>
+</body>
+</html>

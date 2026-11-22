@@ -50,6 +50,12 @@ export const BUNDLE_COMPONENTS = [
   'Drawer',
   'Toast',
   'CommandPalette',
+  'Spinner',
+  'Badge',
+  'CountBadge',
+  'Skeleton',
+  'Card',
+  'EmptyState',
 ] as const;
 
 /** Text that would end or escape an inline <script>, written so that it cannot. */
@@ -102,7 +108,15 @@ export async function buildBundle(out: string): Promise<void> {
     writeFileSync(join(dir, 'bundle.js'), `/* @ds-bundle: ${JSON.stringify(header)} */\n${js}`);
     const css = readFileSync(join(tmp, 'bundle.css'), 'utf8');
     writeFileSync(join(dir, 'bundle.css'), `${css}\n${compactBlock()}\n`);
-    copyFileSync(join(here, 'index.d.ts'), join(dir, 'index.d.ts'));
+    // One types file for the system: the data-display types follow the rest (without their import).
+    const dataTypes = readFileSync(join(here, 'index-data.d.ts'), 'utf8').replace(
+      /^[\s\S]*?import type[^\n]*\n/,
+      '',
+    );
+    writeFileSync(
+      join(dir, 'index.d.ts'),
+      `${readFileSync(join(here, 'index.d.ts'), 'utf8')}\n${dataTypes}`,
+    );
     for (const name of BUNDLE_COMPONENTS) {
       mkdirSync(join(dir, name), { recursive: true });
       for (const file of readdirSync(join(here, 'components', name))) {

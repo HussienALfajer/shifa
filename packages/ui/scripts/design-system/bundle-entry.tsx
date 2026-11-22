@@ -7,9 +7,11 @@
 import { type ComponentType, createElement } from 'react';
 import { createRoot, type Root } from 'react-dom/client';
 import {
+  Badge,
   Button,
   Checkbox,
   Combobox,
+  CountBadge,
   DatePicker,
   Icon,
   IconButton,
@@ -19,6 +21,7 @@ import {
   PasswordInput,
   SegmentedControl,
   Select,
+  Spinner,
   Switch,
   Textarea,
   TimeInput,
@@ -26,6 +29,7 @@ import {
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 import { CommandPalette } from './compound-command.tsx';
+import { Card, EmptyState, Skeleton } from './compound-data.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
 import { Toast } from './compound-toast.tsx';
@@ -60,6 +64,12 @@ const COMPONENTS = {
   Drawer,
   Toast,
   CommandPalette,
+  Spinner,
+  Badge,
+  CountBadge,
+  Skeleton,
+  Card,
+  EmptyState,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

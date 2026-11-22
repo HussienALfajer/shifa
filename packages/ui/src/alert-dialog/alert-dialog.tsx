@@ -18,8 +18,8 @@ import {
 import { type ReactNode, useState } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';
 import { Icon, type IconName } from '../icons/icon.tsx';
-import { Spinner } from '../icons/spinner.tsx';
 import { cn } from '../lib/cn.ts';
+import { SpinnerMark } from '../spinner/spinner.tsx';
 
 export interface AlertDialogProps {
   open?: boolean | undefined;
@@ -215,7 +215,7 @@ export function AlertDialogAction({
       >
         {(state) => (
           <>
-            {state.pending && <Spinner />}
+            {state.pending && <SpinnerMark />}
             <span className="min-w-0">{children}</span>
           </>
         )}

@@ -1,0 +1,41 @@
+<!-- @dsCard group="Feedback" height=420 subtitle="An empty day and a failed load · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-surface); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var STATES = [
+    {
+      art: 'jasmine',
+      title: 'لا مواعيد اليوم',
+      description: 'لم يُحجز أي موعد ليوم الأحد 22/11/2026.',
+      actions: [{ label: 'موعد جديد', variant: 'primary' }]
+    },
+    {
+      icon: 'warning',
+      title: 'تعذّر تحميل الفواتير',
+      description: 'انقطع الاتصال بالخادم. ما حُفظ على الجهاز لم يضِع.',
+      actions: [{ label: 'إعادة المحاولة', variant: 'primary' }, { label: 'التفاصيل', variant: 'ghost' }]
+    }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    STATES.forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'EmptyState', props);
+    });
+  });
+</script>
+</body>
+</html>

@@ -217,6 +217,9 @@
   --shifa-space-13: 52px;
   --shifa-space-16: 64px;
   --shifa-space-0-5: 2px;
+  --shifa-width-14: 56px;
+  --shifa-width-20: 80px;
+  --shifa-width-24: 96px;
   --shifa-width-60: 240px;
   --shifa-width-80: 320px;
   --shifa-width-90: 360px;
@@ -278,6 +281,13 @@
   --shifa-size-toast: 360px;
   --shifa-size-drawer: 400px;
   --shifa-size-command: 560px;
+  --shifa-size-avatar-xs: 24px;
+  --shifa-size-avatar-sm: 32px;
+  --shifa-size-avatar-md: 40px;
+  --shifa-size-avatar-lg: 56px;
+  --shifa-size-avatar-xl: 80px;
+  --shifa-size-illustration-md: 64px;
+  --shifa-size-illustration-lg: 96px;
   --shifa-size-target-min: 44px;
   --shifa-size-icon-sm: 20px;
   --shifa-size-icon-md: 24px;
