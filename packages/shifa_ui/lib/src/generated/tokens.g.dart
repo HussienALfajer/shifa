@@ -96,6 +96,7 @@ abstract final class ShifaTokens {
   static const double sizeAvatarXl = 80;
   static const double sizeIllustrationMd = 64;
   static const double sizeIllustrationLg = 96;
+  static const double sizeTable = 560;
   static const double sizeTargetMin = 44;
   static const double sizeIconSm = 20;
   static const double sizeIconMd = 24;

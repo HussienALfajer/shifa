@@ -53,7 +53,13 @@ const optimizeDeps = {
     'tooltip',
   ]
     .map((entry) => `@ui-sdk/react/${entry}`)
-    .concat(['react-hook-form', '@hookform/resolvers/zod', 'zod']),
+    .concat([
+      'react-hook-form',
+      '@hookform/resolvers/zod',
+      'zod',
+      '@tanstack/react-table',
+      '@tanstack/react-virtual',
+    ]),
 };
 
 export default defineConfig({

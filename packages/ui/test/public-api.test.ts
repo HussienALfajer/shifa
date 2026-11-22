@@ -51,6 +51,14 @@ describe('public API of @shifa/ui', () => {
     expect(leaks).toEqual([]);
   });
 
+  it('names no TanStack type: the data table shows its own column type (slice 0.4-07)', () => {
+    const leaks = [...declarations]
+      .filter(([, text]) => text.includes('@tanstack/'))
+      .map(([file]) => file.slice(pkgDir.length));
+    expect(leaks).toEqual([]);
+    expect(typeof api['DataTable']).toBe('function');
+  });
+
   it.each(GATE_COMPONENTS)('exports $name', ({ name }) => {
     expect(typeof api[name.replace(' ', '')]).toBe('function');
   });

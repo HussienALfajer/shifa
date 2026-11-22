@@ -105,6 +105,22 @@ export interface PaginationProps {
   form?: 'numbers' | 'compact';
 }
 
+export interface DataTableProps {
+  'aria-label': string;
+  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`. */
+  columns: { id: string; header: string; kind?: 'text' | 'number' | 'latin'; sortable?: boolean }[];
+  /** Rows as cell values by column id. */
+  rows: Record<string, string | number>[];
+  selectable?: boolean;
+  /** The ids (row positions from 0, as text) shown selected. */
+  defaultSelected?: string[];
+  /** The column sorted at first. */
+  defaultSort?: { columnId: string; direction: 'ascending' | 'descending' };
+  loading?: boolean;
+  /** The empty state's title when there is no row. */
+  emptyTitle?: string;
+}
+
 export declare const Spinner: (props: SpinnerProps) => unknown;
 export declare const Badge: (props: BadgeProps) => unknown;
 export declare const CountBadge: (props: CountBadgeProps) => unknown;
@@ -114,3 +130,4 @@ export declare const EmptyState: (props: EmptyStateProps) => unknown;
 export declare const Avatar: (props: AvatarProps) => unknown;
 export declare const Toolbar: (props: ToolbarProps) => unknown;
 export declare const Pagination: (props: PaginationProps) => unknown;
+export declare const DataTable: (props: DataTableProps) => unknown;

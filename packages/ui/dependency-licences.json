@@ -1,6 +1,8 @@
 {
   "@hookform/resolvers": "MIT",
   "@phosphor-icons/react": "MIT",
+  "@tanstack/react-table": "MIT",
+  "@tanstack/react-virtual": "MIT",
   "@ui-sdk/core": "Apache-2.0",
   "@ui-sdk/react": "Apache-2.0",
   "clsx": "MIT",

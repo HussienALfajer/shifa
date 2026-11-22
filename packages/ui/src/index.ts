@@ -65,6 +65,16 @@ export {
   type CommandPaletteProps,
   normaliseForSearch,
 } from './command-palette/command-palette.tsx';
+export {
+  DataTable,
+  type DataTableCellValue,
+  type DataTableColumn,
+  type DataTableColumnKind,
+  type DataTableColumnWidth,
+  type DataTableProps,
+  type DataTableSort,
+  type DataTableSortDirection,
+} from './data-table/data-table.tsx';
 export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx';
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';

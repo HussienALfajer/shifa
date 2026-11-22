@@ -32,6 +32,7 @@ import { CommandPalette } from './compound-command.tsx';
 import { Avatar, Card, EmptyState, Pagination, Skeleton, Toolbar } from './compound-data.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
+import { DataTable } from './compound-table.tsx';
 import { Toast } from './compound-toast.tsx';
 
 /** The public components, in the order the system lists them (bundle.ts BUNDLE_COMPONENTS). */
@@ -73,6 +74,7 @@ const COMPONENTS = {
   Avatar,
   Toolbar,
   Pagination,
+  DataTable,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

@@ -35,6 +35,7 @@
       "md": { "$value": "{space.16}" },
       "lg": { "$value": "{width.24}" }
     },
+    "table": { "$description": "Height of a data table's scroll box: rows past it scroll under the sticky header (slice 0.4-07).", "$value": "{width.140}" },
     "target-min": { "$description": "The smallest touch target, in every density.", "$value": "{space.11}" },
     "icon": {
       "$description": "Phosphor icons, duotone: sm in rows and controls, md in navigation and cards.",
