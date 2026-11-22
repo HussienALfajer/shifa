@@ -170,6 +170,18 @@ export interface IconButtonProps {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger';
   size?: 'sm' | 'md';
   disabled?: boolean;
+  /** Shows the label in a tooltip on hover and keyboard focus. */
+  tooltip?: boolean;
+}
+
+/** A short explanation in a dark ink bubble above its trigger; never the only copy of it. */
+export interface TooltipProps {
+  content: string;
+  /** A text trigger, which the tooltip describes. Leave out for an icon button named by `content`. */
+  triggerLabel?: string;
+  triggerIcon?: IconName;
+  side?: 'top' | 'bottom';
+  defaultOpen?: boolean;
 }
 
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
@@ -307,7 +319,8 @@ type Name =
   | 'OtpInput'
   | 'TimeInput'
   | 'Field'
-  | 'Form';
+  | 'Form'
+  | 'Tooltip';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -332,3 +345,4 @@ export declare const OtpInput: (props: OtpInputProps) => unknown;
 export declare const TimeInput: (props: TimeInputProps) => unknown;
 export declare const Field: (props: FieldComponentProps) => unknown;
 export declare const Form: (props: FormProps) => unknown;
+export declare const Tooltip: (props: TooltipProps) => unknown;

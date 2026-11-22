@@ -1,0 +1,32 @@
+<!-- @dsCard group="Overlays" height=240 subtitle="An icon button's name shown above it, a description on a text button; hover or Tab to the others · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: flex; gap: 16px; align-items: center; padding: 56px 16px 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar" data-open="true"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    var items = [
+      { content: 'طباعة الوصفة', triggerIcon: 'printer', defaultOpen: panel.dataset.open === 'true' },
+      { content: 'إرسال تذكير عبر واتساب', triggerLabel: 'إرسال تذكير' },
+      { content: 'الإشعارات', triggerIcon: 'bell', side: 'bottom' }
+    ];
+    items.forEach(function (props) {
+      var slot = document.createElement('span');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'Tooltip', props);
+    });
+  });
+</script>
+</body>
+</html>

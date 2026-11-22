@@ -74,8 +74,9 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **TimeInput**: hour and minute (and ص/م on the 12-hour clock, a clinic setting, OD-62), left to right; the value is "HH:mm".
 - **Field**: label, required asterisk, hint and error around a control.
 - **Form**: a whole form in one state; in code React Hook Form with the server's Zod schema, errors as i18n keys.
+- **Tooltip**: a dark ink bubble above its trigger, 240 px at most; keyboard focus opens it at once, hover after 500 ms, touch never; never the only copy of what a person needs.
 
-Tabs, Dialog, Popover, Menu, RadioGroup, Field and Form take their content as data here (`items`, `fields`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form and Tooltip take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 

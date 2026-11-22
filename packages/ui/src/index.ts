@@ -103,3 +103,4 @@ export {
 } from './tabs/tabs.tsx';
 export { Textarea, type TextareaProps } from './textarea/textarea.tsx';
 export { TimeInput, type TimeInputProps } from './time-input/time-input.tsx';
+export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';
