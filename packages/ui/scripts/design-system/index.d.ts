@@ -215,6 +215,20 @@ export interface AlertDialogProps {
   defaultOpen?: boolean;
 }
 
+/** A panel from the logical end (default), the start, or the bottom (tablet, phone). */
+export interface DrawerProps {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  side?: 'start' | 'end' | 'bottom';
+  title: string;
+  description?: string;
+  /** Fields in the body, each an Input. */
+  fields?: { label: string; value?: string }[];
+  cancelLabel?: string;
+  saveLabel?: string;
+  defaultOpen?: boolean;
+}
+
 /** Text a person types; `dir: 'auto'` where it may be Latin (phone, email, medicine). */
 export interface InputProps extends Partial<FieldProps> {
   defaultValue?: string;
@@ -354,7 +368,8 @@ type Name =
   | 'Tooltip'
   | 'Accordion'
   | 'SegmentedControl'
-  | 'AlertDialog';
+  | 'AlertDialog'
+  | 'Drawer';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;
@@ -383,3 +398,4 @@ export declare const Tooltip: (props: TooltipProps) => unknown;
 export declare const Accordion: (props: AccordionProps) => unknown;
 export declare const SegmentedControl: (props: SegmentedControlProps) => unknown;
 export declare const AlertDialog: (props: AlertDialogProps) => unknown;
+export declare const Drawer: (props: DrawerProps) => unknown;

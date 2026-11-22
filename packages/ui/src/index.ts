@@ -44,6 +44,18 @@ export {
   DialogTrigger,
   type DialogTriggerProps,
 } from './dialog/dialog.tsx';
+export {
+  Drawer,
+  DrawerActions,
+  DrawerClose,
+  type DrawerCloseProps,
+  DrawerContent,
+  type DrawerContentProps,
+  type DrawerProps,
+  type DrawerSide,
+  DrawerTrigger,
+  type DrawerTriggerProps,
+} from './drawer/drawer.tsx';
 export { Field, type FieldProps } from './field/field.tsx';
 export {
   Form,

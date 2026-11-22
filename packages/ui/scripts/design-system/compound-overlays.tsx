@@ -10,8 +10,16 @@ import {
   AlertDialog as CodeAlertDialog,
 } from '../../src/alert-dialog/alert-dialog.tsx';
 import { Button } from '../../src/button/button.tsx';
+import {
+  Drawer as CodeDrawer,
+  DrawerActions,
+  DrawerClose,
+  DrawerContent,
+  DrawerTrigger,
+} from '../../src/drawer/drawer.tsx';
 import { IconButton } from '../../src/icon-button/icon-button.tsx';
 import type { IconName } from '../../src/icons/icon.tsx';
+import { Input } from '../../src/input/input.tsx';
 import { Tooltip as CodeTooltip } from '../../src/tooltip/tooltip.tsx';
 
 export interface AccordionData {
@@ -89,6 +97,56 @@ export function AlertDialog({
         </AlertDialogAction>
       </AlertDialogContent>
     </CodeAlertDialog>
+  );
+}
+
+export interface DrawerData {
+  triggerLabel: string;
+  triggerIcon?: IconName;
+  side?: 'start' | 'end' | 'bottom';
+  title: string;
+  description?: string;
+  fields?: { label: string; value?: string }[];
+  cancelLabel?: string;
+  saveLabel?: string;
+  defaultOpen?: boolean;
+}
+
+export function Drawer({
+  triggerLabel,
+  triggerIcon,
+  side,
+  title,
+  description,
+  fields = [],
+  cancelLabel,
+  saveLabel,
+  defaultOpen,
+}: DrawerData) {
+  return (
+    <CodeDrawer
+      {...(side === undefined ? {} : { side })}
+      {...(defaultOpen === undefined ? {} : { defaultOpen })}
+    >
+      <DrawerTrigger {...(triggerIcon === undefined ? {} : { startIcon: triggerIcon })}>
+        {triggerLabel}
+      </DrawerTrigger>
+      <DrawerContent title={title} {...(description === undefined ? {} : { description })}>
+        {fields.map((field) => (
+          <Input
+            key={field.label}
+            label={field.label}
+            {...(field.value === undefined ? {} : { defaultValue: field.value })}
+          />
+        ))}
+        {(cancelLabel !== undefined || saveLabel !== undefined) && (
+          <DrawerActions>
+            {cancelLabel !== undefined && <DrawerClose>{cancelLabel}</DrawerClose>}
+            {saveLabel !== undefined && <Button variant="primary">{saveLabel}</Button>}
+          </DrawerActions>
+        )}
+      </DrawerContent>
+    </CodeDrawer>
   );
 }
 

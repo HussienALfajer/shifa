@@ -1,0 +1,43 @@
+<!-- @dsCard group="Overlays" height=200 subtitle="From the logical end, from the start, from the bottom; press one to open · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .label { margin: 0; font-size: 12px; color: var(--shifa-color-text-muted); }
+</style>
+</head>
+<body>
+<div class="board">
+  <p class="label">اضغط زراً لفتح اللوحة · Esc أو النقر خارجها يغلقها</p>
+  <div class="row" dir="rtl" lang="ar" data-slot="ar"></div>
+  <div class="row" dir="ltr" lang="en" data-slot="en"></div>
+</div>
+<script>
+  var EDIT = { title: 'تعديل الموعد', description: 'الثلاثاء 24/11/2026 الساعة 10:30',
+    fields: [{ label: 'الهاتف', value: '0944 123 456' }, { label: 'ملاحظة', value: 'يفضّل موعداً بعد الظهر' }],
+    cancelLabel: 'إلغاء', saveLabel: 'حفظ' };
+  var PROPS = {
+    ar: [
+      Object.assign({ triggerLabel: 'من النهاية', triggerIcon: 'pencil' }, EDIT),
+      Object.assign({ triggerLabel: 'من البداية', side: 'start' }, EDIT),
+      Object.assign({ triggerLabel: 'من الأسفل', side: 'bottom' }, EDIT)
+    ],
+    en: [
+      { triggerLabel: 'From the end', title: 'Edit appointment', description: 'Tuesday 24/11/2026 at 10:30',
+        fields: [{ label: 'Note', value: 'Prefers the afternoon' }], cancelLabel: 'Cancel', saveLabel: 'Save' }
+    ]
+  };
+  document.querySelectorAll('[data-slot]').forEach(function (row) {
+    PROPS[row.getAttribute('data-slot')].forEach(function (props) {
+      var slot = document.createElement('span');
+      row.appendChild(slot);
+      window.Shifa.mount(slot, 'Drawer', props);
+    });
+  });
+</script>
+</body>
+</html>
