@@ -2,6 +2,7 @@
 // a name whatever its diacritics, tatweel or alef form. Phase A passes the full name normaliser
 // (ADR-0034, OD-40) through `normalise`; this one is not it.
 import { createElement, Fragment, type ReactNode } from 'react';
+import { toWesternDigits } from '../lib/digits.ts';
 
 /** Harakat, shadda, sukun, superscript alef and the Quranic marks. */
 const DIACRITICS = /[ً-ٰٟۖ-ۭ]/g;
@@ -9,9 +10,9 @@ const TATWEEL = /ـ/g;
 /** Alef with hamza above or below, with madda, and wasla, folded to a bare alef. */
 const ALEF_FORMS = /[آأإٱ]/g;
 
-/** Lower case, no diacritics or tatweel, one alef form. */
+/** Lower case, no diacritics or tatweel, one alef form, Western digits (OD-20). */
 export function normaliseForSearch(text: string): string {
-  return text
+  return toWesternDigits(text)
     .toLocaleLowerCase()
     .replace(DIACRITICS, '')
     .replace(TATWEEL, '')

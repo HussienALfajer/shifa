@@ -30,7 +30,7 @@ export { normaliseForSearch } from './normalise.ts';
 export interface CommandPaletteItem {
   value: string;
   label: string;
-  /** A second line: a record number, a phone. */
+  /** A second line: a record number, a phone. It is searched too. */
   description?: string | undefined;
   icon?: IconName | undefined;
   /** More words that find it. */
@@ -168,7 +168,11 @@ export function CommandPalette({
                     key={item.value}
                     value={item.value}
                     label={item.label}
-                    {...(item.keywords === undefined ? {} : { keywords: [...item.keywords] })}
+                    // The second line (a record number, a phone) finds the option too.
+                    keywords={[
+                      ...(item.keywords ?? []),
+                      ...(item.description === undefined ? [] : [item.description]),
+                    ]}
                     {...(item.disabled === undefined ? {} : { disabled: item.disabled })}
                     className={cn(
                       'flex min-h-(--shifa-size-row) cursor-pointer items-center gap-3 rounded-input px-2 py-1',

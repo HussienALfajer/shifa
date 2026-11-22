@@ -96,7 +96,8 @@ export interface AccordionItemProps {
 }
 
 const TRIGGER = cn(
-  'flex w-full min-h-(--shifa-size-row) items-center gap-3 border-0 bg-transparent px-4 text-start',
+  // group/trigger: the caret reads this button's state, not an open drawer or outer item around it.
+  'group/trigger flex w-full min-h-(--shifa-size-row) items-center gap-3 border-0 bg-transparent px-4 text-start',
   'font-ui text-body font-medium leading-heading text-text-default in-data-[density=compact]:px-3 in-data-[density=compact]:text-200',
   'cursor-pointer select-none transition-colors duration-(--shifa-motion-duration-fast) motion-reduce:transition-none',
   'hover:bg-selection-subtle data-open:font-semibold',
@@ -107,7 +108,7 @@ const TRIGGER = cn(
 
 const CARET = cn(
   'ms-auto text-icon-muted transition-transform duration-(--shifa-motion-duration-base) ease-standard',
-  'in-data-open:rotate-180 in-data-disabled:text-text-disabled motion-reduce:transition-none',
+  'group-data-open/trigger:rotate-180 group-data-disabled/trigger:text-text-disabled motion-reduce:transition-none',
 );
 
 export function AccordionItem({

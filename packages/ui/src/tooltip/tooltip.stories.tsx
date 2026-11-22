@@ -25,11 +25,11 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-function Triggers({ hint = 'إرسال تذكير عبر واتساب' }: { hint?: string }) {
+function Triggers({ hint = 'إرسال تذكير عبر واتساب', open }: { hint?: string; open?: boolean }) {
   return (
     <div className="flex flex-wrap items-center gap-4 p-12">
       <IconButton icon="printer" label="طباعة الوصفة" tooltip />
-      <Tooltip content={hint}>
+      <Tooltip content={hint} {...(open === undefined ? {} : { defaultOpen: open })}>
         <Button>إرسال تذكير</Button>
       </Tooltip>
       <IconButton icon="bell" label="الإشعارات" variant="ghost" tooltip />
@@ -101,8 +101,10 @@ export const LongText: Story = {
   },
 };
 
-const states = storyStates((label) => <Triggers hint={label} />);
-export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
-export const MixedDirection: Story = states['MixedDirection'] ?? {};
-export const Zoom200: Story = states['Zoom200'] ?? {};
-export const ReducedMotion: Story = states['ReducedMotion'] ?? {};
+// The text states with the tooltip shown, one copy each (one tooltip is open at a time).
+const states = storyStates((label) => <Triggers hint={label} open />);
+const single = { parameters: { matrix: false } };
+export const LongArabicLabel: Story = { ...states['LongArabicLabel'], ...single };
+export const MixedDirection: Story = { ...states['MixedDirection'], ...single };
+export const Zoom200: Story = { ...states['Zoom200'], ...single };
+export const ReducedMotion: Story = { ...states['ReducedMotion'], ...single };

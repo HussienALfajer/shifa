@@ -133,8 +133,10 @@ export const OpenBottom: Story = {
   },
 };
 
-const states = storyStates((label) => <EditAppointment title={label} />);
-export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
-export const MixedDirection: Story = states['MixedDirection'] ?? {};
-export const Zoom200: Story = states['Zoom200'] ?? {};
-export const ReducedMotion: Story = states['ReducedMotion'] ?? {};
+// The text states open, one copy each (a modal covers the page): the title is what they test.
+const states = storyStates((label) => <EditAppointment title={label} open />);
+const single = { parameters: { matrix: false } };
+export const LongArabicLabel: Story = { ...states['LongArabicLabel'], ...single };
+export const MixedDirection: Story = { ...states['MixedDirection'], ...single };
+export const Zoom200: Story = { ...states['Zoom200'], ...single };
+export const ReducedMotion: Story = { ...states['ReducedMotion'], ...single };

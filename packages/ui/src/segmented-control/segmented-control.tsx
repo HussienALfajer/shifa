@@ -61,7 +61,8 @@ const ITEM = cn(
   'data-checked:border-border-default data-checked:bg-bg-surface data-checked:font-semibold data-checked:text-text-default data-checked:shadow-card',
   'data-disabled:cursor-not-allowed data-disabled:bg-transparent data-disabled:text-text-disabled',
   'data-checked:data-disabled:bg-bg-surface data-checked:data-disabled:shadow-none',
-  'focus-visible:shadow-focus focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-border-focus focus-visible:transition-none',
+  // Inside the track, which scrolls on a narrow screen and would clip an outer ring: drawn inward.
+  'focus-visible:shadow-focus focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-border-focus focus-visible:transition-none',
 );
 
 export function SegmentedControl({

@@ -63,7 +63,11 @@ export const Multiple: Story = { render: () => <PatientSections multiple /> };
 
 /** The arrows move between headers and skip the disabled one. */
 export const Keyboard: Story = {
-  parameters: { matrix: false },
+  // One copy only: the rule the matrix stories turn off is on here.
+  parameters: {
+    matrix: false,
+    a11y: { config: { rules: [{ id: 'landmark-unique', enabled: true }] } },
+  },
   render: () => <PatientSections />,
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);

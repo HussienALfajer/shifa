@@ -32,12 +32,14 @@ type Story = StoryObj<typeof meta>;
 function DeletePrescription({
   title = 'حذف وصفة المريض؟',
   onAction,
+  open,
 }: {
   title?: string;
   onAction?: () => unknown;
+  open?: boolean;
 }) {
   return (
-    <AlertDialog>
+    <AlertDialog {...(open === undefined ? {} : { defaultOpen: open })}>
       <AlertDialogTrigger variant="danger" startIcon="trash">
         حذف الوصفة
       </AlertDialogTrigger>
@@ -110,8 +112,10 @@ export const Failed: Story = {
   },
 };
 
-const states = storyStates((label) => <DeletePrescription title={label} />);
-export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
-export const MixedDirection: Story = states['MixedDirection'] ?? {};
-export const Zoom200: Story = states['Zoom200'] ?? {};
-export const ReducedMotion: Story = states['ReducedMotion'] ?? {};
+// The text states open, one copy each (a modal covers the page): the question is what they test.
+const states = storyStates((label) => <DeletePrescription title={label} open />);
+const single = { parameters: { matrix: false } };
+export const LongArabicLabel: Story = { ...states['LongArabicLabel'], ...single };
+export const MixedDirection: Story = { ...states['MixedDirection'], ...single };
+export const Zoom200: Story = { ...states['Zoom200'], ...single };
+export const ReducedMotion: Story = { ...states['ReducedMotion'], ...single };
