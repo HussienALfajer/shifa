@@ -7,9 +7,9 @@ import { userEvent } from 'vitest/browser';
 import { patientsSharing } from '../../test/fixtures.ts';
 import {
   expectAxeClean,
-  expectPopupSide,
   renderDir,
   typeArabic,
+  waitForPopupSide,
 } from '../../test/support/index.ts';
 import { Combobox, type ComboboxItem } from './combobox.tsx';
 
@@ -76,7 +76,7 @@ describe.each(DIRS)('Combobox gate in %s', (dir) => {
     const list = screen.getByRole('listbox').element();
     await expect.element(screen.getByRole('listbox')).toBeVisible();
     const field = input.closest('[data-slot="combobox-field"]') ?? input;
-    expectPopupSide({ dir, trigger: field, popup: list, side: 'bottom', align: 'start' });
+    await waitForPopupSide({ dir, trigger: field, popup: list, side: 'bottom', align: 'start' });
     expect(input.getAttribute('aria-expanded')).toBe('true');
   });
 

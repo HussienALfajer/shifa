@@ -6,9 +6,9 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
   expectAxeClean,
-  expectPopupSide,
   renderDir,
   typeArabic,
+  waitForPopupSide,
 } from '../../test/support/index.ts';
 import { Popover, PopoverContent, PopoverTrigger } from './popover.tsx';
 
@@ -48,7 +48,7 @@ describe.each(DIRS)('Popover gate in %s', (dir) => {
   it('opens below the trigger, aligned to its logical start', async () => {
     const { trigger, popup } = await open(dir);
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    expectPopupSide({ dir, trigger, popup, side: 'bottom', align: 'start' });
+    await waitForPopupSide({ dir, trigger, popup, side: 'bottom', align: 'start' });
   });
 
   it('moves focus to its first field, which takes Arabic text', async () => {

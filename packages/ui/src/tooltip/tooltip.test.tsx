@@ -7,9 +7,9 @@ import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import {
   expectAxeClean,
-  expectPopupSide,
   renderDir,
   tokenColor,
+  waitForPopupSide,
 } from '../../test/support/index.ts';
 import { Button } from '../button/button.tsx';
 import { IconButton } from '../icon-button/icon-button.tsx';
@@ -92,7 +92,7 @@ describe.each(DIRS)('Tooltip in %s', (dir) => {
       await poll(isOpen, 'open').toBe(true);
       const tip = tooltipOf();
       if (tip === null) throw new Error('no tooltip');
-      expectPopupSide({ dir, trigger, popup: tip, side, align: 'center' });
+      await waitForPopupSide({ dir, trigger, popup: tip, side, align: 'center' });
       await screen.unmount();
     }
   });

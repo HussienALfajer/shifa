@@ -6,7 +6,12 @@
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { DOCTORS } from '../../test/fixtures.ts';
-import { expectAxeClean, expectPopupSide, pressKeys, renderDir } from '../../test/support/index.ts';
+import {
+  expectAxeClean,
+  pressKeys,
+  renderDir,
+  waitForPopupSide,
+} from '../../test/support/index.ts';
 import { Select, type SelectItem } from './select.tsx';
 
 const DIRS = ['rtl', 'ltr'] as const;
@@ -77,7 +82,7 @@ describe.each(DIRS)('Select gate in %s', (dir) => {
   it('opens the list below the field, at its logical start and at least as wide', async () => {
     const { field, list } = await open(dir);
     expect(field.getAttribute('aria-expanded')).toBe('true');
-    expectPopupSide({ dir, trigger: field, popup: list, side: 'bottom', align: 'start' });
+    await waitForPopupSide({ dir, trigger: field, popup: list, side: 'bottom', align: 'start' });
     expect(list.getBoundingClientRect().width).toBeGreaterThanOrEqual(
       field.getBoundingClientRect().width - 1,
     );

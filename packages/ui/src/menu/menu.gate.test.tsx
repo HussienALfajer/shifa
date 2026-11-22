@@ -8,9 +8,9 @@ import { userEvent } from 'vitest/browser';
 import {
   arrows,
   expectAxeClean,
-  expectPopupSide,
   pressKeys,
   renderDir,
+  waitForPopupSide,
 } from '../../test/support/index.ts';
 import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger, Submenu } from './menu.tsx';
 
@@ -83,7 +83,7 @@ describe.each(DIRS)('Menu gate in %s', (dir) => {
     const { trigger, menu } = await open(dir);
     expect(trigger.getAttribute('aria-haspopup')).toBe('menu');
     expect(trigger.getAttribute('aria-expanded')).toBe('true');
-    expectPopupSide({ dir, trigger, popup: menu, side: 'bottom', align: 'start' });
+    await waitForPopupSide({ dir, trigger, popup: menu, side: 'bottom', align: 'start' });
     await poll(() => startsWith(current(), L.edit), 'first item').toBe(true);
   });
 
@@ -111,7 +111,7 @@ describe.each(DIRS)('Menu gate in %s', (dir) => {
     await expect.element(sub).toBeVisible();
     await poll(() => startsWith(current(), L.small), 'first item of the submenu').toBe(true);
     const parentItem = screen.getByRole('menuitem', { name: L.print }).element();
-    expectPopupSide({
+    await waitForPopupSide({
       dir,
       trigger: parentItem,
       popup: sub.element(),
