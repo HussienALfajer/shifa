@@ -108,6 +108,9 @@ export const membership = pgTable(
       sql`char_length(btrim(${t.displayName})) between 1 and 200`,
     ),
     check('membership_status_check', sql`${t.status} in ('pending', 'active', 'deactivated')`),
+    // A-01-05: only a bound membership is active (shifa_app may UPDATE `status`). A pending
+    // invitation may still be deactivated while unbound (A-01-04).
+    check('membership_active_is_bound', sql`${t.status} <> 'active' or ${t.userId} is not null`),
   ],
 );
 

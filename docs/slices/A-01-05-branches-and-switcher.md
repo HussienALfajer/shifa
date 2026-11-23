@@ -50,7 +50,11 @@ Estimated hand-written lines: ~3,750 with OD-90 (binding migration, fixtures and
 Plan approved by the owner (2026-11-23) with OD-90's recommendation; the owner waived the second-session critique of this T0 plan.
 
 ## Stopped at
-Not started.
+Checkpoint 1 done (membership binding on INSERT): migrations `20261123235315_a01_membership_active_is_bound` and `20261123235324_a01_membership_binding_policies`, fixtures, isolation case; `pnpm verify` green. Next: checkpoint 2 (branches).
+
+## Deviations from the plan
+- **CHECK `membership_active_is_bound`** (`status <> 'active' OR user_id IS NOT NULL`) instead of the planned `membership_bound_unless_pending` (`status = 'pending' OR user_id IS NOT NULL`): the planned form also refuses an unbound `deactivated` row, which A-01-04 writes when the owner deactivates a pending invitation (`POST /team/members/:id/deactivate`, reactivated back to `pending`). The stated intent, "an unbound row set to `active` must be impossible", holds; with the shifa_app UPDATE policy a bound row never returns to `pending`, and an unbound one only moves between `pending` and `deactivated`.
+- The shifa_app UPDATE policy is named `membership_app_never_unbind` and has `USING (true)`, so it restricts only the new row.
 
 ## Evidence
 - `verify` (full): —

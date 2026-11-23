@@ -120,14 +120,20 @@ const phonesOf = new Map<Caller, string>();
 /** A fresh member of the callers' clinic (A-01-04 routes). */
 async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): Promise<string> {
   const id = randomUUID();
-  await testDb().withTenant({ tenantId: TENANT_A, userId: fixtureId('matrix seeder') }, (tx) =>
-    tx.insert(membership).values({
-      id,
-      tenantId: TENANT_A,
-      phoneE164: nextPhone(),
-      displayName: 'موظف المصفوفة',
-      status,
-    }),
+  // Every membership is inserted pending (A-01-05), then deactivated as the team does.
+  await testDb().withTenant(
+    { tenantId: TENANT_A, userId: fixtureId('matrix seeder') },
+    async (tx) => {
+      await tx.insert(membership).values({
+        id,
+        tenantId: TENANT_A,
+        phoneE164: nextPhone(),
+        displayName: 'موظف المصفوفة',
+      });
+      if (status !== 'pending') {
+        await tx.update(membership).set({ status }).where(eq(membership.id, id));
+      }
+    },
   );
   return id;
 }

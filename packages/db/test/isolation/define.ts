@@ -41,6 +41,14 @@ export interface IsolationCase {
    * privileges, and the update-without-WHERE check sets this column instead of `tenant_id`.
    */
   readonly updatable?: { readonly column: string; readonly value: string } | undefined;
+  /**
+   * Inserts with tenant A's own tenant_id that a restrictive policy of this table must refuse
+   * (SQLSTATE 42501 naming the table), by name; each runs inside tenant A (A-01-05: a membership
+   * already bound to an account).
+   */
+  readonly refusedInserts?:
+    | Readonly<Record<string, (tx: Tx, tenantId: string) => Promise<void>>>
+    | undefined;
 }
 
 export function defineIsolationCase(c: IsolationCase): IsolationCase {

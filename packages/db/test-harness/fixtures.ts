@@ -63,19 +63,31 @@ export async function insertBranch(
     .values({ id: row.id, tenantId: row.tenantId, name: row.name ?? 'فرع تجريبي' });
 }
 
-/** A member inside a tenant (withTenant()); pending until `userId` is given. */
+/**
+ * A member of a tenant. Pending (no `userId`): through `tx` (withTenant(), shifa_app), as the
+ * team adds members. Active and bound to `userId`: no application role may INSERT that (A-01-05;
+ * binding is an UPDATE through a used link), so it is written as the superuser and committed at
+ * once; `tx` is not used. Later statements in `tx` see it (READ COMMITTED).
+ */
 export async function insertMembership(
   tx: Tx,
   row: { id: string; tenantId: string; phone: string; userId?: string | null },
 ): Promise<void> {
-  await tx.insert(membership).values({
+  const values = {
     id: row.id,
     tenantId: row.tenantId,
     userId: row.userId ?? null,
     phoneE164: row.phone,
     displayName: 'موظف تجريبي',
-    status: row.userId ? 'active' : 'pending',
-  });
+    status: row.userId ? ('active' as const) : ('pending' as const),
+  };
+  if (!row.userId) {
+    await tx.insert(membership).values(values);
+    return;
+  }
+  // Imported lazily: index.ts re-exports this file.
+  const { superuserDb, workerDatabaseName } = await import('./index.ts');
+  await superuserDb(workerDatabaseName()).insert(membership).values(values);
 }
 
 /** A member setup link inside a tenant (withTenant()), valid 72 h (clinics write no longer). */
