@@ -10,7 +10,8 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 - `src/modules/<context>/` one folder per bounded context; others import only its `index.ts`. `src/platform/` and `src/access/` never import a module (lint `shifa/module-boundaries` and `test/architecture/module-imports.test.ts`, which also fails on a comment silencing the rule).
 
 ## Access (fail-closed)
-- `src/access/`: permission keys, roles and grants, `Principal` + `PrincipalSchema` (AuthPort contract, `auth.port.ts`) + `hasPermission()`, `@Public()` / `@SignedIn()` / `@RequirePermission(key)`, `@CurrentPrincipal()`; `AUTH_PORT` is `BetterAuthAdapter`.
+- `src/access/`: permission keys, roles and grants, `Principal` (with `platformAdmin` and `mfa`) + `PrincipalSchema` (AuthPort contract, `auth.port.ts`) + `hasPermission()` + `mfaBlock()`, `@Public()` / `@SignedIn()` / `@RequirePermission(key)` / `@PlatformAdmin()`, `@BeforeMfa()` (with `@SignedIn()`), `@CurrentPrincipal()`; `AUTH_PORT` is `BetterAuthAdapter`.
+- `src/modules/identity/` also holds setup links, our TOTP (ADR-0045) and the super-admin seed (`pnpm --filter @shifa/api seed:super-admin --phone … --name …`; refuses `NODE_ENV=production` without `--allow-production`). `src/modules/platform/`: the `@PlatformAdmin` clinics API on `createPlatformDb()` (`DATABASE_URL_PLATFORM`), every call audited; setup links point to `CLINIC_WEB_URL`.
 - Global `AccessGuard`: not exactly one annotation → 500; anonymous → 401 (`session_expired` for a lapsed session); missing key → 403. Denials log route template and handler only.
 - `src/modules/identity/` (ADR-0044): Better Auth via `auth.api.*` only, on `createAuthDb()`; sign-in, sessions (idle and 12 h limits on the injected `CLOCK`), throttle, audit. Request metadata only through `@ClientRequest()`; `platform/request-guard.ts` refuses cross-site or non-JSON unsafe requests.
 - `AccessCheck` at bootstrap: a handler without exactly one annotation stops the start.

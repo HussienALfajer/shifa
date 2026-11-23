@@ -1,6 +1,6 @@
 # ADR-0044: Better Auth as a library behind Nest routes; memberships in our own tables
 
-Status: Accepted (owner, 2026-11-23, with specs A-01a and A-01b and the A-01 slice plan) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0016](0016-identity-better-auth-reverse-whatsapp.md)
+Status: Accepted (owner, 2026-11-23, with specs A-01a and A-01b and the A-01 slice plan; two-factor plugin replaced by ADR-0045, proposed) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0016](0016-identity-better-auth-reverse-whatsapp.md)
 
 ## Context
 ADR-0016 chose Better Auth with its organization, phone-number, two-factor, passkey, multi-session and admin plugins. The A-01 specs ([A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md), [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md)) put clinics, memberships, role assignments and branches in our own tenant tables under FORCE RLS (built in A-01-01), and require every route, sign-in included, to pass the Nest guard, the contract check and the route matrix (A-01a criterion 16). Better Auth's catch-all handler would add routes outside all three. The identity tables live on the `shifa_auth` role, reachable only through `withAuth()` ([ADR-0043](0043-database-roles-auth-and-platform.md)), which hands out a transaction, never a pool. The A-01-02 gate ran Better Auth 1.7.27 this way (results in the [slice](../slices/A-01-02-better-auth-sign-in-and-sessions.md)).
