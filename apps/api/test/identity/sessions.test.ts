@@ -75,7 +75,7 @@ describe('session cookie (criterion 9)', () => {
     for (const forged of [`__Host-shifa.sid=${token}`, `__Host-shifa.sid=${token}.AAAA`]) {
       const res = await get(app, '/auth/session', forged);
       expect(res.statusCode).toBe(401);
-      expect((res.json() as { error: { code: string } }).error.code).toBe('unauthorized');
+      expect(res.json<{ error: { code: string } }>().error.code).toBe('unauthorized');
     }
   });
 
@@ -90,7 +90,7 @@ describe('idle and absolute limits (criterion 9)', () => {
   it('idle: the clinic default of 30 minutes; any request keeps the session alive', async () => {
     await seedPerson(phone(3), { tenantId: TENANT, role: 'receptionist' });
     const cookie = sessionCookie(await signIn(app, phone(3)));
-    const view = (await get(app, '/auth/session', cookie)).json() as Record<string, unknown>;
+    const view = (await get(app, '/auth/session', cookie)).json<Record<string, unknown>>();
     expect(view).toMatchObject({ tenantId: TENANT, idleMinutes: 30 });
     clock.advanceBy(29 * MINUTE);
     expect((await get(app, '/auth/session', cookie)).statusCode).toBe(200);
@@ -168,7 +168,7 @@ describe('own sessions (criterion 10)', () => {
     sessionCookie(await signIn(app, phone(9), undefined, { userAgent: FIREFOX_WINDOWS }));
     const res = await get(app, '/auth/sessions', a);
     expect(res.statusCode).toBe(200);
-    const { sessions } = res.json() as { sessions: Record<string, unknown>[] };
+    const { sessions } = res.json<{ sessions: Record<string, unknown>[] }>();
     expect(sessions).toHaveLength(2);
     expect(sessions).toContainEqual(
       expect.objectContaining({ device: 'Android', browser: 'Chrome', current: true }),
@@ -192,9 +192,9 @@ describe('own sessions (criterion 10)', () => {
     const person = await seedPerson(phone(0));
     const a = sessionCookie(await signIn(app, phone(0)));
     const b = sessionCookie(await signIn(app, phone(0)));
-    const { sessions } = (await get(app, '/auth/sessions', a)).json() as {
+    const { sessions } = (await get(app, '/auth/sessions', a)).json<{
       sessions: { id: string; current: boolean }[];
-    };
+    }>();
     const other = sessions.find((s) => !s.current);
     const res = await app.app.inject({
       method: 'DELETE',

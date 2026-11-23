@@ -94,9 +94,9 @@ describe('identity audit rows', () => {
     // replaced: sign in again presenting c
     await signIn(app, phone(4), undefined, { cookie: c });
     // one: a ends b
-    const list = (await get(app, '/auth/sessions', a)).json() as {
+    const list = (await get(app, '/auth/sessions', a)).json<{
       sessions: { id: string; current: boolean }[];
-    };
+    }>();
     const others = list.sessions.filter((s) => !s.current);
     await app.app.inject({
       method: 'DELETE',

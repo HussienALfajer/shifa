@@ -45,8 +45,8 @@ describe('sign-in (criterion 6)', () => {
   });
 
   it('accepts the phone in any accepted spelling (local, Arabic-Indic digits, spaces)', async () => {
-    await seedPerson('+963944123456');
-    for (const typed of ['0944 123 456', '٠٩٤٤١٢٣٤٥٦', '00963944123456']) {
+    await seedPerson('+963940012345');
+    for (const typed of ['0940 012 345', '٠٩٤٠٠١٢٣٤٥', '00963940012345']) {
       expect((await signIn(app, typed)).statusCode, typed).toBe(200);
     }
   });
@@ -117,7 +117,7 @@ describe('lockouts (criterion 7)', () => {
     clock.advanceBy(14 * MINUTE);
     const still = await signIn(app, phone(10), PASSWORD);
     expect(still.statusCode).toBe(429);
-    expect((still.json() as { error: { until: string } }).error.until).toBe(until);
+    expect(still.json<{ error: { until: string } }>().error.until).toBe(until);
     clock.advanceBy(MINUTE);
     expect((await signIn(app, phone(10), PASSWORD)).statusCode).toBe(200);
   });
@@ -128,7 +128,7 @@ describe('lockouts (criterion 7)', () => {
     }
     const res = await signIn(app, phone(11), 'wrong password');
     expect(res.statusCode).toBe(429);
-    expect((res.json() as { error: { code: string } }).error.code).toBe('phone_locked');
+    expect(res.json<{ error: { code: string } }>().error.code).toBe('phone_locked');
   });
 
   it('failures spread over more than 15 minutes do not lock', async () => {

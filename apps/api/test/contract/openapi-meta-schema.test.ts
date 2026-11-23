@@ -54,7 +54,8 @@ describe('OpenAPI 3.1 meta-schema', () => {
 
   it('red: a document without info or with a bad openapi version fails', () => {
     const validate = documentValidator();
-    const { info: _info, ...noInfo } = doc;
+    const noInfo: Partial<OpenApiDocument> = { ...doc };
+    delete noInfo.info;
     expect(validate(noInfo)).toBe(false);
     expect(validate({ ...doc, openapi: '3.0.3' })).toBe(false);
     expect(validate({ ...doc, paths: { 'no-leading-slash': {} } })).toBe(false);

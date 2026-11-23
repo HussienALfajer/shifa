@@ -76,7 +76,7 @@ describe('BetterAuthAdapter', () => {
         .set({ status: 'deactivated' })
         .where(eq(membership.id, person.membershipId ?? '')),
     );
-    const view = (await get(app, '/auth/session', cookie)).json() as Record<string, unknown>;
+    const view = (await get(app, '/auth/session', cookie)).json<Record<string, unknown>>();
     expect(view).toMatchObject({
       userId: person.userId,
       tenantId: null,

@@ -8,7 +8,7 @@ import {
   isCommonPassword,
 } from '../../src/modules/identity/password-rules.ts';
 
-const PHONE = '+963944123456';
+const PHONE = '+963940012345';
 
 describe('password rules', () => {
   it.each([
@@ -23,10 +23,10 @@ describe('password rules', () => {
     ['PASSWORD123', 'common'],
     ['1234567890', 'common'],
     ['qwertyuiop', 'common'],
-    ['my944123456pass', 'contains_phone'],
-    ['0944123456-secret', 'contains_phone'],
-    ['٩٤٤١٢٣٤٥٦ والسر', 'contains_phone'],
-    ['+963944123456!!', 'contains_phone'],
+    ['my940012345pass', 'contains_phone'],
+    ['0940012345-secret', 'contains_phone'],
+    ['٩٤٠٠١٢٣٤٥ والسر', 'contains_phone'],
+    ['+963940012345!!', 'contains_phone'],
   ])('%j → %s', (password, problem) => {
     expect(checkPasswordRules(password, PHONE)).toBe(problem);
   });
@@ -37,7 +37,7 @@ describe('password rules', () => {
   });
 
   it('a Turkish phone: its national digits are refused', () => {
-    expect(checkPasswordRules('x5321234567x', '+905321234567')).toBe('contains_phone');
+    expect(checkPasswordRules('x5320012345x', '+905320012345')).toBe('contains_phone');
   });
 
   it('the bundled list is large, lower-case, and only holds entries of 10+ characters', () => {

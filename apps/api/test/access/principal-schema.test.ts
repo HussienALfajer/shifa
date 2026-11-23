@@ -29,7 +29,7 @@ describe('PrincipalSchema (AuthPort contract)', () => {
   });
 
   it.each([
-    ['a user id that is not a UUID', { ...valid, userId: '+963944123456' }],
+    ['a user id that is not a UUID', { ...valid, userId: '+963940012345' }],
     ['a session id that is not a UUID', { ...valid, sessionId: 'token-abc' }],
     ['a branch without a tenant', { ...valid, tenantId: null, roles: [] }],
     [
@@ -38,7 +38,7 @@ describe('PrincipalSchema (AuthPort contract)', () => {
     ],
     ['roles without an active tenant', { ...valid, tenantId: null, branchId: null }],
     ['an unknown role', { ...valid, roles: [{ role: 'root', tenantId: TENANT, branchId: null }] }],
-    ['an extra field (a phone, a token)', { ...valid, phone: '+963944123456' }],
+    ['an extra field (a phone, a token)', { ...valid, phone: '+963940012345' }],
   ])('refuses %s', (_label, candidate) => {
     expect(PrincipalSchema.safeParse(candidate).success).toBe(false);
   });
@@ -46,12 +46,12 @@ describe('PrincipalSchema (AuthPort contract)', () => {
   it('a refusal names no value: the error message lists paths only', () => {
     let message = '';
     try {
-      parsePrincipal({ ...valid, userId: '+963944123456', extra: 'token-secret-value' });
+      parsePrincipal({ ...valid, userId: '+963940012345', extra: 'token-secret-value' });
     } catch (err) {
       message = err instanceof Error ? `${err.name} ${err.message} ${JSON.stringify(err)}` : '';
     }
     expect(message).toMatch(/principal/i);
-    expect(message).not.toContain('963944123456');
+    expect(message).not.toContain('963940012345');
     expect(message).not.toContain('token-secret-value');
   });
 });
