@@ -135,8 +135,8 @@ Specs in order ("clinic day first", owner 2026-11-23, OD-75); each is split into
 
 | Spec | Scope | Status |
 |---|---|---|
-| A-01a | Clinic, owner and sign-in: tenant model, super admin creates a clinic and owner, setup links, phone + password, TOTP, sessions and idle sign-out, identity audit ([spec](specs/platform/A-01a-clinic-owner-sign-in.md)) | Approved (owner, 2026-11-23) |
-| A-01b | Team, roles, branches and the clinic switcher: members and invitations, roles per clinic or branch, sensitive toggles, scope binding ([spec](specs/platform/A-01b-team-roles-branches-switcher.md)) | Approved (owner, 2026-11-23) |
+| A-01a | Clinic, owner and sign-in: tenant model, super admin creates a clinic and owner, setup links, phone + password, TOTP, sessions and idle sign-out, identity audit ([spec](specs/platform/A-01a-clinic-owner-sign-in.md)) | Approved (owner, 2026-11-23); planned with A-01b as slices A-01-01 to A-01-08 (below) |
+| A-01b | Team, roles, branches and the clinic switcher: members and invitations, roles per clinic or branch, sensitive toggles, scope binding ([spec](specs/platform/A-01b-team-roles-branches-switcher.md)) | Approved (owner, 2026-11-23); planned with A-01a (below) |
 | A-02 | Settings cascade, entitlements and limits, flags, basic super-admin console (support access, cities, announcements, usage) | Not started |
 | A-03 | Patients: registration, search, duplicates, family, summary, custom fields, Excel import, chart-read audit | Not started |
 | A-04 | Appointments: working hours, exceptions, types, slot and queue-number modes, double-booking prevention | Not started |
@@ -150,9 +150,18 @@ Specs in order ("clinic day first", owner 2026-11-23, OD-75); each is split into
 | A-12 | Reports and data export | Not started |
 | — | `/release` and the first deployment (OD-74) | Not started |
 
+A-01a and A-01b are planned together as eight sequential slices (plan of 2026-11-23, awaiting the owner's approval; OD-82): five T0 backend slices, schema first and serialised, then the web shells and two UI batch slices, each opening with the draw, analyse and approve checkpoint of ADR-0042. A-01-06 changes no schema or contract and may run in a parallel worktree after A-01-02.
+
 | Slice | Title | Risk tier | Status |
 |---|---|---|---|
-| — | (to be planned) | — | — |
+| A-01-01 | Data model and RLS: tenant, organization, branch, deployment route, identity tables, setup links, membership, role assignments, overrides, append-only audit; `shifa_auth` and `shifa_platform` roles (OD-82, ADR-0043); `prepare()`, `appendOnly` and policy-count fixes in the isolation suite; one-transaction clinic creation ([slice](slices/A-01-01-data-model-and-rls.md)); ~3,600 lines | T0 | Planned |
+| A-01-02 | Better Auth sign-in and sessions: gate, phone normaliser, password rules, phone and IP lockouts, `__Host-` sessions with idle and absolute limits, session list and end, `BetterAuthAdapter`, public-route harness (sampling, request id, raw routes, meta-schema, matrix bodies), leak test ([slice](slices/A-01-02-better-auth-sign-in-and-sessions.md)); ~3,800 lines | T0 | Planned |
+| A-01-03 | MFA, setup links and the super-admin API: TOTP enrol and challenge, recovery codes, MFA gate, one-time links, `@PlatformAdmin`, clinic create, edit and owner resets, super-admin seed ([slice](slices/A-01-03-mfa-setup-links-and-super-admin-api.md)); ~3,700 lines | T0 | Planned |
+| A-01-04 | Members, invitations, roles, toggles and scope binding: permission catalogue and grants, sensitive overrides, `@CurrentScope()`, team routes, invitations, last-owner rule, idle setting ([slice](slices/A-01-04-members-roles-toggles-scope.md)); ~3,900 lines | T0 | Planned |
+| A-01-05 | Branches and the clinic switcher: branch routes and archive rules, my clinics, server-checked switch, suspended clinic, HEAD before GET ([slice](slices/A-01-05-branches-and-switcher.md)); ~2,600 lines | T0 | Planned |
+| A-01-06 | Web shells and the real-backend end-to-end harness: `apps/clinic-web`, `apps/admin-web`, session and idle timer, Playwright on the real API and database in CI, backlog items due with the first app ([slice](slices/A-01-06-web-shells-and-e2e-harness.md)); ~2,800 lines | T1 | Planned |
+| A-01-07 | UI batch 1, sign-in screens: draw, analyse, owner approval, then sign-in, setup link, TOTP, idle warning, my account, automatic sign-out, admin clinics list, create and detail; owner journey in Playwright ([slice](slices/A-01-07-ui-sign-in-screens.md)); ~3,800 lines | T1 | Planned |
+| A-01-08 | UI batch 2, team, branches and switcher: draw, analyse, owner approval, then chooser, header switcher, invitation, team, member drawer, branches; switching journeys in Playwright ([slice](slices/A-01-08-ui-team-branches-switcher.md)); ~3,600 lines | T1 | Planned |
 
 ## After Release 1 (candidates)
 
