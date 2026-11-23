@@ -14,7 +14,8 @@ Cloud sessions run in the owner's personal cloud environment named `shifa`, atta
 - downloads the Flutter SDK pinned in `.github/workflows/ci.yml` (`FLUTTER_VERSION`, checked against `FLUTTER_SHA256`) to `/opt/flutter` and links it as the git-ignored `.fvm/flutter_sdk`, so `node scripts/dart.mjs` finds it without FVM;
 - makes `/opt/flutter` owned by root (`chown -R root:root`) and creates `/root/.dart-tool`, so sandboxed Flutter commands can write there (section 3);
 - points Docker at the `mirror.gcr.io` registry mirror (Docker Hub refuses anonymous pulls from the cloud) and starts `dockerd` in login shells;
-- runs `pnpm install --frozen-lockfile` and `flutter pub get --enforce-lockfile`, as CI does.
+- runs `pnpm install --frozen-lockfile` and `flutter pub get --enforce-lockfile`, as CI does;
+- writes the git-ignored `.claude/settings.local.json` with `{"sandbox": {"enabled": false}}` (OD-83), which outranks `.claude/settings.json`: cloud sessions run without the Bash sandbox, WSL2 keeps it (section 3).
 
 Network access is limited: package registries, MCP servers, `storage.googleapis.com` (Flutter SDK) and `mirror.gcr.io`. Anything else is refused by the proxy; ask the owner to add an exact host in the environment settings rather than working around it. The container is ephemeral: work that is not pushed is lost when the session ends.
 
@@ -27,7 +28,7 @@ pnpm env:check
 pnpm verify
 ```
 
-Expected in a cloud session (checked 2026-11-17):
+In a container built with the OD-83 setup script every check should be `ok`, Docker included, and `pnpm verify:full` runs the database, Docker and Playwright suites too (to be confirmed in the first fresh session; record the result here). The table below is the sandboxed state, still what a container built before OD-83 shows (checked 2026-11-17):
 
 | Check | Cloud result | Meaning |
 |---|---|---|
@@ -38,9 +39,11 @@ Expected in a cloud session (checked 2026-11-17):
 
 Any other `fail` means the setup script did not finish; read the fix `env:check` prints, or start a new session so the container is rebuilt.
 
-## 3. What runs only in CI
+## 3. The sandbox: off in the cloud (OD-83)
 
-Bash commands in a cloud session run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed these exceptions (OD-49, OD-81), pinned by `scripts/test/sandbox-policy.test.mjs`:
+Since OD-83 (owner, 2026-11-23) cloud sessions run Bash without the sandbox, so everything a terminal on the owner's machine runs also runs in the session: the database tests (Testcontainers), the isolation suite, the Docker script suites, screenshots in Docker, Playwright against the real backend, `obs:*` and `backup:*`. The setup script turns it off through the git-ignored `.claude/settings.local.json`; `.claude/settings.json` and its policy test are unchanged, and WSL2 keeps the sandbox. What still bounds a session: the environment's network allowlist, the ephemeral container (nothing on the owner's machine is reachable) and the hooks (no `--no-verify`, no force push, no push to `main`). Accepted risk: a command Claude runs, or is steered to by injected text, runs unrestricted inside the container, which holds the checkout and can push to the session's branch (already possible since OD-81). Not available in the cloud: the Android emulator (no KVM), Windows-only checks, physical devices.
+
+The rest of this section describes the sandboxed state: WSL2, and a cloud container built before OD-83. There, Bash commands run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed these exceptions (OD-49, OD-81), pinned by `scripts/test/sandbox-policy.test.mjs`:
 
 - `excludedCommands: ["docker *"]`: a command that **starts with** `docker` (`docker info`, `docker compose ps`, `docker logs ...`) runs outside the sandbox, with the daemon's root access. The bare `"docker"` did not match `docker info`; the ` *` is needed. Docker started by another program does not match: `pnpm env:check`, the database tests (Testcontainers), the Docker script suites (OD-32), `obs:*` and `backup:*` all start it from Node, so they still meet the sandbox (`permission denied ... docker.sock`) and run in CI.
 - `filesystem.allowWrite: ["//opt/flutter/bin/cache", "~/.dart-tool"]`: Flutter rewrites `bin/cache/engine.stamp` in its SDK on every run and creates `~/.dart-tool`. In WSL2 the FVM SDK lives under `~/fvm`, so the `/opt/flutter` entry only matters in the cloud.
@@ -58,7 +61,7 @@ Checked 2026-11-17 against a root-owned copy of the SDK and a HOME with an empty
 
 A container built before this setup-script change still fails `pub-get`; start a new session to get one built with it. A copy of the SDK inside the repository is no way out: ESLint then scans it and runs out of memory.
 
-So in a cloud session the gate is CI: `verify (full)` on every PR (ADR-0033). Say so in the report, as `CLAUDE.md` "Finishing a task" step 4 asks, and read the PR's CI result before calling the work done. Docs-only changes are unaffected: CI runs `verify docs`.
+With the sandbox off (OD-83), run the Docker-backed checks a change needs in the session, as on the owner's machine (`pnpm verify`, and `pnpm verify:full` for the paths in ADR-0033); CI's `verify (full)` stays the merge gate. In a sandboxed container (built before OD-83) the gate is CI alone: say so in the report, as `CLAUDE.md` "Finishing a task" step 4 asks, and read the PR's CI result before calling the work done. Docs-only changes are unaffected: CI runs `verify docs`.
 
 ## 4. GitHub: commits and PRs without `gh`
 

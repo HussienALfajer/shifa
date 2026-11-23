@@ -57,8 +57,17 @@ for (const entry of docs) {
     // `main` too). Three times the limit; what the test checks is unchanged.
     test.slow();
     await page.goto(`/iframe.html?id=${entry.id}&viewMode=docs`);
-    await page.locator('.docs-story').first().waitFor();
-    await page.waitForLoadState('networkidle');
+    const blocks = page.locator('.docs-story');
+    await blocks.first().waitFor();
+    // An inline story can open a modal over this page once it has loaded, so wait for the network
+    // to settle. A story in its own frame cannot cover or hide this page, so a page whose stories
+    // are all framed is not held up by its frames' requests: on GitHub runner image
+    // 20261116.376.1 the command palette's frames kept the page from going idle for 90 s
+    // (2026-11-23). If any block is still unframed, the wait applies as before.
+    const allFramed = await blocks.evaluateAll((els) =>
+      els.every((el) => el.querySelector('iframe') !== null),
+    );
+    if (!allFramed) await page.waitForLoadState('networkidle');
     const notes = page.getByText('Accessibility.', { exact: true }).first();
     await expect(notes).toBeVisible();
     expect(await notes.evaluate((el) => el.closest('[inert], [aria-hidden="true"]'))).toBeNull();
