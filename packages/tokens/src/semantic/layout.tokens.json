@@ -22,6 +22,11 @@
     },
     "row": { "$description": "Table and list rows.", "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
     "popover": { "$description": "Width of a popover that holds a short form, and of a calendar (capped by the screen).", "$value": "{width.80}" },
+    "year-list": {
+      "$description": "The Date Picker's year list beside the month grid (slice 0.4-13, OD-68): its width, and the height it scrolls in.",
+      "width": { "$value": "{width.24}" },
+      "height": { "$value": "{width.60}" }
+    },
     "dialog": { "$description": "Width of a dialog (capped by the screen, less a margin).", "$value": "{width.120}" },
     "tooltip": { "$description": "Widest a tooltip grows before its text wraps.", "$value": "{width.60}" },
     "toolbar-label": {
