@@ -9,7 +9,7 @@ Coded from the sheet the owner approved on 2026-11-22 (Shifa Components (proposa
 - Not for the one main action of a screen (a primary Button beside the toolbar), nor for page navigation (Tabs, Pagination).
 
 ## Look
-A bordered strip, radius 12, padding 4, with ghost buttons in the text colour; a toggle that is on has the selected tint and a stronger border. Vertical separators split the groups. When the strip is too narrow, the last buttons move into a «المزيد» menu (three dots) at its end.
+A bordered strip, radius 12, padding 4, with ghost buttons in the text colour; a toggle that is on has the selected tint and a stronger border. Vertical separators split the groups. A label stays on one line, at most 150 px; a longer one ends in an ellipsis and shows in a tooltip, its full text still the button's name (OD-66, slice 0.4-12). When the strip is too narrow, the last buttons move into a «المزيد» menu (three dots) at its end.
 
 ## Behaviour
 One Tab stop. The arrows move between the buttons in the reading direction (Left is next in Arabic) and stop at the ends; Home and End reach the first and the last; a disabled button is skipped. A toggle says it is pressed.
@@ -20,4 +20,4 @@ One Tab stop. The arrows move between the buttons in the reading direction (Left
 In code: `Toolbar` (`aria-label`, `moreLabel`) with `ToolbarButton` (`icon`, `pressed`, `disabled`, `onClick`) and `ToolbarSeparator`.
 
 ## Tokens
-`shifa-color-bg-surface`, `shifa-color-border-default`, `shifa-color-selection-subtle`, `shifa-color-selection-default`, `shifa-shape-radius-control`, `shifa-size-control-md`.
+`shifa-color-bg-surface`, `shifa-color-border-default`, `shifa-color-selection-subtle`, `shifa-color-selection-default`, `shifa-shape-radius-control`, `shifa-size-control-md`, `shifa-size-toolbar-label`.
