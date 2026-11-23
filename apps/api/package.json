@@ -10,7 +10,8 @@
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "vitest run",
-    "obs-smoke": "node scripts/obs-smoke.ts"
+    "obs-smoke": "node scripts/obs-smoke.ts",
+    "seed:super-admin": "node scripts/seed-super-admin.ts"
   },
   "dependencies": {
     "@better-auth/drizzle-adapter": "1.7.27",

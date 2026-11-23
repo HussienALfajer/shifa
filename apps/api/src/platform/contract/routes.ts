@@ -12,8 +12,10 @@ import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import type { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { Contract } from '@shifa/contracts';
 import {
+  BEFORE_MFA_METADATA,
   currentPrincipalFactory,
   PERMISSION_METADATA,
+  PLATFORM_ADMIN_METADATA,
   PUBLIC_METADATA,
   SIGNED_IN_METADATA,
 } from '../../access/decorators.ts';
@@ -37,6 +39,10 @@ export interface RouteHandler {
   public: boolean;
   /** @SignedIn(): any authenticated person. */
   signedIn: boolean;
+  /** @PlatformAdmin(): super admins only. */
+  platformAdmin: boolean;
+  /** @BeforeMfa(): reachable before the second factor (never answers an MFA 403). */
+  beforeMfa: boolean;
   permission: string | undefined;
 }
 
@@ -113,6 +119,8 @@ export function routeHandlers({ discovery, scanner, reflector }: RouteDiscovery)
         contract: reflector.get<Contract | undefined>(CONTRACT_METADATA, handler),
         public: reflector.get<unknown>(PUBLIC_METADATA, handler) === true,
         signedIn: reflector.get<unknown>(SIGNED_IN_METADATA, handler) === true,
+        platformAdmin: reflector.get<unknown>(PLATFORM_ADMIN_METADATA, handler) === true,
+        beforeMfa: reflector.get<unknown>(BEFORE_MFA_METADATA, handler) === true,
         permission: typeof permission === 'string' ? permission : undefined,
       });
     }

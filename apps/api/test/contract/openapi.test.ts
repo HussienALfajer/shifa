@@ -26,6 +26,8 @@ interface Operation {
   'x-public'?: boolean;
   'x-permission'?: string;
   'x-signed-in'?: boolean;
+  'x-platform-admin'?: boolean;
+  'x-before-mfa'?: boolean;
 }
 
 function operations(doc: OpenApiDocument): [string, Operation][] {
@@ -183,9 +185,19 @@ describe('OpenAPI document', () => {
         !isPublic &&
         row !== undefined &&
         Object.entries(row).every(([c, s]) => c === 'anonymous' || s === 200);
+      // Super-admin routes: 401 for anonymous, 200 for platform_admin only.
+      const isPlatformAdmin =
+        !isPublic &&
+        row !== undefined &&
+        Object.entries(row).every(([c, s]) =>
+          c === 'anonymous' ? s === 401 : c === 'platform_admin' ? s === 200 : s === 403,
+        );
       expect(op?.['x-public'] === true, route).toBe(isPublic);
       expect(op?.['x-signed-in'] === true, route).toBe(isSignedIn);
-      expect(typeof op?.['x-permission'] === 'string', route).toBe(!isPublic && !isSignedIn);
+      expect(op?.['x-platform-admin'] === true, route).toBe(isPlatformAdmin);
+      expect(typeof op?.['x-permission'] === 'string', route).toBe(
+        !isPublic && !isSignedIn && !isPlatformAdmin,
+      );
     }
     const sensitive = doc.paths['/__probe/sensitive']?.get as Operation;
     expect(sensitive['x-permission']).toBe('test.sensitive');
@@ -210,14 +222,24 @@ describe('OpenAPI document', () => {
   it('the production document lists only production routes', () => {
     const prod = buildOpenApiDocument(production.app);
     expect(Object.keys(prod.paths).sort()).toEqual([
+      '/auth/mfa/challenge',
+      '/auth/mfa/enrol/confirm',
+      '/auth/mfa/enrol/start',
       '/auth/session',
       '/auth/sessions',
       '/auth/sessions/end-others',
       '/auth/sessions/{id}',
+      '/auth/setup-link/consume',
+      '/auth/setup-link/view',
       '/auth/sign-in',
       '/auth/sign-out',
       '/health/live',
       '/health/ready',
+      '/platform/clinics',
+      '/platform/clinics/{id}',
+      '/platform/clinics/{id}/owner/end-sessions',
+      '/platform/clinics/{id}/owner/reset-mfa',
+      '/platform/clinics/{id}/owner/setup-link',
     ]);
     expect(Object.keys(prod.components.schemas).some((n) => n.startsWith('Probe'))).toBe(false);
   });

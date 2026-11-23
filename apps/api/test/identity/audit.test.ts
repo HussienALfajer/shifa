@@ -86,7 +86,8 @@ describe('identity audit rows', () => {
   });
 
   it('session ends: sign-out, one, all others, replaced at sign-in, idle, absolute', async () => {
-    const person = await seedPerson(phone(4), { tenantId: TENANT, role: 'owner' });
+    // A doctor: owners reach their sessions only after TOTP (A-01-03), not the subject here.
+    const person = await seedPerson(phone(4), { tenantId: TENANT, role: 'doctor' });
     await setIdleMinutes(TENANT, 60);
     const a = sessionCookie(await signIn(app, phone(4)));
     await signIn(app, phone(4));

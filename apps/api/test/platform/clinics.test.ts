@@ -272,7 +272,7 @@ describe('owner support actions (criterion 13)', () => {
         )
         .then(
           (rows) => `rows:${String(rows.length)}`,
-          (err: { code?: string }) => `error:${String(err.code)}`,
+          (err: unknown) => `error:${String((err as { code?: string }).code)}`,
         );
       expect(outcome).toBe('error:42501');
     }

@@ -206,7 +206,8 @@ describe('setting the password (criteria 5, 8)', () => {
     const token = tokenOf(created.linkUrl);
     await consume(token);
     const rows = await platformAuditRows();
-    const used = rows.find((r) => r.event === 'auth.link_used');
+    // The last one: the super admin of beforeEach used a link first.
+    const used = rows.filter((r) => r.event === 'auth.link_used').at(-1);
     expect(used?.targetId).toBe(created.ownerMembershipId);
     expect(JSON.stringify(rows)).not.toContain(token);
     expect(JSON.stringify(rows)).not.toContain(sha256Hex(token));

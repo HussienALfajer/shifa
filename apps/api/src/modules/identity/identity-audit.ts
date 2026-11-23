@@ -13,14 +13,21 @@ export type SessionEndReason =
   | 'ended_others'
   | 'replaced'
   | 'idle'
-  | 'absolute';
+  | 'absolute'
+  | 'rotated';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
   | { event: 'auth.sign_in' }
   | { event: 'auth.sign_in_failed'; data: { reason: FailureReason } }
   | { event: 'auth.locked'; data: { kind: 'phone' | 'ip' } }
-  | { event: 'auth.session_ended'; data: { reason: SessionEndReason } };
+  | { event: 'auth.session_ended'; data: { reason: SessionEndReason } }
+  // A-01-03: setup links and MFA (target: the membership or person; never a token or code)
+  | { event: 'auth.link_used'; data: { purpose: 'owner_setup' | 'admin_setup' } }
+  | { event: 'auth.mfa_enrolled' }
+  | { event: 'auth.mfa_passed'; data: { method: 'totp' | 'recovery' } }
+  | { event: 'auth.mfa_locked' }
+  | { event: 'auth.recovery_code_used' };
 
 export interface AuditIds {
   actorId: string | null;

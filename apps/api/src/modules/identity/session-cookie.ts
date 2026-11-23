@@ -28,6 +28,22 @@ export function verifySessionCookie(value: string | undefined, secret: string): 
   return given.length === expected.length && timingSafeEqual(given, expected) ? token : null;
 }
 
+/**
+ * The Set-Cookie line of a session we created ourselves (rotation after MFA, a setup link):
+ * Better Auth's format, so the adapter reads it the same way; it lasts until `expiresAt`.
+ */
+export function sessionCookieFor(
+  token: string,
+  secret: string,
+  expiresAt: Date,
+  now: Date,
+): string {
+  const signature = createHmac('sha256', secret).update(token).digest('base64');
+  const maxAge = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
+  const value = encodeURIComponent(`${token}.${signature}`);
+  return `${SESSION_COOKIE}=${value}; Max-Age=${String(maxAge)}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+}
+
 /** The session cookie's line among Better Auth's Set-Cookie headers. */
 export function sessionCookieLine(headers: Headers): string | undefined {
   return headers.getSetCookie().find((line) => line.startsWith(`${SESSION_COOKIE}=`));

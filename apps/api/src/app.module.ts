@@ -1,5 +1,5 @@
 import { type DynamicModule, Module } from '@nestjs/common';
-import type { AuthDb, ShifaDb } from '@shifa/db';
+import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import { AccessModule } from './access/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
@@ -7,6 +7,7 @@ import {
   IdentityModule,
   type IdentitySecrets,
 } from './modules/identity/index.ts';
+import { PlatformModule } from './modules/platform/index.ts';
 import type { Clock } from './platform/clock.ts';
 import { ContractModule } from './platform/contract/index.ts';
 import { DatabaseModule } from './platform/database.module.ts';
@@ -19,24 +20,36 @@ export class AppModule {
   static register({
     db,
     authDb,
+    platformDb,
     secrets,
     clock,
+    clinicWebUrl,
     testRoutes = false,
   }: {
     db: ShifaDb;
     /** shifa_auth (ADR-0043): identity tables, for the identity module. */
     authDb: AuthDb;
+    /** shifa_platform (ADR-0043): the super-admin API, audited per call. */
+    platformDb: PlatformDb;
     secrets: IdentitySecrets;
     /** Defaults to the system clock; tests pass one they move. */
     clock?: Clock;
+    /** Origin of the clinic web app, for setup links. */
+    clinicWebUrl?: string | undefined;
     testRoutes?: boolean;
   }): DynamicModule {
-    const identity = IdentityModule.register({ authDb, secrets, ...(clock ? { clock } : {}) });
+    const identity = IdentityModule.register({
+      authDb,
+      secrets,
+      ...(clock ? { clock } : {}),
+      ...(clinicWebUrl ? { clinicWebUrl } : {}),
+    });
     return {
       module: AppModule,
       imports: [
         DatabaseModule.register(db),
         identity,
+        PlatformModule.register({ platformDb, identity }),
         AccessModule.register({ imports: [identity], authPort: BetterAuthAdapter }),
         ContractModule,
         HealthModule,

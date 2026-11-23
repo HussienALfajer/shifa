@@ -43,6 +43,9 @@ export function principalFor(role: Role, overrides: Partial<Principal> = {}): Pr
     tenantId: TENANT_A,
     branchId: null,
     roles: [assignment],
+    // The matrix caller `platform_admin` is a super admin; everyone has passed MFA.
+    platformAdmin: role === 'platform_admin',
+    mfa: 'verified',
     ...overrides,
   };
 }

@@ -13,6 +13,12 @@ export const MembershipStatus = z
   .enum(['pending', 'active', 'deactivated'])
   .meta({ id: 'MembershipStatus' });
 
+/**
+ * A calendar date, `YYYY-MM-DD`, kept a string on the wire: no time zone, and generated clients
+ * do not turn it into a timestamp (the Dart client wrote `format: date` back as a date-time).
+ */
+const CalendarDate = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
+
 /** A name as typed: 1 to 200 characters, not only spaces. */
 const Name = z.string().max(200).regex(/\S/);
 
@@ -22,7 +28,7 @@ export const CreateClinicRequest = z
     type: ClinicType,
     status: ClinicStatus,
     /** YYYY-MM-DD; no automatic effect in A-01. */
-    subscriptionEnd: z.iso.date().nullable().optional(),
+    subscriptionEnd: CalendarDate.nullable().optional(),
     ownerName: Name,
     /** As typed; normalised to E.164 by the server (400 on body.ownerPhone when invalid). */
     ownerPhone: z.string().min(1).max(32),
@@ -33,7 +39,7 @@ export type CreateClinicRequest = z.infer<typeof CreateClinicRequest>;
 export const UpdateClinicRequest = z
   .object({
     status: ClinicStatus.optional(),
-    subscriptionEnd: z.iso.date().nullable().optional(),
+    subscriptionEnd: CalendarDate.nullable().optional(),
   })
   .meta({ id: 'UpdateClinicRequest' });
 export type UpdateClinicRequest = z.infer<typeof UpdateClinicRequest>;
@@ -48,7 +54,7 @@ export const ClinicSummary = z
     name: z.string(),
     type: ClinicType,
     status: ClinicStatus,
-    subscriptionEnd: z.iso.date().nullable(),
+    subscriptionEnd: CalendarDate.nullable(),
     ownerName: z.string().nullable(),
     createdAt: z.iso.datetime(),
   })

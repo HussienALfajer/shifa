@@ -4,7 +4,7 @@
 import { createHash } from 'node:crypto';
 import { auditEvent, setupLink } from '@shifa/db';
 import {
-  createTestTenants,
+  resetTestDb,
   superuserDb,
   testAuthDb,
   testDb,
@@ -31,9 +31,9 @@ export async function platformApp(clock: FixedClock = testClock()): Promise<Test
   });
 }
 
-/** Empties the database (no tenants). */
+/** Empties the database (no tenants and no audit rows). */
 export async function resetDatabase(): Promise<void> {
-  await createTestTenants();
+  await resetTestDb();
 }
 
 /** The token of a setup link URL (`…/setup#<token>`). */

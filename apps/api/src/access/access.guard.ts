@@ -1,7 +1,8 @@
-// Global guard, fail-closed: not exactly one access annotation → 500; @Public → pass; @SignedIn →
-// authenticate (401); @RequirePermission → authenticate (401) and check the key in the
-// principal's active tenant/branch (403). The principal is kept for @CurrentPrincipal().
-// Route scope from path parameters arrives with the Phase A routes.
+// Global guard, fail-closed: not exactly one access annotation → 500; @Public → pass; otherwise
+// authenticate (401), then the MFA gate (A-01a criterion 11: 403 `mfa_enrolment_required` or
+// `mfa_challenge_required` on every route not marked @BeforeMfa), then @SignedIn → pass,
+// @PlatformAdmin → a super admin (403), @RequirePermission → the key in the principal's active
+// tenant/branch (403). The principal is kept for @CurrentPrincipal().
 import {
   type CanActivate,
   type ExecutionContext,
@@ -13,15 +14,12 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
+import { ApiError } from '../platform/errors.ts';
+import { annotationCount, readAccess } from './access-check.ts';
 import { AUTH_PORT, type AuthPort } from './auth.port.ts';
-import {
-  PERMISSION_METADATA,
-  PUBLIC_METADATA,
-  rememberPrincipal,
-  SIGNED_IN_METADATA,
-} from './decorators.ts';
+import { rememberPrincipal } from './decorators.ts';
 import type { PermissionKey } from './permissions.ts';
-import { hasPermission } from './principal.ts';
+import { hasPermission, mfaBlock } from './principal.ts';
 import type { RoleGrants } from './roles.ts';
 
 export const ROLE_GRANTS = Symbol('ROLE_GRANTS');
@@ -44,18 +42,13 @@ export class AccessGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<GuardRequest>();
     // The route template, never the URL: the URL can carry a query string.
     const route = request.routeOptions?.url;
-    const isPublic = this.reflector.get<boolean | undefined>(PUBLIC_METADATA, handlerFn) === true;
-    // Read as string: PermissionKey has no values until Phase A, and the type would collapse.
-    const key = this.reflector.get<string | undefined>(PERMISSION_METADATA, handlerFn);
-    const signedIn =
-      this.reflector.get<boolean | undefined>(SIGNED_IN_METADATA, handlerFn) === true;
+    const access = readAccess(this.reflector, handlerFn);
 
-    const annotations = [isPublic, key !== undefined, signedIn].filter(Boolean).length;
-    if (annotations !== 1) {
+    if (annotationCount(access) !== 1 || (access.beforeMfa && !access.signedIn)) {
       request.log.error({ handler, route }, 'route has no single access annotation');
       throw new InternalServerErrorException();
     }
-    if (isPublic) return true;
+    if (access.isPublic) return true;
 
     const principal = await this.auth.authenticate(request as FastifyRequest);
     if (principal === null) {
@@ -64,15 +57,34 @@ export class AccessGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     rememberPrincipal(request, principal);
-    if (signedIn) return true;
-    const scope = { tenantId: principal.tenantId, branchId: principal.branchId };
-    if (!hasPermission(principal, key as PermissionKey, scope, this.grants)) {
-      request.log.warn(
-        { status: 403, handler, route, userId: principal.userId, permission: key },
+
+    const block = access.beforeMfa ? null : mfaBlock(principal);
+    if (block) {
+      request.log.info(
+        { status: 403, handler, route, userId: principal.userId, reason: block },
         'access denied',
       );
-      throw new ForbiddenException();
+      throw new ApiError(403, block);
+    }
+    if (access.signedIn) return true;
+    if (access.platformAdmin) {
+      if (principal.platformAdmin) return true;
+      this.#deny(request, { handler, route, userId: principal.userId, platformAdmin: true });
+    }
+    const scope = { tenantId: principal.tenantId, branchId: principal.branchId };
+    if (!hasPermission(principal, access.permission as PermissionKey, scope, this.grants)) {
+      this.#deny(request, {
+        handler,
+        route,
+        userId: principal.userId,
+        permission: access.permission,
+      });
     }
     return true;
+  }
+
+  #deny(request: GuardRequest, fields: Record<string, unknown>): never {
+    request.log.warn({ status: 403, ...fields }, 'access denied');
+    throw new ForbiddenException();
   }
 }

@@ -1,5 +1,5 @@
 // Process entry point (bootstrap only): config, logger, database, app, signals.
-import { createAuthDb, createDb, user } from '@shifa/db';
+import { createAuthDb, createDb, createPlatformDb, user } from '@shifa/db';
 import { createApp } from './app.ts';
 import { ConfigError, loadConfig, loadIdentityConfig } from './config/env.ts';
 import { describeError, errorClass } from './platform/errors.ts';
@@ -54,6 +54,13 @@ async function main(): Promise<void> {
       logger.warn({ err: describeError(err) }, 'idle identity database connection failed');
     },
   });
+  // Opened lazily: its first use is a super admin's request (every call writes an audit row, so
+  // there is no read-only start-up probe on this pool).
+  const platformDb = createPlatformDb(config.identity.databaseUrlPlatform, {
+    onIdleError: (err) => {
+      logger.warn({ err: describeError(err) }, 'idle platform database connection failed');
+    },
+  });
   // Fail fast: each factory refuses any role but its own (owner, superuser, BYPASSRLS) on first use.
   try {
     await db.ping();
@@ -62,12 +69,15 @@ async function main(): Promise<void> {
     logger.fatal({ err: describeError(err) }, 'database check failed at startup');
     await db.close().catch(() => undefined);
     await authDb.close().catch(() => undefined);
+    await platformDb.close().catch(() => undefined);
     process.exit(1);
   }
 
   const app = await createApp({
     db,
     authDb,
+    platformDb,
+    clinicWebUrl: config.identity.clinicWebUrl,
     secrets: {
       betterAuthSecret: config.identity.betterAuthSecret,
       hmacKey: config.identity.hmacKey,

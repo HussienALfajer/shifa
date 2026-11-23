@@ -100,11 +100,8 @@ export class SignInService implements OnModuleInit {
       },
     );
     if (!result) return this.#fail(started, person.id, meta.requestId);
-    // With TOTP enrolled, Better Auth answers a second-factor redirect and no session: the
-    // challenge route comes in A-01-03, and no route can enrol TOTP before it.
-    if ('twoFactorRedirect' in (result.response as object)) {
-      throw new Error('two-factor sign-in is not available before A-01-03');
-    }
+    // No two-factor plugin: every sign-in gives a session; with TOTP enrolled it starts at
+    // mfa 'pending' and reaches only the challenge until it passes (A-01-03).
     const token = result.response.token;
     const cookie = sessionCookieLine(result.headers);
     if (!token || !cookie || cookie.startsWith(`${SESSION_COOKIE}=;`)) {

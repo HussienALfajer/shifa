@@ -15,6 +15,11 @@ final _decoders = <String, Object Function(_Json)>{
   'SessionView': (json) => SessionView.fromJson(json).toJson(),
   'SessionList': (json) => SessionList.fromJson(json).toJson(),
   'EndedSessions': (json) => EndedSessions.fromJson(json).toJson(),
+  'SetupLinkView': (json) => SetupLinkView.fromJson(json).toJson(),
+  'TotpEnrolStart': (json) => TotpEnrolStart.fromJson(json).toJson(),
+  'MfaEnrolled': (json) => MfaEnrolled.fromJson(json).toJson(),
+  'ClinicList': (json) => ClinicList.fromJson(json).toJson(),
+  'ClinicCreated': (json) => ClinicCreated.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {
