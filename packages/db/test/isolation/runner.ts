@@ -209,13 +209,15 @@ export async function runIsolationCase(
   const moved = await attempt(tenantA, (tx) =>
     tx.execute(sql`update ${t} set tenant_id = ${TENANT_B}`),
   );
-  out.push(...changeRefused(moved, 'update moving rows to tenant B', c.table, tenantA));
+  const moveRefused = c.updatable ? refusedByPrivilege : changeRefused;
+  out.push(...moveRefused(moved, 'update moving rows to tenant B', c.table, tenantA));
 
   // A constant SET reads no column, so only the UPDATE policy decides which rows it reaches.
   const beforeB = await rowsOfB(db, t);
-  const updated = await attempt(tenantA, (tx) =>
-    tx.execute(sql`update ${t} set tenant_id = ${TENANT_A}`),
-  );
+  const set = c.updatable
+    ? sql`${sql.identifier(c.updatable.column)} = ${c.updatable.value}`
+    : sql`tenant_id = ${TENANT_A}`;
+  const updated = await attempt(tenantA, (tx) => tx.execute(sql`update ${t} set ${set}`));
   if (access !== 'read-write') {
     out.push(...refusedByPrivilege(updated, 'update without WHERE', c.table, tenantA));
   } else if (updated !== undefined) {

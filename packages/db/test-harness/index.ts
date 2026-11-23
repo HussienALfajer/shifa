@@ -223,6 +223,7 @@ export function testAuthDb(): AuthDb {
       withAuth: (fn) => db.withAuth(fn),
       withUser: (userId, fn) => db.withUser(userId, fn),
       withSetupLink: (hash, fn) => db.withSetupLink(hash, fn),
+      withUserLink: (userId, hash, fn) => db.withUserLink(userId, hash, fn),
       close: () => {
         if (authHandle === handle) authHandle = undefined;
         return db.close();

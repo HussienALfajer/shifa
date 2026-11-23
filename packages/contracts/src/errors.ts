@@ -37,6 +37,11 @@ export const ErrorCode = z
     'invalid_code',
     'clock_skew',
     'owner_setup_pending',
+    // team and invitations (A-01-04)
+    'last_owner',
+    'phone_in_team',
+    'account_shared',
+    'permission_not_sensitive',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -121,6 +126,10 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   invalid_code: 'Invalid code',
   clock_skew: 'Code from a device whose clock is off',
   owner_setup_pending: 'This phone is the owner of a clinic that is not set up yet',
+  last_owner: 'The clinic must keep at least one active owner',
+  phone_in_team: 'This phone is already a member of this clinic',
+  account_shared: 'This account works in another clinic; recovery goes through the platform',
+  permission_not_sensitive: 'Only sensitive permissions can be switched per member',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

@@ -20,6 +20,12 @@ export interface AuthDb {
    * it can be read and its `used_at` set, nothing else.
    */
   withSetupLink<T>(tokenHashHex: string, fn: (tx: Tx) => Promise<T>): Promise<T>;
+  /**
+   * As withSetupLink(), with the signed-in person also set (A-01-04): accepting an invitation
+   * binds its membership to this person only, and a member link sees the person's own
+   * memberships (one clinic or several, OD-86).
+   */
+  withUserLink<T>(userId: string, tokenHashHex: string, fn: (tx: Tx) => Promise<T>): Promise<T>;
   /** Ends the pool at shutdown; later calls return the same promise. */
   close(): Promise<void>;
 }
@@ -40,6 +46,11 @@ export function createAuthDb(url: string, options: CreateDbOptions = {}): AuthDb
     withSetupLink: async (tokenHashHex, fn) => {
       assertTokenHash(tokenHashHex);
       return runAsAuth(pool, { linkTokenHash: tokenHashHex }, fn);
+    },
+    withUserLink: async (userId, tokenHashHex, fn) => {
+      assertUuid('userId', userId);
+      assertTokenHash(tokenHashHex);
+      return runAsAuth(pool, { userId, linkTokenHash: tokenHashHex }, fn);
     },
     close,
   };

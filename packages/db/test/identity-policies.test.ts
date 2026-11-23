@@ -194,7 +194,8 @@ describe('shifa_auth', () => {
 
   it.each([
     ['branch', sql`select id from branch`],
-    ['role_assignment', sql`select id from role_assignment`],
+    // role_assignment: own roles only since A-01-04 (test/team-policies.test.ts); never written.
+    ['role_assignment update', sql`update role_assignment set role = 'owner'`],
     ['organization', sql`select id from organization`],
     ['audit_event', sql`select id from audit_event`],
     ['membership update', sql`update membership set display_name = 'x'`],

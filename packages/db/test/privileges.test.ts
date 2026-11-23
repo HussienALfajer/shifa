@@ -25,7 +25,8 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     organization: DML,
     deployment_route: ['SELECT'],
     branch: DML,
-    membership: DML,
+    // A-01-04: UPDATE by column only (user_id is bound on the auth path, never here)
+    membership: ['SELECT', 'INSERT', 'DELETE'],
     role_assignment: DML,
     permission_override: DML,
     setup_link: DML,
@@ -81,6 +82,14 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ],
   ['shifa_app', 'account', 'SELECT', ['id', 'user_id', 'account_id', 'provider_id', 'created_at']],
   ['shifa_app', 'two_factor', 'SELECT', ['id', 'user_id', 'verified']],
+  ['shifa_app', 'membership', 'UPDATE', ['display_name', 'status', 'last_active_at', 'updated_at']],
+  ['shifa_app', 'tenant', 'UPDATE', ['idle_minutes', 'updated_at']],
+  [
+    'shifa_auth',
+    'role_assignment',
+    'SELECT',
+    ['id', 'tenant_id', 'membership_id', 'role', 'branch_id'],
+  ],
   ['shifa_auth', 'setup_link', 'UPDATE', ['used_at']],
   ['shifa_auth', 'membership', 'UPDATE', ['user_id', 'status', 'updated_at']],
   [
