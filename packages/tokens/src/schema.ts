@@ -274,7 +274,7 @@ function checkPairs(
       );
     } else if (needsPair(token.path) && !inPair.has(token.path)) {
       problems.push(
-        `${token.path}: a colour in no contrast pair; every semantic and brand colour outside bg, border and the icon tones is drawn on a surface or under text (add it to src/contrast-pairs.json)`,
+        `${token.path}: a colour in no contrast pair; every semantic and brand colour outside bg and border is drawn on a surface or under text (add it to src/contrast-pairs.json)`,
       );
     }
   }
@@ -285,11 +285,11 @@ const lastSegment = (path: string) => path.slice(path.lastIndexOf('.') + 1);
 const parentOf = (path: string) => path.slice(0, path.lastIndexOf('.'));
 
 /**
- * Surfaces and lines carry no text of their own, and the icon tones are decorative fills under a
- * stroke that carries the contrast: these need no pair. Every other colour does (slice 0.4-03).
+ * Surfaces and lines carry no text of their own: these need no pair. Every other colour does
+ * (slice 0.4-03).
  */
 function needsPair(path: string): boolean {
-  if (['color.bg.', 'color.border.', 'color.icon-tone.'].some((g) => path.startsWith(g))) {
+  if (['color.bg.', 'color.border.'].some((g) => path.startsWith(g))) {
     return false;
   }
   return !/^(?:bg|border)(?:-|$)/.test(lastSegment(path));

@@ -7,7 +7,7 @@ import { dirname, join } from 'node:path';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { renameFamily } from '../../../../scripts/lib/font-rename.mjs';
-import { HEALTH_FILES, PHOSPHOR, type PhosphorName } from '../../src/icons/phosphor.ts';
+import { GLYPHS, type GlyphName } from '../../src/icons/tabler.ts';
 import { compileTokensCss, type DsTokens } from './tokens-css.ts';
 
 const here = import.meta.dirname;
@@ -30,7 +30,7 @@ export const LOGOS = [
 ];
 
 /** A representative icon set: common actions, status, sync, direction and the health glyphs. */
-export const ICONS: readonly PhosphorName[] = [
+export const ICONS: readonly GlyphName[] = [
   'calendar-plus',
   'calendar',
   'clock',
@@ -53,6 +53,12 @@ export const ICONS: readonly PhosphorName[] = [
   'arrow-forward',
   'caret-forward',
   'sign-out',
+  'tooth',
+  'stethoscope',
+  'syringe',
+  'medicines',
+  'blood-drop',
+  'heart-organ',
 ];
 
 /** The token whose light value inks the icon files. */
@@ -105,22 +111,12 @@ function fonts(out: string) {
   }
 }
 
-/** One icon file, drawn in the ink, with its own size. */
-function iconSvg(name: PhosphorName, ink: string): string {
-  const markup = renderToStaticMarkup(
-    createElement(PHOSPHOR[name], { weight: 'duotone', size: ICON_SIZE, color: ink }),
-  );
+/** One icon file: the Tabler outline glyph, stroked in the ink, with its own size. */
+function iconSvg(name: GlyphName, ink: string): string {
+  const markup = renderToStaticMarkup(createElement(GLYPHS[name], { size: ICON_SIZE, color: ink }));
   return markup.includes('xmlns=')
     ? markup
     : markup.replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
-}
-
-function healthSvg(name: string, ink: string): string {
-  const source = readFileSync(join(pkg, 'src', 'icons', 'health', `${name}.svg`), 'utf8');
-  return source
-    .replaceAll('currentColor', ink)
-    .replace(/width="24" height="24"/, `width="${String(ICON_SIZE)}" height="${String(ICON_SIZE)}"`)
-    .replace(/^<svg ((?:(?!xmlns)[^>])*)>/, '<svg xmlns="http://www.w3.org/2000/svg" $1>');
 }
 
 /** Writes every file of the system except the component bundle into `out`. */
@@ -143,7 +139,6 @@ export async function assembleDesignSystem(out: string): Promise<void> {
   const iconsNote = readFileSync(join(here, 'icons.md'), 'utf8').replaceAll('{{ink}}', ink);
   write(out, 'assets/Icons/README.md', iconsNote);
   for (const icon of ICONS) write(out, `assets/Icons/${icon}.svg`, `${iconSvg(icon, ink)}\n`);
-  for (const icon of HEALTH_FILES) write(out, `assets/Icons/${icon}.svg`, healthSvg(icon, ink));
   write(out, 'components/Cover/preview.html', readFileSync(join(here, 'cover.html'), 'utf8'));
   await Promise.resolve();
 }

@@ -105,7 +105,7 @@ describe('design-system producer', () => {
     }
   });
 
-  it('draws a representative icon set with a named ink, Phosphor and Healthicons both', () => {
+  it('draws a representative icon set from Tabler, outline in the near-black ink (OD-65)', () => {
     const icons = listTree(out).filter((f) => f.startsWith('assets/Icons/') && f.endsWith('.svg'));
     expect(icons.length).toBeGreaterThanOrEqual(12);
     expect(icons).toContain('assets/Icons/calendar-plus.svg');
@@ -113,12 +113,15 @@ describe('design-system producer', () => {
     for (const icon of icons) {
       const svg = read(icon);
       expect(svg, icon).toMatch(/^<svg [^>]*xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
-      expect(svg, icon).not.toMatch(/currentColor/);
+      expect(svg, icon).toMatch(/class="tabler-icon /);
+      expect(svg, icon).toMatch(/fill="none"/);
+      expect(svg, icon).toMatch(/stroke="#1d2a26"/i);
+      expect(svg, icon).not.toMatch(/currentColor|opacity=/);
     }
     const readme = read('assets/Icons/README.md');
-    expect(readme).toMatch(/#5b6a63/i);
-    expect(readme).toMatch(/Phosphor/);
-    expect(readme).toMatch(/CC0/);
+    expect(readme).toMatch(/#1d2a26/i);
+    expect(readme).toMatch(/Tabler/);
+    expect(readme).not.toMatch(/Phosphor|Healthicons|duotone/i);
   });
 
   it('writes the brand book and the cover from their sources', () => {

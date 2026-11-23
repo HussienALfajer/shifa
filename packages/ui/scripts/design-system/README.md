@@ -49,16 +49,17 @@ Every text and icon colour meets WCAG 2.2 on the surfaces its note names, in lig
 
 ## Iconography
 
-- **Phosphor** (MIT), duotone: 20 px in rows and controls (`shifa-size-icon-sm`), 24 px in navigation and cards (`shifa-size-icon-md`). The second tone is 20 % of the stroke colour; the mint (`shifa-color-icon-tone-default`) and gold (`shifa-color-icon-tone-current`) tones join with the navigation components.
-- **Healthicons** (CC0) for medical glyphs: tooth, stethoscope, syringe, medicines, blood drop, heart.
-- Mirror only directional icons in RTL. The **Icons** group shows the set in the stroke colour; the `Icon` component draws any of them in code.
+- **Tabler Icons** (MIT), outline: a hollow glyph drawn with one round 2 px stroke on a 24 grid, no fill and no second tone. 20 px in rows and controls (`shifa-size-icon-sm`), 24 px in navigation and cards (`shifa-size-icon-md`).
+- The ink is the text colour (`shifa-color-icon-default`): near-black in light, light in dark.
+- Medical glyphs come from Tabler too: tooth, stethoscope, syringe, medicines, blood drop, heart.
+- Mirror only directional icons in RTL. The **Icons** group shows the set in the light ink; the `Icon` component draws any of them in code.
 
 ## Components
 
 Each component is coded from a sheet the owner approved, tested in Arabic RTL and English LTR, light and dark, both densities, with axe and screenshots, and only then synced here. Use the component; never redraw a look-alike.
 
 - **Button**: primary (one per view), secondary (the default), ghost, danger (brick, never red); sm, md, lg; an icon on the logical start; loading keeps its label and focus.
-- **Icon**: the curated Phosphor and Healthicons set by name.
+- **Icon**: the curated Tabler outline set by name.
 - **Tabs**: views of one record; the selected tab green, heavier and underlined.
 - **Dialog**: a modal decision or short form; the main action last, the safe one focused first.
 - **Popover**: a small panel under a button, at its logical start.

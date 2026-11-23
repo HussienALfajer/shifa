@@ -42,26 +42,14 @@
     },
     "icon": {
       "default": {
-        "$description": "Icon strokes next to text and in controls (Phosphor, duotone).",
-        "$value": "{color.jasmine.ink.500}",
-        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.300}" } } }
+        "$description": "Icon strokes next to text and in controls (Tabler outline, one tone): the text colour, near-black in light and light in dark (OD-65).",
+        "$value": "{color.jasmine.ink.900}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } }
       },
       "muted": {
-        "$description": "Icons that only decorate a value already written in words (a field's leading icon). 3 : 1.",
-        "$value": "{color.jasmine.ink.400}",
-        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.400}" } } }
-      }
-    },
-    "icon-tone": {
-      "default": {
-        "$description": "Second tone of a duotone icon (mint). Decorative fill under the stroke; the stroke carries the contrast.",
-        "$value": "{color.jasmine.green.200}",
-        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.800}" } } }
-      },
-      "current": {
-        "$description": "Second tone of the icon of the current item only (gold): the active navigation entry, the patient in the room.",
-        "$value": "{color.jasmine.gold.400}",
-        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.gold.900}" } } }
+        "$description": "Icons that only decorate a value already written in words (a field's leading icon, a trigger's chevron). The same ink as color.icon.default since OD-65; kept as its own slot so a quieter icon can return with an owner decision.",
+        "$value": "{color.jasmine.ink.900}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } }
       }
     },
     "border": {

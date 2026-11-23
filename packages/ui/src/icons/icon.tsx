@@ -1,29 +1,14 @@
-// One Icon component over a curated list (design doc, "Iconography"): Phosphor (MIT) drawn
-// duotone, the second tone at 20 % of the stroke, and a small Healthicons set (CC0) for medical
-// glyphs, kept as files in ./health. Icons that point a direction mirror under dir="rtl".
+// One Icon component over a curated list (design doc, "Iconography"): Tabler Icons (MIT),
+// outline, one tone, the stroke in the text colour (OD-65), medical glyphs included. Icons that
+// point a direction mirror under dir="rtl".
 import { cn } from '../lib/cn.ts';
-import bloodDrop from './health/blood-drop.svg?raw';
-import heartOrgan from './health/heart-organ.svg?raw';
-import medicines from './health/medicines.svg?raw';
-import stethoscope from './health/stethoscope.svg?raw';
-import syringe from './health/syringe.svg?raw';
-import tooth from './health/tooth.svg?raw';
-import { PHOSPHOR, type PhosphorIcon } from './phosphor.ts';
+import { GLYPHS, type GlyphName, HEALTH_GLYPHS, type TablerIcon } from './tabler.ts';
 
-/** Healthicons (outline, 24 px grid), as their SVG source. */
-const HEALTH = {
-  'blood-drop': bloodDrop,
-  'heart-organ': heartOrgan,
-  medicines,
-  stethoscope,
-  syringe,
-  tooth,
-} satisfies Record<string, string>;
+export type IconName = GlyphName;
 
-export type IconName = keyof typeof PHOSPHOR | keyof typeof HEALTH;
-
-export const HEALTH_ICONS = Object.keys(HEALTH) as (keyof typeof HEALTH)[];
-export const ICON_NAMES = [...Object.keys(PHOSPHOR), ...HEALTH_ICONS] as IconName[];
+/** The medical glyphs (tooth, stethoscope…), a group of the list. */
+export const HEALTH_ICONS = Object.keys(HEALTH_GLYPHS) as (keyof typeof HEALTH_GLYPHS)[];
+export const ICON_NAMES = Object.keys(GLYPHS) as IconName[];
 
 /** Icons that point along the line; they mirror in RTL. Clocks, media and logos never do. */
 export const DIRECTIONAL_ICONS: readonly IconName[] = [
@@ -34,21 +19,11 @@ export const DIRECTIONAL_ICONS: readonly IconName[] = [
   'sign-out',
 ];
 
-type Source = { kind: 'phosphor'; component: PhosphorIcon } | { kind: 'health'; svg: string };
-
 /** What draws `name`; throws for a name outside the curated list. */
-export function iconSource(name: IconName): Source {
-  if (Object.hasOwn(PHOSPHOR, name)) {
-    return { kind: 'phosphor', component: PHOSPHOR[name as keyof typeof PHOSPHOR] };
-  }
-  if (Object.hasOwn(HEALTH, name)) {
-    return { kind: 'health', svg: HEALTH[name as keyof typeof HEALTH] };
-  }
-  throw new Error(`@shifa/ui: "${name}" is not in the icon list (src/icons/icon.tsx)`);
+export function iconSource(name: IconName): TablerIcon {
+  if (Object.hasOwn(GLYPHS, name)) return GLYPHS[name];
+  throw new Error(`@shifa/ui: "${name}" is not in the icon list (src/icons/tabler.ts)`);
 }
-
-/** The inner markup of an SVG file, without its <svg> element. */
-const innerOf = (svg: string) => svg.replace(/^[\s\S]*?<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '');
 
 const SIZE = { sm: 'size-(--shifa-size-icon-sm)', md: 'size-(--shifa-size-icon-md)' } as const;
 
@@ -62,7 +37,7 @@ export interface IconProps {
 }
 
 export function Icon({ name, size = 'sm', label, className }: IconProps) {
-  const source = iconSource(name);
+  const Glyph = iconSource(name);
   const a11y =
     label === undefined
       ? { 'aria-hidden': true as const }
@@ -73,19 +48,6 @@ export function Icon({ name, size = 'sm', label, className }: IconProps) {
     DIRECTIONAL_ICONS.includes(name) && 'rtl:-scale-x-100',
     className,
   );
-  if (source.kind === 'phosphor') {
-    const Glyph = source.component;
-    return <Glyph weight="duotone" focusable="false" className={classes} {...a11y} />;
-  }
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      focusable="false"
-      className={classes}
-      {...a11y}
-      // Trusted markup: the CC0 files of ./health, bundled at build time; never user input.
-      dangerouslySetInnerHTML={{ __html: innerOf(source.svg) }}
-    />
-  );
+  // Tabler's 24 px width and height attributes are overridden by the size class.
+  return <Glyph focusable="false" className={classes} {...a11y} />;
 }

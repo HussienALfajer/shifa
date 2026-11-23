@@ -1,7 +1,7 @@
 // The components of the Shifa Design System (window.Shifa), as documentation. The source of truth
 // is packages/ui/src; these types follow it.
 
-/** The curated icon names (Phosphor duotone and Healthicons). */
+/** The curated icon names (Tabler Icons, outline). */
 export type IconName =
   | 'arrow-back'
   | 'arrow-forward'
