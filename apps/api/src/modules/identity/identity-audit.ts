@@ -14,7 +14,9 @@ export type SessionEndReason =
   | 'replaced'
   | 'idle'
   | 'absolute'
-  | 'rotated';
+  | 'rotated'
+  /** A super admin ended every session of an owner (owner support, A-01a criterion 13). */
+  | 'admin';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
@@ -27,6 +29,9 @@ export type IdentityEvent =
   | { event: 'auth.mfa_enrolled' }
   | { event: 'auth.mfa_passed'; data: { method: 'totp' | 'recovery' } }
   | { event: 'auth.mfa_locked' }
+  // Owner support by a super admin (actor), each also ending the owner's sessions.
+  | { event: 'auth.mfa_reset' }
+  | { event: 'auth.password_reset' }
   | { event: 'auth.recovery_code_used' };
 
 export interface AuditIds {

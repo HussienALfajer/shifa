@@ -52,4 +52,5 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.mfaLocked: 'mfa_locked',
   ErrorCode.invalidCode: 'invalid_code',
   ErrorCode.clockSkew: 'clock_skew',
+  ErrorCode.ownerSetupPending: 'owner_setup_pending',
 };

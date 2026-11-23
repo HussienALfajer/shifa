@@ -4,7 +4,16 @@
 // `platform.admin_created`) and returns a one-time setup link valid 72 h; its token is stored
 // hashed in Better Auth's verification table (a super admin has no clinic, so no setup_link row).
 import { normalisePhone } from '@shifa/contracts';
-import { type AuthDb, type PlatformDb, registerPlatformAdmin, verification } from '@shifa/db';
+import {
+  type AuthDb,
+  account,
+  membership,
+  type PlatformDb,
+  platformAdmin,
+  registerPlatformAdmin,
+  verification,
+} from '@shifa/db';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { type Clock, systemClock } from '../../platform/clock.ts';
 import { createPerson, userIdByPhone } from './accounts.ts';
 import { ADMIN_SETUP_IDENTIFIER, LINK_TTL_MS, linkUrls, newLinkToken } from './links.ts';
@@ -67,12 +76,18 @@ export async function seedSuperAdmin(input: SeedSuperAdminInput): Promise<Seeded
   const now = (input.clock ?? systemClock).now();
   const { token, hash } = newLinkToken();
   const expiresAt = new Date(now.getTime() + LINK_TTL_MS);
+  const unfinished = await unfinishedSeed(input.authDb, phone.e164);
   const userId = await input.authDb.withAuth(async (tx) => {
-    // Never takes over an existing account (that would reset someone's password).
-    if ((await userIdByPhone(tx, phone.e164)) !== null) {
+    // Never takes over an account in use (that would reset someone's password); only a run that
+    // stopped before platform_admin was written is picked up again (review 5).
+    const existing = await userIdByPhone(tx, phone.e164);
+    if (existing !== null && existing !== unfinished) {
       throw new SeedError('an account with this phone already exists');
     }
-    const id = await createPerson(tx, { name, phoneE164: phone.e164, now });
+    const id = existing ?? (await createPerson(tx, { name, phoneE164: phone.e164, now }));
+    await tx
+      .delete(verification)
+      .where(eq(verification.identifier, `${ADMIN_SETUP_IDENTIFIER}:${id}`));
     await tx.insert(verification).values({
       identifier: `${ADMIN_SETUP_IDENTIFIER}:${id}`,
       value: hash,
@@ -87,4 +102,29 @@ export async function seedSuperAdmin(input: SeedSuperAdminInput): Promise<Seeded
     (tx) => registerPlatformAdmin(tx, userId),
   );
   return { userId, setupUrl: linkUrls(input.clinicWebUrl, token).url, expiresAt };
+}
+
+/**
+ * The account an earlier seed run left behind (created, then the platform step failed): no
+ * password, no membership, not yet a super admin. Null for any other account or none.
+ */
+async function unfinishedSeed(authDb: AuthDb, phoneE164: string): Promise<string | null> {
+  const found = await authDb.withAuth(async (tx) => {
+    const id = await userIdByPhone(tx, phoneE164);
+    if (id === null) return null;
+    const [password] = await tx
+      .select({ id: account.id })
+      .from(account)
+      .where(and(eq(account.userId, id), isNotNull(account.password)));
+    const [admin] = await tx
+      .select({ id: platformAdmin.userId })
+      .from(platformAdmin)
+      .where(eq(platformAdmin.userId, id));
+    return password || admin ? null : id;
+  });
+  if (found === null) return null;
+  const memberships = await authDb.withUser(found, (tx) =>
+    tx.select({ id: membership.id }).from(membership),
+  );
+  return memberships.length === 0 ? found : null;
 }

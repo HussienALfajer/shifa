@@ -292,7 +292,8 @@
           "mfa_challenge_required",
           "mfa_locked",
           "invalid_code",
-          "clock_skew"
+          "clock_skew",
+          "owner_setup_pending"
         ],
         "type": "string"
       },
@@ -1483,6 +1484,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "Create a clinic and its owner; returns the owner’s setup link once",

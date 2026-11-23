@@ -36,6 +36,7 @@ export const ErrorCode = z
     'mfa_locked',
     'invalid_code',
     'clock_skew',
+    'owner_setup_pending',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -119,6 +120,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   mfa_locked: 'Too many wrong codes',
   invalid_code: 'Invalid code',
   clock_skew: 'Code from a device whose clock is off',
+  owner_setup_pending: 'This phone is the owner of a clinic that is not set up yet',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

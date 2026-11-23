@@ -105,6 +105,10 @@
   "@errorsNotFound": {
     "description": "errors.not_found"
   },
+  "errorsOwnerSetupPending": "هذا الرقم مالكٌ لعيادة لم يُكمل إعدادها بعد. انتظر حتى يُكمل الإعداد ثم أعد المحاولة.",
+  "@errorsOwnerSetupPending": {
+    "description": "errors.owner_setup_pending"
+  },
   "errorsPasswordCommon": "كلمة المرور شائعة وسهلة التخمين. اختر غيرها.",
   "@errorsPasswordCommon": {
     "description": "errors.password_common"

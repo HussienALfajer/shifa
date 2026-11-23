@@ -107,7 +107,8 @@ export const platformCreateClinic = defineContract({
   path: '/platform/clinics',
   summary: 'Create a clinic and its owner; returns the owner’s setup link once',
   request: { body: CreateClinicRequest },
-  responses: { 201: ClinicCreated },
+  // 409 `owner_setup_pending`: the phone owns another clinic not yet set up (OD-85).
+  responses: { 201: ClinicCreated, 409: ErrorEnvelope },
 });
 
 export const platformClinic = defineContract({

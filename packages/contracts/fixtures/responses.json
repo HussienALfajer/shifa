@@ -189,6 +189,16 @@
       "body": { "error": { "code": "invalid_code", "message": "Invalid code" } }
     },
     {
+      "name": "error owner_setup_pending",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "owner_setup_pending",
+          "message": "This phone is the owner of a clinic that is not set up yet"
+        }
+      }
+    },
+    {
       "name": "error clock_skew",
       "schema": "ErrorEnvelope",
       "body": {

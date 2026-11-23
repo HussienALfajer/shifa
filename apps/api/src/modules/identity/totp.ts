@@ -1,8 +1,8 @@
 // TOTP (RFC 6238: HMAC-SHA-1, 6 digits, 30 s steps) and recovery codes (A-01a criteria 11, 12).
 // No library: the algorithm is a few lines, and owning it lets us store the last accepted step
 // (no replay) and tell a clock-skewed phone apart at enrolment. Secrets are 160 bits (RFC 4226),
-// shown as 32 base32 characters; recovery codes are 50 bits each, stored as SHA-256 hashes.
-import { createHash, createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
+// shown as 32 base32 characters; recovery codes are 50 bits each, stored as HMACs with AUTH_HMAC_KEY.
+import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const TOTP_STEP_MS = 30_000;
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
@@ -87,8 +87,11 @@ export function newRecoveryCodes(): string[] {
   });
 }
 
-/** Case, spaces and dashes do not matter when a recovery code is typed. */
-export function recoveryCodeHash(code: string): string {
+/**
+ * HMAC-SHA-256 of a recovery code with the server key (AUTH_HMAC_KEY): a database dump alone
+ * cannot be searched offline for the codes. Case, spaces and dashes do not matter when typed.
+ */
+export function recoveryCodeHash(code: string, key: string): string {
   const normalised = code.toLowerCase().replace(/[\s-]/g, '');
-  return createHash('sha256').update(`shifa-recovery:${normalised}`).digest('hex');
+  return createHmac('sha256', key).update(`shifa-recovery:${normalised}`).digest('hex');
 }

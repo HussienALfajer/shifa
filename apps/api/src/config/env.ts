@@ -254,11 +254,18 @@ export function loadIdentityConfig(
     const keys = [...new Set(parsed.error.issues.map((issue) => String(issue.path[0])))].sort();
     throw new ConfigError(`missing or invalid configuration: ${keys.join(', ')}`);
   }
+  // Deployed, setup links must reach the real clinic web app over https (review 6), never the
+  // local development default.
+  const clinicWebUrl = parsed.data.CLINIC_WEB_URL;
+  const deployed = DEPLOYED.has((env['DEPLOYMENT_ENVIRONMENT'] ?? '').trim().toLowerCase());
+  if (deployed && !clinicWebUrl?.startsWith('https://')) {
+    throw new ConfigError('missing or invalid configuration: CLINIC_WEB_URL');
+  }
   return {
     betterAuthSecret: parsed.data.BETTER_AUTH_SECRET,
     hmacKey: parsed.data.AUTH_HMAC_KEY,
     databaseUrlAuth: parsed.data.DATABASE_URL_AUTH,
     databaseUrlPlatform: parsed.data.DATABASE_URL_PLATFORM,
-    clinicWebUrl: parsed.data.CLINIC_WEB_URL,
+    clinicWebUrl,
   };
 }

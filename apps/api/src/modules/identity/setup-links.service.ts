@@ -7,7 +7,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { SessionView, SetupLinkView } from '@shifa/contracts';
 import { type AuthDb, membership, setupLink, type Tx, tenant, user, verification } from '@shifa/db';
 import { hashPassword } from 'better-auth/crypto';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, gt, isNull } from 'drizzle-orm';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { createPerson, setPassword, userIdByPhone } from './accounts.ts';
@@ -122,7 +122,15 @@ export class SetupLinksService {
       const used = await tx
         .update(setupLink)
         .set({ usedAt: now })
-        .where(and(eq(setupLink.id, found.linkId), isNull(setupLink.usedAt)))
+        .where(
+          and(
+            eq(setupLink.id, found.linkId),
+            isNull(setupLink.usedAt),
+            isNull(setupLink.replacedAt),
+            // The same clock as #find(), so a check and its use never disagree (review 3).
+            gt(setupLink.expiresAt, now),
+          ),
+        )
         .returning({ id: setupLink.id });
       if (used.length === 0) throw linkInvalid();
       let userId = found.boundUserId;
@@ -164,7 +172,7 @@ export class SetupLinksService {
     return this.authDb.withAuth(async (tx) => {
       const used = await tx
         .delete(verification)
-        .where(eq(verification.id, found.verificationId))
+        .where(and(eq(verification.id, found.verificationId), gt(verification.expiresAt, now)))
         .returning({ id: verification.id });
       if (used.length === 0) throw linkInvalid();
       await setPassword(tx, found.userId, hash, now);

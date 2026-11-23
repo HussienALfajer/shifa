@@ -100,7 +100,9 @@ export class MfaService {
         .set({
           verified: true,
           lastUsedStep: step,
-          backupCodes: JSON.stringify(recoveryCodes.map(recoveryCodeHash)),
+          backupCodes: JSON.stringify(
+            recoveryCodes.map((c) => recoveryCodeHash(c, this.secrets.hmacKey)),
+          ),
           failedVerificationCount: 0,
           lockedUntil: null,
         })
@@ -172,7 +174,7 @@ export class MfaService {
 
   async #useRecoveryCode(tx: Tx, row: FactorRow, code: string): Promise<boolean> {
     const hashes = JSON.parse(row.backupCodes) as string[];
-    const hash = recoveryCodeHash(code);
+    const hash = recoveryCodeHash(code, this.secrets.hmacKey);
     const left = hashes.filter((h) => h !== hash);
     if (left.length === hashes.length) return false;
     await tx

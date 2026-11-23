@@ -23,6 +23,7 @@ export const AUTH_EVENTS = [
   'auth.mfa_enrolled',
   'auth.mfa_passed',
   'auth.mfa_reset',
+  'auth.password_reset',
   'auth.mfa_locked',
   'auth.recovery_code_used',
   'auth.link_used',

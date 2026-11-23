@@ -28,6 +28,7 @@ export type ErrorsKey =
   | 'mfa_locked'
   | 'not_acceptable'
   | 'not_found'
+  | 'owner_setup_pending'
   | 'password_common'
   | 'password_contains_phone'
   | 'password_too_short'

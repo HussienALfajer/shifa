@@ -64,7 +64,9 @@ enum ErrorCode {
   @JsonValue('invalid_code')
   invalidCode('invalid_code'),
   @JsonValue('clock_skew')
-  clockSkew('clock_skew');
+  clockSkew('clock_skew'),
+  @JsonValue('owner_setup_pending')
+  ownerSetupPending('owner_setup_pending');
 
   const ErrorCode(this.json);
 

@@ -4,7 +4,6 @@
 import { randomBytes, randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { type AuthDb, session } from '@shifa/db';
-import { eq } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SESSION_ABSOLUTE_MS, sessionCookieFor } from './session-cookie.ts';
@@ -79,13 +78,5 @@ export class SessionIssuer {
     });
     await this.sessions.end(principal.userId, [old.id], 'rotated', requestId);
     return issued;
-  }
-
-  /** Ends every session of `userId`, without a row each (the super-admin action is audited). */
-  async endAll(userId: string): Promise<number> {
-    const ended = await this.authDb.withAuth((tx) =>
-      tx.delete(session).where(eq(session.userId, userId)).returning({ id: session.id }),
-    );
-    return ended.length;
   }
 }

@@ -3,7 +3,9 @@
 // access is sensitive). Super admins see a clinic's own fields and its owner card (name,
 // status), never clinic data: the platform role holds no SELECT on clinic tables beyond owner
 // memberships and roles. Owner actions on the person (sessions, MFA, password) run on the auth
-// path inside the platform transaction, so a failure there leaves no audit row and no new link.
+// path inside the platform transaction: a failure there leaves no platform row and no new link;
+// the auth step commits with its own audit row, so it stays recorded even if the platform
+// commit fails afterwards (two pools, no shared transaction).
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type ClinicCreated,
@@ -27,6 +29,7 @@ import {
 import { and, desc, eq, ilike } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
+import { ApiError } from '../../platform/errors.ts';
 import { OwnerAccounts } from '../identity/index.ts';
 import { PLATFORM_DB } from './tokens.ts';
 
@@ -98,6 +101,14 @@ export class ClinicsService {
     const link = this.owners.newSetupLink();
     const action = { event: 'clinic.created', requestId, data: { linkPurpose: purpose } } as const;
     return this.#run(principal, action, async (tx) => {
+      // OD-85: the phone owns another clinic whose owner has not set up yet: two owner links
+      // for one phone would leave the second one used dead. Refused until the first is set up.
+      const [pending] = await tx
+        .select({ id: membership.id })
+        .from(membership)
+        .where(and(eq(membership.phoneE164, phone.e164), eq(membership.status, 'pending')))
+        .limit(1);
+      if (pending) throw new ApiError(409, 'owner_setup_pending');
       const created = await createClinic(tx, {
         name: input.name.trim(),
         type: input.type,
@@ -150,6 +161,7 @@ export class ClinicsService {
     requestId: string,
   ): Promise<SetupLinkIssued | undefined> {
     const action = { event: OWNER_EVENTS[kind], requestId } as const;
+    const by = { actorId: principal.userId, requestId };
     return this.#run(principal, action, async (tx, audit) => {
       const [owner] = await tx
         .select({ id: membership.id, userId: membership.userId, phone: membership.phoneE164 })
@@ -170,12 +182,12 @@ export class ClinicsService {
           tokenHash: link.tokenHash,
           expiresAt: link.expiresAt,
         });
-        if (owner.userId) await this.owners.resetPassword(owner.userId);
+        if (owner.userId) await this.owners.resetPassword(owner.userId, by);
         return link.issued(purpose);
       }
       if (owner.userId) {
-        if (kind === 'reset-mfa') await this.owners.resetMfa(owner.userId);
-        else await this.owners.endSessions(owner.userId);
+        if (kind === 'reset-mfa') await this.owners.resetMfa(owner.userId, by);
+        else await this.owners.endSessions(owner.userId, by);
       }
       return undefined;
     });
