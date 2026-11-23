@@ -53,4 +53,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.invalidCode: 'invalid_code',
   ErrorCode.clockSkew: 'clock_skew',
   ErrorCode.ownerSetupPending: 'owner_setup_pending',
+  ErrorCode.lastOwner: 'last_owner',
+  ErrorCode.phoneInTeam: 'phone_in_team',
+  ErrorCode.accountShared: 'account_shared',
+  ErrorCode.permissionNotSensitive: 'permission_not_sensitive',
 };

@@ -4,6 +4,7 @@
 // for sensitive keys and only where the member holds a role.
 import { Controller, Get } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
+import { RequirePermission } from '../../src/access/decorators.ts';
 import {
   assertGrantsKnown,
   PermissionCatalogue,
@@ -12,8 +13,7 @@ import {
   UnknownPermissionError,
 } from '../../src/access/permissions.ts';
 import { isGranted } from '../../src/access/principal.ts';
-import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../../src/access/roles.ts';
-import { RequirePermission } from '../../src/access/decorators.ts';
+import { PRODUCTION_GRANTS, ROLES } from '../../src/access/roles.ts';
 import { Contract } from '../../src/platform/contract/index.ts';
 import { buildTestApp, offlineDb, testContract } from '../support.ts';
 import {
@@ -59,7 +59,9 @@ describe('the A-01 catalogue and grants', () => {
   });
 
   it('the production grants name catalogue keys only', () => {
-    expect(() => assertGrantsKnown(production, PRODUCTION_GRANTS)).not.toThrow();
+    expect(() => {
+      assertGrantsKnown(production, PRODUCTION_GRANTS);
+    }).not.toThrow();
   });
 });
 
@@ -81,9 +83,9 @@ describe('unknown keys', () => {
       string[]
     >;
     grants['doctor'] = ['made.up'];
-    expect(() => assertGrantsKnown(production, grants as unknown as RoleGrants)).toThrow(
-      UnknownPermissionError,
-    );
+    expect(() => {
+      assertGrantsKnown(production, grants);
+    }).toThrow(UnknownPermissionError);
   });
 
   it('the app refuses to start with a route on an unknown key', async () => {

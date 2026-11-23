@@ -7,6 +7,7 @@ import {
   type AuthDb,
   branch,
   membership,
+  permissionOverride,
   platformAdmin,
   roleAssignment,
   type ShifaDb,
@@ -34,7 +35,7 @@ import { describeUserAgent } from './user-agent.ts';
 async function accountFactors(
   tx: Tx,
   userId: string,
-): Promise<{ platformAdmin: boolean; totpEnrolled: boolean }> {
+): Promise<{ platformAdmin: boolean; totpEnrolled: boolean; ownsClinic: boolean }> {
   const [admin] = await tx
     .select({ id: platformAdmin.userId })
     .from(platformAdmin)
@@ -43,7 +44,31 @@ async function accountFactors(
     .select({ id: twoFactor.id })
     .from(twoFactor)
     .where(and(eq(twoFactor.userId, userId), eq(twoFactor.verified, true)));
-  return { platformAdmin: admin !== undefined, totpEnrolled: totp !== undefined };
+  // Owner in any clinic where the person is active (the auth path sees own roles only, run
+  // with withUser): the MFA gate holds before a clinic is chosen (A-01-03 review 2).
+  const [owner] = await tx
+    .select({ id: roleAssignment.id })
+    .from(roleAssignment)
+    .innerJoin(
+      membership,
+      and(
+        eq(membership.tenantId, roleAssignment.tenantId),
+        eq(membership.id, roleAssignment.membershipId),
+      ),
+    )
+    .where(
+      and(
+        eq(membership.userId, userId),
+        eq(membership.status, 'active'),
+        eq(roleAssignment.role, 'owner'),
+      ),
+    )
+    .limit(1);
+  return {
+    platformAdmin: admin !== undefined,
+    totpEnrolled: totp !== undefined,
+    ownsClinic: owner !== undefined,
+  };
 }
 
 /** Idle limit without an active clinic: super admins, and people between clinics (OD-77). */
@@ -59,6 +84,7 @@ interface TenantView {
   idleMinutes: number;
   branchId: string | null;
   roles: Principal['roles'];
+  overrides: { key: string; granted: boolean }[];
 }
 
 @Injectable()
@@ -111,7 +137,7 @@ export class SessionsService {
       await this.end(row.userId, [row.id], reason, requestId);
       throw new SessionExpiredError();
     }
-    const factors = await this.authDb.withAuth(async (tx) => {
+    const factors = await this.authDb.withUser(row.userId, async (tx) => {
       await tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id));
       return accountFactors(tx, row.userId);
     });
@@ -128,6 +154,10 @@ export class SessionsService {
       roles: tenantView.active ? tenantView.roles : [],
       platformAdmin: factors.platformAdmin,
       mfa,
+      ...(tenantView.active && tenantView.overrides.length > 0
+        ? { overrides: tenantView.overrides }
+        : {}),
+      ...(factors.ownsClinic ? { ownsClinic: true } : {}),
     });
   }
 
@@ -298,6 +328,7 @@ export class SessionsService {
       idleMinutes: NO_CLINIC_IDLE_MINUTES,
       branchId: null,
       roles: [],
+      overrides: [],
     };
     if (tenantId === null) return none;
     return this.db.withTenant({ tenantId, userId }, async (tx) => {
@@ -315,6 +346,12 @@ export class SessionsService {
         .from(membership)
         .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
       if (!clinic || !member) return none;
+      // A member without a role holds nothing in the clinic: no clinic for the session.
+      if (roles.length === 0) return none;
+      const overrides = await tx
+        .select({ key: permissionOverride.key, granted: permissionOverride.granted })
+        .from(permissionOverride)
+        .where(eq(permissionOverride.membershipId, member.id));
       const [current] = branchId
         ? await tx
             .select({ id: branch.id })
@@ -326,6 +363,7 @@ export class SessionsService {
         idleMinutes: clinic.idleMinutes,
         branchId: current?.id ?? null,
         roles: roles.map((r) => ({ role: r.role, tenantId, branchId: r.branchId })),
+        overrides,
       };
     });
   }

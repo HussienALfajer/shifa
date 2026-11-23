@@ -199,6 +199,84 @@
       }
     },
     {
+      "name": "error last_owner",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "last_owner",
+          "message": "The clinic must keep at least one active owner"
+        }
+      }
+    },
+    {
+      "name": "error phone_in_team",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "phone_in_team",
+          "message": "This phone is already a member of this clinic"
+        }
+      }
+    },
+    {
+      "name": "error account_shared",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "account_shared",
+          "message": "This account works in another clinic; recovery goes through the platform"
+        }
+      }
+    },
+    {
+      "name": "error permission_not_sensitive",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "permission_not_sensitive",
+          "message": "Only sensitive permissions can be switched per member"
+        }
+      }
+    },
+    {
+      "name": "member detail of a pending receptionist",
+      "schema": "MemberDetail",
+      "body": {
+        "id": "7d1c6f2a-3b4e-4c5d-8e6f-0a1b2c3d4e5f",
+        "name": "موظف تجريبي",
+        "phone": "+963980039822",
+        "status": "pending",
+        "roles": [
+          {
+            "role": "receptionist",
+            "branchId": "8e2d7a3b-4c5f-4d6e-9f7a-1b2c3d4e5f60",
+            "branchName": "فرع تجريبي"
+          }
+        ],
+        "lastActiveAt": null,
+        "permissions": [
+          {
+            "key": "clinical.notes.view",
+            "roleDefault": false,
+            "granted": false,
+            "overridden": false
+          }
+        ],
+        "isLastOwner": false
+      }
+    },
+    {
+      "name": "invitation view",
+      "schema": "InvitationView",
+      "body": {
+        "clinicName": "عيادة تجريبية",
+        "personName": "موظف تجريبي",
+        "roles": [{ "role": "doctor", "branchName": null }],
+        "expiresAt": "2026-11-26T10:00:00.000Z"
+      }
+    },
+    { "name": "clinic settings", "schema": "ClinicSettings", "body": { "idleMinutes": 30 } },
+    {
       "name": "error clock_skew",
       "schema": "ErrorEnvelope",
       "body": {
@@ -361,6 +439,11 @@
     }
   ],
   "invalid": [
+    {
+      "name": "idle minutes outside 15, 30, 60",
+      "schema": "ClinicSettings",
+      "body": { "idleMinutes": 20 }
+    },
     {
       "name": "session without a session id",
       "schema": "SessionView",

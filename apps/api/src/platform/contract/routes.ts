@@ -19,6 +19,7 @@ import {
   PUBLIC_METADATA,
   SIGNED_IN_METADATA,
 } from '../../access/decorators.ts';
+import { currentScopeFactory } from '../../access/scope.ts';
 import { requestMetaFactory } from '../request-meta.ts';
 import { CONTRACT_METADATA } from './decorator.ts';
 
@@ -69,6 +70,7 @@ export function joinPath(...parts: string[]): string {
  */
 const KNOWN_FACTORIES = new Map<unknown, string>([
   [currentPrincipalFactory, 'PRINCIPAL'],
+  [currentScopeFactory, 'SCOPE'],
   [requestMetaFactory, 'REQUEST_META'],
 ]);
 

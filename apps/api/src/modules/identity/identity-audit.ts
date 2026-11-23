@@ -16,7 +16,9 @@ export type SessionEndReason =
   | 'absolute'
   | 'rotated'
   /** A super admin ended every session of an owner (owner support, A-01a criterion 13). */
-  | 'admin';
+  | 'admin'
+  /** The clinic deactivated the member, removed their roles or issued a new link (A-01b 3, 4). */
+  | 'member';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
@@ -25,7 +27,7 @@ export type IdentityEvent =
   | { event: 'auth.locked'; data: { kind: 'phone' | 'ip' } }
   | { event: 'auth.session_ended'; data: { reason: SessionEndReason } }
   // A-01-03: setup links and MFA (target: the membership or person; never a token or code)
-  | { event: 'auth.link_used'; data: { purpose: 'owner_setup' | 'admin_setup' } }
+  | { event: 'auth.link_used'; data: { purpose: 'owner_setup' | 'member_setup' | 'admin_setup' } }
   | { event: 'auth.mfa_enrolled' }
   | { event: 'auth.mfa_passed'; data: { method: 'totp' | 'recovery' } }
   | { event: 'auth.mfa_locked' }

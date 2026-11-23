@@ -5,10 +5,12 @@
 // Clients
 export 'clients/core_client.dart';
 // Data classes
+export 'models/add_member_request.dart';
 export 'models/clinic_created.dart';
 export 'models/clinic_detail.dart';
 export 'models/clinic_list.dart';
 export 'models/clinic_owner.dart';
+export 'models/clinic_settings.dart';
 export 'models/clinic_status.dart';
 export 'models/clinic_summary.dart';
 export 'models/clinic_type.dart';
@@ -18,9 +20,23 @@ export 'models/error_body.dart';
 export 'models/error_code.dart';
 export 'models/error_envelope.dart';
 export 'models/health_status.dart';
+export 'models/idle_minutes.dart';
+export 'models/invitation_request.dart';
+export 'models/invitation_role.dart';
+export 'models/invitation_view.dart';
+export 'models/member_added.dart';
+export 'models/member_detail.dart';
+export 'models/member_link_issued.dart';
+export 'models/member_list.dart';
+export 'models/member_permission.dart';
+export 'models/member_role.dart';
+export 'models/member_summary.dart';
 export 'models/membership_status.dart';
 export 'models/mfa_enrolled.dart';
 export 'models/mfa_state.dart';
+export 'models/permission_key_name.dart';
+export 'models/permission_switch.dart';
+export 'models/role_scope_input.dart';
 export 'models/session_list.dart';
 export 'models/session_role.dart';
 export 'models/session_role_assignment.dart';
@@ -40,6 +56,7 @@ export 'models/totp_code.dart';
 export 'models/totp_enrol_confirm.dart';
 export 'models/totp_enrol_start.dart';
 export 'models/update_clinic_request.dart';
+export 'models/update_member_request.dart';
 export 'models/validation_issue.dart';
 export 'models/validation_issue_code.dart';
 // Root client

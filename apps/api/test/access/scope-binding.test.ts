@@ -38,7 +38,7 @@ function recordingDb(): ShifaDb & { contexts: TenantContext[] } {
     },
     ping: () => Promise.resolve(),
     close: () => Promise.resolve(),
-  } as ShifaDb & { contexts: TenantContext[] };
+  };
 }
 
 @Controller('__scope')
@@ -128,9 +128,7 @@ describe('scope binding', () => {
     const db = recordingDb();
     const tenants = new TenantDb(db);
     await expect(
-      tenants.run({ tenantId: TENANT_A, branchId: null, userId: 'u-1' } as RequestScope, () =>
-        Promise.resolve(1),
-      ),
+      tenants.run({ tenantId: TENANT_A, branchId: null, userId: 'u-1' }, () => Promise.resolve(1)),
     ).rejects.toThrow(/scope/);
     expect(db.contexts).toEqual([]);
   });

@@ -3,9 +3,10 @@
 // bind a membership to an account itself (A-01-01 review L4, A-01-03 M2); a clinic changes its
 // own idle setting and nothing else on `tenant`; the auth path reads a person's own role
 // assignments across clinics (MFA gate before a clinic is chosen) and nobody else's.
-import { roleAssignment, tenant } from '../src/schema/index.ts';
+
 import { eq, sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
+import { roleAssignment, tenant } from '../src/schema/index.ts';
 import {
   createTestTenants,
   fixtureId,

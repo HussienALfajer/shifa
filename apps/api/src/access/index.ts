@@ -11,13 +11,23 @@ export {
 } from './decorators.ts';
 export type { PermissionKey } from './permissions.ts';
 export {
+  PERMISSION_CATALOGUE,
+  PermissionCatalogue,
+  type PermissionDefinition,
+} from './permissions.ts';
+export {
   type AccessScope,
+  isGranted,
   type MfaState,
   mfaBlock,
   mustEnrolMfa,
+  type PermissionOverride,
   type Principal,
   PrincipalError,
   parsePrincipal,
   type RoleAssignment,
 } from './principal.ts';
 export type { Role } from './roles.ts';
+export { PRODUCTION_GRANTS } from './roles.ts';
+export { CurrentScope, linkScope, type RequestScope } from './scope.ts';
+export { TenantDb, withScope } from './tenant-db.ts';

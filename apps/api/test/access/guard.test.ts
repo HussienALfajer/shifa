@@ -2,6 +2,7 @@
 // and checks the key in the principal's active tenant/branch; production auth admits nobody.
 import { Controller, Get } from '@nestjs/common';
 import { afterEach, describe, expect, it } from 'vitest';
+import { PermissionCatalogue, PRODUCTION_PERMISSIONS } from '../../src/access/permissions.ts';
 import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
 import {
   BRANCH_1,
@@ -13,6 +14,7 @@ import {
   TENANT_A,
   TENANT_B,
   TEST_GRANTS,
+  TEST_PERMISSIONS,
 } from './probe.ts';
 
 let current: TestApp | undefined;
@@ -26,6 +28,7 @@ async function probeApp(withTestAuth = true): Promise<TestApp> {
   current = await buildTestApp({
     db: offlineDb(),
     controllers: [ProbeController],
+    permissions: TEST_PERMISSIONS,
     ...(withTestAuth ? { auth: new HeaderAuthAdapter(), grants: TEST_GRANTS } : {}),
   });
   return current;
@@ -135,7 +138,12 @@ describe('access guard without metadata', () => {
     }
     const { Reflector } = await import('@nestjs/core');
     const logged: unknown[] = [];
-    const guard = new AccessGuard(new Reflector(), new HeaderAuthAdapter(), TEST_GRANTS);
+    const guard = new AccessGuard(
+      new Reflector(),
+      new HeaderAuthAdapter(),
+      TEST_GRANTS,
+      new PermissionCatalogue([...PRODUCTION_PERMISSIONS, ...TEST_PERMISSIONS]),
+    );
     const request = {
       headers: {},
       url: '/__bare/x?secret=1',

@@ -1,0 +1,122 @@
+// Reading the team inside one clinic (A-01b criteria 2, 3, 5, 7): members with their roles and
+// scope, sensitive toggles against the role default, and the last-owner rule. Plain functions on
+// a `tx` from TenantDb (the clinic's RLS applies), shared by the service's reads and writes.
+import type { MemberDetail, MemberRole, MemberSummary } from '@shifa/contracts';
+import {
+  branch,
+  membership,
+  permissionOverride,
+  type Role,
+  roleAssignment,
+  type Tx,
+} from '@shifa/db';
+import { and, asc, eq, inArray } from 'drizzle-orm';
+import type { PermissionCatalogue, PermissionKey } from '../../access/index.ts';
+
+type Grants = Readonly<Record<string, readonly string[]>>;
+
+type MembershipRow = typeof membership.$inferSelect;
+
+const ROLE_ORDER: readonly Role[] = ['owner', 'doctor', 'assistant', 'receptionist', 'accountant'];
+
+/** Role assignments with branch names, per membership. */
+async function rolesBy(tx: Tx, membershipIds: string[]): Promise<Map<string, MemberRole[]>> {
+  const byMember = new Map<string, MemberRole[]>();
+  if (membershipIds.length === 0) return byMember;
+  const rows = await tx
+    .select({
+      membershipId: roleAssignment.membershipId,
+      role: roleAssignment.role,
+      branchId: roleAssignment.branchId,
+      branchName: branch.name,
+    })
+    .from(roleAssignment)
+    .leftJoin(
+      branch,
+      and(eq(branch.tenantId, roleAssignment.tenantId), eq(branch.id, roleAssignment.branchId)),
+    )
+    .where(inArray(roleAssignment.membershipId, membershipIds));
+  for (const row of rows) {
+    const list = byMember.get(row.membershipId) ?? [];
+    list.push({ role: row.role, branchId: row.branchId, branchName: row.branchName ?? null });
+    byMember.set(row.membershipId, list);
+  }
+  for (const list of byMember.values()) {
+    list.sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role));
+  }
+  return byMember;
+}
+
+function summary(row: MembershipRow, roles: MemberRole[]): MemberSummary {
+  return {
+    id: row.id,
+    name: row.displayName,
+    phone: row.phoneE164,
+    status: row.status,
+    roles,
+    lastActiveAt: row.lastActiveAt?.toISOString() ?? null,
+  };
+}
+
+export async function listMembers(tx: Tx): Promise<MemberSummary[]> {
+  const rows = await tx.select().from(membership).orderBy(asc(membership.createdAt));
+  const roles = await rolesBy(
+    tx,
+    rows.map((r) => r.id),
+  );
+  return rows.map((row) => summary(row, roles.get(row.id) ?? []));
+}
+
+export async function findMember(tx: Tx, id: string): Promise<MembershipRow | undefined> {
+  const [row] = await tx.select().from(membership).where(eq(membership.id, id));
+  return row;
+}
+
+/** Ids of the clinic's active members holding the owner role. */
+export async function activeOwners(tx: Tx): Promise<string[]> {
+  const rows = await tx
+    .selectDistinct({ id: membership.id })
+    .from(membership)
+    .innerJoin(
+      roleAssignment,
+      and(
+        eq(roleAssignment.tenantId, membership.tenantId),
+        eq(roleAssignment.membershipId, membership.id),
+      ),
+    )
+    .where(and(eq(membership.status, 'active'), eq(roleAssignment.role, 'owner')));
+  return rows.map((r) => r.id);
+}
+
+export interface DetailContext {
+  catalogue: PermissionCatalogue;
+  grants: Grants;
+}
+
+export async function memberDetail(
+  tx: Tx,
+  row: MembershipRow,
+  ctx: DetailContext,
+): Promise<MemberDetail> {
+  const roles = (await rolesBy(tx, [row.id])).get(row.id) ?? [];
+  const overrides = await tx
+    .select({ key: permissionOverride.key, granted: permissionOverride.granted })
+    .from(permissionOverride)
+    .where(eq(permissionOverride.membershipId, row.id));
+  const owners = await activeOwners(tx);
+  const permissions = ctx.catalogue.sensitiveKeys().map((key: PermissionKey) => {
+    const roleDefault = roles.some((r) => (ctx.grants[r.role] ?? []).includes(key));
+    const override = overrides.find((o) => o.key === key);
+    return {
+      key,
+      roleDefault,
+      granted: override ? override.granted : roleDefault,
+      overridden: override !== undefined,
+    };
+  });
+  return {
+    ...summary(row, roles),
+    permissions,
+    isLastOwner: owners.length === 1 && owners[0] === row.id,
+  };
+}

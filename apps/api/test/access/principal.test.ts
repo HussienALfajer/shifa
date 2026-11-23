@@ -65,8 +65,10 @@ describe('hasPermission', () => {
     ).toBe(false);
   });
 
-  it('production grants are empty for every role', () => {
-    for (const keys of Object.values(PRODUCTION_GRANTS)) expect(keys).toEqual([]);
+  it('production grants never name a test key (A-01 keys: catalogue.test.ts)', () => {
+    for (const keys of Object.values(PRODUCTION_GRANTS)) {
+      expect(keys.some((k) => k.startsWith('test.'))).toBe(false);
+    }
     expect(hasPermission(principalFor('owner'), TEST_READ, tenantScope, PRODUCTION_GRANTS)).toBe(
       false,
     );

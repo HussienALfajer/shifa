@@ -2,7 +2,8 @@
 // authenticate (401), then the MFA gate (A-01a criterion 11: 403 `mfa_enrolment_required` or
 // `mfa_challenge_required` on every route not marked @BeforeMfa), then @SignedIn → pass,
 // @PlatformAdmin → a super admin (403), @RequirePermission → the key in the principal's active
-// tenant/branch (403). The principal is kept for @CurrentPrincipal().
+// tenant/branch, role grants ± the member's sensitive overrides (403). The principal is kept for
+// @CurrentPrincipal(); the checked `{ tenant, branch, person }` for @CurrentScope() (A-01b 8).
 import {
   type CanActivate,
   type ExecutionContext,
@@ -15,14 +16,19 @@ import {
 import { Reflector } from '@nestjs/core';
 import type { FastifyRequest } from 'fastify';
 import { ApiError } from '../platform/errors.ts';
-import { annotationCount, readAccess } from './access-check.ts';
+import { annotationCount, ROLE_GRANTS, readAccess } from './access-check.ts';
 import { AUTH_PORT, type AuthPort } from './auth.port.ts';
 import { rememberPrincipal } from './decorators.ts';
-import type { PermissionKey } from './permissions.ts';
-import { hasPermission, mfaBlock } from './principal.ts';
+import {
+  PERMISSION_CATALOGUE,
+  type PermissionCatalogue,
+  type PermissionKey,
+} from './permissions.ts';
+import { isGranted, mfaBlock } from './principal.ts';
 import type { RoleGrants } from './roles.ts';
+import { bindScope } from './scope.ts';
 
-export const ROLE_GRANTS = Symbol('ROLE_GRANTS');
+export { ROLE_GRANTS };
 
 type GuardRequest = Pick<FastifyRequest, 'log'> & {
   routeOptions?: { url?: string | undefined };
@@ -34,6 +40,7 @@ export class AccessGuard implements CanActivate {
     @Inject(Reflector) private readonly reflector: Reflector,
     @Inject(AUTH_PORT) private readonly auth: AuthPort,
     @Inject(ROLE_GRANTS) private readonly grants: RoleGrants,
+    @Inject(PERMISSION_CATALOGUE) private readonly catalogue: PermissionCatalogue,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -72,14 +79,19 @@ export class AccessGuard implements CanActivate {
       this.#deny(request, { handler, route, userId: principal.userId, platformAdmin: true });
     }
     const scope = { tenantId: principal.tenantId, branchId: principal.branchId };
-    if (!hasPermission(principal, access.permission as PermissionKey, scope, this.grants)) {
-      this.#deny(request, {
-        handler,
-        route,
-        userId: principal.userId,
-        permission: access.permission,
-      });
+    const key = access.permission as PermissionKey;
+    if (
+      principal.tenantId === null ||
+      !isGranted(principal, key, scope, this.grants, this.catalogue)
+    ) {
+      this.#deny(request, { handler, route, userId: principal.userId, permission: key });
     }
+    // Bound to exactly what was checked: handlers reach tenant data only with this scope.
+    bindScope(request, {
+      tenantId: principal.tenantId,
+      branchId: principal.branchId,
+      userId: principal.userId,
+    });
     return true;
   }
 

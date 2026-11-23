@@ -45,6 +45,10 @@
   "@commonSearch": {
     "description": "common.search"
   },
+  "errorsAccountShared": "هذا الحساب مستخدم في عيادة أخرى؛ استعادة كلمة المرور عبر إدارة المنصة.",
+  "@errorsAccountShared": {
+    "description": "errors.account_shared"
+  },
   "errorsBadRequest": "تعذّر تنفيذ الطلب. تحقّق من البيانات وحاول مرة أخرى.",
   "@errorsBadRequest": {
     "description": "errors.bad_request"
@@ -76,6 +80,10 @@
   "errorsIpBlocked": "محاولات دخول خاطئة كثيرة من هذا الجهاز أو الشبكة. أُوقف الدخول مؤقتًا.",
   "@errorsIpBlocked": {
     "description": "errors.ip_blocked"
+  },
+  "errorsLastOwner": "لا يمكن تنفيذ ذلك: يجب أن يبقى للعيادة مالك نشط واحد على الأقل.",
+  "@errorsLastOwner": {
+    "description": "errors.last_owner"
   },
   "errorsLinkInvalid": "هذا الرابط لم يعد صالحًا. اطلب رابطًا جديدًا.",
   "@errorsLinkInvalid": {
@@ -124,6 +132,14 @@
   "errorsPayloadTooLarge": "حجم البيانات المرسلة أكبر من المسموح.",
   "@errorsPayloadTooLarge": {
     "description": "errors.payload_too_large"
+  },
+  "errorsPermissionNotSensitive": "لا يمكن تبديل هذه الصلاحية لموظف بعينه.",
+  "@errorsPermissionNotSensitive": {
+    "description": "errors.permission_not_sensitive"
+  },
+  "errorsPhoneInTeam": "هذا الرقم موجود في فريق العيادة.",
+  "@errorsPhoneInTeam": {
+    "description": "errors.phone_in_team"
   },
   "errorsPhoneLocked": "محاولات دخول خاطئة كثيرة لهذا الرقم. أُوقف الدخول به مؤقتًا.",
   "@errorsPhoneLocked": {

@@ -20,6 +20,9 @@ final _decoders = <String, Object Function(_Json)>{
   'MfaEnrolled': (json) => MfaEnrolled.fromJson(json).toJson(),
   'ClinicList': (json) => ClinicList.fromJson(json).toJson(),
   'ClinicCreated': (json) => ClinicCreated.fromJson(json).toJson(),
+  'MemberDetail': (json) => MemberDetail.fromJson(json).toJson(),
+  'InvitationView': (json) => InvitationView.fromJson(json).toJson(),
+  'ClinicSettings': (json) => ClinicSettings.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

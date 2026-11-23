@@ -1,7 +1,7 @@
 // Who is calling (PLT-45 scope): the active tenant/branch and every role assignment. The AuthPort
 // contract (A-01a criterion 15) is PrincipalSchema: adapters return only what it accepts.
 import { z } from 'zod';
-import type { PermissionKey } from './permissions.ts';
+import type { PermissionCatalogue, PermissionKey } from './permissions.ts';
 import { ROLES, type Role, type RoleGrants } from './roles.ts';
 
 export interface RoleAssignment {
@@ -29,6 +29,21 @@ export interface Principal {
    * passed in this session), `verified` (passed in this session). A-01a criteria 11, 12.
    */
   mfa: MfaState;
+  /**
+   * The member's switches of sensitive keys in the active tenant (A-01b criterion 7), read per
+   * request; absent = none. A switch of a key that is not sensitive counts for nothing.
+   */
+  overrides?: readonly PermissionOverride[] | undefined;
+  /**
+   * Owner in some clinic, active or not (A-01a criterion 11): the MFA gate holds even before a
+   * clinic is chosen (A-01-03 review 2). Absent = only the active clinic's roles count.
+   */
+  ownsClinic?: boolean | undefined;
+}
+
+export interface PermissionOverride {
+  key: string;
+  granted: boolean;
 }
 
 export const MFA_STATES = ['none', 'pending', 'verified'] as const;
@@ -55,6 +70,18 @@ export const PrincipalSchema = z
     roles: z.array(RoleAssignmentSchema),
     platformAdmin: z.boolean(),
     mfa: z.enum(MFA_STATES),
+    overrides: z
+      .array(
+        z.strictObject({
+          key: z.string().regex(/^[a-z][a-z_]*(\.[a-z][a-z_]*)+$/),
+          granted: z.boolean(),
+        }),
+      )
+      .optional(),
+    ownsClinic: z.boolean().optional(),
+  })
+  .refine((p) => p.tenantId !== null || (p.overrides ?? []).length === 0, {
+    path: ['overrides'],
   })
   .refine((p) => p.tenantId !== null || p.branchId === null, { path: ['branchId'] })
   .refine((p) => p.roles.every((r) => r.tenantId === p.tenantId), { path: ['roles'] });
@@ -73,7 +100,11 @@ export function parsePrincipal(candidate: unknown): Principal {
 
 /** Owners and super admins must enrol TOTP before anything else (A-01a criterion 11). */
 export function mustEnrolMfa(principal: Principal): boolean {
-  return principal.platformAdmin || principal.roles.some((r) => r.role === 'owner');
+  return (
+    principal.platformAdmin ||
+    principal.ownsClinic === true ||
+    principal.roles.some((r) => r.role === 'owner')
+  );
 }
 
 /**
@@ -116,4 +147,30 @@ export function hasPermission(
       Object.hasOwn(grants, assignment.role) &&
       grants[assignment.role].includes(key),
   );
+}
+
+/**
+ * The guard's check (A-01b criterion 7): role grants in `scope`, then the member's override of
+ * `key` when the catalogue marks it sensitive and the member holds some role in `scope`. An
+ * override of any other key, or where the member holds no role, changes nothing.
+ */
+export function isGranted(
+  principal: Principal,
+  key: PermissionKey,
+  scope: AccessScope,
+  grants: RoleGrants,
+  catalogue: PermissionCatalogue,
+): boolean {
+  const byRole = hasPermission(principal, key, scope, grants);
+  if (!catalogue.isSensitive(key)) return byRole;
+  const override = principal.overrides?.find((o) => o.key === key);
+  if (override === undefined) return byRole;
+  const holdsRole = principal.roles.some(
+    (r) =>
+      r.role !== 'platform_admin' &&
+      scope.tenantId !== null &&
+      r.tenantId === scope.tenantId &&
+      (r.branchId === null || r.branchId === scope.branchId),
+  );
+  return holdsRole && override.granted;
 }

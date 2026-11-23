@@ -13,6 +13,7 @@ export type CommonKey =
   | 'save'
   | 'search';
 export type ErrorsKey =
+  | 'account_shared'
   | 'bad_request'
   | 'clock_skew'
   | 'conflict'
@@ -21,6 +22,7 @@ export type ErrorsKey =
   | 'invalid_code'
   | 'invalid_credentials'
   | 'ip_blocked'
+  | 'last_owner'
   | 'link_invalid'
   | 'method_not_allowed'
   | 'mfa_challenge_required'
@@ -33,6 +35,8 @@ export type ErrorsKey =
   | 'password_contains_phone'
   | 'password_too_short'
   | 'payload_too_large'
+  | 'permission_not_sensitive'
+  | 'phone_in_team'
   | 'phone_locked'
   | 'request_timeout'
   | 'service_unavailable'

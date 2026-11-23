@@ -10,6 +10,7 @@ import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ROLE_GRANTS } from '../src/access/access.module.ts';
 import { AUTH_PORT, type AuthPort } from '../src/access/auth.port.ts';
+import { type PermissionDefinition, PRODUCTION_PERMISSIONS } from '../src/access/permissions.ts';
 import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../src/access/roles.ts';
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
@@ -109,6 +110,7 @@ export function offlineAuthDb(): AuthDb {
     withAuth: refuse,
     withUser: refuse,
     withSetupLink: refuse,
+    withUserLink: refuse,
     close: () => Promise.resolve(),
   };
 }
@@ -144,6 +146,7 @@ export async function buildTestApp({
   controllers = [],
   auth,
   grants,
+  permissions,
   forwardLogs = false,
   testRoutes = false,
 }: {
@@ -167,6 +170,8 @@ export async function buildTestApp({
   auth?: AuthPort;
   /** Added to the production role grants (never replaces them), so the matrix sees both. */
   grants?: RoleGrants;
+  /** Added to the production permission catalogue (test keys; probe.ts TEST_PERMISSIONS). */
+  permissions?: readonly PermissionDefinition[];
 }): Promise<TestApp> {
   const logs = captureLogs();
   const logger = createLogger({
@@ -183,6 +188,7 @@ export async function buildTestApp({
         secrets: TEST_SECRETS,
         clinicWebUrl,
         ...(clock ? { clock } : {}),
+        ...(permissions ? { permissions: [...PRODUCTION_PERMISSIONS, ...permissions] } : {}),
         testRoutes,
       }),
     ],

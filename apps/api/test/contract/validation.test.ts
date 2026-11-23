@@ -3,6 +3,7 @@
 // response or the log.
 import { ErrorEnvelope } from '@shifa/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
+import { TEST_PERMISSIONS } from '../access/probe.ts';
 import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
 import { ContractProbeController } from './probe.ts';
 
@@ -20,7 +21,11 @@ afterEach(async () => {
 });
 
 async function app(): Promise<TestApp> {
-  current = await buildTestApp({ db: offlineDb(), controllers: [ContractProbeController] });
+  current = await buildTestApp({
+    db: offlineDb(),
+    controllers: [ContractProbeController],
+    permissions: TEST_PERMISSIONS,
+  });
   return current;
 }
 
