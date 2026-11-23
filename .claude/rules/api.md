@@ -8,7 +8,7 @@ paths:
 - No `console.*` (lint enforces it). Log with pino: `request.log` inside a request, the app logger elsewhere. Never log request bodies, query strings, headers, tokens or patient data.
 - Errors go through the global filter (`src/platform/errors.ts`): throw Nest `HttpException`s, never write an error response by hand, never put user input in an error message.
 - Log any caught error as `{ err: describeError(err) }`. Never log a database error's `message`, `detail`, `hint` or `where`: they can echo values.
-- Database access only through `@shifa/db`: inject `SHIFA_DB` and use `withTenant()` (or `withPlatformAdmin(reason, …)` for platform work). No raw drivers, no second `createDb()`.
+- Database access only through `@shifa/db`: inject `SHIFA_DB` and use `withTenant()` (`ping()` for health). Identity work uses `createAuthDb()` and super-admin work `createPlatformDb()` (`withPlatformAdmin({ actorId, event, … }, …)`, audited), each one pool per process (ADR-0043). No raw drivers, no second pool of the same kind.
 - Every new runtime npm import must also be in `apps/api/package.json` `dependencies` (the bundle resolves externals from there).
 - Inject with explicit tokens (`@Inject(Service)`), not by type alone.
 - New feature code lives in `src/modules/<context>/` with an `index.ts` public surface; import other modules only through their `index.ts`. `src/platform/` and `src/access/` never import a module. Never disable `shifa/module-boundaries`: the architecture test fails on it.

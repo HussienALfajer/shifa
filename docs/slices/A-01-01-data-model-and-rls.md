@@ -1,6 +1,6 @@
 # A-01-01 Data model and RLS
 
-Status: Planned · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls`
+Status: Built, in review · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls` (built on the cloud session branch `claude/gracious-gauss-azbrab`, [cloud sessions](../process/cloud-sessions.md) §4)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 1, 2 (database part), 14 (table and append-only); [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 1, 13 (policy coverage) · Requirements: PLT-01, PLT-02, PLT-03, PLT-47 · Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0030; OD-82 (closed 2026-11-23: two roles)
 
 First of eight A-01 slices (plan approved by the owner 2026-11-23, second-session critique waived: see roadmap). Schema changes are serialised: no other A-01 slice starts its migration before this one merges.
@@ -25,12 +25,27 @@ Tests written first: isolation case per tenant table with `prepare()` parents (A
 Estimated hand-written lines: ~3,600 (schema ~650, policies and roles SQL ~450, wrappers ~300, runner and presence ~450, isolation and policy tests ~1,300, helpers ~250, ADR and domain doc ~200). Checkpoints: (1) roles + wrappers, (2) platform and identity tables, (3) tenant tables + isolation, (4) audit + createClinic + docs.
 
 ## Stopped at
-Not started.
+All layers built and green; reviews and PR next.
+
+## As built (differences from the plan)
+- **Migrations:** `20261123183313_a01_identity_and_tenancy` (generated: 15 tables, keys, checks, foreign keys) and `20261123183321_a01_policies_and_grants` (custom: helpers `current_user_id()` and `current_link_token_hash()`, RLS, privileges, role policies, the append-only trigger). Both **expand** (new tables only, nothing to backfill). Rollback before any real data: drop the 15 tables and the three functions; after real data, roll forward only.
+- **`organization` is a tenant table** (it carries `tenant_id`, so classifying it global would fail the presence check and hide a tenant's name from RLS); `deployment_route` is a tenant table too, `access: 'read-only'` for `shifa_app`, with two reasoned `shifa_platform` policies (route and move). Only `tenant` is global among the platform tables.
+- **Setup links by hash:** `withSetupLink(tokenHashHex)` sets `app.link_token_hash`; `shifa_auth` sees only the matching link and may update only `used_at` (column privilege). Token hashes and throttle keys are stored as 64 hex digits (`text` with a check), not `bytea`.
+- **`auth_throttle`** has a uuid key and a unique `(kind, key_hash)`; columns `window_start`, `failures`, `locked_until`.
+- **API:** `withPlatformAdmin` left the app pool, so `/health/ready`, the startup check, two API tests and the OpenAPI generator stub moved to `db.ping()` / `withTenant()` (backlog L2, as the plan said). No env keys yet (A-01-02).
+- **Harness:** `createTestTenants(...ids)` empties the database and writes `tenant` rows; each file now starts by dropping earlier files' probe tables (the privilege matrix read every table in the worker database and failed on another file's probe). The two script tests of the migrations drift check wrote a probe schema over `schema/index.ts`; they now add it beside the real schema (replacing it made drizzle-kit prompt to drop 15 tables).
+- **Isolation runner:** each case starts from an empty database with tenants A and B; `prepare(ctx)` writes parents through `ctx.inTenant()`; read-only tables are seeded by the owner under the tenant's own context.
+- **Locked tests:** two lint-only edits after the red phase (an unneeded type parameter in `identity-policies.test.ts`, an unused destructured name in `runner-access.test.ts`), approved by the owner on 2026-11-23; assertions unchanged.
+- **Better Auth pinned at 1.7.27** (published 2026-11-20; the 1.8 line is still beta). The identity tables follow its core schema plus the `phoneNumber` and `twoFactor` plugins; A-01-02 configures `advanced.database.generateId: 'uuid'` and maps the snake_case columns.
+- Hand-written lines: about 3,400 (tests about 1,800), within the ~3,600 estimate.
 
 ## Evidence
-- `verify` (full): —
-- Isolation suite: —
+- `pnpm verify` (fast, affected): all green: format, instructions, lint-root, scripts-test (3 Docker suites left to `verify:full`), file-length, pub-get, drift (`migrations` CLEAN), typecheck+lint+test (`@shifa/db`, `@shifa/api`).
+- `@shifa/db` against PostgreSQL 18 and PgBouncer (Testcontainers, in this cloud session): 35 files, 267 tests pass. New: `roles` (attributes and membership refusal for the three roles), `privileges` (exact table and column matrix, secret columns, helper functions), `identity-policies` (A-01a 1), `audit-event` (14), `schema-keys` (no sequence, uuid primary keys), `create-clinic` (2, forced failure leaves nothing), `wrappers`, `isolation/runner-access` (prepare, append-only, read-only), `architecture/rls-presence-roles` (A-01b 13).
+- Isolation suite: 8 tenant tables × direct and PgBouncer, 18 of 18 pass.
+- Red phase: 39 tests failed for the right reasons (missing roles, tables, helpers) before any implementation.
+- Negative evidence: `membership_auth_own_read` widened to `USING (true)` and `shifa_app` given back UPDATE on `audit_event`: 20 tests fail (identity, privileges, presence, audit, isolation); reverted.
 - Reviewer and security-reviewer findings fixed: —; deferred to backlog: —
 
 ## Notes for the next session
-Pin the Better Auth version (≥ 24 h old, pnpm refuses younger) before writing the identity tables; record it here so A-01-02 uses the same one.
+Better Auth is pinned at **1.7.27**: add it (and its Drizzle adapter of the same version) in A-01-02. The adapter's schema keys are `user`, `session`, `account`, `verification`, `twoFactor` (exported by `@shifa/db`); columns are snake_case, so map fields or use Drizzle's column names. `user.email` is required and unique: fill a placeholder for phone sign-ups.

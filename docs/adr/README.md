@@ -42,7 +42,7 @@ What we will do, stated precisely.
 | [0002](0002-monorepo-pnpm-turborepo.md) | Monorepo with pnpm workspaces + Turborepo; TypeScript and Flutter in one repo | Accepted |
 | [0003](0003-nestjs-modular-monolith.md) | Backend: NestJS 12 modular monolith with bounded contexts and a transactional outbox | Accepted |
 | [0004](0004-postgresql-pooled-tenancy-rls.md) | PostgreSQL 18, pooled multi-tenancy, FORCE RLS, tenant routing table | Accepted (amended by 0030) |
-| [0005](0005-drizzle-withtenant.md) | Data access with Drizzle and a withTenant() transaction wrapper | Accepted (amended by 0030) |
+| [0005](0005-drizzle-withtenant.md) | Data access with Drizzle and a withTenant() transaction wrapper | Accepted (amended by 0030, 0043) |
 | [0006](0006-one-organisation-model.md) | One organisation model; global practitioner and patient identities | Accepted |
 | [0007](0007-configuration-layers.md) | Entitlements, feature flags and cascading settings; per-doctor features as gated modules | Accepted |
 | [0008](0008-custom-fields.md) | Custom fields: definitions registry + JSONB with fixed limits | Accepted |
@@ -80,3 +80,4 @@ What we will do, stated precisely.
 | [0040](0040-design-first-in-claude-design-code-as-source.md) | Design first in a Claude Design project ("Shifa": design system synced from code, guide, component sheets, screens); code is the source of truth; the owner approves sheets and screens before code; amends 0039 and 0025 | Accepted (amended by 0042) |
 | [0041](0041-ui-sdk-skill-not-vendored-agent-bridge-off.md) | The upstream `ui-sdk` skill is not vendored (our `/ui-component` skill holds the guidance); the agent bridge stays off, with the conditions for any later use; amends 0039 | Accepted |
 | [0042](0042-screens-drawn-per-ui-batch-with-analysis.md) | Screens: `/spec` writes a screen inventory in words; each UI batch slice draws its screens after the API, with an analysis of API gaps, spec gaps and creative improvements, then the owner approves; amends 0040 | Accepted |
+| [0043](0043-database-roles-auth-and-platform.md) | Two more database roles: `shifa_auth` (identity, setup links, own memberships) and `shifa_platform` (audited super-admin work); privileges keep both off clinic data, role-specific policies need a reason; amends 0005 | Accepted |
