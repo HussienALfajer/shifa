@@ -1,6 +1,6 @@
 # A-01-01 Data model and RLS
 
-Status: Built, in review · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls` (built on the cloud session branch `claude/gracious-gauss-azbrab`, [cloud sessions](../process/cloud-sessions.md) §4)
+Status: PR open (reviews done, findings fixed) · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls` (built on the cloud session branch `claude/gracious-gauss-azbrab`, [cloud sessions](../process/cloud-sessions.md) §4)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 1, 2 (database part), 14 (table and append-only); [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 1, 13 (policy coverage) · Requirements: PLT-01, PLT-02, PLT-03, PLT-47 · Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0030; OD-82 (closed 2026-11-23: two roles)
 
 First of eight A-01 slices (plan approved by the owner 2026-11-23, second-session critique waived: see roadmap). Schema changes are serialised: no other A-01 slice starts its migration before this one merges.
@@ -25,7 +25,7 @@ Tests written first: isolation case per tenant table with `prepare()` parents (A
 Estimated hand-written lines: ~3,600 (schema ~650, policies and roles SQL ~450, wrappers ~300, runner and presence ~450, isolation and policy tests ~1,300, helpers ~250, ADR and domain doc ~200). Checkpoints: (1) roles + wrappers, (2) platform and identity tables, (3) tenant tables + isolation, (4) audit + createClinic + docs.
 
 ## Stopped at
-All layers built and green; reviews and PR next.
+All layers built and green; reviewer and security-reviewer findings fixed; PR open with auto-merge. Next: A-01-02.
 
 ## As built (differences from the plan)
 - **Migrations:** `20261123183313_a01_identity_and_tenancy` (generated: 15 tables, keys, checks, foreign keys) and `20261123183321_a01_policies_and_grants` (custom: helpers `current_user_id()` and `current_link_token_hash()`, RLS, privileges, role policies, the append-only trigger). Both **expand** (new tables only, nothing to backfill). Rollback before any real data: drop the 15 tables and the three functions; after real data, roll forward only.
