@@ -27,7 +27,7 @@ export interface ErrorReportingConfig {
 export interface TelemetryConfig {
   /** OTLP/HTTP base URL of the Collector; unset → no telemetry SDK object is created at all. */
   endpoint: string | undefined;
-  /** Share of root traces sampled, 0–1 (incoming sampled parents are always followed). */
+  /** Share of traces sampled, 0–1; a client's traceparent never decides (A-01-02). */
   samplerRatio: number;
   /** `deployment.environment` resource attribute. */
   environment: string;

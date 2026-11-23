@@ -38,10 +38,11 @@ function nationalNumber(phoneE164: string): string {
 
 /** The first rule `password` breaks for the person with `phoneE164`, or null. */
 export function checkPasswordRules(password: string, phoneE164: string): PasswordProblem | null {
-  // Characters as people count them (an Arabic letter is one), not UTF-16 units.
+  // The minimum in characters as people count them (an Arabic letter is one); the maximum in
+  // UTF-16 units, the unit of the sign-in contract and Better Auth (review N7).
   const length = Array.from(new Intl.Segmenter().segment(password)).length;
   if (length < PASSWORD_MIN_LENGTH) return 'too_short';
-  if (length > PASSWORD_MAX_LENGTH) return 'too_long';
+  if (password.length > PASSWORD_MAX_LENGTH) return 'too_long';
   if (isCommonPassword(password)) return 'common';
   const national = nationalNumber(phoneE164);
   if (national.length >= 7 && digitsOf(password).includes(national)) return 'contains_phone';

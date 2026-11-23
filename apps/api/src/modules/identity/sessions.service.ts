@@ -122,18 +122,23 @@ export class SessionsService {
     };
   }
 
-  /** The person's sessions that have not run out (criterion 10). */
+  /** The person's sessions that have not run out, idle or absolute (criterion 10). */
   async list(principal: Principal): Promise<SessionList> {
     const now = this.clock.now();
-    const rows = await this.authDb.withAuth((tx) =>
-      tx
+    // The person's own clinics (withUser) give each session's idle limit (review N2).
+    const { rows, clinics } = await this.authDb.withUser(principal.userId, async (tx) => ({
+      rows: await tx
         .select()
         .from(session)
         .where(and(eq(session.userId, principal.userId), gt(session.expiresAt, now))),
-    );
+      clinics: await tx.select({ id: tenant.id, idleMinutes: tenant.idleMinutes }).from(tenant),
+    }));
+    const idle = new Map(clinics.map((c) => [c.id, c.idleMinutes]));
+    const idleMinutesOf = (row: SessionRow) =>
+      (row.activeTenantId ? idle.get(row.activeTenantId) : undefined) ?? NO_CLINIC_IDLE_MINUTES;
     return {
       sessions: rows
-        .filter((row) => absoluteEnd(row) > now)
+        .filter((row) => this.#expiry(row, idleMinutesOf(row), now) === null)
         .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
         .map((row) => ({
           id: row.id,
@@ -179,15 +184,18 @@ export class SessionsService {
     }
   }
 
-  /** Ends the session with this token whoever holds it (rotation at sign-in). */
-  async endByToken(token: string, requestId: string): Promise<void> {
+  /**
+   * Ends the session with this token whoever holds it (rotation at sign-in): the person who just
+   * signed in is the actor, though the old session may be someone else's on a shared browser.
+   */
+  async endByToken(token: string, actorId: string, requestId: string): Promise<void> {
     const [row] = await this.authDb.withAuth((tx) =>
       tx
         .select({ id: session.id, userId: session.userId })
         .from(session)
         .where(eq(session.token, token)),
     );
-    if (row) await this.#end(row.userId, [row.id], 'replaced', requestId);
+    if (row) await this.#end(row.userId, [row.id], 'replaced', requestId, actorId);
   }
 
   /** Deletes the person's sessions among `ids`, one audit row each, in one transaction. */
@@ -196,6 +204,7 @@ export class SessionsService {
     ids: string[],
     reason: SessionEndReason,
     requestId: string,
+    actorId: string = userId,
   ): Promise<number> {
     if (ids.length === 0) return 0;
     return this.authDb.withAuth(async (tx) => {
@@ -209,7 +218,7 @@ export class SessionsService {
         ended += 1;
         await this.audit.record(
           { event: 'auth.session_ended', data: { reason } },
-          { actorId: userId, targetId: id, requestId },
+          { actorId, targetId: id, requestId },
           tx,
         );
       }

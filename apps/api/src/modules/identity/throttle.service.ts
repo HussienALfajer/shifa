@@ -1,10 +1,15 @@
-// Sign-in throttle (A-01a criterion 7): 5 failures per phone and 30 per IP within 15 minutes lock
-// that phone or IP for 15 minutes. Rows are keyed by an HMAC of the value (AUTH_HMAC_KEY), never
-// the phone or IP itself; an unknown phone counts like a known one (no enumeration by lock).
+// Sign-in throttle (A-01a criterion 7): 5 attempts per phone and 30 per IP within a 15-minute
+// window lock that phone or IP for 15 minutes. Rows are keyed by an HMAC of the value
+// (AUTH_HMAC_KEY), never the phone or IP itself; an unknown phone counts like a known one.
+//
+// Every attempt reserves its slot before any password is checked (review B1): the rows are locked
+// (SELECT … FOR UPDATE) and counted in one transaction, so parallel attempts cannot all pass a
+// check made before any of them was counted. The attempt that reaches a limit sets the lock at
+// once; if its password then turns out right, the success lifts it again.
 import { createHmac } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
-import { type AuthDb, authThrottle } from '@shifa/db';
-import { and, eq, gt, inArray, sql } from 'drizzle-orm';
+import { type AuthDb, authThrottle, type Tx } from '@shifa/db';
+import { and, eq, sql } from 'drizzle-orm';
 import { AUTH_DB, IDENTITY_CONFIG, type IdentitySecrets } from './tokens.ts';
 
 export const PHONE_FAILURE_LIMIT = 5;
@@ -21,10 +26,18 @@ export interface ThrottleKeys {
   ip: string;
 }
 
-/** A lock in force: which kind, and when it ends. */
+/** A lock: which kind, and when it ends. */
 export interface Lock {
   kind: ThrottleKind;
   until: Date;
+}
+
+/** The outcome of reserving an attempt. */
+export interface Reservation {
+  /** A lock already in force: no password may be checked. */
+  refused: Lock | null;
+  /** Locks this attempt set (an IP lock even when the phone then refused it). */
+  started: Lock[];
 }
 
 const LIMIT: Record<ThrottleKind, number> = { phone: PHONE_FAILURE_LIMIT, ip: IP_FAILURE_LIMIT };
@@ -40,72 +53,68 @@ export class ThrottleService {
     return createHmac('sha256', this.secrets.hmacKey).update(`${kind}:${value}`).digest('hex');
   }
 
-  /** The lock in force for the IP or the phone (the IP first), or null. */
-  async lockFor(keys: ThrottleKeys, now: Date): Promise<Lock | null> {
-    const ip = this.#hash('ip', keys.ip);
-    const phone = this.#hash('phone', keys.phone);
-    const rows = await this.authDb.withAuth((tx) =>
-      tx
-        .select({ kind: authThrottle.kind, lockedUntil: authThrottle.lockedUntil })
-        .from(authThrottle)
-        .where(and(inArray(authThrottle.keyHash, [ip, phone]), gt(authThrottle.lockedUntil, now))),
-    );
-    const find = (kind: ThrottleKind) => rows.find((r) => r.kind === kind)?.lockedUntil ?? null;
-    const ipUntil = find('ip');
-    if (ipUntil) return { kind: 'ip', until: ipUntil };
-    const phoneUntil = find('phone');
-    return phoneUntil ? { kind: 'phone', until: phoneUntil } : null;
+  /**
+   * Counts this attempt against the IP, then the phone (an IP lock stops before the phone is
+   * counted; a phone lock still costs the IP an attempt, so a locked phone sprayed from one
+   * address trips the IP block).
+   */
+  reserve(keys: ThrottleKeys, now: Date): Promise<Reservation> {
+    return this.authDb.withAuth(async (tx) => {
+      const started: Lock[] = [];
+      for (const kind of ['ip', 'phone'] as const) {
+        const outcome = await this.#count(tx, kind, keys[kind], now);
+        if ('refused' in outcome) return { refused: outcome.refused, started };
+        if (outcome.started) started.push(outcome.started);
+      }
+      return { refused: null, started };
+    });
   }
 
   /**
-   * Counts one failure for the phone and the IP (or only `kinds`), starting a new window when the
-   * last one is over 15 minutes old. Returns the locks this failure started (empty when none did).
+   * A successful attempt: the phone's window is cleared, and the IP gets its attempt back (and
+   * loses the lock this attempt set, if it set one).
    */
-  async recordFailure(
-    keys: ThrottleKeys,
-    now: Date,
-    kinds: readonly ThrottleKind[] = ['ip', 'phone'],
-  ): Promise<Lock[]> {
-    const started: Lock[] = [];
+  async succeeded(keys: ThrottleKeys, started: readonly Lock[]): Promise<void> {
+    const phone = this.#hash('phone', keys.phone);
+    const ip = this.#hash('ip', keys.ip);
+    const ipLockStarted = started.some((lock) => lock.kind === 'ip');
     await this.authDb.withAuth(async (tx) => {
-      for (const kind of kinds) {
-        const cutoff = new Date(now.getTime() - THROTTLE_WINDOW_MS);
-        const lockEnd = new Date(now.getTime() + LOCK_MS);
-        const expired = sql`${authThrottle.windowStart} <= ${cutoff.toISOString()}::timestamptz`;
-        const failures = sql`case when ${expired} then 1 else ${authThrottle.failures} + 1 end`;
-        const [row] = await tx
-          .insert(authThrottle)
-          .values({
-            kind,
-            keyHash: this.#hash(kind, keys[kind]),
-            windowStart: now,
-            failures: 1,
-            lockedUntil: LIMIT[kind] <= 1 ? lockEnd : null,
-          })
-          .onConflictDoUpdate({
-            target: [authThrottle.kind, authThrottle.keyHash],
-            set: {
-              windowStart: sql`case when ${expired} then ${now.toISOString()}::timestamptz else ${authThrottle.windowStart} end`,
-              failures,
-              lockedUntil: sql`case when (${failures}) >= ${LIMIT[kind]} then ${lockEnd.toISOString()}::timestamptz else ${authThrottle.lockedUntil} end`,
-            },
-          })
-          .returning({ failures: authThrottle.failures, lockedUntil: authThrottle.lockedUntil });
-        if (row?.lockedUntil && row.failures === LIMIT[kind]) {
-          started.push({ kind, until: row.lockedUntil });
-        }
-      }
+      await tx
+        .delete(authThrottle)
+        .where(and(eq(authThrottle.kind, 'phone'), eq(authThrottle.keyHash, phone)));
+      await tx
+        .update(authThrottle)
+        .set({
+          failures: sql`greatest(${authThrottle.failures} - 1, 0)`,
+          ...(ipLockStarted ? { lockedUntil: null } : {}),
+        })
+        .where(and(eq(authThrottle.kind, 'ip'), eq(authThrottle.keyHash, ip)));
     });
-    return started;
   }
 
-  /** A successful sign-in clears the phone's window (the IP's stays). */
-  async clearPhone(phone: string): Promise<void> {
-    const keyHash = this.#hash('phone', phone);
-    await this.authDb.withAuth((tx) =>
-      tx
-        .delete(authThrottle)
-        .where(and(eq(authThrottle.kind, 'phone'), eq(authThrottle.keyHash, keyHash))),
-    );
+  async #count(
+    tx: Tx,
+    kind: ThrottleKind,
+    value: string,
+    now: Date,
+  ): Promise<{ refused: Lock } | { started: Lock | null }> {
+    const keyHash = this.#hash(kind, value);
+    const where = and(eq(authThrottle.kind, kind), eq(authThrottle.keyHash, keyHash));
+    await tx
+      .insert(authThrottle)
+      .values({ kind, keyHash, windowStart: now, failures: 0 })
+      .onConflictDoNothing({ target: [authThrottle.kind, authThrottle.keyHash] });
+    const [row] = await tx.select().from(authThrottle).where(where).for('update');
+    if (!row) throw new Error('throttle row missing after insert');
+    if (row.lockedUntil && row.lockedUntil > now)
+      return { refused: { kind, until: row.lockedUntil } };
+    const windowOver = now.getTime() - row.windowStart.getTime() >= THROTTLE_WINDOW_MS;
+    const failures = windowOver ? 1 : row.failures + 1;
+    const lockedUntil = failures >= LIMIT[kind] ? new Date(now.getTime() + LOCK_MS) : null;
+    await tx
+      .update(authThrottle)
+      .set({ windowStart: windowOver ? now : row.windowStart, failures, lockedUntil })
+      .where(where);
+    return { started: lockedUntil ? { kind, until: lockedUntil } : null };
   }
 }

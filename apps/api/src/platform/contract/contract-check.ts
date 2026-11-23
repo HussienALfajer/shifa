@@ -93,6 +93,10 @@ function routeShapeProblems(route: RouteHandler, contract: Contract): string[] {
       problems.push(`${kind} parameter bypasses the contract; read input with @Body/@Query/@Param`);
     }
   }
+  // A public route authenticates nobody: the principal would be missing at request time.
+  if (route.public && route.args.includes('PRINCIPAL')) {
+    problems.push('@CurrentPrincipal() on a @Public route');
+  }
   if (route.versioned) problems.push('@Version() is not supported by contracts yet');
   if (route.method === undefined) problems.push('no HTTP method decorator');
   if (/[{}*?()]/.test(contract.path)) {
