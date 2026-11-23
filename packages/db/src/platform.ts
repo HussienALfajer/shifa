@@ -1,7 +1,8 @@
 // The super-admin path (ADR-0005 "own role and audit", ADR-0043): the shifa_platform role, with
 // one audit row per call written in the same transaction as the work, so an action and its
 // audit row commit or roll back together. No tenant context: tenant tables show it nothing,
-// and it holds no SELECT on them (super admins see no clinic data; support access is A-02).
+// and it holds no SELECT on them except `deployment_route`, which holds no clinic data (super
+// admins see no clinic data; support access is A-02).
 import { sql } from 'drizzle-orm';
 import type { Pool } from 'pg';
 import { PLATFORM_EVENTS, type PlatformEvent, REQUEST_ID } from './audit.ts';
@@ -37,6 +38,15 @@ export interface PlatformDb {
   close(): Promise<void>;
 }
 
+// The audit target of each live platform transaction, so platform helpers such as createClinic()
+// can name what they created without every caller passing it along.
+const targets = new WeakMap<PlatformTx, AuditTarget>();
+
+/** The audit target of `tx`'s withPlatformAdmin() call (package-internal). */
+export function auditTargetOf(tx: PlatformTx): AuditTarget | undefined {
+  return targets.get(tx);
+}
+
 function assertAction(action: PlatformAction): void {
   assertUuid('actorId', action.actorId);
   if (!(PLATFORM_EVENTS as readonly string[]).includes(action.event)) {
@@ -63,7 +73,9 @@ async function runAsPlatformAdmin<T>(
   };
   const setup = contextSetup({ adminReason: action.event });
   return runScoped(pool, 'shifa_platform', setup, async (tx) => {
-    const result = await fn(tx as PlatformTx, audit);
+    const platformTx = tx as PlatformTx;
+    targets.set(platformTx, audit);
+    const result = await fn(platformTx, audit);
     // Written last, so the row carries the target the work named; a throw above leaves none.
     await tx.execute(sql`insert into audit_event (tenant_id, actor_id, target_id, event, request_id)
       values (null, ${action.actorId}, ${targetId ?? null}, ${action.event},

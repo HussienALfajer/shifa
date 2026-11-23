@@ -130,9 +130,34 @@ GRANT SELECT, UPDATE (used_at) ON "setup_link" TO shifa_auth;
 CREATE POLICY setup_link_auth_read ON "setup_link" FOR SELECT TO shifa_auth
   USING (token_hash = current_link_token_hash());
 --> statement-breakpoint
+-- Only an unused, unreplaced, unexpired link can be marked, and only as used: a link is never
+-- made usable again, and a second concurrent use updates nothing.
 CREATE POLICY setup_link_auth_use ON "setup_link" FOR UPDATE TO shifa_auth
+  USING (token_hash = current_link_token_hash() AND used_at IS NULL AND replaced_at IS NULL
+         AND expires_at > now())
+  WITH CHECK (token_hash = current_link_token_hash() AND used_at IS NOT NULL);
+--> statement-breakpoint
+-- The tenant isolation policies are for PUBLIC and `app.tenant_id` is a setting any role can
+-- change: restrictive policies (ANDed) keep the side roles to their own rows even if a tenant
+-- were set on their path. createClinic() is the only platform write into tenant tables.
+CREATE POLICY membership_auth_only_own ON "membership" AS RESTRICTIVE FOR SELECT TO shifa_auth
+  USING (user_id = current_user_id());
+--> statement-breakpoint
+CREATE POLICY setup_link_auth_only_link ON "setup_link" AS RESTRICTIVE TO shifa_auth
   USING (token_hash = current_link_token_hash())
   WITH CHECK (token_hash = current_link_token_hash());
+--> statement-breakpoint
+DO $$
+DECLARE
+  t text;
+BEGIN
+  FOREACH t IN ARRAY ARRAY['organization', 'branch', 'deployment_route'] LOOP
+    EXECUTE format('CREATE POLICY %I ON %I AS RESTRICTIVE FOR INSERT TO shifa_platform '
+                   'WITH CHECK (current_setting(''app.admin_reason'', true) = ''clinic.created'')',
+                   t || '_platform_create_only', t);
+  END LOOP;
+END
+$$;
 --> statement-breakpoint
 
 -- audit_event: append-only (no UPDATE or DELETE privilege; the trigger refuses even the owner).
@@ -155,6 +180,10 @@ CREATE POLICY audit_event_auth_insert ON "audit_event" FOR INSERT TO shifa_auth
 --> statement-breakpoint
 CREATE POLICY audit_event_platform_insert ON "audit_event" FOR INSERT TO shifa_platform
   WITH CHECK (tenant_id IS NULL);
+--> statement-breakpoint
+-- Even under a tenant context (createClinic()), the side roles write platform rows only.
+CREATE POLICY audit_event_side_null_tenant ON "audit_event" AS RESTRICTIVE FOR INSERT
+  TO shifa_auth, shifa_platform WITH CHECK (tenant_id IS NULL);
 --> statement-breakpoint
 CREATE FUNCTION public.audit_event_append_only() RETURNS trigger
   LANGUAGE plpgsql

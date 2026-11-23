@@ -13,7 +13,7 @@ The owner manages branches; a person in several clinics chooses one after sign-i
 2. **Database** — no schema change expected (`membership.last_active_at` and `session.active_*` exist).
 3. **API**
    - `modules/branches` (`branches.manage`): list (active and archived), create, rename and edit, archive preview, archive (refused for the last active branch; members left without an active branch in their roles lose their sessions in this tenant).
-   - `modules/switcher`: `GET /me/clinics` through `runAsUser()` (own memberships across tenants, `shifa_auth` self-read policy); `POST /me/switch` (tenant and optional branch; refused for a clinic without an active membership, a suspended clinic, or a branch the person holds no role in, even when called directly); updates the session scope, rotates nothing else, audits the switch.
+   - `modules/switcher`: `GET /me/clinics` through `withUser(userId)` (`createAuthDb()`) (own memberships across tenants, `shifa_auth` self-read policy); `POST /me/switch` (tenant and optional branch; refused for a clinic without an active membership, a suspended clinic, or a branch the person holds no role in, even when called directly); updates the session scope, rotates nothing else, audits the switch.
    - Guard: a suspended active tenant → 403 `clinic_suspended` on the next request; a person with no active clinic gets `no_clinic` from `/me/clinics`.
    - `routeList()` keeps an explicit HEAD declared before GET (backlog L8).
 4. **Web, Flutter** — none (screens in A-01-08).

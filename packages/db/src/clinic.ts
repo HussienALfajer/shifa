@@ -4,7 +4,7 @@
 import { randomUUID } from 'node:crypto';
 import { sql } from 'drizzle-orm';
 import { assertUuid } from './context.ts';
-import type { PlatformTx } from './platform.ts';
+import { auditTargetOf, type PlatformTx } from './platform.ts';
 import {
   branch,
   deploymentRoute,
@@ -55,13 +55,19 @@ export async function createClinic(tx: PlatformTx, input: NewClinic): Promise<Cr
     subscriptionEnd: input.subscriptionEnd ?? null,
     idleMinutes: input.idleMinutes ?? 30,
   });
-  await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
-  await tx.insert(organization).values({ id: organizationId, tenantId, name: input.name });
-  await tx.insert(branch).values({ id: branchId, tenantId, name: MAIN_BRANCH_NAME });
-  await tx.insert(deploymentRoute).values({
-    tenantId,
-    databaseKey: input.databaseKey ?? 'primary',
+  // In a savepoint: if anything below throws, the tenant setting is rolled back with the rows,
+  // so no later statement of the platform transaction runs inside this tenant.
+  await tx.transaction(async (sp) => {
+    await sp.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
+    await sp.insert(organization).values({ id: organizationId, tenantId, name: input.name });
+    await sp.insert(branch).values({ id: branchId, tenantId, name: MAIN_BRANCH_NAME });
+    await sp.insert(deploymentRoute).values({
+      tenantId,
+      databaseKey: input.databaseKey ?? 'primary',
+    });
+    await sp.execute(sql`select set_config('app.tenant_id', '', true)`);
   });
-  await tx.execute(sql`select set_config('app.tenant_id', '', true)`);
+  // The withPlatformAdmin() audit row names the clinic it created (A-01a criterion 14).
+  auditTargetOf(tx)?.setTarget(tenantId);
   return { tenantId, organizationId, branchId };
 }

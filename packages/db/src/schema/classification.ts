@@ -32,6 +32,8 @@ export type TableClassification = Readonly<Record<string, TableClass>>;
 
 const IDENTITY =
   'a person is one account across clinics (ADR-0006); no clinic data. Personal data: shifa_app reads only the signed-in person (app.user_id)';
+const PLATFORM_CREATE_ONLY =
+  'restrictive: shifa_platform inserts here only inside a clinic.created transaction (createClinic())';
 const authAll = (table: string): RoleAccess => ({
   [`${table}_auth_all`]:
     'the Better Auth adapter reads and writes identity rows before any tenant or person is known (sign-in, sessions, MFA)',
@@ -63,7 +65,6 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       'sign-in failure windows keyed by an HMAC of the phone or IP (A-01a 7); never read by shifa_app',
     roleAccess: authAll('auth_throttle'),
   },
-  organization: { kind: 'tenant' },
   deployment_route: {
     kind: 'tenant',
     access: 'read-only',
@@ -71,14 +72,21 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       deployment_route_platform_read:
         'the platform routes each tenant to its database (PLT-02, ADR-0004); the row holds no clinic data',
       deployment_route_platform_move: 'the platform moves a tenant to another database (ADR-0004)',
+      deployment_route_platform_create_only: PLATFORM_CREATE_ONLY,
     },
   },
-  branch: { kind: 'tenant' },
+  organization: {
+    kind: 'tenant',
+    roleAccess: { organization_platform_create_only: PLATFORM_CREATE_ONLY },
+  },
+  branch: { kind: 'tenant', roleAccess: { branch_platform_create_only: PLATFORM_CREATE_ONLY } },
   membership: {
     kind: 'tenant',
     roleAccess: {
       membership_auth_own_read:
         "a person's own memberships across clinics, for sign-in and the clinic chooser (A-01b 10)",
+      membership_auth_only_own:
+        'restrictive: even with a tenant set, shifa_auth reads only the signed-in person’s memberships',
     },
   },
   role_assignment: { kind: 'tenant' },
@@ -87,7 +95,10 @@ export const TABLE_CLASSIFICATION: TableClassification = {
     kind: 'tenant',
     roleAccess: {
       setup_link_auth_read: 'opening a setup link finds it by its token hash alone (A-01a 4)',
-      setup_link_auth_use: 'using a setup link marks it used (A-01a 4); only used_at is granted',
+      setup_link_auth_use:
+        'using an unused, unexpired link marks it used (A-01a 4); only used_at is granted',
+      setup_link_auth_only_link:
+        'restrictive: even with a tenant set, shifa_auth reaches only the link of its token hash',
     },
   },
   audit_event: {
@@ -99,6 +110,8 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       audit_event_auth_insert:
         'sign-in, lockout and MFA events before any tenant is chosen (A-01a 14)',
       audit_event_platform_insert: 'one row per withPlatformAdmin() call (ADR-0005)',
+      audit_event_side_null_tenant:
+        'restrictive: shifa_auth and shifa_platform write platform rows only, even with a tenant set',
     },
   },
 };

@@ -135,14 +135,18 @@ export function pooledHarnessUrl(
 }
 
 /**
- * One raw `shifa_app` session through PgBouncer that a test can leave mid-transaction or kill
- * (0.3-S2b). Negative tests only. Closed after the file if the test does not close it.
+ * One raw session through PgBouncer (as `shifa_app` unless `role` says otherwise) that a test
+ * can leave mid-transaction or kill (0.3-S2b). Negative tests only. Closed after the file if the
+ * test does not close it.
  */
 export async function rawPooledSession(
   database = workerDatabaseName(),
-  { pooler = 'shared' }: { pooler?: PoolerName } = {},
+  {
+    pooler = 'shared',
+    role = 'app',
+  }: { pooler?: PoolerName; role?: 'app' | 'auth' | 'platform' } = {},
 ): Promise<RawSession> {
-  const session = await openRawSession(urlFor(info(), 'app', database, { via: VIA[pooler] }));
+  const session = await openRawSession(urlFor(info(), role, database, { via: VIA[pooler] }));
   closers.push(() => session.end().catch(() => undefined));
   return session;
 }

@@ -64,7 +64,9 @@ export async function applicationPrivileges(
       cross join unnest(array['INSERT', 'UPDATE', 'DELETE']) as p(priv)
      where n.nspname = 'public' and c.relkind in ('r', 'p')
        and r.rolname in ('shifa_app', 'shifa_auth', 'shifa_platform')
-       and has_table_privilege(r.oid, c.oid, p.priv)`);
+       -- A column grant (UPDATE (event)) counts too: DELETE has no column form.
+       and case when p.priv = 'DELETE' then has_table_privilege(r.oid, c.oid, p.priv)
+                else has_any_column_privilege(r.oid, c.oid, p.priv) end`);
   const out = new Map<string, Map<string, Set<string>>>();
   for (const { t, role, priv } of rows) {
     const byRole = out.get(t) ?? new Map<string, Set<string>>();
