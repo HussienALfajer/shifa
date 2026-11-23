@@ -152,39 +152,40 @@ const BASH_RULES = [
 ];
 
 const WRAPPERS = new Set(['sudo', 'command', 'exec', 'env', 'time', 'nice']);
-// Runners that start another program (slice 0.4-10, audit 0.4 F4): `corepack <pm> …` starts a
-// package manager, and `pnpm exec`, `pnpm x`, `yarn exec` and `bun x` start the program named
-// after the subcommand (runner options such as `--filter ui` or `-r` may come first). That
-// program is checked again, so `pnpm exec npx -y x` is refused like `npx -y x`.
-const RUNNER_SUBCOMMANDS = { pnpm: ['exec', 'x'], yarn: ['exec'], bun: ['x'] };
-/** Runner options that take a value as the next word (`--filter ui`, `-C dir`). */
-const RUNNER_VALUE_OPTIONS = new Set(['--filter', '-F', '--dir', '-C', '--workspace-root']);
+// Package managers that can start another program (slice 0.4-10, audit 0.4 F4): `corepack
+// <pm>[@version]`, `pnpm exec|x`, `pnpm <tool>` (pnpm falls back to exec), `yarn exec`,
+// `yarn workspace <w> exec` and `bun x`, each with options anywhere (`--filter ui`, `-C dir`,
+// `--reporter silent`, `--`). Parsing every option of every version would fail open on the first
+// unknown one, so the guard fails closed instead: after such a program, every later word that is
+// not an option is checked again as a program with the words after it. `pnpm exec npx -y x` is
+// refused like `npx -y x`; `pnpm exec tsc -p x` stays allowed, since neither `tsc` nor `x` fetch.
+// `npx <pm>`, `timeout 60 …`, `nohup …`, `xargs …` and wrappers with options (`sudo -u root …`,
+// `env -i …`, `cross-env A=1 …`) start a program the same way.
+const RUNNERS = new Set([
+  'pnpm',
+  'yarn',
+  'bun',
+  'corepack',
+  'npx',
+  'timeout',
+  'nohup',
+  'xargs',
+  'cross-env',
+  ...WRAPPERS,
+]);
 
+/** The program a word names: no path, no .cmd/.exe/.ps1, no `@version` (`pnpm@9.0.0`). */
 const programName = (word) =>
   (word ?? '')
     .split(/[\\/]/)
     .pop()
     .replace(/\.(cmd|exe|ps1)$/i, '')
+    .replace(/(?<=.)@.*$/, '')
     .toLowerCase();
 
-/** Index of the program a runner starts, or -1 when `words[i]` does not start one. */
-function runnerTarget(words, i) {
-  const program = programName(words[i]);
-  if (program === 'corepack') return i + 1;
-  const subcommands = RUNNER_SUBCOMMANDS[program];
-  if (!subcommands) return -1;
-  for (let j = i + 1; j < words.length; j += 1) {
-    const word = words[j];
-    if (subcommands.includes(word)) return j + 1;
-    if (!word.startsWith('-')) return -1; // another subcommand (`pnpm install`, `pnpm dlx`)
-    if (RUNNER_VALUE_OPTIONS.has(word)) j += 1;
-  }
-  return -1;
-}
-
 /**
- * Each simple command of a shell line, with the programs its runners start: its program (no
- * path, quotes or .cmd/.exe) and words.
+ * Each simple command of a shell line, with the programs a package manager may start: its program
+ * and words. The words after a runner give extra entries marked `nested`.
  */
 function commandSegments(cmd) {
   // A quoted string with spaces or separators is an argument (a grep pattern, a message), never
@@ -196,15 +197,17 @@ function commandSegments(cmd) {
       .split(/\s+/)
       .filter(Boolean)
       .map((w) => w.replace(/^["']+|["']+$/g, ''));
-    const out = [];
     let i = 0;
-    for (;;) {
-      while (i < words.length && (/^\w+=/.test(words[i]) || WRAPPERS.has(words[i]))) i += 1;
-      out.push({ program: programName(words[i]), args: words.slice(i + 1) });
-      const next = runnerTarget(words, i);
-      if (next === -1 || next >= words.length) return out;
-      i = next;
+    while (i < words.length && (/^\w+=/.test(words[i]) || WRAPPERS.has(words[i]))) i += 1;
+    const program = programName(words[i]);
+    const out = [{ program, args: words.slice(i + 1), nested: false }];
+    // After a skipped wrapper (`sudo -u root …`) the "program" may be one of its options.
+    if (!RUNNERS.has(program) && i === 0) return out;
+    for (let j = i + 1; j < words.length; j += 1) {
+      if (words[j].startsWith('-')) continue;
+      out.push({ program: programName(words[j]), args: words.slice(j + 1), nested: true });
     }
+    return out;
   });
 }
 
@@ -222,10 +225,12 @@ const NPM_INSTALL = new Set([
   'ci',
 ]);
 
-function installsOutsidePnpm({ program, args }) {
+function installsOutsidePnpm({ program, args, nested }) {
   if (program === 'npm') return args.some((a) => NPM_INSTALL.has(a));
+  // A bare `yarn` installs; a bare word `yarn` after a runner is more often a package name
+  // (`pnpm why yarn`), so only the add and install subcommands count there.
   if (program === 'yarn')
-    return args.length === 0 || args.some((a) => ['add', 'install'].includes(a));
+    return (args.length === 0 && !nested) || args.some((a) => ['add', 'install'].includes(a));
   if (program === 'bun') return args.some((a) => ['add', 'install', 'i'].includes(a));
   return false;
 }

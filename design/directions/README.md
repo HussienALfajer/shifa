@@ -23,7 +23,7 @@ The bar at the top of each page links the four screens and switches theme (`data
 
 ## How the builds are made
 
-`source/` holds the sixteen artboards as drawn in the design canvas (`*.dc.html`; `Main.dc.html` is direction D's reception queue). `node scripts/design-directions-build.mjs` turns them into the builds: the first state rendered as plain HTML, a small `runtime.js` for the clicks, and the fonts of `packages/tokens/fonts/`. Change a source file and run the script again.
+`source/` holds the sixteen artboards as drawn in the design canvas (`*.dc.html`; `Main.dc.html` is direction D's reception queue). `node scripts/design-directions-build.mjs` turns them into the builds: the first state rendered as plain HTML, a small `runtime.js` for the clicks, and the fonts of `packages/tokens/fonts/`. Change a source file and run the script again. The sources name the UI font Shifa Sans Arabic, the renamed subsets of IBM Plex Sans Arabic (OD-59, slice 0.4-10): look at the builds, since a source opened on its own falls back to the system font.
 
 ## Rules for a build
 
