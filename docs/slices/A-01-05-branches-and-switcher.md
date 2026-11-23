@@ -1,7 +1,7 @@
 # A-01-05 Branches and the clinic switcher
 
 Status: Planned · Tier: T0 · Branch: `feat/A-01-05-branches-and-switcher`
-Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 4 (archived branch), 9–11, 12 (branch and switch events), 13 (HEAD before GET) · Requirements: PLT-03, PLT-04, PLT-05, PLT-47 · Decisions: OD-76, OD-89, OD-90 (open)
+Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 4 (archived branch), 9–11, 12 (branch and switch events), 13 (HEAD before GET) · Requirements: PLT-03, PLT-04, PLT-05, PLT-47 · Decisions: OD-76, OD-89, OD-90
 
 After [A-01-04](A-01-04-members-roles-toggles-scope.md) (merged). Last backend slice of A-01. Re-planned on 2026-11-23 against the merged A-01-01 to A-01-04 code: it now carries the backlog blocker "Membership binding on INSERT" (A-01-01 security review L4, A-01-04 security review L2), so it has a migration, and it extends `apps/api/test/architecture/table-access.test.ts` with branch ownership and a write rule.
 
@@ -29,7 +29,7 @@ The owner manages branches; a person in several clinics chooses one after sign-i
    - `GET /me/clinics` through `withUser(userId)` (`shifa_auth` own-read policies, `role_assignment_auth_own_read`); `no_clinic` when nothing is active.
    - `POST /me/switch`: refused for a clinic without an active membership and role, a suspended clinic, an archived branch, or a branch the person holds no role in, even when called directly; sets `session.active_tenant_id`/`active_branch_id`, keeps the token, audits `clinic.switched`. Sign-in with exactly one selectable clinic sets it (existing issuer); several leave it empty for the chooser.
    - Suspended clinic: `#tenantView` reads `tenant.status`; the principal carries the suspension and the guard answers 403 `clinic_suspended` to every tenant route on the next request; `/me/*` and sign-out still work; data stays.
-3. **Pending invitations in the chooser (OD-90, open):** the spec's chooser lists pending invitations with accept and decline, but invitations are link-based today (token in `/invitations/view|accept|decline`) and `shifa_auth` sees memberships by `user_id` only. Recommended: a read policy for pending, unbound memberships whose `phone_e164` is the signed-in account's phone (clinic name and roles only), and accept/decline by membership id with the same phone and super-admin checks as the link path, closing the clinic's open link (~+450 lines, all T0). Alternative: invitations open only from the link; the chooser shows none (spec change). Built only after the owner's answer.
+3. **Pending invitations in the chooser (OD-90, closed: the recommended option):** the spec's chooser lists pending invitations with accept and decline, but invitations are link-based today (token in `/invitations/view|accept|decline`) and `shifa_auth` sees memberships by `user_id` only. Recommended: a read policy for pending, unbound memberships whose `phone_e164` is the signed-in account's phone (clinic name and roles only), and accept/decline by membership id with the same phone and super-admin checks as the link path, closing the clinic's open link (~+450 lines, all T0). Alternative: invitations open only from the link; the chooser shows none (spec change). The owner chose the recommendation (2026-11-23); `MyClinics` gains `invitations`, and the routes are `POST /me/invitations/:id/accept|decline`.
 4. **`routeList()`** keeps an explicit HEAD declared before GET (backlog L8), with its matrix row; confirm the remaining parts of criterion 13 are in place.
 5. **Web, Flutter** — none (screens in A-01-08).
 6. **End-to-end** — API journey: doctor in two clinics signs in → `/me/clinics` lists both, last used first → switch clinic → switch branch → refused switch to an unheld branch → clinic suspended → 403 → `/me/clinics` shows it not selectable.
@@ -45,9 +45,9 @@ Tests written first:
 - Criterion 12: one audit row per branch event and per switch.
 - Criterion 13: HEAD-before-GET matrix row; route matrix and isolation suite rows for every new route and the new policies.
 
-Estimated hand-written lines: ~3,300 without OD-90 (binding migration, fixtures and tests ~450; table-access ~150; branches ~650; switcher and suspension ~800; contracts ~250; other tests ~1,000), ~3,750 with the recommended OD-90 option. Under the 4,000 budget; three checkpoints above.
+Estimated hand-written lines: ~3,750 with OD-90 (binding migration, fixtures and tests ~450; table-access ~150; branches ~650; switcher and suspension ~800; contracts ~250; other tests ~1,000; OD-90 ~450). Under the 4,000 budget; three checkpoints above.
 
-Before building: a second session critiques this T0 plan (or the owner waives it, as for A-01-01 to A-01-04).
+Plan approved by the owner (2026-11-23) with OD-90's recommendation; the owner waived the second-session critique of this T0 plan.
 
 ## Stopped at
 Not started.
@@ -58,5 +58,4 @@ Not started.
 - Reviewer and security-reviewer findings fixed: —; deferred to backlog: —
 
 ## Notes for the next session
-- OD-90 must be answered before checkpoint 3, item 3.
 - Bound memberships in tests are written as the owner/superuser after checkpoint 1; any new fixture that needs an active member uses `insertMembership()` with a `userId`.
