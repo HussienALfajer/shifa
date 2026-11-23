@@ -135,6 +135,7 @@ export function DatePicker({
     maxMessage,
     showAge,
   });
+  const shownError = hasError(error) ? error : (date.error ?? undefined);
   // The month and year panel (criterion 14): open in place of the days while the heading is
   // expanded. A ref mirrors it for the Escape check, which runs before the panel's own key.
   const [panel, setPanelState] = useState(false);
@@ -171,10 +172,11 @@ export function DatePicker({
   return (
     <FieldShell
       label={label}
-      // A complete date is confirmed in the hint line, read with the field.
-      hint={date.line ?? hint}
+      // A complete date is confirmed in the hint line, read with the field; not beside an error,
+      // nor in a disabled field (as the sheet draws them).
+      hint={date.line !== null && disabled !== true && !hasError(shownError) ? date.line : hint}
       // An error from the form wins over the typed date's own.
-      error={hasError(error) ? error : (date.error ?? undefined)}
+      error={shownError}
       required={required}
       disabled={disabled}
       name={name}

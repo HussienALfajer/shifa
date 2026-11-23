@@ -1,6 +1,8 @@
-// Time Input stories, as on the approved sheet (owner, 2026-11-20; OD-62). Every story renders in
-// the eight combinations of direction × theme × density and is checked by axe.
+// Time Input stories, as on the approved sheets (owner, 2026-11-20 and 2026-11-23; OD-62, OD-70 B,
+// OD-73). Every story renders in the eight combinations of direction × theme × density and is
+// checked by axe; the open slot grid is a story opened by its play function.
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { storyStates } from '../../.storybook/story-states.tsx';
 import { TimeInput } from './time-input.tsx';
 
@@ -12,7 +14,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'An hour and a minute segment (plus ص/م on the 12-hour clock, a clinic setting), left to right in both directions, a clock at the logical end. The value is always "HH:mm"; Arabic-Indic digits are accepted.\n\n**Accessibility.** It renders `role="group"` named by its `label`, holding one `spinbutton` per segment, named «الساعة», «الدقائق» and «ص/م» (Hour, Minute, AM/PM in English). Tab reaches the hour; digits fill a segment and move on, ArrowRight and ArrowLeft go to the segment on that side in both directions, ArrowUp and ArrowDown step the focused segment; a disabled field takes no focus. With an error the group is `aria-invalid` and the message is read through `aria-describedby`; the clock icon is hidden from screen readers. Without a `label` (and outside a Field) pass `aria-label`; it falls back to «الوقت» («Time» in English).',
+          'An hour and a minute segment (plus ص/م on the 12-hour clock, a clinic setting), left to right in both directions, and a clock button at the logical end that opens the clinic\'s slots: times every `step` minutes (15 by default; it must divide 60) from `min` up to, not including, `max`, in four columns under ليلاً، صباحاً، بعد الظهر، مساءً (only the parts of the day that have slots), with «أقرب وقت» for the next slot after now. One press fills the segments and closes; typing stays the main way in. The value is always "HH:mm"; Arabic-Indic digits are accepted.\n\n**Accessibility.** It renders `role="group"` named by its `label`, holding one `spinbutton` per segment, named «الساعة», «الدقائق» and «ص/م» (Hour, Minute, AM/PM in English). Tab reaches the hour; digits fill a segment and move on, ArrowRight and ArrowLeft go to the segment on that side in both directions, ArrowUp and ArrowDown step the focused segment; a disabled field takes no focus. The clock is a `button` named «اختيار الوقت» («Choose a time»); Enter or Space on it, or Alt+ArrowDown from a segment, opens a `dialog` of the same name holding one `grid` per part of the day. Focus opens on the chosen time or the next one after now; arrows follow the reading direction, Up and Down move a row, Home and End go to the group\'s ends, Enter chooses; Escape closes and returns focus to the button. Each slot is read with its part of the day («10:30 صباحاً»); the chosen one is pressed and selected. With an error the group is `aria-invalid` and the message is read through `aria-describedby`. Without a `label` (and outside a Field) pass `aria-label`; it falls back to «الوقت» («Time» in English).',
       },
     },
   },
@@ -32,6 +34,39 @@ export const States: Story = {
       <TimeInput {...args} defaultValue="14:30" hourCycle={12} />
     </div>
   ),
+};
+
+/** A clinic's day, 09:00–17:00, at its 15-minute step. */
+export const ClinicHours: Story = {
+  args: { label: 'وقت الموعد', defaultValue: '10:30', min: '09:00', max: '17:00' },
+};
+
+const openGrid: Story['play'] = async ({ canvasElement }) => {
+  const body = within(canvasElement.ownerDocument.body);
+  await userEvent.click(within(canvasElement).getByRole('button', { name: 'اختيار الوقت' }));
+  await waitFor(async () => {
+    await expect(body.getByRole('grid', { name: 'صباحاً' })).toBeVisible();
+  });
+};
+
+/** The slot grid open on the chosen time, 24-hour. */
+export const SlotGrid: Story = {
+  args: { label: 'وقت الموعد', defaultValue: '10:30', min: '09:00', max: '17:00' },
+  parameters: { matrix: false },
+  play: openGrid,
+};
+
+/** The slot grid on the 12-hour clock. */
+export const SlotGrid12Hour: Story = {
+  args: {
+    label: 'وقت الموعد',
+    defaultValue: '14:30',
+    min: '09:00',
+    max: '17:00',
+    hourCycle: 12,
+  },
+  parameters: { matrix: false },
+  play: openGrid,
 };
 
 const states = storyStates((label) => <TimeInput label={label} defaultValue="14:30" />);
