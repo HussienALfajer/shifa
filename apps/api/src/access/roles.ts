@@ -21,6 +21,7 @@ export const PRODUCTION_GRANTS: RoleGrants = Object.freeze({
   receptionist: [],
   assistant: [],
   accountant: [],
-  // Platform work goes through withPlatformAdmin(), never through tenant grants.
+  // Platform work goes through withPlatformAdmin() on the shifa_platform pool (ADR-0043),
+  // never through tenant grants.
   platform_admin: [],
 });

@@ -3,7 +3,7 @@
 import { sql } from 'drizzle-orm';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDb, TenantContextError } from '../src/index.ts';
-import { ownerDb, rawAppDb, testDb } from '../test-harness/index.ts';
+import { ownerDb, rawAppDb, testDb, withoutTenant } from '../test-harness/index.ts';
 
 const A = '0b4c1c62-4c39-4d39-9a43-6f1b8d1a0a01';
 const B = '7e2f5d10-93a4-4b8e-8f6c-2c4f1d9b0b02';
@@ -69,10 +69,10 @@ describe('withTenant', () => {
   it('returns zero rows outside withTenant', async () => {
     const { rows } = await rawAppDb().execute(sql`select * from rls_probe`);
     expect(rows).toHaveLength(0);
-    const viaAdmin = await testDb().withPlatformAdmin('rls probe check', (tx) =>
+    const noTenant = await withoutTenant(testDb(), (tx) =>
       tx.execute(sql`select * from rls_probe`),
     );
-    expect(viaAdmin.rows).toHaveLength(0);
+    expect(noTenant.rows).toHaveLength(0);
   });
 
   it('does not leak context to the next transaction on the same connection', async () => {
@@ -84,7 +84,7 @@ describe('withTenant', () => {
         )
       ).rows,
     ).toHaveLength(1);
-    const { rows } = await db.withPlatformAdmin('leak check', (tx) =>
+    const { rows } = await withoutTenant(db, (tx) =>
       tx.execute<{ tenant: string | null; n: number }>(
         sql`select current_tenant_id()::text as tenant, (select count(*)::int from rls_probe) as n`,
       ),
@@ -114,7 +114,6 @@ describe('withTenant', () => {
       ]) {
         await expect(offline.withTenant(ctx, fn)).rejects.toThrow(TenantContextError);
       }
-      await expect(offline.withPlatformAdmin('  ', fn)).rejects.toThrow(/reason/);
       expect(fn).not.toHaveBeenCalled();
     } finally {
       await offline.close();

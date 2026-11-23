@@ -1,6 +1,6 @@
 // Spec 0.3-S2 criterion 5: a raw shifa_app client sets tenant A at session level through
 // PgBouncer and disconnects. On that server connection withTenant(B) still sees only B and
-// withPlatformAdmin no tenant rows, because the wrappers override every `app.*` setting locally
+// the no-tenant path no tenant rows, because the wrappers override every `app.*` setting locally
 // in every transaction. A second PgBouncer with `server_reset_query_always = 1` shows the
 // setting that also clears the session value, and what it costs per transaction.
 import { eq, sql } from 'drizzle-orm';
@@ -13,6 +13,7 @@ import {
   pooledHarnessUrl,
   rawPooledSession,
   showPooler,
+  withoutTenant,
 } from '../../test-harness/index.ts';
 import {
   adminReasonOf,
@@ -93,7 +94,7 @@ async function look(tx: Tx) {
 }
 
 describe('shared PgBouncer (server_reset_query_always = 0)', () => {
-  it('withTenant(B) and withPlatformAdmin override a raw session-level tenant A', async () => {
+  it('withTenant(B) and the no-tenant path override a raw session-level tenant A', async () => {
     const pid = await leaveSessionContext('shared');
     // Precondition: the session value really survives the client (no reset in transaction mode).
     const leftover = await nextTransactionView(POOLING_DATABASE);
@@ -108,11 +109,13 @@ describe('shared PgBouncer (server_reset_query_always = 0)', () => {
     expect(inB.adminReason).toBe('');
     expect(inB.tenants).toEqual([TENANT_B, TENANT_B]);
 
-    const admin = await app().withPlatformAdmin('pooling leak test', look);
-    expect(admin.pid).toBe(pid);
-    expect(admin.ctx).toEqual({ tenant: '', branch: '', user: '' });
-    expect(admin.adminReason).toBe('pooling leak test');
-    expect(admin.tenants).toEqual([]);
+    // The app pool's other path (ping, the no-tenant test path) clears every setting too. The
+    // platform path has its own role and pool since A-01-01 (wrappers.test.ts).
+    const none = await withoutTenant(app(), look);
+    expect(none.pid).toBe(pid);
+    expect(none.ctx).toEqual({ tenant: '', branch: '', user: '' });
+    expect(none.adminReason).toBe('');
+    expect(none.tenants).toEqual([]);
 
     // The override is transaction-local: a client without the wrapper still sees tenant A.
     // This is why a session-level SET is forbidden outside the wrapper.

@@ -14,6 +14,11 @@ import { buildTestApp, type TestApp, testContract } from './support.ts';
 
 // Recognisable synthetic values standing in for patient data.
 const MARKER = 'synthetic-value-5521';
+/** Any tenant context: the cast fails before a row is read. */
+const PROBE_CONTEXT = {
+  tenantId: '5e5e5e5e-0000-4000-8000-000000000001',
+  userId: '5e5e5e5e-0000-4000-8000-000000000002',
+};
 
 const TestStatusParams = z
   .object({ status: z.coerce.number().int() })
@@ -52,9 +57,7 @@ class FailingController {
   @Contract(testContract('GET', '/test-errors/cast'))
   @Get('cast')
   async cast(): Promise<unknown> {
-    return this.db.withPlatformAdmin('errors test', (tx) =>
-      tx.execute(sql`select ${MARKER}::int as n`),
-    );
+    return this.db.withTenant(PROBE_CONTEXT, (tx) => tx.execute(sql`select ${MARKER}::int as n`));
   }
 
   @Public()

@@ -1,6 +1,5 @@
 import { Inject, Injectable, ServiceUnavailableException } from '@nestjs/common';
 import type { ShifaDb } from '@shifa/db';
-import { sql } from 'drizzle-orm';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 
 /** A readiness probe that hangs is as bad as one that fails. */
@@ -23,7 +22,8 @@ export class HealthService {
     });
     try {
       await Promise.race([
-        this.db.withPlatformAdmin('health-check', (tx) => tx.execute(sql`select 1`)),
+        // Role check + `select 1` with no tenant and no platform context (backlog L2).
+        this.db.ping(),
         timeout,
       ]);
     } catch (err) {

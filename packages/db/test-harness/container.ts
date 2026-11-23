@@ -99,6 +99,8 @@ export async function startHarnessContainer(
       superuserPassword,
       ownerPassword: secret(),
       appPassword: secret(),
+      authPassword: secret(),
+      platformPassword: secret(),
       poolerStatsPassword: secret(),
     };
     await applyRoles(info);

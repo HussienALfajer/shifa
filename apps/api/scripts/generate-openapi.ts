@@ -22,7 +22,7 @@ if (!out) throw new Error('usage: generate-openapi <output file>');
 const refuse = () => Promise.reject(new Error('the OpenAPI generator has no database'));
 const db: ShifaDb = {
   withTenant: refuse,
-  withPlatformAdmin: refuse,
+  ping: refuse,
   close: () => Promise.resolve(),
 };
 

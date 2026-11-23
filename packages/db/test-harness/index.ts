@@ -4,8 +4,16 @@ import type { SQLWrapper } from 'drizzle-orm';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { inject } from 'vitest';
-import { type CreateDbOptions, createDb, type ShifaDb } from '../src/client.ts';
-import { type SingleStatementExecute, withoutQueryParams } from '../src/transaction.ts';
+import { type AuthDb, createAuthDb } from '../src/auth.ts';
+import {
+  type CreateDbOptions,
+  createDb,
+  runWithoutTenantForTests,
+  type ShifaDb,
+} from '../src/client.ts';
+import { createPlatformDb, type PlatformDb } from '../src/platform.ts';
+import { TABLE_CLASSIFICATION } from '../src/schema/classification.ts';
+import { type SingleStatementExecute, type Tx, withoutQueryParams } from '../src/transaction.ts';
 import {
   applyRoles,
   cloneTemplate,
@@ -15,9 +23,11 @@ import {
   type Via,
   withPool,
 } from './context.ts';
+import { fixtureId, insertTenantRow } from './fixtures.ts';
 import { POOLING_DATABASE } from './pgbouncer.ts';
 import { openRawSession, type RawSession } from './sessions.ts';
 
+export * from './fixtures.ts';
 export { UnsafeDatabaseError } from './guard.ts';
 export { POOLING_DATABASE } from './pgbouncer.ts';
 export type { RawSession } from './sessions.ts';
@@ -102,9 +112,12 @@ export function rawPooledAppDb(database = workerDatabaseName()): RawDb {
   return rawDb('app', database, 'pooler');
 }
 
-/** Container superuser on the maintenance database: cluster-level tests (roles) only. */
-export function superuserDb(): RawDb {
-  return rawDb('superuser', 'postgres');
+/**
+ * Container superuser, on the maintenance database by default: cluster-level tests (roles)
+ * only, or reading rows no application role may read (e.g. platform audit rows) in a test.
+ */
+export function superuserDb(database = 'postgres'): RawDb {
+  return rawDb('superuser', database);
 }
 
 /** Guarded URL of a harness role on this worker's database, e.g. to test createDb() refusals. */
@@ -167,14 +180,50 @@ function appDb(via: Via, options?: CreateDbOptions): ShifaDb {
   if (options) return db;
   const handle: ShifaDb = {
     withTenant: (ctx, fn) => db.withTenant(ctx, fn),
-    withPlatformAdmin: (reason, fn) => db.withPlatformAdmin(reason, fn),
+    ping: () => db.ping(),
     close: () => {
       if (shared.get(via) === handle) shared.delete(via);
       return db.close();
     },
   };
+  inner.set(handle, db);
   shared.set(via, handle);
   return handle;
+}
+
+/** Shared handles of testDb() and pooledTestDb() → the ShifaDb behind them. */
+const inner = new WeakMap<ShifaDb, ShifaDb>();
+
+/**
+ * Runs `fn` as shifa_app on `db`'s pool with every `app.*` setting cleared: the way to prove
+ * that without a tenant context FORCE RLS shows no tenant rows (the application itself has no
+ * such path since A-01-01; platform work runs as shifa_platform).
+ */
+export function withoutTenant<T>(db: ShifaDb, fn: (tx: Tx) => Promise<T>): Promise<T> {
+  return runWithoutTenantForTests(inner.get(db) ?? db, fn);
+}
+
+let authHandle: AuthDb | undefined;
+let platformHandle: PlatformDb | undefined;
+
+/** `createAuthDb()` as shifa_auth on this worker's database, shared within a file. */
+export function testAuthDb(): AuthDb {
+  if (!authHandle) {
+    const db = createAuthDb(urlFor(info(), 'auth', workerDatabaseName()));
+    closers.push(() => db.close());
+    authHandle = db;
+  }
+  return authHandle;
+}
+
+/** `createPlatformDb()` as shifa_platform on this worker's database, shared within a file. */
+export function testPlatformDb(): PlatformDb {
+  if (!platformHandle) {
+    const db = createPlatformDb(urlFor(info(), 'platform', workerDatabaseName()));
+    closers.push(() => db.close());
+    platformHandle = db;
+  }
+  return platformHandle;
 }
 
 /**
@@ -225,6 +274,27 @@ export async function showPooler(
   return rows;
 }
 
+/**
+ * Drops the test-only tables and views earlier files created in this worker's database (every
+ * relation in `public` that is not in the classification), so each file starts from the
+ * migrated schema: catalog-wide checks (privileges, presence) never see another file's probes.
+ */
+export async function dropTestOnlyRelations(): Promise<void> {
+  const keep = Object.keys(TABLE_CLASSIFICATION);
+  await withPool(urlFor(info(), 'owner', workerDatabaseName()), async (pool) => {
+    const { rows } = await pool.query<{ stmt: string }>(
+      `SELECT format(CASE c.relkind WHEN 'v' THEN 'DROP VIEW IF EXISTS %I CASCADE'
+                                    WHEN 'm' THEN 'DROP MATERIALIZED VIEW IF EXISTS %I CASCADE'
+                                    ELSE 'DROP TABLE IF EXISTS %I CASCADE' END, c.relname) AS stmt
+         FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace
+        WHERE n.nspname = 'public' AND c.relkind IN ('r', 'p', 'v', 'm')
+          AND NOT (c.relname = ANY ($1::text[]))`,
+      [keep],
+    );
+    for (const { stmt } of rows) await pool.query(stmt);
+  });
+}
+
 /** Truncates every table outside the migration history (`drizzle` schema). */
 export async function resetTestDb(): Promise<void> {
   await withPool(urlFor(info(), 'owner', workerDatabaseName()), (pool) =>
@@ -240,6 +310,23 @@ export async function resetTestDb(): Promise<void> {
   );
 }
 
+/**
+ * The start of a test that needs tenants: empties this worker's database (resetTestDb()), then
+ * writes these tenant rows on the platform path (one withPlatformAdmin() call, so one platform
+ * audit row). Tenant tables reference `tenant`, so their rows need these parents.
+ */
+export async function createTestTenants(...tenantIds: string[]): Promise<void> {
+  await resetTestDb();
+  await testPlatformDb().withPlatformAdmin(
+    { actorId: fixtureId('test super admin'), event: 'clinic.created' },
+    async (tx) => {
+      for (const [index, id] of tenantIds.entries()) {
+        await insertTenantRow(tx, { id, name: `عيادة تجريبية ${String(index + 1)}` });
+      }
+    },
+  );
+}
+
 /** Re-runs sql/roles.sql against the container (it must be idempotent). */
 export async function applyRolesSql(): Promise<void> {
   await applyRoles(info());
@@ -250,5 +337,7 @@ export async function closeTestConnections(): Promise<void> {
   const pending = closers.splice(0);
   raw.clear();
   shared.clear();
+  authHandle = undefined;
+  platformHandle = undefined;
   await Promise.all(pending.map((close) => close()));
 }

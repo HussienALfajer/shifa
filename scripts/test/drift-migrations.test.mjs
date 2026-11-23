@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import {
+  appendFileSync,
   cpSync,
   mkdirSync,
   mkdtempSync,
@@ -95,13 +96,16 @@ describe('migrations check', () => {
   });
 
   it('reports drift when a schema column is added without a migration', async () => {
+    // Beside the real schema: replacing it would drop every table (an interactive prompt).
+    const schema = join(root, 'packages', 'db', 'src', 'schema');
     writeFileSync(
-      join(root, 'packages', 'db', 'src', 'schema', 'index.ts'),
+      join(schema, 'drift-probe.ts'),
       [
         "import { pgTable, text } from 'drizzle-orm/pg-core';",
         "export const probe = pgTable('drift_probe', { id: text('id').primaryKey() });",
       ].join('\n'),
     );
+    appendFileSync(join(schema, 'index.ts'), "\nexport * from './drift-probe.ts';\n");
     const check = migrationsCheck({ dbDir: 'packages/db', mainFolders: null });
     const { code, results } = await runDrift({ root, checks: [check], logDir: root });
     assert.equal(code, 1, JSON.stringify(results));

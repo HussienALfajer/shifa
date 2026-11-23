@@ -1,6 +1,5 @@
 // Process entry point (bootstrap only): config, logger, database, app, signals.
 import { createDb } from '@shifa/db';
-import { sql } from 'drizzle-orm';
 import { createApp } from './app.ts';
 import { ConfigError, loadConfig } from './config/env.ts';
 import { describeError, errorClass } from './platform/errors.ts';
@@ -50,9 +49,9 @@ async function main(): Promise<void> {
       logger.warn({ err: describeError(err) }, 'idle database connection failed');
     },
   });
-  // Fail fast: createDb() refuses an owner, superuser or BYPASSRLS role on first use.
+  // Fail fast: createDb() refuses any role but shifa_app (owner, superuser, BYPASSRLS) on first use.
   try {
-    await db.withPlatformAdmin('startup-check', (tx) => tx.execute(sql`select 1`));
+    await db.ping();
   } catch (err) {
     logger.fatal({ err: describeError(err) }, 'database check failed at startup');
     await db.close().catch(() => undefined);

@@ -11,6 +11,7 @@ import {
   rawAppDb,
   superuserDb,
   testDb,
+  withoutTenant,
   workerDatabaseName,
 } from '../test-harness/index.ts';
 
@@ -30,12 +31,12 @@ describe('transaction handles', () => {
     });
   });
 
-  it('withPlatformAdmin ignores a tenant someone set at session level', async () => {
+  it('the no-tenant path ignores a tenant someone set at session level', async () => {
     const db = testDb({ max: 1 });
     await db.withTenant({ tenantId: A, userId: USER }, (tx) =>
       tx.execute(sql`select set_config('app.tenant_id', ${A}, false)`),
     );
-    const { rows } = await db.withPlatformAdmin('session leak check', (tx) =>
+    const { rows } = await withoutTenant(db, (tx) =>
       tx.execute<{ t: string | null }>(sql`select current_tenant_id()::text as t`),
     );
     expect(rows[0]?.t).toBeNull();
@@ -90,9 +91,7 @@ describe('privileges of shifa_app', () => {
       url.password = password;
       const db = createDb(url.toString(), { max: 1 });
       try {
-        await expect(
-          db.withPlatformAdmin('membership check', (tx) => tx.execute(sql`select 1`)),
-        ).rejects.toThrow(/application role/);
+        await expect(db.ping()).rejects.toThrow(/application role/);
       } finally {
         await db.close();
       }

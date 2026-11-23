@@ -45,7 +45,7 @@ class ScopedConnection {
   /** Drizzle calls `query(config, values)` and awaits the promise form only. */
   query(config: QueryConfig, values?: unknown[]): Promise<QueryResult> {
     if (!this.#client) {
-      throw new Error('This tx handle was used after its withTenant()/withPlatformAdmin() ended');
+      throw new Error('This tx handle was used after its withTenant() (or other wrapper) ended');
     }
     return this.#client.query(config, values);
   }
@@ -54,31 +54,46 @@ class ScopedConnection {
   }
 }
 
-const verified = new WeakSet<PoolClient>();
+/** The three login roles application code may use (ADR-0043), and the factory for each. */
+export type ApplicationRole = 'shifa_app' | 'shifa_auth' | 'shifa_platform';
+const FACTORY: Record<ApplicationRole, string> = {
+  shifa_app: 'createDb()',
+  shifa_auth: 'createAuthDb()',
+  shifa_platform: 'createPlatformDb()',
+};
+
+const verified = new WeakMap<PoolClient, ApplicationRole>();
 
 /**
- * FORCE RLS does not bind superusers, BYPASSRLS roles or table owners: refuse them, and any
- * role that is a member of another role (SET ROLE could reach the owner or a superuser).
+ * Each pool connects as exactly its own role. FORCE RLS does not bind superusers, BYPASSRLS
+ * roles or table owners: refuse them, and any role that is a member of another role (SET ROLE
+ * could reach the owner or a superuser).
  */
-async function assertApplicationRole(client: PoolClient): Promise<void> {
-  if (verified.has(client)) return;
+async function assertApplicationRole(client: PoolClient, role: ApplicationRole): Promise<void> {
+  if (verified.get(client) === role) return;
   const { rows } = await client.query<{ unsafe: boolean }>(
-    `SELECT r.rolsuper OR r.rolbypassrls
+    `SELECT r.rolname <> $1 OR r.rolsuper OR r.rolbypassrls
             OR EXISTS (SELECT 1 FROM pg_class c WHERE c.relowner = r.oid)
             OR EXISTS (SELECT 1 FROM pg_auth_members m WHERE m.member = r.oid) AS unsafe
        FROM pg_roles r WHERE r.rolname = current_user`,
+    [role],
   );
   if (rows[0]?.unsafe !== false) {
     throw new Error(
-      'createDb() must connect as the application role (shifa_app): this role is superuser, ' +
-        'bypasses RLS, owns tables or is a member of another role',
+      `${FACTORY[role]} must connect as the application role ${role}: this role is another ` +
+        'one, superuser, bypasses RLS, owns tables or is a member of another role',
     );
   }
-  verified.add(client);
+  verified.set(client, role);
 }
 
-/** Runs `setup` then `fn` in one transaction; the handle dies when it ends. */
-export async function runScoped<T>(pool: Pool, setup: SQL, fn: (tx: Tx) => Promise<T>): Promise<T> {
+/** Runs `setup` then `fn` in one transaction as `role`; the handle dies when it ends. */
+export async function runScoped<T>(
+  pool: Pool,
+  role: ApplicationRole,
+  setup: SQL,
+  fn: (tx: Tx) => Promise<T>,
+): Promise<T> {
   const client = await pool.connect();
   let broken: unknown;
   const onError = (err: Error) => {
@@ -87,7 +102,7 @@ export async function runScoped<T>(pool: Pool, setup: SQL, fn: (tx: Tx) => Promi
   client.on('error', onError);
   const scoped = new ScopedConnection(client);
   try {
-    await assertApplicationRole(client);
+    await assertApplicationRole(client, role);
     const db = drizzle({ client: scoped as unknown as PoolClient, paramsInErrors: false });
     return await withoutQueryParams(() =>
       db.transaction(async (tx) => {

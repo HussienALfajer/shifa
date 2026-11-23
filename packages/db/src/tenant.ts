@@ -1,25 +1,13 @@
-import { sql } from 'drizzle-orm';
 import type { Pool } from 'pg';
+import { assertUuid, contextSetup } from './context.ts';
 import { runScoped, type Tx } from './transaction.ts';
+
+export { TenantContextError } from './context.ts';
 
 export interface TenantContext {
   tenantId: string;
   branchId?: string;
   userId: string;
-}
-
-/** Raised before any SQL is sent when a tenant context is malformed. */
-export class TenantContextError extends Error {
-  override name = 'TenantContextError';
-}
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function assertUuid(field: string, value: unknown): asserts value is string {
-  if (typeof value !== 'string' || !UUID.test(value)) {
-    // The value itself is not echoed: it may be user input.
-    throw new TenantContextError(`${field} must be a UUID`);
-  }
 }
 
 /**
@@ -35,11 +23,10 @@ export async function runWithTenant<T>(
   assertUuid('tenantId', ctx.tenantId);
   if (ctx.branchId !== undefined) assertUuid('branchId', ctx.branchId);
   assertUuid('userId', ctx.userId);
-  // Every `app.*` setting a policy or trigger may read is set or cleared here and in
-  // withPlatformAdmin(), so a session-level value on a pooled connection never applies.
-  const setup = sql`select set_config('app.tenant_id', ${ctx.tenantId}, true),
-                           set_config('app.branch_id', ${ctx.branchId ?? ''}, true),
-                           set_config('app.user_id', ${ctx.userId}, true),
-                           set_config('app.admin_reason', '', true)`;
-  return runScoped(pool, setup, fn);
+  const setup = contextSetup({
+    tenantId: ctx.tenantId,
+    branchId: ctx.branchId,
+    userId: ctx.userId,
+  });
+  return runScoped(pool, 'shifa_app', setup, fn);
 }

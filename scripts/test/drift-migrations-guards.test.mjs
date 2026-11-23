@@ -3,6 +3,7 @@
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
 import {
+  appendFileSync,
   cpSync,
   mkdirSync,
   mkdtempSync,
@@ -36,6 +37,9 @@ beforeEach(() => {
   for (const entry of ['drizzle.config.ts', 'package.json', 'src', 'migrations']) {
     cpSync(join(realDb, entry), join(db, entry), { recursive: true });
   }
+  // The probe table sits beside the real schema (replacing it would drop every table, which
+  // drizzle-kit only does after an interactive prompt).
+  appendFileSync(join(db, 'src', 'schema', 'index.ts'), "\nexport * from './drift-probe.ts';\n");
   for (const pkg of ['drizzle-kit', 'drizzle-orm']) {
     const target = realpathSync(join(realDb, 'node_modules', pkg));
     symlinkSync(target, join(db, 'node_modules', pkg), 'junction');
@@ -48,7 +52,7 @@ const check = () => migrationsCheck({ dbDir: 'packages/db', mainFolders: null })
 
 describe('migrations check guards', () => {
   it('is never fixable: --fix leaves the committed folders unchanged', async () => {
-    writeFileSync(join(db, 'src', 'schema', 'index.ts'), table('alpha'));
+    writeFileSync(join(db, 'src', 'schema', 'drift-probe.ts'), table('alpha'));
     const before = readdirSync(join(db, 'migrations'));
     const { code, results } = await runDrift({ root, checks: [check()], logDir: root, fix: true });
     assert.equal(code, 1);
@@ -57,14 +61,14 @@ describe('migrations check guards', () => {
   });
 
   it('reports a renamed column without a migration as drift, not a crash', async () => {
-    writeFileSync(join(db, 'src', 'schema', 'index.ts'), table('alpha'));
+    writeFileSync(join(db, 'src', 'schema', 'drift-probe.ts'), table('alpha'));
     const bin = join(db, 'node_modules', 'drizzle-kit', 'bin.cjs');
     const gen = spawnSync(process.execPath, [bin, 'generate', '--name', 'probe'], {
       cwd: db,
       stdio: ['ignore', 'pipe', 'pipe'],
     });
     assert.equal(gen.status, 0, String(gen.stderr));
-    writeFileSync(join(db, 'src', 'schema', 'index.ts'), table('beta'));
+    writeFileSync(join(db, 'src', 'schema', 'drift-probe.ts'), table('beta'));
     const { code, results } = await runDrift({ root, checks: [check()], logDir: root });
     assert.equal(code, 1, JSON.stringify(results));
     assert.match(results[0].problems.join('\n'), /\/db-migration/);
