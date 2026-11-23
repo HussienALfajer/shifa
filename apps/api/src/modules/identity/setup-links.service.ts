@@ -5,7 +5,17 @@
 // row, and a new session at mfa 'none' (the guard then allows enrolment only).
 import { Inject, Injectable } from '@nestjs/common';
 import type { SessionView, SetupLinkView } from '@shifa/contracts';
-import { type AuthDb, membership, setupLink, type Tx, tenant, user, verification } from '@shifa/db';
+import {
+  type AuthDb,
+  membership,
+  platformAdmin,
+  session,
+  setupLink,
+  type Tx,
+  tenant,
+  user,
+  verification,
+} from '@shifa/db';
 import { hashPassword } from 'better-auth/crypto';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
@@ -135,8 +145,15 @@ export class SetupLinksService {
       if (used.length === 0) throw linkInvalid();
       let userId = found.boundUserId;
       if (userId) {
-        // A new link for a set-up owner: the password is reset.
+        // A new link for a set-up owner: the password is reset. Never a super admin's account,
+        // and every other session of the person ends with it (security review M2).
+        const [admin] = await tx
+          .select({ id: platformAdmin.userId })
+          .from(platformAdmin)
+          .where(eq(platformAdmin.userId, userId));
+        if (admin) throw linkInvalid();
         await setPassword(tx, userId, hash, now);
+        await tx.delete(session).where(eq(session.userId, userId));
       } else {
         // An account with this phone appeared since the link was issued: never take it over.
         if ((await userIdByPhone(tx, found.phoneE164)) !== null)

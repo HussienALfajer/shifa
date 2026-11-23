@@ -26,9 +26,9 @@ export interface PlatformAction {
   data?: Readonly<Record<string, string | boolean | null>>;
 }
 
-/** Keys and values allowed in `data`: identifiers and enum-like words only. */
+/** Keys and values allowed in `data`: enum-like words and ids (a lower-case UUID) only. */
 const DATA_KEY = /^[a-z][a-zA-Z]{0,31}$/;
-const DATA_VALUE = /^[a-z0-9_-]{0,32}$/;
+const DATA_VALUE = /^[a-z0-9_-]{0,36}$/;
 
 /** Lets the work name its target once it is known (e.g. the id of a clinic it created). */
 export interface AuditTarget {

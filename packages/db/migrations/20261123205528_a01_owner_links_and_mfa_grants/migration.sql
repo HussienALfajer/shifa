@@ -36,6 +36,41 @@ CREATE POLICY setup_link_platform_issue_only ON "setup_link" AS RESTRICTIVE FOR 
   TO shifa_platform
   WITH CHECK (current_setting('app.admin_reason', true) IN ('clinic.created', 'owner.link_issued'));
 --> statement-breakpoint
+-- app.admin_reason is a setting the role sets itself: the rows must also be what a clinic's
+-- creation writes (security review M1). A membership or owner role only in a clinic that has
+-- no owner yet (one owner, written once); a link only for the owner, about 72 h, owner purposes.
+CREATE POLICY membership_platform_first_owner_only ON "membership" AS RESTRICTIVE FOR INSERT
+  TO shifa_platform
+  WITH CHECK (status = 'pending' AND user_id IS NULL
+              AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra
+                               WHERE ra.tenant_id = "membership".tenant_id AND ra.role = 'owner'));
+--> statement-breakpoint
+CREATE POLICY role_assignment_platform_first_owner_only ON "role_assignment" AS RESTRICTIVE
+  FOR INSERT TO shifa_platform
+  WITH CHECK (role = 'owner' AND branch_id IS NULL
+              AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra
+                               WHERE ra.tenant_id = "role_assignment".tenant_id
+                                 AND ra.role = 'owner'));
+--> statement-breakpoint
+CREATE POLICY setup_link_platform_owner_links_only ON "setup_link" AS RESTRICTIVE FOR INSERT
+  TO shifa_platform
+  WITH CHECK (purpose IN ('owner_setup', 'invitation')
+              -- 72 h by the API's clock; one hour of slack for its skew against now(), which is
+              -- the transaction's start.
+              AND expires_at <= now() + interval '73 hours'
+              AND EXISTS (SELECT 1 FROM "role_assignment" ra
+                           WHERE ra.tenant_id = "setup_link".tenant_id
+                             AND ra.membership_id = "setup_link".membership_id
+                             AND ra.role = 'owner'));
+--> statement-breakpoint
+-- An owner link resets the password of a set-up account (one account across clinics): only the
+-- platform issues one; the clinic path never writes or turns a link into one (review M2).
+CREATE POLICY setup_link_app_no_owner_links ON "setup_link" AS RESTRICTIVE FOR INSERT
+  TO shifa_app WITH CHECK (purpose <> 'owner_setup');
+--> statement-breakpoint
+CREATE POLICY setup_link_app_no_owner_links_update ON "setup_link" AS RESTRICTIVE FOR UPDATE
+  TO shifa_app USING (purpose <> 'owner_setup') WITH CHECK (purpose <> 'owner_setup');
+--> statement-breakpoint
 
 -- The owner card (clinic list and detail, owner support): owner role rows and owner memberships
 -- only, a few columns, never another member and never a token hash.
@@ -96,6 +131,18 @@ GRANT UPDATE (user_id, status, updated_at) ON "membership" TO shifa_auth;
 --> statement-breakpoint
 -- Only a pending, unbound membership whose setup link was just used; it becomes active and bound.
 CREATE POLICY membership_auth_link_accept ON "membership" FOR UPDATE TO shifa_auth
+  USING (user_id IS NULL AND status = 'pending'
+         AND EXISTS (SELECT 1 FROM "setup_link" sl
+                      WHERE sl.tenant_id = "membership".tenant_id
+                        AND sl.membership_id = "membership".id
+                        AND sl.token_hash = current_link_token_hash()
+                        AND sl.used_at IS NOT NULL
+                        AND sl.purpose IN ('owner_setup', 'member_setup')))
+  WITH CHECK (user_id IS NOT NULL AND status = 'active');
+--> statement-breakpoint
+-- Restrictive: even with a tenant set (whose isolation policy is for PUBLIC), shifa_auth updates
+-- nothing but that binding (security review L2).
+CREATE POLICY membership_auth_accept_only ON "membership" AS RESTRICTIVE FOR UPDATE TO shifa_auth
   USING (user_id IS NULL AND status = 'pending'
          AND EXISTS (SELECT 1 FROM "setup_link" sl
                       WHERE sl.tenant_id = "membership".tenant_id

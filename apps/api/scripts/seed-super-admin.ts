@@ -21,7 +21,11 @@ const fail = (message: string): never => {
 let args: ReturnType<typeof parseSeedArgs> | undefined;
 let config: ReturnType<typeof loadIdentityConfig> | undefined;
 try {
-  args = parseSeedArgs(process.argv.slice(2), process.env['NODE_ENV']);
+  args = parseSeedArgs(
+    process.argv.slice(2),
+    process.env['NODE_ENV'],
+    process.env['DEPLOYMENT_ENVIRONMENT'],
+  );
   config = loadIdentityConfig(process.env);
 } catch (err) {
   fail(err instanceof SeedError || err instanceof ConfigError ? err.message : 'invalid input');

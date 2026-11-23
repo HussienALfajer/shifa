@@ -61,6 +61,9 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
   });
   fastify.addHook('onSend', async (request, reply, payload) => {
     void reply.header(REQUEST_ID_HEADER, request.id);
+    // No answer is cached by a browser or proxy: some carry setup links, TOTP keys, recovery
+    // codes or session details (A-01-03 security review L7).
+    void reply.header('cache-control', 'no-store');
     return payload;
   });
   await app.init();

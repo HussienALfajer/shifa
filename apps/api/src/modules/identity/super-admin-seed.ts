@@ -48,7 +48,11 @@ export interface SeedArgs {
  * `--phone <phone> --name <name> [--allow-production]`. Refuses NODE_ENV=production unless
  * `--allow-production` is given (a super admin in production is a deliberate act).
  */
-export function parseSeedArgs(argv: readonly string[], nodeEnv: string | undefined): SeedArgs {
+export function parseSeedArgs(
+  argv: readonly string[],
+  nodeEnv: string | undefined,
+  deploymentEnvironment?: string,
+): SeedArgs {
   const value = (flag: string) => {
     const at = argv.indexOf(flag);
     const found = at >= 0 ? argv[at + 1] : undefined;
@@ -61,8 +65,12 @@ export function parseSeedArgs(argv: readonly string[], nodeEnv: string | undefin
       'usage: seed:super-admin --phone <phone> --name <name> [--allow-production]',
     );
   }
-  if (nodeEnv === 'production' && !argv.includes('--allow-production')) {
-    throw new SeedError('refused in NODE_ENV=production without --allow-production');
+  // Deployed by either signal (security review L4): NODE_ENV or DEPLOYMENT_ENVIRONMENT.
+  const deployed =
+    nodeEnv === 'production' ||
+    ['staging', 'production', 'prod'].includes((deploymentEnvironment ?? '').trim().toLowerCase());
+  if (deployed && !argv.includes('--allow-production')) {
+    throw new SeedError('refused in a deployed environment without --allow-production');
   }
   return { phone, name };
 }

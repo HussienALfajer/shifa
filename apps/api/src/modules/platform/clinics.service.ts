@@ -160,7 +160,8 @@ export class ClinicsService {
     kind: OwnerAction,
     requestId: string,
   ): Promise<SetupLinkIssued | undefined> {
-    const action = { event: OWNER_EVENTS[kind], requestId } as const;
+    // The clinic in `data`: the target is the person, who may own several (security review L5).
+    const action = { event: OWNER_EVENTS[kind], requestId, data: { clinicId: id } } as const;
     const by = { actorId: principal.userId, requestId };
     return this.#run(principal, action, async (tx, audit) => {
       const [owner] = await tx

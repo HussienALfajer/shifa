@@ -74,6 +74,13 @@ describe('same owner phone while the first owner is pending (OD-85)', () => {
   });
 });
 
+describe('responses (security review L7)', () => {
+  it('are never cached', async () => {
+    const res = await post(app, '/platform/clinics', body(phone(7)), admin.cookie);
+    expect(res.headers['cache-control']).toBe('no-store');
+  });
+});
+
 describe('TOTP steps (criterion 12)', () => {
   it('refuses a code at or before the last accepted step, even within ±1', async () => {
     const created = await createClinicViaApi(app, admin.cookie, phone(2));

@@ -43,6 +43,7 @@ describe('seed:super-admin arguments', () => {
     const argv = ['--phone', FIRST, '--name', 'م'];
     expect(() => parseSeedArgs(argv, 'production')).toThrow(/allow-production/);
     expect(parseSeedArgs([...argv, '--allow-production'], 'production').phone).toBe(FIRST);
+    expect(() => parseSeedArgs(argv, undefined, 'staging')).toThrow(/allow-production/);
   });
 });
 
