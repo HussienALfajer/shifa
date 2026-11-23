@@ -79,7 +79,7 @@ export function Input({
     >
       <InputGroup data-focus-ring="" className={cn(FIELD_BOX, 'px-3')}>
         {startIcon !== undefined && (
-          <span className="inline-flex shrink-0 text-icon-muted">
+          <span className="inline-flex shrink-0">
             <Icon name={startIcon} />
           </span>
         )}

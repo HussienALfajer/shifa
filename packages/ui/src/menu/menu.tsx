@@ -80,7 +80,7 @@ export function MenuTrigger(props: MenuTriggerProps) {
     >
       {icon !== undefined && <Icon name={icon} />}
       {!iconOnly && <span className="min-w-0">{children}</span>}
-      {!iconOnly && <Icon name="caret-down" className="text-icon-muted" />}
+      {!iconOnly && <Icon name="caret-down" />}
     </BaseMenuTrigger>
   );
 }
