@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import 'support/fixtures.dart';
 import 'support/harness.dart';
 
 void main() {
@@ -15,7 +16,7 @@ void main() {
     await pumpPhone(
       tester,
       ShifaListItem(
-        title: 'ريم العلي',
+        title: people[0].name,
         subtitle: 'ملف 10482',
         onPressed: () => presses++,
       ),
@@ -26,7 +27,7 @@ void main() {
         .getSemantics(find.byType(ShifaListItem))
         .getSemanticsData();
     expect(data.flagsCollection.isButton, isTrue);
-    expect(data.label, contains('ريم العلي'));
+    expect(data.label, contains(people[0].name));
     expect(data.label, contains('ملف 10482'));
   });
 
@@ -42,7 +43,7 @@ void main() {
     await pumpPhone(
       tester,
       ShifaListItem(
-        title: 'ريم العلي',
+        title: people[0].name,
         subtitle: 'ملف 10482',
         onPressed: () {},
       ),
@@ -61,7 +62,7 @@ void main() {
       SizedBox(
         width: 358,
         child: ShifaListItem(
-          title: 'ريم العلي',
+          title: people[0].name,
           leading: const SizedBox(key: Key('lead'), width: 40, height: 40),
           onPressed: () {},
         ),
@@ -69,7 +70,7 @@ void main() {
     );
     final lead = tester.getCenter(find.byKey(const Key('lead')));
     final chevron = tester.getCenter(find.byType(ShifaGlyph));
-    final title = tester.getCenter(find.text('ريم العلي'));
+    final title = tester.getCenter(find.text(people[0].name));
     expect(lead.dx, greaterThan(title.dx));
     expect(chevron.dx, lessThan(title.dx));
     expect(
@@ -82,7 +83,7 @@ void main() {
     await pumpPhone(
       tester,
       ShifaListItem(
-        title: 'محمد الحلبي',
+        title: people[1].name,
         trailing: const Text('مؤكد'),
         onPressed: () {},
       ),
@@ -96,7 +97,7 @@ void main() {
     await pumpPhone(
       tester,
       ShifaListItem(
-        title: 'عمر الخوري',
+        title: people[2].name,
         enabled: false,
         onPressed: () => presses++,
       ),

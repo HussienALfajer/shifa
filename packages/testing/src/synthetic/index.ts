@@ -11,6 +11,12 @@ export {
   type PriceRangeMinor,
 } from './money.ts';
 export {
+  generateLatinPersonName,
+  LATIN_FAMILY_NAMES,
+  LATIN_GIVEN_NAMES,
+  type LatinPersonName,
+} from './names/latin.ts';
+export {
   FAMILY_NAMES,
   FEMALE_GIVEN_NAMES,
   MALE_GIVEN_NAMES,

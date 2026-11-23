@@ -17,6 +17,8 @@ From slices 0.4-03 and 0.4-04 (ADR-0039, ADR-0041). Read `packages/ui/CLAUDE.md`
 - `src/<name>/<name>.tsx`: our props only; the API never shows UI SDK (`test/public-api.test.ts`). Default or controlled (`defaultValue`, or `value` with `onValueChange`). Name every control.
 - Token utilities through `cn()`; logical sides; density by token variables and `in-data-[density=compact]:`; `motion-reduce:`; focus rings never transition.
 - Western digits shown, Arabic-Indic accepted; Latin parts of Arabic text in `<bdi>`.
+- A text field sets no autocomplete of its own: `Input`, `Textarea` and `FormField` are `off` by default (OD-67); pass a token (`name`, `tel`, `bday`…) only on the patient's own booking forms.
+- Matching Arabic text goes through `foldArabic` (`src/lib/fold-arabic.ts`, OD-40), never a fold of its own.
 - Export from `src/index.ts`.
 
 ## Tests (written first, then locked)

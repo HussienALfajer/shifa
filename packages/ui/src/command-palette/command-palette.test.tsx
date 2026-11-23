@@ -6,7 +6,7 @@
 // ADR-0034); the matched part is marked. No match shows the empty state.
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { people } from '../../test/fixtures.ts';
+import { AHMAD, people } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir, typeArabic } from '../../test/support/index.ts';
 import {
   CommandPalette,
@@ -22,7 +22,7 @@ const GROUPS: CommandPaletteGroup[] = [
   {
     label: 'المرضى',
     items: [
-      { value: 'p-ahmad', label: 'أحمد خليل', description: 'ملف 1187', icon: 'user' },
+      { value: 'p-ahmad', label: AHMAD.name, description: 'ملف 1187', icon: 'user' },
       { value: 'p-1', label: p1.name, description: `ملف ${p1.id}`, icon: 'user' },
       { value: 'p-2', label: p2.name, description: `ملف ${p2.id}`, icon: 'user' },
       { value: 'p-3', label: p3.name, icon: 'user' },
@@ -88,7 +88,7 @@ describe.each(DIRS)('Command palette in %s', (dir) => {
     await typeArabic(input, 'احمد');
     await poll(() => optionLabels().length, 'one match').toBe(1);
     const option = screen.getByRole('option').element();
-    expect(option.textContent).toContain('أحمد خليل');
+    expect(option.textContent).toContain(AHMAD.name);
     expect(option.querySelector('mark')?.textContent).toBe('أحمد');
     await screen.unmount();
   });
@@ -97,7 +97,7 @@ describe.each(DIRS)('Command palette in %s', (dir) => {
     const { input, screen } = await open(dir);
     await typeArabic(input, 'أَحْمـد');
     await poll(() => optionLabels().length, 'one match').toBe(1);
-    expect(optionLabels()[0]).toContain('أحمد خليل');
+    expect(optionLabels()[0]).toContain(AHMAD.name);
     expect(normaliseForSearch('إِسْـراء')).toBe(normaliseForSearch('اسراء'));
     await screen.unmount();
   });

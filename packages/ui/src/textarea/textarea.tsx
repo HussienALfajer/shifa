@@ -4,7 +4,13 @@
 // logical end under it. Behaviour from UI SDK's Textarea.
 import { Textarea as BaseTextarea } from '@ui-sdk/react/textarea';
 import { type ComponentProps, type ReactNode, type Ref, useState } from 'react';
-import { FIELD_BOX, FIELD_TEXT, useFieldShell, WithField } from '../field/field-shell.tsx';
+import {
+  FIELD_BOX,
+  FIELD_TEXT,
+  useFieldAutoComplete,
+  useFieldShell,
+  WithField,
+} from '../field/field-shell.tsx';
 import { cn } from '../lib/cn.ts';
 
 type NativeTextarea = Omit<
@@ -36,6 +42,12 @@ export interface TextareaProps extends NativeTextarea {
   required?: boolean | undefined;
   ref?: Ref<HTMLTextAreaElement> | undefined;
   className?: string | undefined;
+  /**
+   * Off by default (OD-67): a shared clinic computer never offers one patient's details while
+   * another's are typed. Give an explicit token (`name`, `tel`, `bday`…) only on the patient's
+   * own booking forms.
+   */
+  autoComplete?: string | undefined;
 }
 
 export function Textarea({
@@ -50,9 +62,11 @@ export function Textarea({
   required,
   name,
   className,
+  autoComplete,
   ...native
 }: TextareaProps) {
   const field = useFieldShell();
+  const fieldAutoComplete = useFieldAutoComplete();
   const isRequired = required ?? field?.required;
   const isDisabled = disabled ?? field?.disabled;
   const [own, setOwn] = useState(defaultValue ?? '');
@@ -72,6 +86,7 @@ export function Textarea({
       <div data-focus-ring="" className={cn(FIELD_BOX, 'items-stretch px-3 py-3')}>
         <BaseTextarea
           {...native}
+          autoComplete={autoComplete ?? fieldAutoComplete ?? 'off'}
           autoResize
           {...(name === undefined ? {} : { name })}
           {...(value === undefined ? {} : { value })}

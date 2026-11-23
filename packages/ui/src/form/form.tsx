@@ -9,7 +9,8 @@
 //   submit nothing is sent and the first invalid field, in the order of the page, takes focus.
 // - `<FormField name label? hint? required?>{(field) => <Input {...field} />}</FormField>`: with
 //   a label it is a Field around the control; without one the control shows the error itself
-//   (a checkbox or a radio group, which name themselves).
+//   (a checkbox or a radio group, which name themselves). Its text control is autocomplete="off"
+//   unless the FormField names a token (OD-67, slice 0.4-12), passed through context.
 // - `<FormSubmit>`: the primary submit Button, busy while an async submit runs (ignores presses).
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
@@ -31,7 +32,7 @@ import {
 } from 'react-hook-form';
 import type { z } from 'zod';
 import { Button } from '../button/button.tsx';
-import { FIELD_TEXT, FieldShell } from '../field/field-shell.tsx';
+import { FIELD_TEXT, FieldAutoCompleteContext, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 
@@ -193,11 +194,24 @@ export interface FormFieldProps {
   label?: ReactNode;
   hint?: ReactNode | undefined;
   required?: boolean | undefined;
+  /**
+   * Off by default (OD-67); an explicit token (`name`, `tel`, `bday`…) only on the patient's own
+   * booking forms.
+   */
+  autoComplete?: string | undefined;
   className?: string | undefined;
   children: (field: FormFieldControl) => ReactNode;
 }
 
-export function FormField({ name, label, hint, required, className, children }: FormFieldProps) {
+export function FormField({
+  name,
+  label,
+  hint,
+  required,
+  autoComplete,
+  className,
+  children,
+}: FormFieldProps) {
   const translate = useContext(TranslateContext);
   const { control } = useFormContext();
   const { field, fieldState } = useController({ name, control });
@@ -218,13 +232,15 @@ export function FormField({ name, label, hint, required, className, children }: 
   };
   return (
     <div data-form-field={name} className={className}>
-      {own ? (
-        <FieldShell label={label} hint={hint} error={error} required={required}>
-          {children(props)}
-        </FieldShell>
-      ) : (
-        children(props)
-      )}
+      <FieldAutoCompleteContext value={autoComplete}>
+        {own ? (
+          <FieldShell label={label} hint={hint} error={error} required={required}>
+            {children(props)}
+          </FieldShell>
+        ) : (
+          children(props)
+        )}
+      </FieldAutoCompleteContext>
     </div>
   );
 }

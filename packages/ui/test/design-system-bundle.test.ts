@@ -6,7 +6,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildBundle } from '../scripts/design-system/bundle.ts';
+import { buildBundle, devHistoryMarkers } from '../scripts/design-system/bundle.ts';
 import { PARTS, PROVIDED } from '../scripts/design-system/compound.tsx';
 import * as ui from '../src/index.ts';
 
@@ -90,6 +90,18 @@ describe('design-system bundle', () => {
     ]) {
       expect(js.includes(forbidden), forbidden).toBe(false);
     }
+  });
+
+  // Slice 0.4-12 (P-N2): UI SDK keeps a development history (devtools hook, global state) when
+  // built with NODE_ENV=development; the bundle is a production build and carries none of it.
+  it('finds a planted development-history marker', () => {
+    expect(devHistoryMarkers('var a = 1;')).toEqual([]);
+    expect(devHistoryMarkers('window.__UI_SDK__ = {};')).toEqual(['__UI_SDK__']);
+    expect(devHistoryMarkers('emit("ui-sdk.devtools", x)')).toEqual(['ui-sdk.devtools']);
+  });
+
+  it('carries no UI SDK development history', () => {
+    expect(devHistoryMarkers(read('components/bundle.js'))).toEqual([]);
   });
 
   it('runs as a classic script and sets window.Shifa with mount and every component', () => {

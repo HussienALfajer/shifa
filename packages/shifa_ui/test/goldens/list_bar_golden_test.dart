@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import '../support/fixtures.dart';
 import 'support.dart';
 
 Widget _avatar(BuildContext context, String initials) {
@@ -28,24 +29,30 @@ void main() {
           child: Column(
             children: [
               ShifaListItem(
-                title: 'ريم العلي',
+                title: people[0].name,
                 subtitle: 'ملف 10482',
-                leading: Builder(builder: (c) => _avatar(c, 'ر ع')),
+                leading: Builder(
+                  builder: (c) => _avatar(c, people[0].initials),
+                ),
                 divided: true,
                 onPressed: () {},
               ),
               ShifaListItem(
-                title: 'محمد الحلبي',
+                title: people[1].name,
                 subtitle: 'الخميس 26/11/2026 · 09:15',
-                leading: Builder(builder: (c) => _avatar(c, 'م ح')),
+                leading: Builder(
+                  builder: (c) => _avatar(c, people[1].initials),
+                ),
                 trailing: const Text('مؤكد'),
                 divided: true,
                 onPressed: () {},
               ),
               ShifaListItem(
-                title: 'عمر الخوري',
+                title: people[2].name,
                 subtitle: 'لا يمكن الحجز اليوم',
-                leading: Builder(builder: (c) => _avatar(c, 'ع خ')),
+                leading: Builder(
+                  builder: (c) => _avatar(c, people[2].initials),
+                ),
                 enabled: false,
                 onPressed: () {},
               ),
@@ -65,7 +72,7 @@ void main() {
       whilePerforming: pressAll(find.byType(ShifaListItem)),
       states: {
         'pressed': ShifaListItem(
-          title: 'ليلى حداد',
+          title: people[3].name,
           subtitle: 'ملف 10517',
           onPressed: () {},
         ),

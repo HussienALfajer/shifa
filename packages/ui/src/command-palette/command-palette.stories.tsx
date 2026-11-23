@@ -4,7 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { storyStates } from '../../.storybook/story-states.tsx';
-import { people } from '../../test/fixtures.ts';
+import { AHMAD, people } from '../../test/fixtures.ts';
 import { Button } from '../button/button.tsx';
 import { CommandPalette, type CommandPaletteGroup } from './command-palette.tsx';
 
@@ -40,7 +40,7 @@ const GROUPS: CommandPaletteGroup[] = [
   {
     label: 'المرضى',
     items: [
-      { value: 'p-ahmad', label: 'أحمد خليل', description: 'ملف 1187', icon: 'user' },
+      { value: 'p-ahmad', label: AHMAD.name, description: 'ملف 1187', icon: 'user' },
       ...PATIENTS.map((p) => ({
         value: p.id,
         label: p.name,
@@ -110,7 +110,7 @@ export const Open: Story = {
   },
 };
 
-/** «احمد» finds «أحمد خليل», the match marked. */
+/** «احمد» finds «أحمد …» (a generated name), the match marked. */
 export const Matching: Story = {
   parameters: { matrix: false },
   render: () => <Palette />,

@@ -1,7 +1,13 @@
 // Synthetic people for component tests and stories (slice 0.4-04): names from the generator in
 // @shifa/testing only, never real ones (.claude/rules/patient-data.md). Seeds are fixed, so the
 // same names come back on every run and in every screenshot.
-import { createRandom, generatePersonName, generatePhone, type PhoneCountry } from '@shifa/testing';
+import {
+  createRandom,
+  generateLatinPersonName,
+  generatePersonName,
+  generatePhone,
+  type PhoneCountry,
+} from '@shifa/testing';
 
 export interface Person {
   /** A stable id, like a record number. */
@@ -128,4 +134,21 @@ export function personWhere(
     if (test(n.given)) return { id, name: `${n.given} ${n.family}` };
   }
   throw new Error('no generated name passes the test');
+}
+
+/**
+ * A generated person whose given name is «أحمد» (slice 0.4-12, P-N1): the alef-folding example
+ * of the command palette, «احمد» finding him.
+ */
+export const AHMAD = personWhere((given) => given === 'أحمد', { id: '1187' });
+
+/**
+ * `count` people with Latin names (slice 0.4-12, owner decision 2026-11-23): the generator's Latin
+ * spellings of its own names, for a mixed-direction line or an English screen.
+ */
+export function latinPeople(count: number, { seed = 64 }: { seed?: number } = {}): Person[] {
+  return Array.from({ length: count }, (_, i) => ({
+    id: String(3001 + i),
+    name: generateLatinPersonName(createRandom(seed + i)).latin,
+  }));
 }

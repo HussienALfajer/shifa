@@ -20,6 +20,18 @@ const here = import.meta.dirname;
 const pkg = join(here, '..', '..');
 const root = join(pkg, '..', '..');
 
+/** Markers of UI SDK's development history in a built script (P-N2, slice 0.4-12). */
+export const DEV_HISTORY_MARKERS = ['ui-sdk.devtools', '__UI_SDK__'] as const;
+
+/**
+ * The development-history markers found in `js`. UI SDK keeps a history for its devtools when
+ * built with NODE_ENV=development; the bundle is built for production, so it has none, and a
+ * staging build never runs with NODE_ENV=development (design doc, "Builds").
+ */
+export function devHistoryMarkers(js: string): string[] {
+  return DEV_HISTORY_MARKERS.filter((marker) => js.includes(marker));
+}
+
 /** The public components, in the order of bundle-entry.tsx; each has a folder in ./components. */
 export const BUNDLE_COMPONENTS = [
   'Button',
@@ -86,6 +98,11 @@ export async function buildBundle(out: string): Promise<void> {
       root: pkg,
       logLevel: 'warn',
       plugins: [react(), tailwindcss()],
+      // Production whatever NODE_ENV the caller runs with (Vitest sets "test"): Vite picks the
+      // `development` export condition from NODE_ENV otherwise, and UI SDK's `#dev` import then
+      // brings its development history (devtools hook, `__UI_SDK__`) into the bundle (P-N2).
+      mode: 'production',
+      resolve: { conditions: ['module', 'browser', 'production'] },
       define: { 'process.env.NODE_ENV': JSON.stringify('production') },
       build: {
         outDir: tmp,
