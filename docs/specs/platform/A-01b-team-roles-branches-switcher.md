@@ -1,6 +1,6 @@
 # Spec A-01b: team, roles, branches and the clinic switcher
 
-Status: Draft (awaiting owner approval) · Date: 2026-11-23 · Risk tier: T0 (permissions, tenancy/RLS, audit) · Owner: product owner
+Status: Approved (owner, 2026-11-23) · Date: 2026-11-23 · Risk tier: T0 (permissions, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) (order: OD-75). Decisions: ADR-0004, ADR-0006, ADR-0016; OD-76, OD-78. Screens: inventory below; drawn at the start of the UI batch slice (ADR-0042); the drawings of 2026-11-23 are drafts.
 
 ## Goal

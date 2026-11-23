@@ -1,6 +1,6 @@
 # Spec A-01a: clinic, owner and sign-in
 
-Status: Draft (awaiting owner approval) · Date: 2026-11-23 · Risk tier: T0 (auth, tenancy/RLS, audit) · Owner: product owner
+Status: Approved (owner, 2026-11-23) · Date: 2026-11-23 · Risk tier: T0 (auth, tenancy/RLS, audit) · Owner: product owner
 First Phase A spec (order: OD-75); continued by [A-01b](A-01b-team-roles-branches-switcher.md). Decisions: ADR-0004, ADR-0006, ADR-0016, ADR-0030; OD-76, OD-77. Screens: inventory below; drawn at the start of the UI batch slices (ADR-0042); the clinic-web drawings of 2026-11-23 ("Shifa Screens · Clinic web", page "A-01 Foundation") are drafts for those batches.
 
 ## Goal
