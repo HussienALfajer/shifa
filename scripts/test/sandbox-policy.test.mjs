@@ -24,7 +24,7 @@ const ALLOWED_DOMAINS = [
 /**
  * Commands that run outside the sandbox, typed directly: the docker CLI (OD-49), and the git
  * commands that sign a commit or authenticate a push through the cloud container's local
- * services (OD-75).
+ * services (OD-81).
  */
 const EXCLUDED_COMMANDS = [
   'docker *',
@@ -89,7 +89,7 @@ describe('sandbox policy', () => {
     }
   });
 
-  it('excludes exactly the listed commands (OD-49, OD-75)', () => {
+  it('excludes exactly the listed commands (OD-49, OD-81)', () => {
     assert.deepEqual(sandbox.excludedCommands ?? [], EXCLUDED_COMMANDS);
   });
 

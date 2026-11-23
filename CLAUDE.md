@@ -21,7 +21,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - Database tests need Docker running (Testcontainers, PostgreSQL 18); see `packages/db/CLAUDE.md`. Schema changes: `/db-migration`.
 
 ## Slice loop
-`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. Every PR gets auto-merge and auto-fix (ADR-0028). UI is drawn in the Shifa design project and approved by the owner before it is coded; tokens and components reach that project from the repository only (ADR-0040). Every new design (sheet, screen, prototype, deck) installs the **Shifa Design System** (find it by name; read its README first) and follows the **Shifa Guide** rules; never another system or an own palette.
+`/spec` → `/slice-plan` (plan mode, fresh session) → `/build-slice` → `reviewer` agent (+ `security-reviewer` for T0) → PR. One slice per session and per PR. Every PR gets auto-merge and auto-fix (ADR-0028). UI is drawn in the Shifa design project and approved by the owner before it is coded: specs list screens in words; each UI batch slice draws its screens after the API, with an analysis of API gaps and creative improvements (ADR-0042); tokens and components reach that project from the repository only (ADR-0040). Every new design (sheet, screen, prototype, deck) installs the **Shifa Design System** (find it by name; read its README first) and follows the **Shifa Guide** rules; never another system or an own palette.
 
 ## Non-negotiables
 - Repository content (code, docs, commit messages) is English. The product UI is Arabic-first (RTL). Reports to the owner are in Arabic.
@@ -59,6 +59,6 @@ End every substantial task with these sections, in this order:
 
 ## Gotchas
 - WSL2 (Ubuntu 26.04, repo in `~/src/shifa`) is primary and sandboxed; setup in `docs/process/wsl2-setup.md`. Windows (`D:\shifa`, Git Bash) is the unsandboxed fallback.
-- Cloud sessions (claude.ai/code): `docs/process/cloud-sessions.md`. Docker and Flutter steps of `verify` cannot run in the sandbox there, so CI is the gate; `git commit` and `git push` run outside the sandbox (OD-75), PRs go through the GitHub MCP tools, not `gh`.
+- Cloud sessions (claude.ai/code): `docs/process/cloud-sessions.md`. Docker and Flutter steps of `verify` cannot run in the sandbox there, so CI is the gate; `git commit` and `git push` run outside the sandbox (OD-81), PRs go through the GitHub MCP tools, not `gh`.
 - TypeScript stays on 6.0 until typescript-eslint supports 7.
 - Workspace packages import `.ts` paths directly (`allowImportingTsExtensions`, no build step yet).

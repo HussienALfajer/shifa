@@ -1,7 +1,7 @@
 # Cloud sessions (Claude Code on the web)
 
 Status: Living · Last updated: 2026-11-23 · Owner: product owner
-Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, OD-49, OD-75, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
+Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, OD-49, OD-81, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
 
 Purpose: how to work on Shifa in a Claude Code cloud session (claude.ai/code or the Claude app), what the cloud container gives you, and what differs from the WSL2 machine ([setup guide](wsl2-setup.md)), which stays the primary environment. The rules of `CLAUDE.md` apply unchanged; only the mechanics below differ.
 
@@ -40,11 +40,11 @@ Any other `fail` means the setup script did not finish; read the fix `env:check`
 
 ## 3. What runs only in CI
 
-Bash commands in a cloud session run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed these exceptions (OD-49, OD-75), pinned by `scripts/test/sandbox-policy.test.mjs`:
+Bash commands in a cloud session run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed these exceptions (OD-49, OD-81), pinned by `scripts/test/sandbox-policy.test.mjs`:
 
 - `excludedCommands: ["docker *"]`: a command that **starts with** `docker` (`docker info`, `docker compose ps`, `docker logs ...`) runs outside the sandbox, with the daemon's root access. The bare `"docker"` did not match `docker info`; the ` *` is needed. Docker started by another program does not match: `pnpm env:check`, the database tests (Testcontainers), the Docker script suites (OD-32), `obs:*` and `backup:*` all start it from Node, so they still meet the sandbox (`permission denied ... docker.sock`) and run in CI.
 - `filesystem.allowWrite: ["//opt/flutter/bin/cache", "~/.dart-tool"]`: Flutter rewrites `bin/cache/engine.stamp` in its SDK on every run and creates `~/.dart-tool`. In WSL2 the FVM SDK lives under `~/fvm`, so the `/opt/flutter` entry only matters in the cloud.
-- `excludedCommands` for git (OD-75): `git commit *`, `git push *`, `git merge *`, `git rebase *`, `git cherry-pick *`, `git revert *` and `git pull *` run outside the sandbox, so commits are signed and pushes authenticated as on a local machine (section 4). Only a command typed with that start matches (`git -C dir push` does not); the `guard-bash` hook still checks it first.
+- `excludedCommands` for git (OD-81): `git commit *`, `git push *`, `git merge *`, `git rebase *`, `git cherry-pick *`, `git revert *` and `git pull *` run outside the sandbox, so commits are signed and pushes authenticated as on a local machine (section 4). Only a command typed with that start matches (`git -C dir push` does not); the `guard-bash` hook still checks it first.
 
 The exception is not enough on its own: the SDK archive unpacks with its owner (`nobody`), and root inside the sandbox has no override, so writes to files it does not own are refused (`Permission denied`); a sandboxed command also cannot create `~/.dart-tool`, only write inside it once it exists. The setup script therefore runs, after the Flutter step, `chown -R root:root /opt/flutter` and `mkdir -p /root/.dart-tool`; a sandboxed command cannot do either itself (`Operation not permitted`, `Read-only file system`).
 
@@ -62,11 +62,11 @@ So in a cloud session the gate is CI: `verify (full)` on every PR (ADR-0033). Sa
 
 ## 4. GitHub: commits and PRs without `gh`
 
-The cloud container has no authenticated `gh` CLI; GitHub's API is reached through the session's GitHub MCP tools, scoped to this repository. Inside the Bash sandbox `git commit` and `git push` would fail: the container signs commits and authenticates pushes through local services that a sandboxed command cannot reach (`fatal: failed to write commit object`, `could not read Username for 'https://github.com'`). Since OD-75 the git commands that sign or push run outside the sandbox (section 3), so commits and pushes work as on a local machine. A session started before that change was merged still has the old settings: there, commit and push with GitHub MCP `push_files` onto the session's branch (created from `main` with `create_branch`) and `git fetch` afterwards, since the local checkout then lags the remote branch. `CLAUDE.md` step 6 maps to:
+The cloud container has no authenticated `gh` CLI; GitHub's API is reached through the session's GitHub MCP tools, scoped to this repository. Inside the Bash sandbox `git commit` and `git push` would fail: the container signs commits and authenticates pushes through local services that a sandboxed command cannot reach (`fatal: failed to write commit object`, `could not read Username for 'https://github.com'`). Since OD-81 the git commands that sign or push run outside the sandbox (section 3), so commits and pushes work as on a local machine. A session started before that change was merged still has the old settings: there, commit and push with GitHub MCP `push_files` onto the session's branch (created from `main` with `create_branch`) and `git fetch` afterwards, since the local checkout then lags the remote branch. `CLAUDE.md` step 6 maps to:
 
 | Step | WSL2 / Windows | Cloud session |
 |---|---|---|
-| Commit and push | `git commit`, `git push -u origin <branch>` | the same (OD-75) |
+| Commit and push | `git commit`, `git push -u origin <branch>` | the same (OD-81) |
 | Open the PR | `gh pr create --base main` | GitHub MCP `create_pull_request` (base `main`, `## Summary`, `## Test plan`) |
 | Auto-merge | `gh pr merge --auto --squash` | GitHub MCP `enable_pr_auto_merge` (squash) |
 | Auto-fix | toggled in the Claude app | subscribe the session to the PR's activity (comments and CI arrive as turns) |

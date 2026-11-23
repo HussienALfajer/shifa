@@ -185,7 +185,7 @@ git status
 | `/mnt/c/Windows/System32/cmd.exe /c ver` | refused |
 | `pnpm view zod version` | works |
 | `docker info` | works: a command that starts with `docker` runs outside the sandbox (OD-49) |
-| `git commit`, `git push` (and `merge`, `rebase`, `cherry-pick`, `revert`, `pull`) | work: they run outside the sandbox (OD-75) |
+| `git commit`, `git push` (and `merge`, `rebase`, `cherry-pick`, `revert`, `pull`) | work: they run outside the sandbox (OD-81) |
 
 ## Troubleshooting
 
