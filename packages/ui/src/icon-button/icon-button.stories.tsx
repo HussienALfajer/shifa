@@ -45,7 +45,7 @@ export const States: Story = {
  */
 const states = storyStates((label) => (
   <div className="flex items-center gap-2">
-    <IconButton icon="pencil" label={label} tooltip loading={label === 'حفظ'} />
+    <IconButton icon="pencil" label={label} tooltip />
     <span className="text-data text-text-muted">{label}</span>
   </div>
 ));

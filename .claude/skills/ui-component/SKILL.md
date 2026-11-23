@@ -23,7 +23,8 @@ From slices 0.4-03 and 0.4-04 (ADR-0039, ADR-0041). Read `packages/ui/CLAUDE.md`
 `src/<name>/<name>.gate.test.tsx` (or `.test.tsx`) in Chromium, both directions: arrows, popup side, focus, Arabic typeahead, digits, colours, axe (`references/patterns.md`, Tests). A locked test that is wrong: stop and ask the owner.
 
 ## Stories and screenshots
-- `src/<name>/<name>.stories.tsx`: the sheet's states in one matrix story; `storyStates()` for text; an open popup or keyboard path as a play story.
+- `src/<name>/<name>.stories.tsx`: the sheet's states in one matrix story; `storyStates()` for text (exported as `LongArabicLabel`, `MixedDirection`, `Zoom200`, `ReducedMotion`; a component with no text is listed as exempt in spec 0.4 Edge cases); an open popup or keyboard path as a play story.
+- The meta's `docs.description.component` is one single-quoted string: the usage, `\n\n`, then a paragraph starting `**Accessibility.**` with the role, the keys (or "no keyboard interaction"), what a screen reader hears and any rule for the caller, from the code and tests. A story that opens a modal on load needs `parameters.docs.story.inline: false` on the meta, or it covers the docs page. `test/stories-docs.test.ts` and `screenshots/stories.spec.ts` check all of this.
 - Compare in the browser (`ui-storybook` preview) with the sheet; fix or explain each difference in the slice file.
 - `pnpm --filter @shifa/ui storybook:build`, `pnpm ui:screenshots --update` (Docker); look at every new baseline.
 
