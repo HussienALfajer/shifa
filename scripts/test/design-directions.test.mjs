@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import { describe, it } from 'node:test';
+import { readFontInfo } from '../lib/fonts.mjs';
 
 const root = join(import.meta.dirname, '..', '..');
 const directionsDir = join(root, 'design', 'directions');
@@ -45,6 +46,33 @@ const isSynthetic = (name, entries) => {
 };
 
 describe('design directions', () => {
+  // Slice 0.4-10 F3 (OD-59, OFL condition 3): a subset is a Modified Version, so the direction
+  // builds carry the renamed product subsets, never the reserved name "Plex".
+  it('ships no font whose name records say "Plex"', () => {
+    const fonts = listFiles(join(root, 'design')).filter((p) => p.endsWith('.woff2'));
+    assert.ok(fonts.length > 0, 'no woff2 under design/');
+    const found = [];
+    for (const path of fonts) {
+      for (const [key, value] of Object.entries(readFontInfo(path).names)) {
+        if (/plex/i.test(value)) found.push(`${relative(root, path)}: ${key} = ${value}`);
+      }
+    }
+    assert.deepEqual(found, []);
+  });
+
+  it('sets no page or fonts.css in the IBM Plex Sans Arabic family', () => {
+    const found = [];
+    for (const id of DIRECTIONS) {
+      const dir = join(directionsDir, id);
+      for (const path of listFiles(dir).filter((p) => /\.(html|css)$/.test(p))) {
+        if (/['"]IBM Plex Sans Arabic['"]/.test(readFileSync(path, 'utf8'))) {
+          found.push(relative(directionsDir, path));
+        }
+      }
+    }
+    assert.deepEqual(found, []);
+  });
+
   it('has a README and a brief per direction', () => {
     assert.ok(existsSync(join(directionsDir, 'README.md')), 'design/directions/README.md');
     for (const id of DIRECTIONS) {
