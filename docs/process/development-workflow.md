@@ -112,7 +112,7 @@ Rules:
   - session end: warn about uncommitted work.
 - **Agents:** `reviewer` (Opus, high, fresh context, healthcare checklist: patient data in logs, tenant scoping, audit of reads, consent, money and rounding, laterality); `checker` (Haiku, runs checks only); `security-reviewer` (T0).
 - **Skills:** `/spec`, `/slice-plan`, `/build-slice`, `/db-migration` (expand → migrate → contract; refuses destructive changes), `/rls-policy`, `/add-endpoint`, `/ui-component`, `/flutter-screen`, `/audit-phase`, `/release` (user-invoked only).
-- **Plugins and MCP:** TypeScript LSP; official Flutter plugin and Dart MCP server (rules copied into the Flutter app's CLAUDE.md); the Design System and Design artifact types in Claude with `/design-sync` (ADR-0040; no Figma, OD-19); browser automation for `/verify`.
+- **Plugins and MCP:** TypeScript LSP; official Flutter plugin and Dart MCP server (rules copied into the Flutter app's CLAUDE.md); the Design System and Design artifact types in Claude, synced by `pnpm design-system:build` and a publish (`docs/process/ui-screenshots.md`; ADR-0040; no Figma, OD-19); browser automation for `/verify`.
 - **Environment:** WSL2 with Ubuntu 26.04 is primary, repository in `~/src/shifa` ([setup guide](wsl2-setup.md)); sandbox on with an exact-domain network allowlist. `pnpm env:check` shows what is ready. Windows (`D:\shifa`) is the unsandboxed fallback: the sandbox does not run on native Windows, the hooks still apply.
 - **Hook policy** lives in `.claude/hooks/lib/policy.mjs` with unit tests in `scripts/test/claude-hooks.test.mjs`; guards fail closed when they cannot read the tool event.
 
