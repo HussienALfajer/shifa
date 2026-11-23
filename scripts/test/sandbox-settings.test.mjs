@@ -21,8 +21,12 @@ describe('.claude/settings.json sandbox', () => {
     }
   });
 
-  it('excludes only the docker CLI (OD-49)', () => {
-    assert.deepEqual(settings.sandbox?.excludedCommands, ['docker *']);
+  it('excludes only the docker CLI (OD-49) and git commands (OD-81)', () => {
+    const excluded = settings.sandbox?.excludedCommands ?? [];
+    assert.ok(excluded.includes('docker *'), 'docker CLI is not excluded');
+    for (const command of excluded) {
+      assert.match(command, /^(docker|git [a-z-]+) \*$/, `unexpected exclusion: ${command}`);
+    }
   });
 });
 
