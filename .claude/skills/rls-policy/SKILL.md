@@ -11,6 +11,7 @@ Make the table tenant-safe: $ARGUMENTS
    - `global`: no tenant data at all, with a `reason`; a global table must not have `tenant_id`;
    - `system`: infrastructure the application never reads for tenant data, with a `reason`.
    If unsure, stop and ask the owner; never classify a table global to avoid RLS.
+   A tenant table may also set `access: 'append-only'` (no UPDATE/DELETE privilege for any application role) or `'read-only'` (SELECT only for `shifa_app`), and `platformRows` (reason for a nullable `tenant_id`). A policy for `shifa_auth` or `shifa_platform` alone needs its reason under `roleAccess` (ADR-0043); grant those roles nothing a test in `test/privileges.test.ts` does not list.
 2. For a `tenant` table, the schema has `tenant_id uuid not null`, every index and composite unique or foreign key leads with `tenant_id` (the primary key may be a plain `id`), and the custom migration (`/db-migration`, `--custom`) adds:
 
    ```sql
@@ -34,5 +35,5 @@ Make the table tenant-safe: $ARGUMENTS
      },
    });
    ```
-   `seed` writes at least one row through `tx`, into this table only and without `RETURNING` (it runs as `shifa_app`, and with a foreign tenant inside tenant A and without a tenant context, where it must be refused for this table). Parent rows a seed needs come from a case for the parent table, not from this seed; if that is not possible yet, stop and ask. `paths` lists every read the application does on the table, each returning rows that include `tenant_id`/`tenantId` and at least one of tenant A's rows. Synthetic data only.
+   `seed` writes at least one row through `tx`, into this table only and without `RETURNING` (it runs as `shifa_app`, and with a foreign tenant inside tenant A and without a tenant context, where it must be refused for this table). Parent rows a seed needs are written in the case's `prepare(ctx)` (`ctx.inTenant(tenantId, tx => …)`; the `tenant` rows of A and B already exist), never in `seed`. `paths` lists every read the application does on the table, each returning rows that include `tenant_id`/`tenantId` and at least one of tenant A's rows. Synthetic data only.
 4. Run `pnpm verify`. The presence test (`test/architecture/rls-presence.test.ts`) and the isolation suite (`test/isolation/isolation.test.ts`) fail with the table name until steps 1 to 3 are done; do not weaken them.

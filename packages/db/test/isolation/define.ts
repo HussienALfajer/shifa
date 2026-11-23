@@ -5,9 +5,22 @@ import type { Tx } from '../../src/index.ts';
 /** A row a read path returns; it must carry the tenant column so the runner can check it. */
 export type TenantRow = Readonly<Record<string, unknown>>;
 
+/** What prepare() may use to write parent rows for tenants A and B. */
+export interface PrepareContext {
+  /** Tenants A and B; their `tenant` rows already exist. */
+  readonly tenants: readonly [string, string];
+  /** Runs `fn` as shifa_app inside withTenant() for `tenantId`. */
+  inTenant<T>(tenantId: string, fn: (tx: Tx) => Promise<T>): Promise<T>;
+}
+
 export interface IsolationCase {
   /** Table name in `public`, as listed in src/schema/classification.ts. */
   readonly table: string;
+  /**
+   * Writes the parent rows the seed needs (A-01b criterion 1), once per case before the first
+   * seed. The runner has emptied the database and created the `tenant` rows of A and B.
+   */
+  readonly prepare?: ((ctx: PrepareContext) => Promise<void>) | undefined;
   /**
    * Inserts at least one row for `tenantId` through `tx`, into `table` only and without
    * RETURNING (a parent row's or the SELECT policy's refusal would hide this table's WITH

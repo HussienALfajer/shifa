@@ -40,6 +40,11 @@ const PHONE = generatePhone(random, 'SY');
 const NOTE = `ملاحظة سريرية اصطناعية ${String(random.int(100000, 999999))}`;
 const TOKEN = `synthetic-token-${String(random.int(100000, 999999))}`;
 const SECRETS = { NAME, PHONE, NOTE, TOKEN };
+/** Any tenant context: each cast fails before a row is read. */
+const PROBE_CONTEXT = {
+  tenantId: '6f6f6f6f-0000-4000-8000-000000000001',
+  userId: '6f6f6f6f-0000-4000-8000-000000000002',
+};
 
 const leakProbe = defineContract({
   operationId: 'testTelemetryLeak',
@@ -69,12 +74,10 @@ class LeakController {
   ): Promise<unknown> {
     for (const value of [params.name, query.phone]) {
       await this.db
-        .withPlatformAdmin('leak-test', (tx) => tx.execute(sql`select ${value}::uuid`))
+        .withTenant(PROBE_CONTEXT, (tx) => tx.execute(sql`select ${value}::uuid`))
         .catch(() => undefined);
     }
-    return this.db.withPlatformAdmin('leak-test', (tx) =>
-      tx.execute(sql`select ${body.note}::uuid`),
-    );
+    return this.db.withTenant(PROBE_CONTEXT, (tx) => tx.execute(sql`select ${body.note}::uuid`));
   }
 }
 

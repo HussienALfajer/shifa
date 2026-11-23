@@ -97,12 +97,21 @@ export async function startPooler(
   // passwords, which re-salts the stored secret, and a copied secret would then stop matching.
   // PgBouncer runs SCRAM with the client and, separately, with PostgreSQL. The owner is listed
   // only so that tests can prove createDb() refuses it behind the pooler.
-  const reserved = new Set(['postgres', 'shifa_app', 'shifa_owner', POOLER_STATS_USER]);
+  const reserved = new Set([
+    'postgres',
+    'shifa_app',
+    'shifa_auth',
+    'shifa_platform',
+    'shifa_owner',
+    POOLER_STATS_USER,
+  ]);
   if ((options.extraUsers ?? []).some(([user]) => reserved.has(user))) {
     throw new Error('extraUsers must not redefine a harness role');
   }
   const userlist = pgbouncerUserlist([
     ['shifa_app', info.appPassword],
+    ['shifa_auth', info.authPassword],
+    ['shifa_platform', info.platformPassword],
     ['shifa_owner', info.ownerPassword],
     [POOLER_STATS_USER, info.poolerStatsPassword],
     ...(options.extraUsers ?? []),

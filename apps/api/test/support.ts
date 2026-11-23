@@ -91,7 +91,7 @@ export function offlineDb(): ShifaDb & { calls: number } {
       db.calls += 1;
       return Promise.reject(new Error('offline test database'));
     },
-    withPlatformAdmin: () => {
+    ping: () => {
       db.calls += 1;
       return Promise.reject(new Error('offline test database'));
     },

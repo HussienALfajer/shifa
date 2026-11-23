@@ -1,36 +1,28 @@
 # @shifa/db
 
-Drizzle client, migrations, database roles and `withTenant()` (ADR-0004, ADR-0005). Rules for schema work: `.claude/rules/db.md`; new migrations: `/db-migration`. The `drift` step of `verify` (`node scripts/check-drift.mjs`) fails when the schema has no matching migration or a folder is misnamed, incomplete or older than `main`'s newest; `--fix` never applies to migrations.
+Drizzle client, migrations, database roles and the transaction wrappers (ADR-0004, ADR-0005, ADR-0043). Schema rules: `.claude/rules/db.md`; new migrations: `/db-migration`; new tables: `/rls-policy`. The `drift` step of `verify` fails when the schema has no matching migration or a folder is misnamed, incomplete or older than `main`'s newest.
 
 ## Querying
-Every tenant query runs inside `withTenant()`; the pool and raw Drizzle instance are never exported, and ESLint blocks `pg` / `drizzle-orm/node-postgres` outside `src/` and `test-harness/`.
+Pools and raw Drizzle are never exported; ESLint blocks `pg` / `drizzle-orm/node-postgres` outside `src/` and `test-harness/`.
 
 ```ts
-const db = createDb(appUrl); // connects as shifa_app, once per process
-const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) =>
-  tx.select().from(appointments).where(eq(appointments.day, day)),
-);
+const db = createDb(appUrl); // shifa_app, once per process
+const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) => tx.select().from(branch));
 ```
-- Context is set with `set_config(..., true)` inside the transaction: never `SET`, never outside a transaction. No session state behind PgBouncer (list: `.claude/rules/db.md`).
-- Throwing inside the callback rolls back. Do not catch and swallow database errors inside it.
-- `tx` works only while the callback runs: never store it or use it after an un-awaited call. Raw SQL only as a `sql` template, one statement per `execute`.
-- `createDb()` refuses a role that is superuser, has BYPASSRLS or owns tables.
-- `withPlatformAdmin(reason, fn)` is the only other path (no tenant context; audited later).
-- Log a database error's `code` (SQLSTATE) and constraint name only: PostgreSQL messages and `detail` can echo values.
-- App code never connects as `shifa_owner`. Migrations run as the owner through `migrate(ownerUrl)`.
+- Three roles, three pools, each refusing any other role, superuser, BYPASSRLS, owner or role member: `createDb()` (`withTenant()`, `ping()`), `createAuthDb()` (`withAuth()`, `withUser(id)`, `withSetupLink(hashHex)`), `createPlatformDb()` (`withPlatformAdmin({ actorId, event, … }, (tx, audit) => …)`: one null-tenant audit row per call). `createClinic()` takes that platform `tx`.
+- Every wrapper sets or clears every `app.*` setting with `set_config(..., true)` (`src/context.ts`): never `SET`, no session state behind PgBouncer.
+- A throw in the callback rolls back; never swallow database errors in it. `tx` dies when the callback ends. Raw SQL only as a `sql` template, one statement per `execute`.
+- Log a database error's `code` and constraint only: messages and `detail` can echo values.
+- App code never connects as `shifa_owner`; migrations run as the owner through `migrate(ownerUrl)`.
 
 ## Tests
-- Docker must be running (Docker Desktop on Windows). `pnpm --filter @shifa/db test` (or `pnpm verify`).
-- One PostgreSQL + PgBouncer set per run; each Vitest worker gets `shifa_test_<pool id>` cloned from the migrated `shifa_template`; tables are truncated before each file.
-- From `@shifa/db/testing` (lint allows it in test files only): `testDb()` (app role, use for behaviour), `ownerDb()` (create test-only tables, read catalogs), `rawAppDb()` (negative tests only), `superuserDb()` (role tests, inside a rolled-back transaction), `resetTestDb()`.
-- Another package adds DB tests with `dbTestProject()` from `@shifa/db/vitest.db.config` in its Vitest `projects`.
-- PgBouncer (transaction mode, server pool 2) in front: `pooledTestDb()`, `rawPooledAppDb()`, `pooledHarnessUrl()` mirror the direct handles; `showPooler()` is read-only. A second one has `server_reset_query_always = 1` (`'reset'`). `POOLING_DATABASE` (server pool 1) is never truncated; take `holdPoolingDatabase()` first. Leak tests: `test/pooling/`.
-- `testDb()` is shared within a file; once something closes it (an app under test at shutdown), the next call opens a new one.
-- Outside Vitest (scripts such as the API boot check), `@shifa/db/harness` starts the container: `startHarnessContainer()` under `acquireDbTestLock()`. Lint allows it in tests and `scripts/` only.
-- The guard refuses any host, port or database the harness did not create and never reads `DATABASE_URL`. Each run has its own containers; 3 run at once (`DB_TEST_SLOTS`), a 4th waits ≤5 min.
-- Test-only tables (like `rls_probe`) are created in the test with `create table if not exists`, never in migrations, and never listed in the classification.
-- `test/architecture/rls-presence.test.ts` checks the catalog of a pristine clone (`shifa_test_9997`): every `public` table classified, tenant tables with `tenant_id`, ENABLE + FORCE RLS, policies on `current_tenant_id()`, indexes led by `tenant_id`, views `security_invoker`.
-- `test/isolation/isolation.test.ts` runs every case in `test/isolation/cases/` as `shifa_app`, direct and pooled (reads and forged writes from tenant A against tenant B) and fails for a tenant table without a case. New tables: `/rls-policy`.
+- Docker must run. `pnpm --filter @shifa/db test` (or `pnpm verify`). One PostgreSQL + PgBouncer set per run; each worker clones `shifa_template` into `shifa_test_<pool id>`; before each file, earlier files' test-only tables are dropped and all tables truncated.
+- `@shifa/db/testing` (test files only): `testDb()`, `testAuthDb()`, `testPlatformDb()`, `withoutTenant(db, fn)`, `ownerDb()` (test-only tables, catalogs), `rawAppDb()` (negative tests), `superuserDb(db?)` (roles, or rows no role may read), `resetTestDb()`, `createTestTenants(...ids)` (empties, then writes `tenant` rows), insert helpers (`fixtureId`, `syntheticPhones`, `insertUser`, `insertMembership`, …). Other packages: `dbTestProject()` from `@shifa/db/vitest.db.config`.
+- PgBouncer (transaction mode, pool 2): `pooledTestDb()`, `rawPooledAppDb()`, `pooledHarnessUrl()`; `showPooler()` read-only; a `'reset'` variant has `server_reset_query_always = 1`. `POOLING_DATABASE` (pool 1) is never truncated: take `holdPoolingDatabase()` first. Leak tests: `test/pooling/`.
+- Shared handles live per file; once closed, the next call opens a new one. Outside Vitest: `startHarnessContainer()` from `@shifa/db/harness` under `acquireDbTestLock()` (tests and `scripts/` only). The guard refuses any host, port or database the harness did not create.
+- Test-only tables: `create table if not exists` in the test, never in migrations or the classification.
+- `test/architecture/rls-presence.test.ts` (pristine clone `shifa_test_9997`): every table classified; tenant tables with `tenant_id`, ENABLE + FORCE RLS, PUBLIC/`shifa_app` policies on `current_tenant_id()`, `tenant_id`-led indexes; a `roleAccess` reason for every `shifa_auth`/`shifa_platform` policy; access classes match privileges. `test/privileges.test.ts` pins every role's privileges.
+- `test/isolation/isolation.test.ts` runs each case in `test/isolation/cases/` direct and pooled; `prepare(ctx)` writes parent rows; `append-only`/`read-only` tables must refuse writes by privileges.
 
 ## Pins
-`drizzle-orm` / `drizzle-kit` 1.0.0-rc.5 (exact; upgrade with a changelog entry), `pg`, `testcontainers` exact. Images (PostgreSQL, PgBouncer, Ryuk) by digest in `test-harness/image.ts` (CI pulls the same).
+`drizzle-orm` / `drizzle-kit` 1.0.0-rc.5, `pg`, `testcontainers` exact. Identity tables follow Better Auth 1.7.27 (phone-number, two-factor plugins). Images by digest in `test-harness/image.ts`.

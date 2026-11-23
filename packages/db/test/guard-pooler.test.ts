@@ -57,6 +57,8 @@ describe('assertTestTarget through the pooler', () => {
       superuserPassword: 'a',
       ownerPassword: 'b',
       appPassword: 'c',
+      authPassword: 'f',
+      platformPassword: 'g',
       poolerStatsPassword: 'd',
     };
     const login = { user: 'shifa_bench_bypass', password: 'e' };
@@ -64,7 +66,14 @@ describe('assertTestTarget through the pooler', () => {
     expect(() => urlForLogin(info, login, 'shifa_template', { via: 'pooler' })).toThrow(
       UnsafeDatabaseError,
     );
-    for (const user of ['shifa_app', 'shifa_owner', 'postgres', 'Bad-Name']) {
+    for (const user of [
+      'shifa_app',
+      'shifa_auth',
+      'shifa_platform',
+      'shifa_owner',
+      'postgres',
+      'Bad-Name',
+    ]) {
       expect(() => urlForLogin(info, { user, password: 'e' }, 'shifa_test_1')).toThrow();
     }
   });

@@ -1,8 +1,16 @@
-// Catalog checks behind rls-presence.test.ts (0.2-06b, ADR-0004). Returns one message per
-// violation, each starting with the relation name and saying how to fix it.
+// Catalog checks behind rls-presence.test.ts (0.2-06b, ADR-0004; roles and access classes since
+// A-01-01, ./rls-presence-access.ts). Returns one message per violation, each starting with the
+// relation name and saying how to fix it.
 import { sql } from 'drizzle-orm';
-import type { TableClassification } from '../../src/schema/classification.ts';
+import type { TableClass, TableClassification } from '../../src/schema/classification.ts';
 import type { RawDb } from '../../test-harness/index.ts';
+import {
+  APPLICATION_ROLES,
+  accessViolations,
+  applicationPrivileges,
+  isAppPolicy,
+  rolePolicyViolations,
+} from './rls-presence-access.ts';
 
 export type Catalog = Pick<RawDb, 'execute'>;
 
@@ -42,6 +50,8 @@ interface RelationRow {
   force: boolean;
   has_tenant_id: boolean;
   tenant_id_ok: boolean;
+  /** tenant_id is a uuid, nullable or not. */
+  tenant_id_uuid: boolean;
   public_grant: boolean;
   options: string[];
 }
@@ -53,6 +63,8 @@ interface PolicyRow {
   permissive: boolean;
   qual: string | null;
   check: string | null;
+  /** Role names the policy applies to; 'public' for PUBLIC. */
+  roles: string[];
 }
 
 interface IndexRow {
@@ -82,6 +94,9 @@ async function relations(db: Catalog): Promise<RelationRow[]> {
            exists (select 1 from pg_attribute a where a.attrelid = c.oid
                      and a.attname = 'tenant_id' and not a.attisdropped
                      and a.atttypid = 'uuid'::regtype and a.attnotnull) as tenant_id_ok,
+           exists (select 1 from pg_attribute a where a.attrelid = c.oid
+                     and a.attname = 'tenant_id' and not a.attisdropped
+                     and a.atttypid = 'uuid'::regtype) as tenant_id_uuid,
            exists (select 1 from aclexplode(coalesce(c.relacl, acldefault('r', c.relowner))) x
                      where x.grantee = 0) as public_grant,
            coalesce(c.reloptions, '{}'::text[]) as options
@@ -96,7 +111,9 @@ async function policies(db: Catalog): Promise<PolicyRow[]> {
     select c.relname as table, p.polname as name, p.polcmd::text as cmd,
            p.polpermissive as permissive,
            pg_get_expr(p.polqual, p.polrelid) as qual,
-           pg_get_expr(p.polwithcheck, p.polrelid) as check
+           pg_get_expr(p.polwithcheck, p.polrelid) as check,
+           array(select case when r = 0 then 'public' else r::regrole::text end
+                   from unnest(p.polroles) as r order by 1) as roles
       from pg_policy p
       join pg_class c on c.oid = p.polrelid
       join pg_namespace n on n.oid = c.relnamespace
@@ -171,6 +188,7 @@ function policyIsTenantScoped(p: PolicyRow): boolean {
 
 function tenantTableViolations(
   rel: RelationRow,
+  cls: Extract<TableClass, { kind: 'tenant' }>,
   tablePolicies: PolicyRow[],
   tableIndexes: IndexRow[],
   tableForeignKeys: ForeignKeyRow[],
@@ -178,11 +196,16 @@ function tenantTableViolations(
 ): string[] {
   const t = rel.name;
   const out: string[] = [];
-  if (!rel.tenant_id_ok) out.push(`${t}: tenant table needs a column tenant_id uuid not null`);
+  // A null tenant_id (platform rows, invisible to every tenant) needs a stated reason.
+  const nullableOk = Boolean(cls.platformRows?.trim()) && rel.tenant_id_uuid;
+  if (!rel.tenant_id_ok && !nullableOk) {
+    out.push(`${t}: tenant table needs a column tenant_id uuid not null`);
+  }
   if (!rel.rls) out.push(`${t}: ENABLE ROW LEVEL SECURITY is off`);
   if (!rel.force) out.push(`${t}: FORCE ROW LEVEL SECURITY is off (the owner would bypass RLS)`);
   if (rel.public_grant) out.push(`${t}: privileges granted to PUBLIC; grant to shifa_app only`);
-  const permissive = tablePolicies.filter((p) => p.permissive);
+  // Only policies that apply to shifa_app (directly or as PUBLIC) are tenant coverage (B1).
+  const permissive = tablePolicies.filter((p) => p.permissive && isAppPolicy(p));
   for (const p of permissive) {
     if (!policyIsTenantScoped(p)) {
       out.push(
@@ -190,7 +213,11 @@ function tenantTableViolations(
       );
     }
   }
-  for (const [cmd, label] of Object.entries(COMMANDS)) {
+  // Append-only tables have no UPDATE or DELETE at all (privileges, below), so no policy either.
+  const needed = Object.entries(COMMANDS).filter(
+    ([cmd]) => cls.access !== 'append-only' || cmd === 'r' || cmd === 'a',
+  );
+  for (const [cmd, label] of needed) {
     if (!permissive.some((p) => p.cmd === cmd || p.cmd === '*')) {
       out.push(`${t}: no policy for ${label} on current_tenant_id() (see /rls-policy)`);
     }
@@ -228,6 +255,7 @@ export async function checkRlsPresence(
 ): Promise<string[]> {
   const rels = await relations(db);
   const [pols, idxs, fks] = [await policies(db), await indexes(db), await foreignKeys(db)];
+  const privileges = await applicationPrivileges(db);
   const out: string[] = await relationsOutsidePublic(db);
   const tableNames = new Set<string>();
   for (const rel of rels) {
@@ -249,21 +277,27 @@ export async function checkRlsPresence(
       out.push(
         `${rel.name}: not classified; add it to ${CLASSIFICATION_FILE} as tenant, global or system`,
       );
-    } else if (cls.kind === 'tenant') {
+      continue;
+    }
+    const tablePolicies = pols.filter((p) => p.table === rel.name);
+    if (cls.kind === 'tenant') {
       out.push(
         ...tenantTableViolations(
           rel,
-          pols.filter((p) => p.table === rel.name),
+          cls,
+          tablePolicies,
           idxs.filter((i) => i.table === rel.name),
           fks.filter((k) => k.table === rel.name),
           classification,
         ),
+        ...accessViolations(rel.name, cls.access, privileges.get(rel.name)),
       );
     } else if (rel.has_tenant_id) {
       out.push(
         `${rel.name}: classified ${cls.kind} but has a tenant_id column; classify it tenant`,
       );
     }
+    out.push(...rolePolicyViolations(rel.name, tablePolicies, cls));
   }
   for (const name of Object.keys(classification)) {
     if (!tableNames.has(name)) {
@@ -274,18 +308,27 @@ export async function checkRlsPresence(
   return out;
 }
 
-/** Repeats the 0.2-05 role guarantees at catalog level: shifa_app owns nothing, bypasses nothing. */
+/**
+ * Repeats the 0.2-05 role guarantees at catalog level for the three application roles
+ * (ADR-0043): none owns anything or bypasses RLS.
+ */
 async function appRoleViolations(db: Catalog): Promise<string[]> {
-  const { rows } = await db.execute<{ owns: boolean; bypass: boolean }>(sql`
-    select exists (select 1 from pg_class where relowner = r.oid)
+  const { rows } = await db.execute<{ role: string; owns: boolean; bypass: boolean }>(sql`
+    select r.rolname as role,
+           exists (select 1 from pg_class where relowner = r.oid)
              or exists (select 1 from pg_namespace where nspowner = r.oid)
              or exists (select 1 from pg_proc where proowner = r.oid) as owns,
            r.rolbypassrls or r.rolsuper as bypass
-      from pg_roles r where r.rolname = 'shifa_app'`);
-  const row = rows[0];
-  if (!row) return ['shifa_app: role does not exist'];
+      from pg_roles r where r.rolname in ('shifa_app', 'shifa_auth', 'shifa_platform')`);
   const out: string[] = [];
-  if (row.owns) out.push('shifa_app: owns objects (FORCE RLS does not bind an owner)');
-  if (row.bypass) out.push('shifa_app: is superuser or has BYPASSRLS');
+  for (const role of APPLICATION_ROLES) {
+    const row = rows.find((r) => r.role === role);
+    if (!row) {
+      out.push(`${role}: role does not exist`);
+      continue;
+    }
+    if (row.owns) out.push(`${role}: owns objects (FORCE RLS does not bind an owner)`);
+    if (row.bypass) out.push(`${role}: is superuser or has BYPASSRLS`);
+  }
   return out;
 }

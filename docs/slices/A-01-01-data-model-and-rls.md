@@ -1,6 +1,6 @@
 # A-01-01 Data model and RLS
 
-Status: Planned · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls`
+Status: PR open (reviews done, findings fixed) · Tier: T0 · Branch: `feat/A-01-01-data-model-and-rls` (built on the cloud session branch `claude/gracious-gauss-azbrab`, [cloud sessions](../process/cloud-sessions.md) §4)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 1, 2 (database part), 14 (table and append-only); [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 1, 13 (policy coverage) · Requirements: PLT-01, PLT-02, PLT-03, PLT-47 · Decisions: ADR-0004, ADR-0005, ADR-0006, ADR-0030; OD-82 (closed 2026-11-23: two roles)
 
 First of eight A-01 slices (plan approved by the owner 2026-11-23, second-session critique waived: see roadmap). Schema changes are serialised: no other A-01 slice starts its migration before this one merges.
@@ -25,12 +25,37 @@ Tests written first: isolation case per tenant table with `prepare()` parents (A
 Estimated hand-written lines: ~3,600 (schema ~650, policies and roles SQL ~450, wrappers ~300, runner and presence ~450, isolation and policy tests ~1,300, helpers ~250, ADR and domain doc ~200). Checkpoints: (1) roles + wrappers, (2) platform and identity tables, (3) tenant tables + isolation, (4) audit + createClinic + docs.
 
 ## Stopped at
-Not started.
+All layers built and green; reviewer and security-reviewer findings fixed; PR open with auto-merge. Next: A-01-02.
+
+## As built (differences from the plan)
+- **Migrations:** `20261123183313_a01_identity_and_tenancy` (generated: 15 tables, keys, checks, foreign keys) and `20261123183321_a01_policies_and_grants` (custom: helpers `current_user_id()` and `current_link_token_hash()`, RLS, privileges, role policies, the append-only trigger). Both **expand** (new tables only, nothing to backfill). Rollback before any real data: drop the 15 tables and the three functions; after real data, roll forward only.
+- **`organization` is a tenant table** (it carries `tenant_id`, so classifying it global would fail the presence check and hide a tenant's name from RLS); `deployment_route` is a tenant table too, `access: 'read-only'` for `shifa_app`, with two reasoned `shifa_platform` policies (route and move). Only `tenant` is global among the platform tables.
+- **Setup links by hash:** `withSetupLink(tokenHashHex)` sets `app.link_token_hash`; `shifa_auth` sees only the matching link and may update only `used_at` (column privilege). Token hashes and throttle keys are stored as 64 hex digits (`text` with a check), not `bytea`.
+- **`auth_throttle`** has a uuid key and a unique `(kind, key_hash)`; columns `window_start`, `failures`, `locked_until`.
+- **API:** `withPlatformAdmin` left the app pool, so `/health/ready`, the startup check, two API tests and the OpenAPI generator stub moved to `db.ping()` / `withTenant()` (backlog L2, as the plan said). No env keys yet (A-01-02).
+- **Harness:** `createTestTenants(...ids)` empties the database and writes `tenant` rows; each file now starts by dropping earlier files' probe tables (the privilege matrix read every table in the worker database and failed on another file's probe). The two script tests of the migrations drift check wrote a probe schema over `schema/index.ts`; they now add it beside the real schema (replacing it made drizzle-kit prompt to drop 15 tables).
+- **Isolation runner:** each case starts from an empty database with tenants A and B; `prepare(ctx)` writes parents through `ctx.inTenant()`; read-only tables are seeded by the owner under the tenant's own context.
+- **Locked tests:** two lint-only edits after the red phase (an unneeded type parameter in `identity-policies.test.ts`, an unused destructured name in `runner-access.test.ts`), approved by the owner on 2026-11-23; assertions unchanged.
+- **Better Auth pinned at 1.7.27** (published 2026-11-20; the 1.8 line is still beta). The identity tables follow its core schema plus the `phoneNumber` and `twoFactor` plugins; A-01-02 configures `advanced.database.generateId: 'uuid'` and maps the snake_case columns.
+- Hand-written lines: about 3,400 (tests about 1,800), within the ~3,600 estimate.
 
 ## Evidence
-- `verify` (full): —
-- Isolation suite: —
-- Reviewer and security-reviewer findings fixed: —; deferred to backlog: —
+- `pnpm verify` (fast, affected): all green: format, instructions, lint-root, scripts-test (3 Docker suites left to `verify:full`), file-length, pub-get, drift (`migrations` CLEAN), typecheck+lint+test (`@shifa/db`, `@shifa/api`).
+- `@shifa/db` against PostgreSQL 18 and PgBouncer (Testcontainers, in this cloud session): 35 files, 267 tests pass. New: `roles` (attributes and membership refusal for the three roles), `privileges` (exact table and column matrix, secret columns, helper functions), `identity-policies` (A-01a 1), `audit-event` (14), `schema-keys` (no sequence, uuid primary keys), `create-clinic` (2, forced failure leaves nothing), `wrappers`, `isolation/runner-access` (prepare, append-only, read-only), `architecture/rls-presence-roles` (A-01b 13).
+- Isolation suite: 8 tenant tables × direct and PgBouncer, 18 of 18 pass.
+- Red phase: 39 tests failed for the right reasons (missing roles, tables, helpers) before any implementation.
+- Negative evidence: `membership_auth_own_read` widened to `USING (true)` and `shifa_app` given back UPDATE on `audit_event`: 20 tests fail (identity, privileges, presence, audit, isolation); reverted.
+- `pnpm verify:full` on the first build (before review fixes): all 14 steps green (`drift`, `typecheck+lint+test`, `build`, `boot`, UI browser, storybook and screenshots).
+- Reviewer findings fixed: privilege matrix blind to column grants (new `test/privileges-columns.test.ts`; the access-class check uses `has_any_column_privilege`); later slice files named wrappers that do not exist and planned writes the roles cannot do (A-01-02, A-01-03, A-01-05 updated; grants each later slice needs listed below); a used link could be reset; the audit "keeps every row" test wrote nothing (new `test/audit-event-writes.test.ts`); ADR and `platform.ts` now name `deployment_route` as the platform's one SELECT on a tenant table; pooled leftovers for the auth and platform pools (`test/pooling/side-role-leftovers.test.ts`).
+- Security-reviewer findings fixed: **M1** (side roles limited only by a setting they can change themselves): restrictive policies `membership_auth_only_own`, `setup_link_auth_only_link`, `audit_event_side_null_tenant`, proven by `test/side-roles-tenant-context.test.ts` (and red when `membership_auth_only_own` is widened); **M2** as the reviewer's column-grant finding; **L1** a link can be marked used only once, unexpired and unreplaced (`test/setup-link-use.test.ts`); **L2** `createClinic()` names the new tenant as the audit target and sets its tenant context in a savepoint; **L3** `shifa_platform` inserts into tenant tables only in a `clinic.created` transaction (`*_platform_create_only`).
+- Deferred to backlog: L4 (membership binding by `shifa_app`, A-01-04), tenant-setting lint, backup drill roles, audit `data` allowlist (A-01-02/03 note below), cross-tenant lookup indexes, platform audit reads, production roles.
+- Final `@shifa/db` run: 40 files, 285 tests pass.
 
 ## Notes for the next session
-Pin the Better Auth version (≥ 24 h old, pnpm refuses younger) before writing the identity tables; record it here so A-01-02 uses the same one.
+Better Auth is pinned at **1.7.27**: add it (and its Drizzle adapter of the same version) in A-01-02. The adapter's schema keys are `user`, `session`, `account`, `verification`, `twoFactor` (exported by `@shifa/db`); columns are snake_case, so map fields or use Drizzle's column names. `user.email` is required and unique: fill a placeholder for phone sign-ups.
+
+A-01-01 grants only what its own tests use. Later slices add, each in a new migration with a `roleAccess` reason where a role-specific policy is needed and an update of `test/privileges.test.ts` and `test/privileges-columns.test.ts`:
+- **A-01-02:** principal roles: read `role_assignment` inside `withTenant()` for the active tenant (no new grant), or a reasoned `shifa_auth` policy. Owner idle setting (A-01a criterion 9): `UPDATE (idle_minutes, updated_at)` on `tenant` for `shifa_app` with a policy `id = current_tenant_id()`.
+- **A-01-03:** clinic creation with its owner: `shifa_platform` INSERT on `membership`, `role_assignment` and `setup_link` (under the tenant context `createClinic()` sets); the existing-phone check (an invitation instead of a second account) needs a narrow lookup of `user` by phone for `shifa_platform`, or doing it on the auth path; consuming a link sets `membership.user_id` (a `shifa_auth` column grant and policy tied to the link's membership, or a `withTenant()` step after the link is checked).
+- **A-01-04:** none expected beyond `shifa_app`'s defaults.
+- `audit_event.data` has only a size and object check: give the writers an allowlist of keys (no phones, tokens, codes).

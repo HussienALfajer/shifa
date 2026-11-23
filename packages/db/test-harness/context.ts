@@ -9,6 +9,8 @@ export interface HarnessInfo extends HarnessAddress {
   superuserPassword: string;
   ownerPassword: string;
   appPassword: string;
+  authPassword: string;
+  platformPassword: string;
   /** PgBouncer-only read-only console login (`stats_users`: SHOW only); not a PostgreSQL role. */
   poolerStatsPassword: string;
 }
@@ -28,13 +30,24 @@ declare module 'vitest' {
   }
 }
 
-export type HarnessRole = 'superuser' | 'owner' | 'app';
+export type HarnessRole = 'superuser' | 'owner' | 'app' | 'auth' | 'platform';
 
 const USERS: Record<HarnessRole, string> = {
   superuser: 'postgres',
   owner: 'shifa_owner',
   app: 'shifa_app',
+  auth: 'shifa_auth',
+  platform: 'shifa_platform',
 };
+
+const passwordOf = (info: HarnessInfo, role: HarnessRole): string =>
+  ({
+    superuser: info.superuserPassword,
+    owner: info.ownerPassword,
+    app: info.appPassword,
+    auth: info.authPassword,
+    platform: info.platformPassword,
+  })[role];
 
 function guardedUrl(
   info: HarnessInfo,
@@ -55,13 +68,8 @@ export function urlFor(
   database: string,
   { via = 'direct' }: { via?: Via } = {},
 ): string {
-  const password = {
-    superuser: info.superuserPassword,
-    owner: info.ownerPassword,
-    app: info.appPassword,
-  }[role];
   const address = via === 'direct' ? info : pooler(info, via);
-  return guardedUrl(info, address, USERS[role], password, database);
+  return guardedUrl(info, address, USERS[role], passwordOf(info, role), database);
 }
 
 /**
@@ -118,12 +126,17 @@ export async function cloneTemplate(pool: Pool, name: string): Promise<void> {
 
 /** sql/roles.sql, then test-only logins (passwords are random hex, generated per run). */
 export async function applyRoles(info: HarnessInfo): Promise<void> {
-  for (const pw of [info.ownerPassword, info.appPassword]) {
-    if (!/^[0-9a-f]{32}$/.test(pw)) throw new Error('harness passwords must be 32 hex chars');
+  const logins = ['owner', 'app', 'auth', 'platform'] as const;
+  for (const role of logins) {
+    if (!/^[0-9a-f]{32}$/.test(passwordOf(info, role))) {
+      throw new Error('harness passwords must be 32 hex chars');
+    }
   }
   await withPool(urlFor(info, 'superuser', 'postgres'), async (pool) => {
     await pool.query(readFileSync(ROLES_SQL, 'utf8'));
     await pool.query(`ALTER ROLE shifa_owner LOGIN PASSWORD '${info.ownerPassword}'`);
-    await pool.query(`ALTER ROLE shifa_app PASSWORD '${info.appPassword}'`);
+    for (const role of ['app', 'auth', 'platform'] as const) {
+      await pool.query(`ALTER ROLE ${USERS[role]} PASSWORD '${passwordOf(info, role)}'`);
+    }
   });
 }

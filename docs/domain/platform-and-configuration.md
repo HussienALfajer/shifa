@@ -1,6 +1,6 @@
 # Platform and Configuration
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-23 · Owner: product owner
 Sources: RN-01, RN-05, RN-11, RN-16, RN-19
 
 Purpose: defines the shared platform layer that every Shifa surface builds on. It covers the tenancy hierarchy and identities, the super-admin panel, how features are switched on per clinic, per-doctor custom features, custom fields, branding, roles and permissions, audit, MFA and data export. Built in **Phase A**. Specialty content (dental, orthopedics, imaging) lives in its own domain docs. This doc only defines how the platform switches it on.
@@ -111,7 +111,7 @@ A doctor's custom request is handled as a generic module behind an entitlement. 
 
 - `tenant`, `organization`, `branch`, `resource`: hierarchy and bookable rooms/chairs/devices.
 - `deployment_route`: tenant → database/cell mapping.
-- `user_account`, `membership`, `role_assignment`: login plus scoped roles.
+- `user`, `session`, `account`, `two_factor` (Better Auth), `auth_throttle`, `membership`, `role_assignment`, `permission_override`, `setup_link`: login, MFA, sign-in lockouts, one-time setup links and roles scoped to the tenant or a branch (built in slice A-01-01; database roles in ADR-0043).
 - `practitioner`, `practitioner_role`, `practitioner_verification`: global doctor identity, per-clinic role and badge workflow.
 - `person`, `dependent_link`, `patient_chart`, `chart_link`, `consent`: patient identity, family, per-clinic chart and sharing.
 - `plan`, `plan_feature`, `addon`, `tenant_override`, `feature_flag`: entitlements and flags.
