@@ -27,6 +27,10 @@
       "width": { "$value": "{width.24}" },
       "height": { "$value": "{width.60}" }
     },
+    "slot-list": {
+      "$description": "Time Input's slot grid (slice 0.4-13, OD-70): the height its groups scroll in.",
+      "height": { "$value": "{width.80}" }
+    },
     "dialog": { "$description": "Width of a dialog (capped by the screen, less a margin).", "$value": "{width.120}" },
     "tooltip": { "$description": "Widest a tooltip grows before its text wraps.", "$value": "{width.60}" },
     "toolbar-label": {

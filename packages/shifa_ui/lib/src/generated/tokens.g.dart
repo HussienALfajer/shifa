@@ -89,6 +89,7 @@ abstract final class ShifaTokens {
   static const double sizePopover = 320;
   static const double sizeYearListWidth = 96;
   static const double sizeYearListHeight = 240;
+  static const double sizeSlotListHeight = 320;
   static const double sizeDialog = 480;
   static const double sizeTooltip = 240;
   static const double sizeToolbarLabel = 150;
