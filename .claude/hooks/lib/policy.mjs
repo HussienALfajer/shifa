@@ -143,7 +143,7 @@ const BASH_RULES = [
   // and packages at run time, outside the lockfile and the 24-hour release age.
   {
     test: (cmd) => commandSegments(cmd).some(fetchesAndRuns),
-    why: 'Packages are not fetched and run at run time (npx -y, npx <pkg>@<version>, npm exec, pnpm/yarn dlx, bunx); add an exact pin with pnpm, and write agent skills in this repository (ADR-0041).',
+    why: 'Packages are not fetched and run at run time (npx -y, npx <pkg>@<version>, npm exec, pnpm/yarn dlx, bunx, pnpx, also behind pnpm exec, yarn exec or corepack); add an exact pin with pnpm, and write agent skills in this repository (ADR-0041).',
   },
   {
     test: (cmd) => commandSegments(cmd).some(installsOutsidePnpm),
@@ -151,26 +151,63 @@ const BASH_RULES = [
   },
 ];
 
-/** Each simple command of a shell line: its program (no path, quotes or .cmd/.exe) and words. */
+const WRAPPERS = new Set(['sudo', 'command', 'exec', 'env', 'time', 'nice']);
+// Package managers that can start another program (slice 0.4-10, audit 0.4 F4): `corepack
+// <pm>[@version]`, `pnpm exec|x`, `pnpm <tool>` (pnpm falls back to exec), `yarn exec`,
+// `yarn workspace <w> exec` and `bun x`, each with options anywhere (`--filter ui`, `-C dir`,
+// `--reporter silent`, `--`). Parsing every option of every version would fail open on the first
+// unknown one, so the guard fails closed instead: after such a program, every later word that is
+// not an option is checked again as a program with the words after it. `pnpm exec npx -y x` is
+// refused like `npx -y x`; `pnpm exec tsc -p x` stays allowed, since neither `tsc` nor `x` fetch.
+// `npx <pm>`, `timeout 60 …`, `nohup …`, `xargs …` and wrappers with options (`sudo -u root …`,
+// `env -i …`, `cross-env A=1 …`) start a program the same way.
+const RUNNERS = new Set([
+  'pnpm',
+  'yarn',
+  'bun',
+  'corepack',
+  'npx',
+  'timeout',
+  'nohup',
+  'xargs',
+  'cross-env',
+  ...WRAPPERS,
+]);
+
+/** The program a word names: no path, no .cmd/.exe/.ps1, no `@version` (`pnpm@9.0.0`). */
+const programName = (word) =>
+  (word ?? '')
+    .split(/[\\/]/)
+    .pop()
+    .replace(/\.(cmd|exe|ps1)$/i, '')
+    .replace(/(?<=.)@.*$/, '')
+    .toLowerCase();
+
+/**
+ * Each simple command of a shell line, with the programs a package manager may start: its program
+ * and words. The words after a runner give extra entries marked `nested`.
+ */
 function commandSegments(cmd) {
   // A quoted string with spaces or separators is an argument (a grep pattern, a message), never
   // a command; a short quoted word ("npm", "skills@latest") stays, unquoted below.
   const masked = cmd.replace(/"[^"]*[\s;&|`(][^"]*"|'[^']*[\s;&|`(][^']*'/g, 'Q');
-  return masked.split(/[;&|\n]+|\$\(|`|\(/).map((segment) => {
+  return masked.split(/[;&|\n]+|\$\(|`|\(/).flatMap((segment) => {
     const words = segment
       .trim()
       .split(/\s+/)
       .filter(Boolean)
       .map((w) => w.replace(/^["']+|["']+$/g, ''));
     let i = 0;
-    const wrappers = new Set(['sudo', 'command', 'exec', 'env', 'time', 'nice']);
-    while (i < words.length && (/^\w+=/.test(words[i]) || wrappers.has(words[i]))) i += 1;
-    const program = (words[i] ?? '')
-      .split(/[\\/]/)
-      .pop()
-      .replace(/\.(cmd|exe|ps1)$/i, '')
-      .toLowerCase();
-    return { program, args: words.slice(i + 1) };
+    while (i < words.length && (/^\w+=/.test(words[i]) || WRAPPERS.has(words[i]))) i += 1;
+    const program = programName(words[i]);
+    const out = [{ program, args: words.slice(i + 1), nested: false }];
+    // After a skipped wrapper (`sudo -u root …`) the "program" may be one of its options.
+    if (!RUNNERS.has(program) && i === 0) return out;
+    for (let j = i + 1; j < words.length; j += 1) {
+      if (words[j].startsWith('-')) continue;
+      out.push({ program: programName(words[j]), args: words.slice(j + 1), nested: true });
+    }
+    return out;
   });
 }
 
@@ -188,16 +225,18 @@ const NPM_INSTALL = new Set([
   'ci',
 ]);
 
-function installsOutsidePnpm({ program, args }) {
+function installsOutsidePnpm({ program, args, nested }) {
   if (program === 'npm') return args.some((a) => NPM_INSTALL.has(a));
+  // A bare `yarn` installs; a bare word `yarn` after a runner is more often a package name
+  // (`pnpm why yarn`), so only the add and install subcommands count there.
   if (program === 'yarn')
-    return args.length === 0 || args.some((a) => ['add', 'install'].includes(a));
+    return (args.length === 0 && !nested) || args.some((a) => ['add', 'install'].includes(a));
   if (program === 'bun') return args.some((a) => ['add', 'install', 'i'].includes(a));
   return false;
 }
 
 function fetchesAndRuns({ program, args }) {
-  if (program === 'bunx') return true;
+  if (program === 'bunx' || program === 'pnpx') return true;
   if (program === 'npm') return args.some((a) => ['exec', 'x'].includes(a));
   if (program === 'pnpm' || program === 'yarn' || program === 'bun') {
     return args.includes('dlx') || (program === 'bun' && args.includes('x'));

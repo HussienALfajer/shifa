@@ -22,7 +22,8 @@ void main() {
           label: 'رقم الهاتف',
           keyboardType: TextInputType.phone,
           helper: 'سنرسل رمز التأكيد إلى هذا الرقم',
-          controller: TextEditingController(text: '0944123456'),
+          // Generated: @shifa/testing generatePhone, seed 410, 'SY'.
+          controller: TextEditingController(text: '0930024973'),
         ),
         'error': ShifaTextField(
           label: 'تاريخ الميلاد',

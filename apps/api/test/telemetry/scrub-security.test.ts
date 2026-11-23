@@ -12,7 +12,8 @@ import { otlpLogForwarder } from '../../src/telemetry/logs.ts';
 import { ALLOWED_SPAN_ATTRIBUTES, pickAttributes } from '../../src/telemetry/scrub.ts';
 import { stackFrames } from '../../src/telemetry/stack.ts';
 
-const PHONE = '0944123456';
+// Mobile-shaped, so the scrubber is still tested on a phone; synthetic (generator's 00 marker).
+const PHONE = '0930024973';
 const NAME = 'Fatima Al-Synthetic';
 const MESSAGE = `invalid input syntax for type uuid: "Follow-up plan:\n   at home rest, ${NAME} ${PHONE}\n    at fake (x.js:1:2)"`;
 const FRAME = '    at handler (/app/dist/main.js:10:5)';

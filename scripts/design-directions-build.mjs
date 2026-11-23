@@ -38,7 +38,7 @@ const between = (text, open, close) => {
 
 const PAGE_CSS = `
 html{background:#d9d5cb}
-#dc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 16px;background:#1d2a26;color:#e6ede9;font:14px/1.6 'IBM Plex Sans Arabic',system-ui,sans-serif}
+#dc-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;padding:8px 16px;background:#1d2a26;color:#e6ede9;font:14px/1.6 'Shifa Sans Arabic',system-ui,sans-serif}
 #dc-bar strong{font-weight:600}
 #dc-bar a{color:#a9cfc3;text-decoration:none;padding:4px 6px;border-radius:4px}
 #dc-bar a[aria-current="page"]{color:#fff;background:rgba(255,255,255,.12)}
@@ -53,13 +53,16 @@ const fontFaces = () => {
   const faces = [];
   const files = [];
   for (const family of families) {
+    // OFL condition 3 (OD-59): a subset is a Modified Version and carries the web family name
+    // ("Shifa Sans Arabic"), never the reserved upstream name. Noto has no reserved name.
+    const webFamily = family.webFamily ?? family.family;
     // OFL condition 2: the licence travels with every copy of the fonts.
     files.push([join(fontsDir, family.licence), `${family.id}-OFL.txt`]);
     for (const file of family.files.filter((f) => f.format === 'woff2')) {
       const name = file.path.split('/').pop();
       files.push([join(fontsDir, file.path), name]);
       faces.push(
-        `@font-face{font-family:'${family.family}';font-weight:${file.weight};font-display:swap;src:url('${name}') format('woff2');unicode-range:${file.unicodeRange}}`,
+        `@font-face{font-family:'${webFamily}';font-weight:${file.weight};font-display:swap;src:url('${name}') format('woff2');unicode-range:${file.unicodeRange}}`,
       );
     }
   }

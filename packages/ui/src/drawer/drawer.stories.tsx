@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { storyStates } from '../../.storybook/story-states.tsx';
+import { PHONE } from '../../test/fixtures.ts';
 import { Button } from '../button/button.tsx';
 import { Input } from '../input/input.tsx';
 import { Textarea } from '../textarea/textarea.tsx';
@@ -49,7 +50,7 @@ function EditAppointment({
     >
       <DrawerTrigger startIcon="pencil">تعديل الموعد</DrawerTrigger>
       <DrawerContent title={title} description="الثلاثاء 24/11/2026 الساعة 10:30">
-        <Input label="الهاتف" dir="auto" defaultValue="0944 123 456" />
+        <Input label="الهاتف" dir="auto" defaultValue={PHONE} />
         <Textarea label="ملاحظة" defaultValue="يفضّل موعداً بعد الظهر" />
         <DrawerActions>
           <DrawerClose>إلغاء</DrawerClose>

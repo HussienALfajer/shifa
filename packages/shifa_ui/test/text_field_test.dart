@@ -24,10 +24,12 @@ void main() {
         onChanged: changes.add,
       ),
     );
-    await tester.enterText(find.byType(EditableText), '٠٩٤٤١٢٣٤٥٦');
-    expect(controller.text, '0944123456');
-    expect(changes.last, '0944123456');
-    expect(find.text('0944123456'), findsOneWidget);
+    // A generated number (@shifa/testing generatePhone, seed 410, 'SY'):
+    // +963930024973, with the synthetic 00 marker after the prefix 93.
+    await tester.enterText(find.byType(EditableText), '٠٩٣٠٠٢٤٩٧٣');
+    expect(controller.text, '0930024973');
+    expect(changes.last, '0930024973');
+    expect(find.text('0930024973'), findsOneWidget);
     await tester.enterText(find.byType(EditableText), '۰۹۴۴'); // Persian digits
     expect(controller.text, '0944');
   });

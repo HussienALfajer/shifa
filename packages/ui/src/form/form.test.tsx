@@ -6,11 +6,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { z } from 'zod';
+import { PHONE } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir } from '../../test/support/index.ts';
 import { Checkbox } from '../checkbox/checkbox.tsx';
 import { Input } from '../input/input.tsx';
 import { Radio, RadioGroup } from '../radio/radio.tsx';
 import { Form, FormField, FormSubmit, useShifaForm } from './form.tsx';
+
+/** A synthetic number as typed, without spaces (the schema wants 09 and 8 digits). */
+const PHONE_DIGITS = PHONE.replaceAll(' ', '');
 
 const MESSAGES: Record<string, string> = {
   'validation.required': 'هذا الحقل مطلوب',
@@ -117,7 +121,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
 
   it('focuses a radio of an invalid group when the group is the first invalid field', async () => {
     const screen = await renderDir(
-      <Registration onSubmit={vi.fn()} defaults={{ name: 'سارة', phone: '0944123456' }} />,
+      <Registration onSubmit={vi.fn()} defaults={{ name: 'سارة', phone: PHONE_DIGITS }} />,
       { dir },
     );
     await userEvent.click(screen.getByRole('button', { name: 'سجّل' }));
@@ -139,13 +143,13 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
     const phone = screen.getByRole('textbox', { name: 'رقم الهاتف' }).element() as HTMLInputElement;
     await expect.poll(() => phone.getAttribute('aria-invalid')).toBe('true');
     await userEvent.clear(phone);
-    await userEvent.type(phone, '0944123456');
+    await userEvent.type(phone, PHONE_DIGITS);
     await expect.poll(() => phone.getAttribute('aria-invalid')).not.toBe('true');
     await userEvent.click(screen.getByRole('button', { name: 'سجّل' }));
     await expect.poll(() => onSubmit.mock.calls.length).toBe(1);
     expect(onSubmit.mock.calls[0]?.[0]).toEqual({
       name: 'سارة',
-      phone: '0944123456',
+      phone: PHONE_DIGITS,
       sex: 'female',
       consent: true,
     });
@@ -162,7 +166,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
     const screen = await renderDir(
       <Registration
         onSubmit={onSubmit}
-        defaults={{ name: 'سارة', phone: '0944123456', sex: 'male', consent: true }}
+        defaults={{ name: 'سارة', phone: PHONE_DIGITS, sex: 'male', consent: true }}
       />,
       { dir },
     );
