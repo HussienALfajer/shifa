@@ -282,10 +282,15 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 ### Screen cycle (Phase A onward)
 
-1. **Draw in `/spec`:** each screen of the feature, from the design system's components, in Arabic RTL, light and dark, at the sizes the feature needs, with synthetic data.
-2. **Approval:** the owner approves the screens with the spec.
-3. **Code:** built to match; the slice compares the browser screenshot (real backend) with the drawing and fixes or explains each difference.
-4. **Missing component:** it goes through the component cycle first; no one-off inside a screen.
+Amended by [ADR-0042](../adr/0042-screens-drawn-per-ui-batch-with-analysis.md) (owner, 2026-11-23).
+
+1. **Inventory in `/spec`:** the spec lists each screen in words: purpose, sizes, every state and the data and actions it shows. No drawing.
+2. **Draw at the UI batch:** after the API is built, the first checkpoint of a UI batch slice draws its screens (one or several) in Arabic RTL, light and dark, at the sizes needed, with synthetic data. The Shifa Design System is installed and used throughout: its real components from the bundle, its tokens for every colour, space, radius, shadow and size, its type styles; no literal colour or own value; the artboards are checked for both before they are shown (OD-80).
+   - The batch is a working prototype: artboards marked interactive, fields and buttons work, the flow runs from screen to screen, and every listed state is reachable in Play; the owner tests it there before approving (OD-80).
+3. **Analyse:** with the drawings, a written analysis in the slice file: API gaps (fixed in the slice or a small slice before it, never worked around in the client), spec gaps, professional and creative improvements with their cost (the owner accepts or declines each), and missing components.
+4. **Approval:** the owner approves the batch's drawings; nothing in it is coded before.
+5. **Code:** built to match; the slice compares the browser screenshot (real backend) with the drawing and fixes or explains each difference.
+6. **Missing component:** it goes through the component cycle first; no one-off inside a screen. Drawings made before their batch are drafts, reviewed at the batch.
 
 ### Limits
 
@@ -297,7 +302,7 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 ## Working with Claude Code
 
-- `/spec` draws the screens of a feature with UI and `/build-slice` compares the built screen with the approved drawing (ADR-0040).
+- `/spec` lists the screens of a feature in words; the first checkpoint of each UI batch slice draws them with the analysis and gets the owner's approval; `/build-slice` compares the built screen with the approved drawing (ADR-0040, ADR-0042).
 - The `/ui-component` skill holds the component checklist (the design sheet and its approval, API conventions, RTL, a11y, stories, tests, the sync to the design system) and points to the best existing component to copy.
 - The upstream `ui-sdk` agent skill is not vendored; `/ui-component` (`references/ui-sdk.md`) holds our notes, re-read at every UI SDK upgrade (ADR-0041).
 
