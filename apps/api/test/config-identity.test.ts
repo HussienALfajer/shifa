@@ -33,7 +33,34 @@ describe('identity configuration', () => {
       hmacKey: HMAC,
       databaseUrlAuth: AUTH_URL,
       databaseUrlPlatform: PLATFORM_URL,
+      clinicWebUrl: undefined,
     });
+  });
+
+  it('needs an https CLINIC_WEB_URL in a deployed environment', () => {
+    for (const DEPLOYMENT_ENVIRONMENT of ['staging', 'production']) {
+      for (const extra of [{}, { CLINIC_WEB_URL: 'http://clinic.example.invalid' }]) {
+        expect(
+          messageOf(() => loadIdentityConfig({ ...VALID, DEPLOYMENT_ENVIRONMENT, ...extra })),
+        ).toBe('missing or invalid configuration: CLINIC_WEB_URL');
+      }
+      const ok = {
+        ...VALID,
+        DEPLOYMENT_ENVIRONMENT,
+        CLINIC_WEB_URL: 'https://clinic.example.invalid',
+      };
+      expect(loadIdentityConfig(ok).clinicWebUrl).toBe('https://clinic.example.invalid');
+    }
+  });
+
+  it('reads CLINIC_WEB_URL as an origin (A-01-03 setup links)', () => {
+    const env = { ...VALID, CLINIC_WEB_URL: 'https://clinic.example.invalid' };
+    expect(loadIdentityConfig(env).clinicWebUrl).toBe('https://clinic.example.invalid');
+    for (const bad of ['clinic.example.invalid', 'ftp://x.invalid', 'https://x.invalid/setup']) {
+      expect(messageOf(() => loadIdentityConfig({ ...VALID, CLINIC_WEB_URL: bad }))).toBe(
+        'missing or invalid configuration: CLINIC_WEB_URL',
+      );
+    }
   });
 
   it('names every missing key', () => {

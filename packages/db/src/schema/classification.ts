@@ -34,6 +34,10 @@ const IDENTITY =
   'a person is one account across clinics (ADR-0006); no clinic data. Personal data: shifa_app reads only the signed-in person (app.user_id)';
 const PLATFORM_CREATE_ONLY =
   'restrictive: shifa_platform inserts here only inside a clinic.created transaction (createClinic())';
+const OWNER_CREATE_ONLY =
+  'restrictive: shifa_platform writes a clinic’s owner only inside its clinic.created transaction (createClinic(), A-01a 2, 3)';
+const FIRST_OWNER_ONLY =
+  'restrictive: app.admin_reason is set by the role itself, so the row must also be a clinic’s first and only owner (security review M1)';
 const authAll = (table: string): RoleAccess => ({
   [`${table}_auth_all`]:
     'the Better Auth adapter reads and writes identity rows before any tenant or person is known (sign-in, sessions, MFA)',
@@ -48,6 +52,18 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       tenant_platform_all: 'the super admin creates clinics and sets status and end date (A-01a 3)',
       tenant_auth_member_read:
         'the clinic chooser shows the name, status and idle time of the clinics the signed-in person belongs to (A-01b 10, 11)',
+      tenant_auth_link_read:
+        'a setup page shows the name of the clinic its link belongs to, found by the token hash alone (A-01a 4)',
+    },
+  },
+  platform_admin: {
+    kind: 'global',
+    reason: 'who is a super admin (A-01a 13); user ids only, no clinic data',
+    roleAccess: {
+      platform_admin_auth_read:
+        'the auth path marks super admins in the principal (15-minute idle, MFA, platform routes)',
+      platform_admin_platform_seed:
+        'only the seed command creates super admins (platform.admin_created); no route does (A-01a 13)',
     },
   },
   user: { kind: 'global', reason: IDENTITY, roleAccess: authAll('user') },
@@ -86,10 +102,32 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       membership_auth_own_read:
         "a person's own memberships across clinics, for sign-in and the clinic chooser (A-01b 10)",
       membership_auth_only_own:
-        'restrictive: even with a tenant set, shifa_auth reads only the signed-in person’s memberships',
+        'restrictive: even with a tenant set, shifa_auth reaches only the signed-in person’s memberships and the membership of its setup link',
+      membership_auth_link_read:
+        'a setup page shows the name and phone rules of the person its link is for (A-01a 4, 8)',
+      membership_auth_link_accept:
+        'using a setup link binds its pending membership to the new account, once (A-01a 5)',
+      membership_auth_accept_only:
+        'restrictive: even with a tenant set, shifa_auth updates a membership only to bind it through its used link',
+      membership_platform_create_only: OWNER_CREATE_ONLY,
+      membership_platform_first_owner_only: FIRST_OWNER_ONLY,
+      membership_platform_owner_read:
+        'the super admin sees each clinic’s owner card (name, status), never other members (A-01a 3, 13)',
+      membership_platform_only_owner:
+        'restrictive: even with a tenant set, shifa_platform reads owner memberships only',
     },
   },
-  role_assignment: { kind: 'tenant' },
+  role_assignment: {
+    kind: 'tenant',
+    roleAccess: {
+      role_assignment_platform_create_only: OWNER_CREATE_ONLY,
+      role_assignment_platform_first_owner_only: FIRST_OWNER_ONLY,
+      role_assignment_platform_owner_read:
+        'finding a clinic’s owner membership for the owner card and support actions (A-01a 13)',
+      role_assignment_platform_only_owner:
+        'restrictive: even with a tenant set, shifa_platform reads owner roles only',
+    },
+  },
   permission_override: { kind: 'tenant' },
   setup_link: {
     kind: 'tenant',
@@ -99,6 +137,14 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'using an unused, unexpired link marks it used (A-01a 4); only used_at is granted',
       setup_link_auth_only_link:
         'restrictive: even with a tenant set, shifa_auth reaches only the link of its token hash',
+      setup_link_platform_issue_only:
+        'restrictive: shifa_platform issues owner links only at clinic creation or an owner.link_issued action (A-01a 4, 13)',
+      setup_link_platform_owner_links_only:
+        'restrictive: shifa_platform writes only owner or invitation links for a clinic’s owner, valid at most 72 h (review M1)',
+      setup_link_platform_owner_only:
+        'restrictive: shifa_platform sees owner links only (to replace them), never a token hash',
+      setup_link_platform_replace_only:
+        'restrictive: re-issuing marks the owner’s unused links replaced, nothing else (A-01a 4)',
     },
   },
   audit_event: {

@@ -1,0 +1,197 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d3600545-8e12-4a1a-b1a1-278e72538eaa",
+  "prevIds": [
+    "74cb7372-2d3e-4e0d-ade5-93ca62d338bd"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "platform_admin"
+      ],
+      "writes": [
+        "s|tbl|public.platform_admin",
+        "n|tbl|public.platform_admin",
+        "e|tbl|public.platform_admin",
+        "n|rel|public.platform_admin",
+        "n|type|public.platform_admin",
+        "n|rel|public.platform_admin_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "session",
+        "mfa_verified_at"
+      ],
+      "writes": [
+        "s|col|public.session.mfa_verified_at",
+        "n|col|public.session.mfa_verified_at",
+        "e|col|public.session.mfa_verified_at"
+      ],
+      "reads": [
+        "n|tbl|public.session",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "two_factor",
+        "last_used_step"
+      ],
+      "writes": [
+        "s|col|public.two_factor.last_used_step",
+        "n|col|public.two_factor.last_used_step",
+        "e|col|public.two_factor.last_used_step"
+      ],
+      "reads": [
+        "n|tbl|public.two_factor",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "platform_admin"
+      ],
+      "writes": [
+        "s|fk|public.platform_admin.platform_admin_user_id_user_id_fkey",
+        "n|fk|public.platform_admin.platform_admin_user_id_user_id_fkey",
+        "e|fk|public.platform_admin.platform_admin_user_id_user_id_fkey",
+        "n|con|public.platform_admin.platform_admin_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.platform_admin",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.platform_admin.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "platform_admin",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_admin",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_admin",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "session",
+        "name": "mfa_verified_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "two_factor",
+        "name": "last_used_step",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_admin",
+        "name": "platform_admin_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_admin",
+        "name": "platform_admin_pkey",
+        "columns": [
+          "user_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    }
+  ]
+}

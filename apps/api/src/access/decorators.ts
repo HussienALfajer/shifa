@@ -20,6 +20,22 @@ export const RequirePermission = (key: PermissionKey): MethodDecorator =>
  */
 export const SignedIn = (): MethodDecorator => SetMetadata(SIGNED_IN_METADATA, true);
 
+export const PLATFORM_ADMIN_METADATA = 'shifa:access:platform-admin';
+export const BEFORE_MFA_METADATA = 'shifa:access:before-mfa';
+
+/**
+ * Needs a super admin (A-01-03): the admin web's clinic and owner-support routes. Work goes
+ * through withPlatformAdmin() (audited); a super admin never passes a tenant permission check.
+ */
+export const PlatformAdmin = (): MethodDecorator => SetMetadata(PLATFORM_ADMIN_METADATA, true);
+
+/**
+ * With @SignedIn only: reachable before the second factor (session view, sign-out, TOTP
+ * enrolment and challenge). Every other route answers 403 `mfa_enrolment_required` or
+ * `mfa_challenge_required` until the session has passed MFA where it must (A-01a criterion 11).
+ */
+export const BeforeMfa = (): MethodDecorator => SetMetadata(BEFORE_MFA_METADATA, true);
+
 /** The principal the guard authenticated for this request (set before the handler runs). */
 const principals = new WeakMap<object, Principal>();
 
@@ -30,7 +46,7 @@ export function rememberPrincipal(request: object, principal: Principal): void {
 /** Factory of @CurrentPrincipal(): the contract check knows it reads no client input. */
 export function currentPrincipalFactory(_data: unknown, context: ExecutionContext): Principal {
   const principal = principals.get(context.switchToHttp().getRequest<object>());
-  // Only on @SignedIn / @RequirePermission routes: the guard ran and authenticated.
+  // Only on @SignedIn / @RequirePermission / @PlatformAdmin routes: the guard authenticated.
   if (!principal) throw new Error('@CurrentPrincipal() on a route without authentication');
   return principal;
 }

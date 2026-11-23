@@ -4,6 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'mfa_state.dart';
 import 'session_role_assignment.dart';
 
 part 'session_view.g.dart';
@@ -15,6 +16,9 @@ class SessionView {
     required this.branchId,
     required this.idleExpiresAt,
     required this.idleMinutes,
+    required this.mfa,
+    required this.mfaRequired,
+    required this.platformAdmin,
     required this.roles,
     required this.sessionId,
     required this.tenantId,
@@ -29,6 +33,9 @@ class SessionView {
   final String? branchId;
   final DateTime idleExpiresAt;
   final int idleMinutes;
+  final MfaState mfa;
+  final bool mfaRequired;
+  final bool platformAdmin;
   final List<SessionRoleAssignment> roles;
   final String sessionId;
   @JsonKey(includeIfNull: true)

@@ -46,7 +46,27 @@ enum ErrorCode {
   @JsonValue('ip_blocked')
   ipBlocked('ip_blocked'),
   @JsonValue('session_expired')
-  sessionExpired('session_expired');
+  sessionExpired('session_expired'),
+  @JsonValue('link_invalid')
+  linkInvalid('link_invalid'),
+  @JsonValue('password_too_short')
+  passwordTooShort('password_too_short'),
+  @JsonValue('password_common')
+  passwordCommon('password_common'),
+  @JsonValue('password_contains_phone')
+  passwordContainsPhone('password_contains_phone'),
+  @JsonValue('mfa_enrolment_required')
+  mfaEnrolmentRequired('mfa_enrolment_required'),
+  @JsonValue('mfa_challenge_required')
+  mfaChallengeRequired('mfa_challenge_required'),
+  @JsonValue('mfa_locked')
+  mfaLocked('mfa_locked'),
+  @JsonValue('invalid_code')
+  invalidCode('invalid_code'),
+  @JsonValue('clock_skew')
+  clockSkew('clock_skew'),
+  @JsonValue('owner_setup_pending')
+  ownerSetupPending('owner_setup_pending');
 
   const ErrorCode(this.json);
 

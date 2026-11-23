@@ -26,6 +26,17 @@ export const ErrorCode = z
     'phone_locked',
     'ip_blocked',
     'session_expired',
+    // setup links and MFA (A-01-03)
+    'link_invalid',
+    'password_too_short',
+    'password_common',
+    'password_contains_phone',
+    'mfa_enrolment_required',
+    'mfa_challenge_required',
+    'mfa_locked',
+    'invalid_code',
+    'clock_skew',
+    'owner_setup_pending',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -65,7 +76,7 @@ export const ErrorBody = z
     message: z.string(),
     /** Present only when `code` is `validation_failed`. */
     details: z.array(ValidationIssue).optional(),
-    /** End of a lock (ISO 8601, UTC): present only with `phone_locked` and `ip_blocked`. */
+    /** End of a lock (ISO 8601, UTC): only with `phone_locked`, `ip_blocked`, `mfa_locked`. */
     until: z.iso.datetime().optional(),
   })
   .meta({ id: 'ErrorBody' });
@@ -100,6 +111,16 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   phone_locked: 'Too many failed sign-ins for this phone',
   ip_blocked: 'Too many failed sign-ins from this address',
   session_expired: 'Session expired',
+  link_invalid: 'This link is no longer valid',
+  password_too_short: 'Password too short',
+  password_common: 'Password too common',
+  password_contains_phone: 'Password contains the phone number',
+  mfa_enrolment_required: 'Two-factor enrolment required',
+  mfa_challenge_required: 'Two-factor code required',
+  mfa_locked: 'Too many wrong codes',
+  invalid_code: 'Invalid code',
+  clock_skew: 'Code from a device whose clock is off',
+  owner_setup_pending: 'This phone is the owner of a clinic that is not set up yet',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

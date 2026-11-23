@@ -7,19 +7,44 @@ import {
   type AuthDb,
   branch,
   membership,
+  platformAdmin,
   roleAssignment,
   type ShifaDb,
   session,
+  type Tx,
   tenant,
+  twoFactor,
 } from '@shifa/db';
 import { and, eq, gt, isNull, ne } from 'drizzle-orm';
-import { type Principal, parsePrincipal, SessionExpiredError } from '../../access/index.ts';
+import {
+  type MfaState,
+  mustEnrolMfa,
+  type Principal,
+  parsePrincipal,
+  SessionExpiredError,
+} from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
 import { SESSION_ABSOLUTE_MS } from './session-cookie.ts';
 import { AUTH_DB } from './tokens.ts';
 import { describeUserAgent } from './user-agent.ts';
+
+/** Is the person a super admin, and have they a confirmed TOTP enrolment? */
+async function accountFactors(
+  tx: Tx,
+  userId: string,
+): Promise<{ platformAdmin: boolean; totpEnrolled: boolean }> {
+  const [admin] = await tx
+    .select({ id: platformAdmin.userId })
+    .from(platformAdmin)
+    .where(eq(platformAdmin.userId, userId));
+  const [totp] = await tx
+    .select({ id: twoFactor.id })
+    .from(twoFactor)
+    .where(and(eq(twoFactor.userId, userId), eq(twoFactor.verified, true)));
+  return { platformAdmin: admin !== undefined, totpEnrolled: totp !== undefined };
+}
 
 /** Idle limit without an active clinic: super admins, and people between clinics (OD-77). */
 export const NO_CLINIC_IDLE_MINUTES = 15;
@@ -83,30 +108,41 @@ export class SessionsService {
     const tenantView = await this.#tenantView(row.userId, row.activeTenantId, row.activeBranchId);
     const reason = this.#expiry(row, tenantView.idleMinutes, now);
     if (reason) {
-      await this.#end(row.userId, [row.id], reason, requestId);
+      await this.end(row.userId, [row.id], reason, requestId);
       throw new SessionExpiredError();
     }
-    await this.authDb.withAuth((tx) =>
-      tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id)),
-    );
+    const factors = await this.authDb.withAuth(async (tx) => {
+      await tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id));
+      return accountFactors(tx, row.userId);
+    });
+    const mfa: MfaState = !factors.totpEnrolled
+      ? 'none'
+      : row.mfaVerifiedAt
+        ? 'verified'
+        : 'pending';
     return parsePrincipal({
       userId: row.userId,
       sessionId: row.id,
       tenantId: tenantView.active ? row.activeTenantId : null,
       branchId: tenantView.active ? tenantView.branchId : null,
       roles: tenantView.active ? tenantView.roles : [],
+      platformAdmin: factors.platformAdmin,
+      mfa,
     });
   }
 
   /** The current session as the client sees it (criterion 9: when it ends). */
   async view(principal: Principal): Promise<SessionView> {
-    const row = await this.#own(principal);
+    const row = await this.own(principal);
     const idleMinutes = (await this.#tenantView(principal.userId, principal.tenantId, null))
       .idleMinutes;
     const lastActive = row.lastActiveAt ?? row.createdAt;
     return {
       userId: principal.userId,
       sessionId: row.id,
+      platformAdmin: principal.platformAdmin,
+      mfa: principal.mfa,
+      mfaRequired: mustEnrolMfa(principal),
       tenantId: principal.tenantId,
       branchId: principal.branchId,
       roles: principal.roles
@@ -152,7 +188,7 @@ export class SessionsService {
 
   /** Ends one of the person's own sessions; 404 for any other id. */
   async endOne(principal: Principal, sessionId: string, requestId: string): Promise<void> {
-    const ended = await this.#end(principal.userId, [sessionId], 'ended', requestId);
+    const ended = await this.end(principal.userId, [sessionId], 'ended', requestId);
     if (ended === 0) throw new NotFoundException();
   }
 
@@ -169,7 +205,7 @@ export class SessionsService {
           ),
         ),
     );
-    return this.#end(
+    return this.end(
       principal.userId,
       rows.map((r) => r.id),
       'ended_others',
@@ -180,7 +216,7 @@ export class SessionsService {
   /** Ends the current session (sign-out). */
   async signOut(principal: Principal, requestId: string): Promise<void> {
     if (principal.sessionId) {
-      await this.#end(principal.userId, [principal.sessionId], 'sign_out', requestId);
+      await this.end(principal.userId, [principal.sessionId], 'sign_out', requestId);
     }
   }
 
@@ -195,11 +231,11 @@ export class SessionsService {
         .from(session)
         .where(eq(session.token, token)),
     );
-    if (row) await this.#end(row.userId, [row.id], 'replaced', requestId, actorId);
+    if (row) await this.end(row.userId, [row.id], 'replaced', requestId, actorId);
   }
 
   /** Deletes the person's sessions among `ids`, one audit row each, in one transaction. */
-  async #end(
+  async end(
     userId: string,
     ids: string[],
     reason: SessionEndReason,
@@ -226,7 +262,8 @@ export class SessionsService {
     });
   }
 
-  async #own(principal: Principal): Promise<SessionRow> {
+  /** The principal's own session row; SessionExpiredError when it is gone. */
+  async own(principal: Principal): Promise<SessionRow> {
     const id = principal.sessionId;
     const [row] = id
       ? await this.authDb.withAuth((tx) =>

@@ -13,14 +13,26 @@ export type SessionEndReason =
   | 'ended_others'
   | 'replaced'
   | 'idle'
-  | 'absolute';
+  | 'absolute'
+  | 'rotated'
+  /** A super admin ended every session of an owner (owner support, A-01a criterion 13). */
+  | 'admin';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
   | { event: 'auth.sign_in' }
   | { event: 'auth.sign_in_failed'; data: { reason: FailureReason } }
   | { event: 'auth.locked'; data: { kind: 'phone' | 'ip' } }
-  | { event: 'auth.session_ended'; data: { reason: SessionEndReason } };
+  | { event: 'auth.session_ended'; data: { reason: SessionEndReason } }
+  // A-01-03: setup links and MFA (target: the membership or person; never a token or code)
+  | { event: 'auth.link_used'; data: { purpose: 'owner_setup' | 'admin_setup' } }
+  | { event: 'auth.mfa_enrolled' }
+  | { event: 'auth.mfa_passed'; data: { method: 'totp' | 'recovery' } }
+  | { event: 'auth.mfa_locked' }
+  // Owner support by a super admin (actor), each also ending the owner's sessions.
+  | { event: 'auth.mfa_reset' }
+  | { event: 'auth.password_reset' }
+  | { event: 'auth.recovery_code_used' };
 
 export interface AuditIds {
   actorId: string | null;

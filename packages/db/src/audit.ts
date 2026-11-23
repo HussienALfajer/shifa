@@ -4,11 +4,14 @@
 
 /** Super-admin actions, written by withPlatformAdmin() with a null tenant. */
 export const PLATFORM_EVENTS = [
+  'clinic.listed',
+  'clinic.viewed',
   'clinic.created',
   'clinic.status_changed',
   'owner.link_issued',
   'owner.mfa_reset',
   'owner.sessions_ended',
+  'platform.admin_created',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 
@@ -18,7 +21,9 @@ export const AUTH_EVENTS = [
   'auth.sign_in_failed',
   'auth.locked',
   'auth.mfa_enrolled',
+  'auth.mfa_passed',
   'auth.mfa_reset',
+  'auth.password_reset',
   'auth.mfa_locked',
   'auth.recovery_code_used',
   'auth.link_used',

@@ -5,7 +5,7 @@ import type { Type } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test } from '@nestjs/testing';
 import { type Contract, defineContract, type HttpMethod } from '@shifa/contracts';
-import type { AuthDb, ShifaDb } from '@shifa/db';
+import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ROLE_GRANTS } from '../src/access/access.module.ts';
@@ -113,6 +113,14 @@ export function offlineAuthDb(): AuthDb {
   };
 }
 
+/** A platform database that must never be reached (apps without super-admin calls). */
+export function offlinePlatformDb(): PlatformDb {
+  return {
+    withPlatformAdmin: () => Promise.reject(new Error('offline test platform database')),
+    close: () => Promise.resolve(),
+  };
+}
+
 /** Test-only secrets: never used outside tests. */
 export const TEST_SECRETS = {
   betterAuthSecret: 'test-better-auth-secret-0123456789abcdef',
@@ -129,7 +137,9 @@ export interface TestApp {
 export async function buildTestApp({
   db,
   authDb = offlineAuthDb(),
+  platformDb = offlinePlatformDb(),
   clock,
+  clinicWebUrl,
   beforeInit,
   controllers = [],
   auth,
@@ -140,6 +150,10 @@ export async function buildTestApp({
   db: ShifaDb;
   /** shifa_auth handle for the identity module; offline by default. */
   authDb?: AuthDb;
+  /** shifa_platform handle for the super-admin API; offline by default. */
+  platformDb?: PlatformDb;
+  /** Origin of the clinic web app in setup links. */
+  clinicWebUrl?: string;
   /** Clock of the identity module (session limits, locks); the system clock by default. */
   clock?: Clock;
   /** Runs on the Fastify instance before the app initialises (raw-route tests). */
@@ -165,7 +179,9 @@ export async function buildTestApp({
       AppModule.register({
         db,
         authDb,
+        platformDb,
         secrets: TEST_SECRETS,
+        clinicWebUrl,
         ...(clock ? { clock } : {}),
         testRoutes,
       }),

@@ -22,7 +22,17 @@ export interface Principal {
   branchId: string | null;
   /** From server-side memberships of the active tenant only. */
   roles: readonly RoleAssignment[];
+  /** A super admin (platform_admin table); reaches @PlatformAdmin routes, never tenant data. */
+  platformAdmin: boolean;
+  /**
+   * The session's second factor: `none` (no TOTP enrolled), `pending` (enrolled, challenge not
+   * passed in this session), `verified` (passed in this session). A-01a criteria 11, 12.
+   */
+  mfa: MfaState;
 }
+
+export const MFA_STATES = ['none', 'pending', 'verified'] as const;
+export type MfaState = (typeof MFA_STATES)[number];
 
 const RoleAssignmentSchema = z.strictObject({
   role: z.enum(ROLES),
@@ -43,6 +53,8 @@ export const PrincipalSchema = z
     tenantId: z.uuid().nullable(),
     branchId: z.uuid().nullable(),
     roles: z.array(RoleAssignmentSchema),
+    platformAdmin: z.boolean(),
+    mfa: z.enum(MFA_STATES),
   })
   .refine((p) => p.tenantId !== null || p.branchId === null, { path: ['branchId'] })
   .refine((p) => p.roles.every((r) => r.tenantId === p.tenantId), { path: ['roles'] });
@@ -57,6 +69,23 @@ export function parsePrincipal(candidate: unknown): Principal {
   if (parsed.success) return parsed.data;
   const paths = [...new Set(parsed.error.issues.map((issue) => issue.path.join('.') || '(root)'))];
   throw new PrincipalError(`invalid principal at ${paths.sort().join(', ')}`);
+}
+
+/** Owners and super admins must enrol TOTP before anything else (A-01a criterion 11). */
+export function mustEnrolMfa(principal: Principal): boolean {
+  return principal.platformAdmin || principal.roles.some((r) => r.role === 'owner');
+}
+
+/**
+ * Why this principal may reach only @BeforeMfa routes, or null when it may go on: a session that
+ * has not passed the challenge, or an owner or super admin without TOTP.
+ */
+export function mfaBlock(
+  principal: Principal,
+): 'mfa_enrolment_required' | 'mfa_challenge_required' | null {
+  if (principal.mfa === 'pending') return 'mfa_challenge_required';
+  if (principal.mfa === 'none' && mustEnrolMfa(principal)) return 'mfa_enrolment_required';
+  return null;
 }
 
 export interface AccessScope {

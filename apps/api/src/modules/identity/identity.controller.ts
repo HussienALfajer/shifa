@@ -14,7 +14,13 @@ import {
   type SessionList,
   type SessionView,
 } from '@shifa/contracts';
-import { CurrentPrincipal, type Principal, Public, SignedIn } from '../../access/index.ts';
+import {
+  BeforeMfa,
+  CurrentPrincipal,
+  type Principal,
+  Public,
+  SignedIn,
+} from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
 import { CLEAR_SESSION_COOKIE, SESSION_COOKIE } from './session-cookie.ts';
@@ -48,6 +54,7 @@ export class IdentityController {
   }
 
   @SignedIn()
+  @BeforeMfa()
   @Contract(authSignOut)
   @HttpCode(204)
   @Post('sign-out')
@@ -59,7 +66,9 @@ export class IdentityController {
     request.setCookie(CLEAR_SESSION_COOKIE);
   }
 
+  /** Before MFA too: the client learns from it what the session still needs. */
   @SignedIn()
+  @BeforeMfa()
   @Contract(authSession)
   @Get('session')
   session(@CurrentPrincipal() principal: Principal): Promise<SessionView> {

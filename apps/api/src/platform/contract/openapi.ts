@@ -1,7 +1,8 @@
 // Builds the OpenAPI 3.1 document from the routes Nest registered and their contracts. Named Zod
 // schemas become components/schemas (Zod 4 z.toJSONSchema, draft 2020-12, which OpenAPI 3.1
 // uses); operations reference them by $ref. Each operation carries its access note: x-public,
-// x-signed-in or x-permission. No @nestjs/swagger and no documentation route.
+// x-signed-in (with x-before-mfa when reachable before the second factor), x-platform-admin or
+// x-permission. No @nestjs/swagger and no documentation route.
 import type { INestApplication } from '@nestjs/common';
 import {
   type Contract,
@@ -25,6 +26,8 @@ export interface OpenApiOperation {
   responses: Record<string, Json>;
   'x-public'?: true;
   'x-signed-in'?: true;
+  'x-platform-admin'?: true;
+  'x-before-mfa'?: true;
   'x-permission'?: string;
 }
 
@@ -54,10 +57,15 @@ const ref = (schema: z.ZodType): Json => {
   return { $ref: `${REF_PREFIX}${id}` };
 };
 
-/** x-public, x-signed-in or x-permission: the route's one access annotation. */
+/** x-public, x-signed-in, x-platform-admin or x-permission: the route's one access annotation. */
 function accessNote(route: RouteHandler): Partial<OpenApiOperation> {
   if (route.public) return { 'x-public': true };
-  if (route.signedIn) return { 'x-signed-in': true };
+  if (route.signedIn) {
+    return route.beforeMfa
+      ? { 'x-signed-in': true, 'x-before-mfa': true }
+      : { 'x-signed-in': true };
+  }
+  if (route.platformAdmin) return { 'x-platform-admin': true };
   return { 'x-permission': route.permission ?? '' };
 }
 
@@ -107,8 +115,9 @@ function operation(
   if (contract.request?.params || contract.request?.query || contract.request?.body) fallback(400);
   if (!route.public) {
     fallback(401);
-    // A signed-in route checks no permission, so it never answers 403.
-    if (!route.signedIn) fallback(403);
+    // A @BeforeMfa route checks neither a permission nor the second factor: it never answers
+    // 403. Every other authenticated route can (permission, super admin or the MFA gate).
+    if (!route.beforeMfa) fallback(403);
   }
   const params = parameters(contract, components);
   const body = contract.request?.body;

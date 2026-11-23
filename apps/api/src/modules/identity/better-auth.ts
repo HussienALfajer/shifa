@@ -2,9 +2,9 @@
 // only. Its catch-all handler is never mounted, so every identity route is a Nest controller
 // under the global guard (A-01a criterion 16). Gate results: docs/slices/A-01-02-*.md.
 import { Logger } from '@nestjs/common';
-import { type AuthDb, account, session, twoFactor, user, verification } from '@shifa/db';
+import { type AuthDb, account, session, user, verification } from '@shifa/db';
 import { betterAuth } from 'better-auth';
-import { phoneNumber, twoFactor as twoFactorPlugin } from 'better-auth/plugins';
+import { phoneNumber } from 'better-auth/plugins';
 import type { Clock } from '../../platform/clock.ts';
 import { scopedAuthAdapter } from './auth-adapter.ts';
 import { SESSION_ABSOLUTE_MS, SESSION_COOKIE } from './session-cookie.ts';
@@ -40,7 +40,7 @@ export function createShifaAuth(options: ShifaAuthOptions) {
     // The throttle service counts failures per phone and per IP (criterion 7).
     rateLimit: { enabled: false },
     logger: quietLogger(),
-    database: scopedAuthAdapter(authDb, { user, session, account, verification, twoFactor }),
+    database: scopedAuthAdapter(authDb, { user, session, account, verification }),
     emailAndPassword: { enabled: false, minPasswordLength: 10, maxPasswordLength: 128 },
     advanced: {
       database: { generateId: 'uuid' },
@@ -82,7 +82,9 @@ export function createShifaAuth(options: ShifaAuthOptions) {
         },
       },
     },
-    plugins: [phoneNumber(), twoFactorPlugin({ issuer: 'Shifa' })],
+    // No two-factor plugin: sign-in always gives a session, and MfaService decides what it may
+    // reach (A-01-03: the plugin keeps no last accepted step and has no skew hint).
+    plugins: [phoneNumber()],
   });
 }
 

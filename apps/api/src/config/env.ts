@@ -52,6 +52,7 @@ const KNOWN_KEYS = new Set([
   'AUTH_HMAC_KEY',
   'DATABASE_URL_AUTH',
   'DATABASE_URL_PLATFORM',
+  'CLINIC_WEB_URL',
 ]);
 
 /**
@@ -125,6 +126,11 @@ const identitySchema = z
     AUTH_HMAC_KEY: serverSecret(),
     DATABASE_URL_AUTH: postgresUrl(),
     DATABASE_URL_PLATFORM: postgresUrl(),
+    // Origin of the clinic web app (setup links point to <origin>/setup#<token>).
+    CLINIC_WEB_URL: z
+      .url({ protocol: /^https?$/ })
+      .regex(/^https?:\/\/[^/?#]+$/)
+      .optional(),
   })
   .refine((v) => v.BETTER_AUTH_SECRET !== v.AUTH_HMAC_KEY, { path: ['AUTH_HMAC_KEY'] });
 
@@ -136,8 +142,10 @@ export interface IdentityConfig {
   hmacKey: string;
   /** PostgreSQL URL of shifa_auth (createAuthDb()). */
   databaseUrlAuth: string;
-  /** PostgreSQL URL of shifa_platform (createPlatformDb(); used from A-01-03). */
+  /** PostgreSQL URL of shifa_platform (createPlatformDb(): the super-admin API). */
   databaseUrlPlatform: string;
+  /** Origin of the clinic web app for setup links; unset: the local development origin. */
+  clinicWebUrl: string | undefined;
 }
 
 const schema = z.object({
@@ -240,15 +248,24 @@ export function loadIdentityConfig(
     AUTH_HMAC_KEY: env['AUTH_HMAC_KEY'],
     DATABASE_URL_AUTH: env['DATABASE_URL_AUTH'],
     DATABASE_URL_PLATFORM: env['DATABASE_URL_PLATFORM'],
+    CLINIC_WEB_URL: env['CLINIC_WEB_URL'],
   });
   if (!parsed.success) {
     const keys = [...new Set(parsed.error.issues.map((issue) => String(issue.path[0])))].sort();
     throw new ConfigError(`missing or invalid configuration: ${keys.join(', ')}`);
+  }
+  // Deployed, setup links must reach the real clinic web app over https (review 6), never the
+  // local development default.
+  const clinicWebUrl = parsed.data.CLINIC_WEB_URL;
+  const deployed = DEPLOYED.has((env['DEPLOYMENT_ENVIRONMENT'] ?? '').trim().toLowerCase());
+  if (deployed && !clinicWebUrl?.startsWith('https://')) {
+    throw new ConfigError('missing or invalid configuration: CLINIC_WEB_URL');
   }
   return {
     betterAuthSecret: parsed.data.BETTER_AUTH_SECRET,
     hmacKey: parsed.data.AUTH_HMAC_KEY,
     databaseUrlAuth: parsed.data.DATABASE_URL_AUTH,
     databaseUrlPlatform: parsed.data.DATABASE_URL_PLATFORM,
+    clinicWebUrl,
   };
 }

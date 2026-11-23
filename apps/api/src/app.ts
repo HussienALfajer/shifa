@@ -3,7 +3,7 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import type { AuthDb, ShifaDb } from '@shifa/db';
+import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { AppModule } from './app.module.ts';
 import type { IdentitySecrets } from './modules/identity/index.ts';
@@ -61,6 +61,9 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
   });
   fastify.addHook('onSend', async (request, reply, payload) => {
     void reply.header(REQUEST_ID_HEADER, request.id);
+    // No answer is cached by a browser or proxy: some carry setup links, TOTP keys, recovery
+    // codes or session details (A-01-03 security review L7).
+    void reply.header('cache-control', 'no-store');
     return payload;
   });
   await app.init();
@@ -70,19 +73,23 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
 export async function createApp({
   db,
   authDb,
+  platformDb,
   secrets,
+  clinicWebUrl,
   logger,
   testRoutes = false,
 }: {
   db: ShifaDb;
   authDb: AuthDb;
+  platformDb: PlatformDb;
   secrets: IdentitySecrets;
+  clinicWebUrl?: string | undefined;
   logger: Logger;
   /** NODE_ENV=test only (config.testRoutes): registers platform/test-support.ts. */
   testRoutes?: boolean;
 }): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule.register({ db, authDb, secrets, testRoutes }),
+    AppModule.register({ db, authDb, platformDb, secrets, clinicWebUrl, testRoutes }),
     createAdapter(logger),
     // From the first line on, so errors while Nest builds providers also go through pino.
     { logger: new NestPinoLogger(logger) },

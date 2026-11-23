@@ -9,6 +9,9 @@ export const IDENTITY_CONFIG = Symbol('IDENTITY_CONFIG');
 /** The Better Auth instance (better-auth.ts). */
 export const BETTER_AUTH = Symbol('BETTER_AUTH');
 
+/** Origin of the clinic web app; setup links point to `<origin>/setup#<token>`. */
+export const CLINIC_WEB_URL = Symbol('CLINIC_WEB_URL');
+
 export interface IdentitySecrets {
   /** BETTER_AUTH_SECRET: signs the session cookie. */
   betterAuthSecret: string;

@@ -16,6 +16,8 @@ const valid = {
   tenantId: TENANT,
   branchId: BRANCH,
   roles: [{ role: 'owner', tenantId: TENANT, branchId: null }],
+  platformAdmin: false,
+  mfa: 'verified',
 };
 
 describe('PrincipalSchema (AuthPort contract)', () => {
@@ -39,6 +41,8 @@ describe('PrincipalSchema (AuthPort contract)', () => {
     ['roles without an active tenant', { ...valid, tenantId: null, branchId: null }],
     ['an unknown role', { ...valid, roles: [{ role: 'root', tenantId: TENANT, branchId: null }] }],
     ['an extra field (a phone, a token)', { ...valid, phone: '+963940012345' }],
+    ['an unknown MFA state', { ...valid, mfa: 'skipped' }],
+    ['no platform-admin flag', { ...valid, platformAdmin: undefined }],
   ])('refuses %s', (_label, candidate) => {
     expect(PrincipalSchema.safeParse(candidate).success).toBe(false);
   });

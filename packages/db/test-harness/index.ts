@@ -233,12 +233,23 @@ export function testAuthDb(): AuthDb {
   return authHandle;
 }
 
-/** `createPlatformDb()` as shifa_platform on this worker's database, shared within a file. */
+/**
+ * `createPlatformDb()` as shifa_platform on this worker's database, shared within a file until
+ * someone closes it (an app under test owns and closes its handle at shutdown, A-01-03); the
+ * next call then opens a new one.
+ */
 export function testPlatformDb(): PlatformDb {
   if (!platformHandle) {
     const db = createPlatformDb(urlFor(info(), 'platform', workerDatabaseName()));
     closers.push(() => db.close());
-    platformHandle = db;
+    const handle: PlatformDb = {
+      withPlatformAdmin: (action, fn) => db.withPlatformAdmin(action, fn),
+      close: () => {
+        if (platformHandle === handle) platformHandle = undefined;
+        return db.close();
+      },
+    };
+    platformHandle = handle;
   }
   return platformHandle;
 }
