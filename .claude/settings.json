@@ -25,7 +25,16 @@
   "sandbox": {
     "enabled": true,
     "allowUnsandboxedCommands": false,
-    "excludedCommands": ["docker *"],
+    "excludedCommands": [
+      "docker *",
+      "git commit *",
+      "git push *",
+      "git merge *",
+      "git rebase *",
+      "git cherry-pick *",
+      "git revert *",
+      "git pull *"
+    ],
     "filesystem": {
       "denyRead": ["~/.ssh", "~/.claude/.credentials.json", "//mnt/c", "//mnt/d"],
       "allowWrite": ["//opt/flutter/bin/cache", "~/.dart-tool"]

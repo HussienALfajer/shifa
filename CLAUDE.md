@@ -59,6 +59,6 @@ End every substantial task with these sections, in this order:
 
 ## Gotchas
 - WSL2 (Ubuntu 26.04, repo in `~/src/shifa`) is primary and sandboxed; setup in `docs/process/wsl2-setup.md`. Windows (`D:\shifa`, Git Bash) is the unsandboxed fallback.
-- Cloud sessions (claude.ai/code): `docs/process/cloud-sessions.md`. Docker and Flutter steps of `verify` cannot run in the sandbox there, so CI is the gate; commits, pushes and PRs go through the GitHub MCP tools, not `git push` or `gh`.
+- Cloud sessions (claude.ai/code): `docs/process/cloud-sessions.md`. Docker and Flutter steps of `verify` cannot run in the sandbox there, so CI is the gate; `git commit` and `git push` run outside the sandbox (OD-75), PRs go through the GitHub MCP tools, not `gh`.
 - TypeScript stays on 6.0 until typescript-eslint supports 7.
 - Workspace packages import `.ts` paths directly (`allowImportingTsExtensions`, no build step yet).

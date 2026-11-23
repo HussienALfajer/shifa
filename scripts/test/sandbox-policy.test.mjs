@@ -21,8 +21,21 @@ const ALLOWED_DOMAINS = [
   'storage.googleapis.com', // Flutter engine artifacts, pub package archives
 ];
 
-/** Commands that run outside the sandbox (OD-49): the docker CLI only, typed directly. */
-const EXCLUDED_COMMANDS = ['docker *'];
+/**
+ * Commands that run outside the sandbox, typed directly: the docker CLI (OD-49), and the git
+ * commands that sign a commit or authenticate a push through the cloud container's local
+ * services (OD-75).
+ */
+const EXCLUDED_COMMANDS = [
+  'docker *',
+  'git commit *',
+  'git push *',
+  'git merge *',
+  'git rebase *',
+  'git cherry-pick *',
+  'git revert *',
+  'git pull *',
+];
 
 /** Writable paths outside the project (OD-49): Flutter rewrites its cache and ~/.dart-tool. */
 const ALLOWED_WRITES = ['//opt/flutter/bin/cache', '~/.dart-tool'];
@@ -76,7 +89,7 @@ describe('sandbox policy', () => {
     }
   });
 
-  it('excludes exactly the listed commands (OD-49)', () => {
+  it('excludes exactly the listed commands (OD-49, OD-75)', () => {
     assert.deepEqual(sandbox.excludedCommands ?? [], EXCLUDED_COMMANDS);
   });
 
