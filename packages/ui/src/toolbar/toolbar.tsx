@@ -3,7 +3,9 @@
 // one Tab stop. Roving focus comes from UI SDK's Toolbar: the arrows follow the reading direction
 // (Left is next in Arabic), Home and End reach the ends, no wrapping, a disabled button is skipped.
 // Groups are split by vertical separators. When the strip is too narrow, the last buttons move
-// into a «المزيد» menu (our Menu, 0.4-04), measured with a ResizeObserver.
+// into a «المزيد» menu (our Menu, 0.4-04), measured with a ResizeObserver. A button's label stays
+// on one line, at most size.toolbar-label (150 px) wide, cut with an ellipsis; the full label is
+// the button's name and shows in a tooltip while it is cut (slice 0.4-12, OD-66).
 import { MenuTrigger as BaseMenuTrigger } from '@ui-sdk/react/menu';
 import {
   Toolbar as BaseToolbar,
@@ -25,7 +27,9 @@ import {
 import { buttonClasses } from '../button/button.tsx';
 import { Icon, type IconName } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
+import { useOverflow } from '../lib/use-overflow.ts';
 import { Menu, MenuContent, MenuItem } from '../menu/menu.tsx';
+import { Tooltip } from '../tooltip/tooltip.tsx';
 
 interface Entry {
   label: string;
@@ -227,6 +231,7 @@ export function ToolbarButton({
 }: ToolbarButtonProps) {
   const context = useContext(ToolbarContext);
   const id = useId();
+  const [labelRef, cut] = useOverflow();
   const register = context?.register;
   useLayoutEffect(() => {
     if (register === undefined) return undefined;
@@ -244,18 +249,26 @@ export function ToolbarButton({
   }, [register, id, children, icon, disabled, onClick]);
   if (context?.hidden.has(id) === true) return <span data-toolbar-slot={id} hidden />;
   return (
-    <BaseToolbarButton
-      data-toolbar-id={id}
-      data-toolbar-slot={id}
-      disabled={disabled}
-      focusableWhenDisabled={false}
-      {...(pressed === undefined ? {} : { 'aria-pressed': pressed })}
-      {...(onClick === undefined ? {} : { onClick })}
-      className={ITEM}
-    >
-      {icon !== undefined && <Icon name={icon} />}
-      {children}
-    </BaseToolbarButton>
+    <Tooltip content={children} disabled={!cut}>
+      <BaseToolbarButton
+        data-toolbar-id={id}
+        data-toolbar-slot={id}
+        disabled={disabled}
+        focusableWhenDisabled={false}
+        {...(pressed === undefined ? {} : { 'aria-pressed': pressed })}
+        {...(onClick === undefined ? {} : { onClick })}
+        className={ITEM}
+      >
+        {icon !== undefined && <Icon name={icon} className="shrink-0" />}
+        <span
+          ref={labelRef}
+          data-slot="toolbar-label"
+          className="min-w-0 max-w-(--shifa-size-toolbar-label) truncate"
+        >
+          {children}
+        </span>
+      </BaseToolbarButton>
+    </Tooltip>
   );
 }
 

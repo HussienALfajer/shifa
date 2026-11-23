@@ -40,6 +40,7 @@ abstract final class ShifaTokens {
   static const double width100 = 400;
   static const double width120 = 480;
   static const double width140 = 560;
+  static const double width375 = 150;
   static const double radiusNone = 0;
   static const double radiusXs = 4;
   static const double radiusSm = 8;
@@ -88,6 +89,7 @@ abstract final class ShifaTokens {
   static const double sizePopover = 320;
   static const double sizeDialog = 480;
   static const double sizeTooltip = 240;
+  static const double sizeToolbarLabel = 150;
   static const double sizeToast = 360;
   static const double sizeDrawer = 400;
   static const double sizeCommand = 560;

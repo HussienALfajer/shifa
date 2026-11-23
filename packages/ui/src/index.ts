@@ -149,6 +149,7 @@ export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
 export {
   type PageItem,
   Pagination,
+  type PaginationCopy,
   type PaginationProps,
   pageItems,
 } from './pagination/pagination.tsx';

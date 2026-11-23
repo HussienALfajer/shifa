@@ -226,6 +226,7 @@
   --shifa-width-100: 400px;
   --shifa-width-120: 480px;
   --shifa-width-140: 560px;
+  --shifa-width-37-5: 150px;
   --shifa-radius-none: 0px;
   --shifa-radius-xs: 4px;
   --shifa-radius-sm: 8px;
@@ -279,6 +280,7 @@
   --shifa-size-popover: 320px;
   --shifa-size-dialog: 480px;
   --shifa-size-tooltip: 240px;
+  --shifa-size-toolbar-label: 150px;
   --shifa-size-toast: 360px;
   --shifa-size-drawer: 400px;
   --shifa-size-command: 560px;
