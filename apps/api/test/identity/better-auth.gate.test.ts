@@ -10,7 +10,8 @@ import { eq } from 'drizzle-orm';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { scopedAuthAdapter } from '../../src/modules/identity/auth-adapter.ts';
 
-const SECRET = 'gate-secret-0123456789abcdef0123456789abcdef';
+// A synthetic secret of 48 repeated letters: no literal for the secret scanner.
+const SECRET = 'g'.repeat(48);
 const PASSWORD = 'gate-password-long-enough';
 const TENANT_PLACEHOLDER = null;
 

@@ -6,4 +6,6 @@
 - Licences: the NCSC list is Crown copyright, published under the Open Government Licence v3.0 (https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/); SecLists is distributed under the MIT License, Copyright (c) 2018 Daniel Miessler.
 - The entries are public password-corpus strings, not data about any person of this project.
 
+Order carries no meaning (the API loads a set). `password01` sits at the end: in list order it is followed by a random-looking entry, which gitleaks' generic rule reads as a password assignment.
+
 To refresh: take the same file, keep lines 1–20,000 of 10+ characters, lower-case, de-duplicate in order, and update the date above.

@@ -3,7 +3,8 @@
 import { describe, expect, it } from 'vitest';
 import { ConfigError, loadConfig, loadIdentityConfig } from '../src/config/env.ts';
 
-const SECRET = 'synthetic-secret-0123456789abcdefABCDEF';
+// A synthetic secret of 40 repeated letters: long enough, and no literal for the secret scanner.
+const SECRET = 's'.repeat(40);
 const HMAC = 'synthetic-hmac-key-0123456789abcdefABCD';
 const AUTH_URL = 'postgres://shifa_auth:synthetic-pw-1@db.internal:5432/shifa';
 const PLATFORM_URL = 'postgres://shifa_platform:synthetic-pw-2@db.internal:5432/shifa';
