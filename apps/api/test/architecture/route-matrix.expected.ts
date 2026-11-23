@@ -70,6 +70,10 @@ export interface SampleContext {
    * with a known key) and returns the current code. Anonymous callers: no-op.
    */
   totp(state: 'none' | 'unconfirmed' | 'enrolled'): Promise<string>;
+  /** A fresh member of the callers' clinic (TENANT_A), pending or deactivated (A-01-04). */
+  memberId(status?: 'pending' | 'deactivated'): Promise<string>;
+  /** A fresh invitation to TENANT_B for the calling person's phone; its token. */
+  invitationToken(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -123,6 +127,42 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'POST /platform/clinics/:id/owner/end-sessions': (ctx) => ({
     url: `/platform/clinics/${ctx.clinicId}/owner/end-sessions`,
   }),
+  'GET /team/members/:id': async (ctx) => ({ url: `/team/members/${await ctx.memberId()}` }),
+  'POST /team/members': (ctx) => ({
+    body: {
+      name: 'موظف المصفوفة',
+      phone: ctx.nextPhone(),
+      roles: [{ role: 'receptionist', branchId: null }],
+    },
+  }),
+  'PATCH /team/members/:id': async (ctx) => ({
+    url: `/team/members/${await ctx.memberId()}`,
+    body: { roles: [{ role: 'doctor', branchId: null }] },
+  }),
+  'POST /team/members/:id/deactivate': async (ctx) => ({
+    url: `/team/members/${await ctx.memberId()}/deactivate`,
+  }),
+  'POST /team/members/:id/reactivate': async (ctx) => ({
+    url: `/team/members/${await ctx.memberId('deactivated')}/reactivate`,
+  }),
+  'POST /team/members/:id/setup-link': async (ctx) => ({
+    url: `/team/members/${await ctx.memberId()}/setup-link`,
+  }),
+  'PATCH /clinic/settings': () => ({ body: { idleMinutes: 30 } }),
+  'POST /invitations/view': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
+  'POST /invitations/accept': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
+  'POST /invitations/decline': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
+};
+
+/** @RequirePermission of an owner key (members.*, clinic.settings.manage; A-01-04). */
+const ownerOnly: MatrixRow = {
+  anonymous: 401,
+  owner: 200,
+  doctor: 403,
+  receptionist: 403,
+  assistant: 403,
+  accountant: 403,
+  platform_admin: 403,
 };
 
 /** Routes that exist only when NODE_ENV=test; never in production or the OpenAPI document. */
@@ -154,6 +194,21 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /platform/clinics/:id/owner/setup-link': platformAdmin,
   'POST /platform/clinics/:id/owner/reset-mfa': platformAdmin,
   'POST /platform/clinics/:id/owner/end-sessions': platformAdmin,
+  // team (A-01-04): members.view / members.manage, owner only
+  'GET /team/members': ownerOnly,
+  'GET /team/members/:id': ownerOnly,
+  'POST /team/members': ownerOnly,
+  'PATCH /team/members/:id': ownerOnly,
+  'POST /team/members/:id/deactivate': ownerOnly,
+  'POST /team/members/:id/reactivate': ownerOnly,
+  'POST /team/members/:id/setup-link': ownerOnly,
+  // clinic settings (A-01a criterion 9): clinic.settings.manage
+  'GET /clinic/settings': ownerOnly,
+  'PATCH /clinic/settings': ownerOnly,
+  // invitations (A-01-04): the token is the credential to view; answering needs a session
+  'POST /invitations/view': everyone,
+  'POST /invitations/accept': signedIn,
+  'POST /invitations/decline': signedIn,
   // probe
   'GET /__probe/public': everyone,
   'GET /__probe/read': {
@@ -171,6 +226,16 @@ export const EXPECTED_MATRIX: Matrix = {
     doctor: 403,
     receptionist: 403,
     assistant: 403,
+    accountant: 403,
+    platform_admin: 403,
+  },
+  // the sensitive key clinical.notes.view by role default (toggles: test/access/catalogue.test.ts)
+  'GET /__probe/notes': {
+    anonymous: 401,
+    owner: 403,
+    doctor: 200,
+    receptionist: 403,
+    assistant: 200,
     accountant: 403,
     platform_admin: 403,
   },

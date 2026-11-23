@@ -66,7 +66,15 @@ enum ErrorCode {
   @JsonValue('clock_skew')
   clockSkew('clock_skew'),
   @JsonValue('owner_setup_pending')
-  ownerSetupPending('owner_setup_pending');
+  ownerSetupPending('owner_setup_pending'),
+  @JsonValue('last_owner')
+  lastOwner('last_owner'),
+  @JsonValue('phone_in_team')
+  phoneInTeam('phone_in_team'),
+  @JsonValue('account_shared')
+  accountShared('account_shared'),
+  @JsonValue('permission_not_sensitive')
+  permissionNotSensitive('permission_not_sensitive');
 
   const ErrorCode(this.json);
 

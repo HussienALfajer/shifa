@@ -14,7 +14,14 @@ import {
 import type { Principal } from '../../src/access/principal.ts';
 import { Contract } from '../../src/platform/contract/index.ts';
 import { buildTestApp, offlineDb, type TestApp, testContract } from '../support.ts';
-import { HeaderAuthAdapter, headersFor, principalFor, TEST_GRANTS, TEST_READ } from './probe.ts';
+import {
+  HeaderAuthAdapter,
+  headersFor,
+  principalFor,
+  TEST_GRANTS,
+  TEST_PERMISSIONS,
+  TEST_READ,
+} from './probe.ts';
 
 @Controller('__mfa')
 class MfaProbeController {
@@ -89,6 +96,7 @@ beforeAll(async () => {
     controllers: [MfaProbeController],
     auth: new HeaderAuthAdapter(),
     grants: TEST_GRANTS,
+    permissions: TEST_PERMISSIONS,
   });
 });
 

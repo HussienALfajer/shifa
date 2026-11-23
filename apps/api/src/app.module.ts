@@ -1,6 +1,6 @@
 import { type DynamicModule, Module } from '@nestjs/common';
 import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
-import { AccessModule } from './access/index.ts';
+import { AccessModule, type PermissionDefinition } from './access/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
   BetterAuthAdapter,
@@ -8,6 +8,7 @@ import {
   type IdentitySecrets,
 } from './modules/identity/index.ts';
 import { PlatformModule } from './modules/platform/index.ts';
+import { TeamModule } from './modules/team/index.ts';
 import type { Clock } from './platform/clock.ts';
 import { ContractModule } from './platform/contract/index.ts';
 import { DatabaseModule } from './platform/database.module.ts';
@@ -24,6 +25,7 @@ export class AppModule {
     secrets,
     clock,
     clinicWebUrl,
+    permissions,
     testRoutes = false,
   }: {
     db: ShifaDb;
@@ -36,6 +38,8 @@ export class AppModule {
     clock?: Clock;
     /** Origin of the clinic web app, for setup links. */
     clinicWebUrl?: string | undefined;
+    /** The permission catalogue; production's by default (tests add their own keys). */
+    permissions?: readonly PermissionDefinition[] | undefined;
     testRoutes?: boolean;
   }): DynamicModule {
     const identity = IdentityModule.register({
@@ -50,7 +54,12 @@ export class AppModule {
         DatabaseModule.register(db),
         identity,
         PlatformModule.register({ platformDb, identity }),
-        AccessModule.register({ imports: [identity], authPort: BetterAuthAdapter }),
+        AccessModule.register({
+          imports: [identity],
+          authPort: BetterAuthAdapter,
+          ...(permissions ? { permissions } : {}),
+        }),
+        TeamModule.register({ identity }),
         ContractModule,
         HealthModule,
         ...(testRoutes ? [TestSupportModule] : []),

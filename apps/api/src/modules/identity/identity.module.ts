@@ -8,7 +8,10 @@ import { BetterAuthAdapter } from './better-auth.adapter.ts';
 import { createShifaAuth } from './better-auth.ts';
 import { IdentityController } from './identity.controller.ts';
 import { IdentityAudit } from './identity-audit.ts';
+import { InvitationsController } from './invitations.controller.ts';
+import { InvitationsService } from './invitations.service.ts';
 import { DEFAULT_CLINIC_WEB_URL } from './links.ts';
+import { MemberAccounts } from './member-accounts.service.ts';
 import { MfaService } from './mfa.service.ts';
 import { OnboardingController } from './onboarding.controller.ts';
 import { OwnerAccounts } from './owner-accounts.service.ts';
@@ -46,7 +49,7 @@ export class IdentityModule implements OnApplicationShutdown {
   }: IdentityModuleOptions): DynamicModule {
     return {
       module: IdentityModule,
-      controllers: [IdentityController, OnboardingController],
+      controllers: [IdentityController, OnboardingController, InvitationsController],
       providers: [
         { provide: AUTH_DB, useValue: authDb },
         { provide: IDENTITY_CONFIG, useValue: secrets },
@@ -71,9 +74,11 @@ export class IdentityModule implements OnApplicationShutdown {
         SetupLinksService,
         MfaService,
         OwnerAccounts,
+        MemberAccounts,
+        InvitationsService,
         BetterAuthAdapter,
       ],
-      exports: [BetterAuthAdapter, OwnerAccounts, CLOCK],
+      exports: [BetterAuthAdapter, OwnerAccounts, MemberAccounts, CLOCK],
     };
   }
 

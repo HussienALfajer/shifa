@@ -1,20 +1,26 @@
 // Test-only access fixtures: the test permission catalogue, grants for it, a header-driven
 // AuthPort and a probe controller with one route per access kind. Nothing here is reachable from
-// src/: production grants stay empty and production auth authenticates nobody.
+// src/: test keys join the catalogue only through `buildTestApp({ permissions })`.
 import { Controller, Get } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
 import type { AuthPort } from '../../src/access/auth.port.ts';
 import { Public, RequirePermission } from '../../src/access/decorators.ts';
-import type { PermissionKey } from '../../src/access/permissions.ts';
+import type { PermissionDefinition, PermissionKey } from '../../src/access/permissions.ts';
 import type { Principal, RoleAssignment } from '../../src/access/principal.ts';
 import { ROLES, type Role, type RoleGrants } from '../../src/access/roles.ts';
 import { Contract } from '../../src/platform/contract/index.ts';
 import { testContract } from '../support.ts';
 
-/** Test keys exist only in this file; production has no permission keys yet. */
+/** Test keys exist only in this file; production keys are in src/access/permissions.ts. */
 // Double cast: keeps compiling once PERMISSIONS lists real keys.
 export const TEST_READ = 'test.read' as unknown as PermissionKey;
 export const TEST_SENSITIVE = 'test.sensitive' as unknown as PermissionKey;
+
+/** The test keys, added to the production catalogue with `buildTestApp({ permissions })`. */
+export const TEST_PERMISSIONS: readonly PermissionDefinition[] = [
+  { key: 'test.read', sensitive: false },
+  { key: 'test.sensitive', sensitive: false },
+];
 
 export const TEST_GRANTS: RoleGrants = {
   owner: [TEST_READ, TEST_SENSITIVE],
@@ -85,6 +91,14 @@ export class ProbeController {
   @Contract(testContract('GET', '/__probe/sensitive'))
   @Get('sensitive')
   sensitive(): { ok: true } {
+    return { ok: true };
+  }
+
+  /** A production sensitive key (A-01b criterion 7): toggled per member. */
+  @RequirePermission('clinical.notes.view')
+  @Contract(testContract('GET', '/__probe/notes'))
+  @Get('notes')
+  notes(): { ok: true } {
     return { ok: true };
   }
 }

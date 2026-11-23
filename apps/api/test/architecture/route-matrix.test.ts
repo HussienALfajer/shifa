@@ -1,8 +1,15 @@
 // Calls every registered route as every caller and compares the status class with the committed
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
 import { randomBytes, randomUUID } from 'node:crypto';
-import { createClinic, session, twoFactor } from '@shifa/db';
-import { fixtureId, syntheticPhones, testAuthDb, testDb, testPlatformDb } from '@shifa/db/testing';
+import { createClinic, membership, roleAssignment, session, setupLink, twoFactor } from '@shifa/db';
+import {
+  createTestTenants,
+  fixtureId,
+  syntheticPhones,
+  testAuthDb,
+  testDb,
+  testPlatformDb,
+} from '@shifa/db/testing';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AUTH_PORT } from '../../src/access/auth.port.ts';
@@ -17,7 +24,10 @@ import {
   headersFor,
   ProbeController,
   principalFor,
+  TENANT_A,
+  TENANT_B,
   TEST_GRANTS,
+  TEST_PERMISSIONS,
 } from '../access/probe.ts';
 import { PASSWORD, seedPerson } from '../identity/support.ts';
 import { totpAt } from '../identity/totp.ts';
@@ -104,10 +114,58 @@ async function totpState(
   return code;
 }
 
+/** The phone of each seeded caller (invitations are for the caller's own phone). */
+const phonesOf = new Map<Caller, string>();
+
+/** A fresh member of the callers' clinic (A-01-04 routes). */
+async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): Promise<string> {
+  const id = randomUUID();
+  await testDb().withTenant({ tenantId: TENANT_A, userId: fixtureId('matrix seeder') }, (tx) =>
+    tx.insert(membership).values({
+      id,
+      tenantId: TENANT_A,
+      phoneE164: nextPhone(),
+      displayName: 'موظف المصفوفة',
+      status,
+    }),
+  );
+  return id;
+}
+
+/**
+ * A fresh invitation for `phone` (any phone for anonymous callers), in a new clinic each time:
+ * a phone is a member of a clinic once.
+ */
+async function invitationFor(phone: string | undefined): Promise<string> {
+  const { token, hash } = newLinkToken();
+  const id = randomUUID();
+  const { clinicId: tenantId } = await clinicWithLink();
+  await testDb().withTenant({ tenantId, userId: fixtureId('matrix seeder') }, async (tx) => {
+    await tx.insert(membership).values({
+      id,
+      tenantId,
+      phoneE164: phone ?? nextPhone(),
+      displayName: 'مدعو المصفوفة',
+    });
+    await tx.insert(roleAssignment).values({ tenantId, membershipId: id, role: 'doctor' });
+    await tx.insert(setupLink).values({
+      tenantId,
+      membershipId: id,
+      purpose: 'invitation',
+      tokenHash: hash,
+      expiresAt: new Date(Date.now() + 3_600_000),
+    });
+  });
+  return token;
+}
+
 async function seedPeople(): Promise<void> {
+  // The callers' clinic (principalFor: TENANT_A) and a clinic that invites them (TENANT_B).
+  await createTestTenants(TENANT_A, TENANT_B);
   const phones = syntheticPhones(2026_11_13, ROLES.length + 1);
   for (const [i, role] of ROLES.entries()) {
     people.set(role, (await seedPerson(phones[i] ?? '')).userId);
+    phonesOf.set(role, phones[i] ?? '');
   }
   const phone = phones[ROLES.length] ?? '';
   await seedPerson(phone);
@@ -145,6 +203,8 @@ async function observe(app: TestApp): Promise<Observed> {
         nextPhone,
         newLinkToken: async () => (await clinicWithLink()).token,
         totp: (state) => totpState(userId, state),
+        memberId: (status) => memberOfTenantA(status),
+        invitationToken: () => invitationFor(phonesOf.get(caller)),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =
@@ -212,6 +272,7 @@ beforeAll(async () => {
     controllers: [ProbeController],
     auth: new HeaderAuthAdapter(),
     grants: TEST_GRANTS,
+    permissions: TEST_PERMISSIONS,
     testRoutes: true,
   });
   withProductionAuth = await buildTestApp({
@@ -219,6 +280,7 @@ beforeAll(async () => {
     authDb: testAuthDb(),
     platformDb: testPlatformDb(),
     controllers: [ProbeController],
+    permissions: TEST_PERMISSIONS,
     testRoutes: true,
   });
   observed = await observe(withTestAuth);

@@ -131,7 +131,8 @@ describe('setup link use rules', () => {
     ['an expired link', sql`update setup_link set expires_at = now() - interval '1 minute'`],
     ['a replaced link', sql`update setup_link set replaced_at = now()`],
   ])('cannot mark %s used', async (_what, change) => {
-    await testDb().withTenant({ tenantId: T1, userId: U1 }, (tx) => tx.execute(change));
+    // Set up as the superuser: shifa_app may only mark links replaced since A-01-04.
+    await superuserDb(workerDatabaseName()).execute(change);
     const { rowCount } = await testAuthDb().withSetupLink(HASH, (tx) =>
       tx.execute(sql`update setup_link set used_at = now()`),
     );

@@ -8,7 +8,7 @@ import {
   type OpenApiDocument,
   serializeDocument,
 } from '../../src/platform/contract/openapi.ts';
-import { ProbeController } from '../access/probe.ts';
+import { ProbeController, TEST_PERMISSIONS } from '../access/probe.ts';
 import { EXPECTED_MATRIX, TEST_ONLY_ROUTES } from '../architecture/route-matrix.expected.ts';
 import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
 import { ContractProbeController } from './probe.ts';
@@ -63,6 +63,7 @@ beforeAll(async () => {
   probes = await buildTestApp({
     db: offlineDb(),
     controllers: [ProbeController, ContractProbeController],
+    permissions: TEST_PERMISSIONS,
   });
   production = await buildTestApp({ db: offlineDb() });
   doc = buildOpenApiDocument(probes.app);
@@ -233,13 +234,22 @@ describe('OpenAPI document', () => {
       '/auth/setup-link/view',
       '/auth/sign-in',
       '/auth/sign-out',
+      '/clinic/settings',
       '/health/live',
       '/health/ready',
+      '/invitations/accept',
+      '/invitations/decline',
+      '/invitations/view',
       '/platform/clinics',
       '/platform/clinics/{id}',
       '/platform/clinics/{id}/owner/end-sessions',
       '/platform/clinics/{id}/owner/reset-mfa',
       '/platform/clinics/{id}/owner/setup-link',
+      '/team/members',
+      '/team/members/{id}',
+      '/team/members/{id}/deactivate',
+      '/team/members/{id}/reactivate',
+      '/team/members/{id}/setup-link',
     ]);
     expect(Object.keys(prod.components.schemas).some((n) => n.startsWith('Probe'))).toBe(false);
   });

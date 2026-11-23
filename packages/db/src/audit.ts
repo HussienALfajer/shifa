@@ -34,6 +34,7 @@ export const AUTH_EVENTS = [
 export const TENANT_EVENTS = [
   'member.added',
   'member.invitation_accepted',
+  'member.invitation_declined',
   'member.roles_changed',
   'member.permissions_changed',
   'member.deactivated',

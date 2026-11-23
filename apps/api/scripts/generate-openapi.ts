@@ -30,6 +30,7 @@ const authDb: AuthDb = {
   withAuth: refuse,
   withUser: refuse,
   withSetupLink: refuse,
+  withUserLink: refuse,
   close: () => Promise.resolve(),
 };
 const platformDb: PlatformDb = {

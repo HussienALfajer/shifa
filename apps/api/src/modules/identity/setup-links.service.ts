@@ -7,8 +7,12 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { SessionView, SetupLinkView } from '@shifa/contracts';
 import {
   type AuthDb,
+  branch,
   membership,
   platformAdmin,
+  type Role,
+  roleAssignment,
+  type ShifaDb,
   session,
   setupLink,
   type Tx,
@@ -18,7 +22,9 @@ import {
 } from '@shifa/db';
 import { hashPassword } from 'better-auth/crypto';
 import { and, eq, gt, isNull } from 'drizzle-orm';
+import { linkScope, withScope } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
+import { SHIFA_DB } from '../../platform/database.module.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { createPerson, setPassword, userIdByPhone } from './accounts.ts';
 import { IdentityAudit } from './identity-audit.ts';
@@ -32,6 +38,7 @@ type Found =
   | {
       kind: 'clinic';
       linkId: string;
+      tenantId: string;
       purpose: 'owner_setup' | 'member_setup' | 'invitation';
       membershipId: string;
       boundUserId: string | null;
@@ -57,7 +64,20 @@ const PASSWORD_ERRORS: Record<PasswordProblem, ApiError> = {
   contains_phone: new ApiError(400, 'password_contains_phone'),
 };
 
-const linkInvalid = () => new ApiError(404, 'link_invalid');
+export const linkInvalid = () => new ApiError(404, 'link_invalid');
+
+export type ClinicLink = Extract<Found, { kind: 'clinic' }>;
+
+export interface LinkRole {
+  role: Role;
+  branchName: string | null;
+}
+
+/** A link page has no signed-in person: `app.user_id` is the nil UUID there (reads only). */
+const NO_USER = '00000000-0000-0000-0000-000000000000';
+
+/** The role a setup page names first. */
+const ROLE_ORDER: readonly Role[] = ['owner', 'doctor', 'assistant', 'receptionist', 'accountant'];
 
 export interface ConsumeMeta {
   requestId: string;
@@ -72,6 +92,7 @@ export class SetupLinksService {
     @Inject(IdentityAudit) private readonly audit: IdentityAudit,
     @Inject(SessionsService) private readonly sessions: SessionsService,
     @Inject(SessionIssuer) private readonly issuer: SessionIssuer,
+    @Inject(SHIFA_DB) private readonly db: ShifaDb,
   ) {}
 
   async view(token: string): Promise<SetupLinkView> {
@@ -85,11 +106,13 @@ export class SetupLinksService {
         expiresAt: found.expiresAt.toISOString(),
       };
     }
+    const roles = await this.#roles(found);
+    const role = roles[0]?.role;
+    if (!role) throw linkInvalid();
     return {
       clinicName: found.clinicName,
       personName: found.personName,
-      // Only owner links exist before A-01-04 (member links and invitations of staff).
-      role: 'owner',
+      role,
       purpose: found.purpose,
       expiresAt: found.expiresAt.toISOString(),
     };
@@ -101,8 +124,8 @@ export class SetupLinksService {
     meta: ConsumeMeta,
   ): Promise<{ view: SessionView; cookie: string }> {
     const found = await this.#find(token);
-    // An invitation is accepted by a signed-in person (A-01-04), never by setting a password.
-    if (found.kind === 'clinic' && found.purpose !== 'owner_setup') {
+    // An invitation is accepted by a signed-in person (/invitations), never by a password.
+    if (found.kind === 'clinic' && found.purpose === 'invitation') {
       throw new ApiError(409, 'conflict');
     }
     const problem = checkPasswordRules(password, found.phoneE164);
@@ -126,7 +149,13 @@ export class SetupLinksService {
     requestId: string,
   ): Promise<string> {
     const now = this.clock.now();
-    return this.authDb.withSetupLink(linkTokenHash(token), async (tx) => {
+    // A bound person's link reads their own memberships too (one clinic or several, OD-86).
+    const tokenHash = linkTokenHash(token);
+    const run = <T>(fn: (tx: Tx) => Promise<T>) =>
+      found.boundUserId
+        ? this.authDb.withUserLink(found.boundUserId, tokenHash, fn)
+        : this.authDb.withSetupLink(tokenHash, fn);
+    return run(async (tx) => {
       // The policy lets only an unused, unreplaced, unexpired link be marked: a second use of
       // the same link in parallel updates nothing.
       const used = await tx
@@ -152,6 +181,15 @@ export class SetupLinksService {
           .from(platformAdmin)
           .where(eq(platformAdmin.userId, userId));
         if (admin) throw linkInvalid();
+        // A clinic's member link resets only an account that works in that clinic alone: it
+        // may have joined another clinic since the link was issued (OD-86).
+        if (found.purpose === 'member_setup') {
+          const clinics = await tx
+            .select({ tenantId: membership.tenantId })
+            .from(membership)
+            .where(eq(membership.userId, userId));
+          if (clinics.some((c) => c.tenantId !== found.tenantId)) throw linkInvalid();
+        }
         await setPassword(tx, userId, hash, now);
         await tx.delete(session).where(eq(session.userId, userId));
       } else {
@@ -172,7 +210,10 @@ export class SetupLinksService {
         if (bound.length !== 1) throw linkInvalid();
       }
       await this.audit.record(
-        { event: 'auth.link_used', data: { purpose: 'owner_setup' } },
+        {
+          event: 'auth.link_used',
+          data: { purpose: found.purpose === 'member_setup' ? 'member_setup' : 'owner_setup' },
+        },
         { actorId: userId, targetId: found.membershipId, requestId },
         tx,
       );
@@ -202,6 +243,38 @@ export class SetupLinksService {
     });
   }
 
+  /** A valid clinic link of this token (invitations, A-01-04), or 404 `link_invalid`. */
+  async findClinicLink(token: string): Promise<ClinicLink> {
+    const found = await this.#find(token);
+    if (found.kind !== 'clinic') throw linkInvalid();
+    return found;
+  }
+
+  /**
+   * The link's role assignments with branch names, read in the link's clinic: the documented
+   * exception to scope binding (A-01b criterion 8), since nobody there is signed in.
+   */
+  async rolesOf(found: ClinicLink): Promise<LinkRole[]> {
+    return this.#roles(found);
+  }
+
+  async #roles(found: ClinicLink): Promise<LinkRole[]> {
+    const scope = linkScope({ tenantId: found.tenantId, userId: NO_USER });
+    const rows = await withScope(this.db, scope, (tx) =>
+      tx
+        .select({ role: roleAssignment.role, branchName: branch.name })
+        .from(roleAssignment)
+        .leftJoin(
+          branch,
+          and(eq(branch.tenantId, roleAssignment.tenantId), eq(branch.id, roleAssignment.branchId)),
+        )
+        .where(eq(roleAssignment.membershipId, found.membershipId)),
+    );
+    return rows
+      .map((r) => ({ role: r.role, branchName: r.branchName ?? null }))
+      .sort((a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role));
+  }
+
   /** The valid link of this token, or 404 `link_invalid`; never says why. */
   async #find(token: string): Promise<Found> {
     const now = this.clock.now();
@@ -222,6 +295,7 @@ async function clinicLink(tx: Tx) {
   const [row] = await tx
     .select({
       linkId: setupLink.id,
+      tenantId: setupLink.tenantId,
       purpose: setupLink.purpose,
       membershipId: setupLink.membershipId,
       expiresAt: setupLink.expiresAt,
@@ -246,6 +320,7 @@ async function clinicLink(tx: Tx) {
     found: {
       kind: 'clinic' as const,
       linkId: row.linkId,
+      tenantId: row.tenantId,
       purpose: row.purpose,
       membershipId: row.membershipId,
       boundUserId: row.boundUserId,

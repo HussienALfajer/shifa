@@ -5,12 +5,20 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
+import '../models/add_member_request.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
 import '../models/clinic_list.dart';
+import '../models/clinic_settings.dart';
 import '../models/create_clinic_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/health_status.dart';
+import '../models/invitation_request.dart';
+import '../models/invitation_view.dart';
+import '../models/member_added.dart';
+import '../models/member_detail.dart';
+import '../models/member_link_issued.dart';
+import '../models/member_list.dart';
 import '../models/mfa_enrolled.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
@@ -23,6 +31,7 @@ import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
 import '../models/totp_enrol_start.dart';
 import '../models/update_clinic_request.dart';
+import '../models/update_member_request.dart';
 
 part 'core_client.g.dart';
 
@@ -80,6 +89,16 @@ abstract class CoreClient {
   @POST('/auth/sign-out')
   Future<void> authSignOut();
 
+  /// The clinic’s settings (automatic sign-out)
+  @GET('/clinic/settings')
+  Future<ClinicSettings> clinicSettings();
+
+  /// Change the clinic’s automatic sign-out (15, 30 or 60 minutes)
+  @PATCH('/clinic/settings')
+  Future<ClinicSettings> clinicUpdateSettings({
+    @Body() required ClinicSettings body,
+  });
+
   /// Liveness probe
   @GET('/health/live')
   Future<HealthStatus> healthLive();
@@ -87,6 +106,20 @@ abstract class CoreClient {
   /// Readiness probe
   @GET('/health/ready')
   Future<HealthStatus> healthReady();
+
+  /// Accept an invitation as the signed-in person it was sent to
+  @POST('/invitations/accept')
+  Future<void> invitationAccept({@Body() required InvitationRequest body});
+
+  /// Decline an invitation as the signed-in person it was sent to
+  @POST('/invitations/decline')
+  Future<void> invitationDecline({@Body() required InvitationRequest body});
+
+  /// The clinic, name, roles and scope of an invitation
+  @POST('/invitations/view')
+  Future<InvitationView> invitationView({
+    @Body() required InvitationRequest body,
+  });
 
   /// Clinics, newest first; search by name
   @GET('/platform/clinics')
@@ -122,4 +155,35 @@ abstract class CoreClient {
   Future<SetupLinkIssued> platformOwnerSetupLink({
     @Path('id') required String id,
   });
+
+  /// The clinic’s members with roles, scope and status
+  @GET('/team/members')
+  Future<MemberList> teamMembers();
+
+  /// Add a member with roles; returns their link once
+  @POST('/team/members')
+  Future<MemberAdded> teamAddMember({@Body() required AddMemberRequest body});
+
+  /// A member with toggles and the role defaults
+  @GET('/team/members/{id}')
+  Future<MemberDetail> teamMember({@Path('id') required String id});
+
+  /// Change a member’s roles and sensitive toggles
+  @PATCH('/team/members/{id}')
+  Future<MemberDetail> teamUpdateMember({
+    @Path('id') required String id,
+    @Body() required UpdateMemberRequest body,
+  });
+
+  /// Deactivate a member; their sessions in this clinic end
+  @POST('/team/members/{id}/deactivate')
+  Future<MemberDetail> teamDeactivateMember({@Path('id') required String id});
+
+  /// Reactivate a deactivated member
+  @POST('/team/members/{id}/reactivate')
+  Future<MemberDetail> teamReactivateMember({@Path('id') required String id});
+
+  /// Issue a new link (staff recovery); ends the member’s sessions
+  @POST('/team/members/{id}/setup-link')
+  Future<MemberLinkIssued> teamMemberLink({@Path('id') required String id});
 }

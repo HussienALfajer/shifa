@@ -18,4 +18,6 @@ export const membershipCase = defineIsolationCase({
       tx.select().from(membership).where(eq(membership.phoneE164, phone)),
     pending: (tx) => tx.select().from(membership).where(eq(membership.status, 'pending')),
   },
+  // A-01-04: shifa_app updates named columns only (user_id is bound on the auth path).
+  updatable: { column: 'display_name', value: 'موظف معدّل' },
 });

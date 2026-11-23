@@ -5,10 +5,14 @@ import { Reflector } from '@nestjs/core';
 import { describe, expect, it } from 'vitest';
 import { AccessGuard } from '../../src/access/access.guard.ts';
 import { Public, RequirePermission } from '../../src/access/decorators.ts';
-import type { PermissionKey } from '../../src/access/permissions.ts';
+import {
+  PermissionCatalogue,
+  type PermissionKey,
+  PRODUCTION_PERMISSIONS,
+} from '../../src/access/permissions.ts';
 import type { RoleGrants } from '../../src/access/roles.ts';
 import { mergeGrants, routeList } from '../support.ts';
-import { HeaderAuthAdapter, TEST_GRANTS, TEST_READ } from './probe.ts';
+import { HeaderAuthAdapter, TEST_GRANTS, TEST_PERMISSIONS, TEST_READ } from './probe.ts';
 
 const REAL = 'patients.read' as unknown as PermissionKey;
 const none: RoleGrants = {
@@ -53,7 +57,12 @@ class BothController {
 
 describe('access guard with both annotations', () => {
   it('answers 500 instead of treating the handler as public', async () => {
-    const guard = new AccessGuard(new Reflector(), new HeaderAuthAdapter(), TEST_GRANTS);
+    const guard = new AccessGuard(
+      new Reflector(),
+      new HeaderAuthAdapter(),
+      TEST_GRANTS,
+      new PermissionCatalogue([...PRODUCTION_PERMISSIONS, ...TEST_PERMISSIONS]),
+    );
     const request = {
       headers: {},
       routeOptions: { url: '/__both/x' },

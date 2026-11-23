@@ -2,7 +2,8 @@
 export { BetterAuthAdapter } from './better-auth.adapter.ts';
 export { IdentityModule, type IdentityModuleOptions } from './identity.module.ts';
 export { DEFAULT_CLINIC_WEB_URL } from './links.ts';
-export { type NewSetupLink, OwnerAccounts } from './owner-accounts.service.ts';
+export { MemberAccounts, type NewMemberLink } from './member-accounts.service.ts';
+export { type ActionBy, type NewSetupLink, OwnerAccounts } from './owner-accounts.service.ts';
 export {
   checkPasswordRules,
   isCommonPassword,

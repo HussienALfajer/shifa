@@ -12,6 +12,16 @@ import {
   PUBLIC_METADATA,
   SIGNED_IN_METADATA,
 } from './decorators.ts';
+import {
+  assertGrantsKnown,
+  PERMISSION_CATALOGUE,
+  type PermissionCatalogue,
+  UnknownPermissionError,
+} from './permissions.ts';
+import type { RoleGrants } from './roles.ts';
+
+/** Injection token of the role grants (production: PRODUCTION_GRANTS). */
+export const ROLE_GRANTS = Symbol('ROLE_GRANTS');
 
 export class AccessAnnotationError extends Error {
   override name = 'AccessAnnotationError';
@@ -50,9 +60,19 @@ export class AccessCheck implements OnApplicationBootstrap {
     @Inject(DiscoveryService) private readonly discovery: DiscoveryService,
     @Inject(MetadataScanner) private readonly scanner: MetadataScanner,
     @Inject(Reflector) private readonly reflector: Reflector,
+    @Inject(PERMISSION_CATALOGUE) private readonly catalogue: PermissionCatalogue,
+    @Inject(ROLE_GRANTS) private readonly grants: RoleGrants,
   ) {}
 
   onApplicationBootstrap(): void {
+    // Grants naming a key outside the catalogue stop the start (A-01b criterion 7).
+    assertGrantsKnown(this.catalogue, this.grants);
+    const unknown = this.unknownKeys();
+    if (unknown.length > 0) {
+      throw new UnknownPermissionError(
+        `@RequirePermission names keys outside the catalogue:\n${unknown.join('\n')}`,
+      );
+    }
     const problems = this.problems();
     if (problems.length > 0) {
       throw new AccessAnnotationError(
@@ -60,6 +80,34 @@ export class AccessCheck implements OnApplicationBootstrap {
           `or @PlatformAdmin(), and @BeforeMfa() only with @SignedIn():\n${problems.join('\n')}`,
       );
     }
+  }
+
+  /** `Controller.method: key` for every @RequirePermission key the catalogue does not list. */
+  unknownKeys(): string[] {
+    return this.#handlers()
+      .filter(({ access }) => access.permission !== undefined)
+      .filter(({ access }) => !this.catalogue.has(access.permission ?? ''))
+      .map(({ label, access }) => `  ${label}: ${access.permission ?? ''}`)
+      .sort();
+  }
+
+  #handlers(): { label: string; access: AccessAnnotations }[] {
+    const found: { label: string; access: AccessAnnotations }[] = [];
+    for (const wrapper of this.discovery.getControllers()) {
+      const metatype = wrapper.metatype as { prototype?: unknown } | null | undefined;
+      const prototype = metatype?.prototype as Record<string, unknown> | undefined;
+      if (!prototype) continue;
+      for (const name of this.scanner.getAllMethodNames(prototype)) {
+        const handler = prototype[name];
+        if (typeof handler !== 'function') continue;
+        if (this.reflector.get<unknown>(PATH_METADATA, handler) === undefined) continue;
+        found.push({
+          label: `${String(wrapper.name)}.${name}`,
+          access: readAccess(this.reflector, handler),
+        });
+      }
+    }
+    return found;
   }
 
   /** One line per handler that is unannotated, annotated twice or marked @BeforeMfa wrongly. */

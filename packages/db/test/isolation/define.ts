@@ -35,6 +35,12 @@ export interface IsolationCase {
    * unfiltered select, and runs every path without a tenant context too (zero rows expected).
    */
   readonly paths: Readonly<Record<string, (tx: Tx) => Promise<readonly TenantRow[]>>>;
+  /**
+   * For a table shifa_app may UPDATE by column only (no UPDATE on `tenant_id`, A-01-04): a
+   * column it may set and a constant for it. Moving rows to tenant B must then be refused by
+   * privileges, and the update-without-WHERE check sets this column instead of `tenant_id`.
+   */
+  readonly updatable?: { readonly column: string; readonly value: string } | undefined;
 }
 
 export function defineIsolationCase(c: IsolationCase): IsolationCase {

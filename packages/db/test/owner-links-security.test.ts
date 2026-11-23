@@ -12,10 +12,12 @@ import {
   fixtureId,
   insertMembership,
   insertUser,
+  superuserDb,
   syntheticPhones,
   testAuthDb,
   testDb,
   testPlatformDb,
+  workerDatabaseName,
 } from '../test-harness/index.ts';
 
 const ADMIN = fixtureId('owner-security admin');
@@ -126,10 +128,9 @@ describe('shifa_auth updates (L2)', () => {
   it('cannot change its own membership even with a tenant set', async () => {
     const userId = randomUUID();
     await testAuthDb().withAuth((tx) => insertUser(tx, { id: userId, phone: DOCTOR }));
-    await testDb().withTenant({ tenantId, userId }, (tx) =>
-      tx.execute(
-        sql`update membership set user_id = ${userId}, status = 'deactivated' where id = ${doctorId}`,
-      ),
+    // Bound by the superuser: shifa_app may no longer set user_id (A-01-04).
+    await superuserDb(workerDatabaseName()).execute(
+      sql`update membership set user_id = ${userId}, status = 'deactivated' where id = ${doctorId}`,
     );
     const { rowCount } = await testAuthDb().withUser(userId, async (tx) => {
       await tx.execute(sql`select set_config('app.tenant_id', ${tenantId}, true)`);
