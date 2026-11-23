@@ -51,6 +51,11 @@ test('the built Storybook has one docs page per stories file', () => {
 // visible and neither inert nor hidden from screen readers.
 for (const entry of docs) {
   test(`${entry.id}: the accessibility notes can be read`, async ({ page }) => {
+    // A docs page whose stories render in their own frames (`inline: false`: the command palette
+    // has ten, about 900 requests through the browser's connection) takes several seconds to go
+    // idle, and under four parallel workers it ran past the 30 s default (CI, 2026-11-23, on
+    // `main` too). Three times the limit; what the test checks is unchanged.
+    test.slow();
     await page.goto(`/iframe.html?id=${entry.id}&viewMode=docs`);
     await page.locator('.docs-story').first().waitFor();
     await page.waitForLoadState('networkidle');
