@@ -5,11 +5,6 @@ interface ImportMetaEnv {
 
 interface ImportMeta {
   readonly env?: ImportMetaEnv;
-  /** Vite's eager glob import (the vendored icon files, src/icons/icon.tsx). */
-  glob<T>(
-    patterns: string | readonly string[],
-    options: { query: string; import: string; eager: true },
-  ): Record<string, T>;
 }
 
 // A stylesheet imported for its side effect (tests, Storybook).

@@ -5,6 +5,7 @@
 import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { renameFamily } from '../../../../scripts/lib/font-rename.mjs';
+import { ICON_SVG } from '../../src/icons/generated/icons.ts';
 import type { IconName } from '../../src/icons/sources.ts';
 import { compileTokensCss, type DsTokens } from './tokens-css.ts';
 
@@ -111,12 +112,11 @@ function fonts(out: string) {
 
 /** One icon file: the vendored source (Solar, or the Healthicons tooth) in the ink, at 48 px. */
 function iconSvg(name: IconName, ink: string): string {
-  const folder = name === 'tooth' ? 'health' : 'solar';
-  const source = readFileSync(join(pkg, 'src', 'icons', folder, `${name}.svg`), 'utf8');
-  return source
+  return ICON_SVG[name]
     .replaceAll('currentColor', ink)
     .replace(/width="24" height="24"/, `width="${String(ICON_SIZE)}" height="${String(ICON_SIZE)}"`)
-    .replace(/^<svg ((?:(?!xmlns)[^>])*)>/, '<svg xmlns="http://www.w3.org/2000/svg" $1>');
+    .replace(/^<svg ((?:(?!xmlns)[^>])*)>/, '<svg xmlns="http://www.w3.org/2000/svg" $1>')
+    .concat('\n');
 }
 
 /** Writes every file of the system except the component bundle into `out`. */
