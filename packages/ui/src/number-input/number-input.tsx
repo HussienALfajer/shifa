@@ -18,7 +18,7 @@ import {
   NumberInputIncrement,
 } from '@ui-sdk/react/number-input';
 import { type ReactNode, useState } from 'react';
-import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
+import { FIELD_BOX, FieldShell, useFieldAutoComplete } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { useWesternDigits } from '../lib/use-western-digits.ts';
@@ -76,6 +76,7 @@ export function NumberInput({
   className,
 }: NumberInputProps) {
   const dir = useDirection();
+  const autoComplete = useFieldAutoComplete() ?? 'off';
   const westernDigits = useWesternDigits();
   // The current number, for aria-valuenow (UI SDK's control is a plain text input).
   const [current, setCurrent] = useState<number | null>(value ?? defaultValue ?? null);
@@ -116,6 +117,8 @@ export function NumberInput({
           )}
           <NumberInputControl
             ref={westernDigits}
+            // Off unless a FormField names a token (OD-67).
+            autoComplete={autoComplete}
             role="spinbutton"
             {...(shown === null ? {} : { 'aria-valuenow': shown })}
             {...(min === undefined ? {} : { 'aria-valuemin': min })}

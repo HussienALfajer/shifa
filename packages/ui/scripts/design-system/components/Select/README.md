@@ -11,7 +11,7 @@ Coded from the sheet the owner approved on 2026-11-20 (Shifa Components (proposa
 A field like an input, with a caret at its logical end and the label above. The list opens below it, at its logical start, at least as wide; rows of 48 px (32 compact). The chosen option has a check at its start and the selection colour, so it is not told by colour alone. An unavailable option is pale and says why at the end of its row. An error is brick with a warning icon under the field.
 
 ## Behaviour
-- Up and Down move; typing a letter (Arabic too) moves to the option whose name starts with it, skipping a title such as «د.».
+- Up and Down move; typing a letter (Arabic too) moves to the option whose name starts with it, skipping a title such as «د.»; hamza and other letter forms are folded, so «ا» reaches «أحمد» (OD-40, slice 0.4-12).
 - Enter chooses and closes; Escape closes and keeps the value. Focus returns to the field.
 
 ## What you provide

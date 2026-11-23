@@ -5,7 +5,15 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { cn } from '../lib/cn.ts';
 import type { ColumnMeta, RowLike, TableLike } from './columns.ts';
-import { CELL, PINNED, SelectMark, SortButton } from './parts.tsx';
+import {
+  CELL,
+  CutHeader,
+  HeaderBox,
+  HeaderLabel,
+  PINNED,
+  SelectMark,
+  SortButton,
+} from './parts.tsx';
 import type { Cell } from './use-grid-keyboard.ts';
 
 const ROW_TINT =
@@ -69,35 +77,41 @@ export function HeaderRow<Row extends object>({
         const direction = sorted === 'asc' ? 'ascending' : sorted === 'desc' ? 'descending' : null;
         const canSort = header.column.getCanSort();
         return (
-          <div
-            key={header.id}
-            role="columnheader"
-            data-cell
-            data-row={0}
-            data-col={col}
-            tabIndex={tab({ row: 0, col })}
-            {...(canSort ? { 'aria-sort': direction ?? 'none' } : {})}
-            className={cn(
-              CELL,
-              HEAD,
-              'text-200 font-medium text-text-muted',
-              direction !== null && 'font-semibold text-text-default',
-              meta.kind === 'number' && 'justify-end',
-              i === 0 && cn(PINNED, pinStart(col)),
+          <CutHeader key={header.id} text={meta.header}>
+            {(labelRef) => (
+              <div
+                role="columnheader"
+                data-cell
+                data-row={0}
+                data-col={col}
+                tabIndex={tab({ row: 0, col })}
+                {...(canSort ? { 'aria-sort': direction ?? 'none' } : {})}
+                className={cn(
+                  CELL,
+                  HEAD,
+                  'text-200 font-medium text-text-muted',
+                  direction !== null && 'font-semibold text-text-default',
+                  meta.kind === 'number' && 'justify-end',
+                  i === 0 && cn(PINNED, pinStart(col)),
+                )}
+              >
+                <HeaderBox end={meta.kind === 'number'}>
+                  {canSort ? (
+                    <SortButton
+                      label={meta.header}
+                      direction={direction}
+                      labelRef={labelRef}
+                      onSort={() => {
+                        header.column.toggleSorting(direction === 'ascending');
+                      }}
+                    />
+                  ) : (
+                    <HeaderLabel text={meta.header} labelRef={labelRef} />
+                  )}
+                </HeaderBox>
+              </div>
             )}
-          >
-            {canSort ? (
-              <SortButton
-                label={meta.header}
-                direction={direction}
-                onSort={() => {
-                  header.column.toggleSorting(direction === 'ascending');
-                }}
-              />
-            ) : (
-              meta.header
-            )}
-          </div>
+          </CutHeader>
         );
       })}
     </div>

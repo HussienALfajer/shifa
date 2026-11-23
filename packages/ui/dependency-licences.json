@@ -1,5 +1,6 @@
 {
   "@hookform/resolvers": "MIT",
+  "@iconify-json/solar": "CC-BY-4.0",
   "@tanstack/react-table": "MIT",
   "@tanstack/react-virtual": "MIT",
   "@ui-sdk/core": "Apache-2.0",

@@ -5,6 +5,7 @@
 // by its second line, with Arabic-Indic digits too.
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { AHMAD, people } from '../test/fixtures.ts';
 import { renderDir, typeArabic } from '../test/support/index.ts';
 import { Accordion, AccordionItem } from './accordion/accordion.tsx';
 import { CommandPalette } from './command-palette/command-palette.tsx';
@@ -80,6 +81,8 @@ describe('0.4-06 review', () => {
     await screen.unmount();
   });
 
+  const SECOND = people(1, { seed: 12 })[0]?.name ?? '';
+
   function Palette() {
     return (
       <CommandPalette
@@ -90,8 +93,8 @@ describe('0.4-06 review', () => {
           {
             label: 'المرضى',
             items: [
-              { value: 'p1', label: 'أحمد خليل', description: 'ملف 1187' },
-              { value: 'p2', label: 'سارة الأحمد', description: 'ملف 1042' },
+              { value: 'p1', label: AHMAD.name, description: 'ملف 1187' },
+              { value: 'p2', label: SECOND, description: 'ملف 1042' },
             ],
           },
         ]}

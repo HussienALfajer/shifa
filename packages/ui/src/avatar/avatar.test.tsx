@@ -4,9 +4,13 @@
 // family name is skipped; a Latin name gives two capitals, isolated; one name gives one letter.
 // The full name (or the picture's text) is the accessible name. A group shows the overflow count.
 import { describe, expect, it } from 'vitest';
-import { people } from '../../test/fixtures.ts';
+import { latinPeople, people } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir } from '../../test/support/index.ts';
 import { Avatar, AvatarGroup, avatarInitials } from './avatar.tsx';
+
+/** A generated name in Latin letters (slice 0.4-12). */
+const LATIN = latinPeople(1)[0]?.name ?? '';
+const [LATIN_GIVEN = '', LATIN_FAMILY = ''] = LATIN.split(' ');
 
 const DIRS = ['rtl', 'ltr'] as const;
 const CREW = people(6, { seed: 31 });
@@ -55,8 +59,10 @@ describe.each(DIRS)('Avatar in %s', (dir) => {
   });
 
   it('a Latin name is isolated', async () => {
-    const screen = await renderDir(<Avatar name="Rami Saleh" />, { dir });
-    expect(avatarEl()?.querySelector('bdi')?.textContent).toBe('RS');
+    const screen = await renderDir(<Avatar name={LATIN} />, { dir });
+    expect(avatarEl()?.querySelector('bdi')?.textContent).toBe(
+      `${LATIN_GIVEN.charAt(0)}${LATIN_FAMILY.charAt(0)}`,
+    );
     await screen.unmount();
   });
 
@@ -156,7 +162,7 @@ describe.each(DIRS)('Avatar in %s', (dir) => {
           {CREW.map((p) => (
             <Avatar key={p.id} name={p.name} />
           ))}
-          <Avatar name="Rami Saleh" size="lg" />
+          <Avatar name={LATIN} size="lg" />
           <AvatarGroup label="الأطباء المناوبون" people={CREW} max={3} />
         </>,
         { dir, theme },

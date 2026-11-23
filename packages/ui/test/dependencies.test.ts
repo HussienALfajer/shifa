@@ -94,6 +94,12 @@ describe('the agent bridge', () => {
   });
 });
 
+/**
+ * Development packages whose content ships inside ours: the Solar drawings are copied into
+ * src/icons and the Flutter painters, so their licence is recorded with the runtime ones.
+ */
+const VENDORED = ['@iconify-json/solar'];
+
 describe('licences', () => {
   const licences = readJson(join(pkgDir, 'dependency-licences.json')) as Record<string, string>;
 
@@ -101,8 +107,14 @@ describe('licences', () => {
     const runtime = Object.keys(manifest.dependencies ?? {}).filter(
       (n) => !n.startsWith('@shifa/'),
     );
-    expect(Object.keys(licences).sort()).toEqual(runtime.sort());
-    for (const name of runtime) expect(licences[name], name).toBe(installed(name).license);
+    expect(Object.keys(licences).sort()).toEqual([...runtime, ...VENDORED].sort());
+    for (const name of [...runtime, ...VENDORED]) {
+      expect(licences[name], name).toBe(installed(name).license);
+    }
+  });
+
+  it('holds the vendored Solar icons under CC BY 4.0 (C-7, slice 0.4-12)', () => {
+    expect(licences['@iconify-json/solar']).toBe('CC-BY-4.0');
   });
 
   it('holds UI SDK under Apache-2.0', () => {

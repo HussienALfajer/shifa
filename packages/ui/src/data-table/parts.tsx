@@ -3,12 +3,14 @@
 // in muted text (the sorted one heavier, in the text colour, with its arrow), the selection
 // checkbox of 0.4-05, the pinned column on the logical start with a border and a soft shadow once
 // content scrolls under it.
-import type { ReactNode } from 'react';
+import type { ReactElement, ReactNode } from 'react';
 import { Checkbox } from '../checkbox/checkbox.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
+import { useOverflow } from '../lib/use-overflow.ts';
 import { Popover, PopoverContent, PopoverTrigger } from '../popover/popover.tsx';
 import { Skeleton } from '../skeleton/skeleton.tsx';
+import { Tooltip } from '../tooltip/tooltip.tsx';
 import type { DataTableSortDirection } from './columns.ts';
 
 /** Every cell: the grid track box, one line, the focus ring inside the cell. */
@@ -63,14 +65,68 @@ export function SelectMark({
   );
 }
 
+/**
+ * A header's text on one line, cut with an ellipsis when the column is narrower (OD-66). The span
+ * takes the direction of its own text (`dir="auto"`), so an Arabic header in an English table
+ * keeps its start and the ellipsis lands at its end.
+ */
+const HEADER_LABEL = 'min-w-0 truncate text-200 leading-heading';
+
+type LabelRef = (node: HTMLElement | null) => void;
+
+/**
+ * A header cell whose text may be cut (slice 0.4-12, OD-66): while the label is wider than the
+ * column, the full text shows in a tooltip, after 500 ms on hover and at once on keyboard focus.
+ * The cell stays the focus target; the tooltip names it (`type="label"`) with the same text, so
+ * the name is said once, never repeated as a description. `children` gets the label's ref.
+ */
+export function CutHeader({
+  text,
+  children,
+}: {
+  text: string;
+  children: (label: LabelRef) => ReactElement;
+}) {
+  const [label, cut] = useOverflow();
+  return (
+    <Tooltip content={text} type="label" disabled={!cut}>
+      {children(label)}
+    </Tooltip>
+  );
+}
+
+/**
+ * The box of a header's content: it fills the cell but adds nothing to the column's width (zero
+ * width, at least the cell's), so a column is as wide as its rows and its share of the table, and
+ * a longer header is cut rather than widening it (OD-66).
+ */
+export function HeaderBox({ end, children }: { end: boolean; children: ReactNode }) {
+  return (
+    <span className={cn('flex h-full w-0 min-w-full items-center', end && 'justify-end')}>
+      {children}
+    </span>
+  );
+}
+
+/** The text of a header that does not sort. */
+export function HeaderLabel({ text, labelRef }: { text: string; labelRef: LabelRef }) {
+  return (
+    <span ref={labelRef} data-slot="header-label" dir="auto" className={HEADER_LABEL}>
+      {text}
+    </span>
+  );
+}
+
 export function SortButton({
   label,
   direction,
   onSort,
+  labelRef,
 }: {
   label: string;
   direction: DataTableSortDirection | null;
   onSort: () => void;
+  labelRef?: LabelRef;
 }) {
   return (
     <button
@@ -82,9 +138,14 @@ export function SortButton({
       }}
       className="inline-flex h-full min-w-0 cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-ui text-200 font-medium text-current"
     >
-      <span className="truncate">{label}</span>
+      <span ref={labelRef} data-slot="header-label" dir="auto" className={HEADER_LABEL}>
+        {label}
+      </span>
       {direction !== null && (
-        <Icon name={direction === 'ascending' ? 'caret-up' : 'caret-down'} className="size-4" />
+        <Icon
+          name={direction === 'ascending' ? 'caret-up' : 'caret-down'}
+          className="size-4 shrink-0"
+        />
       )}
     </button>
   );

@@ -43,6 +43,15 @@ const FieldShellContext = createContext<FieldShellState | null>(null);
 /** The surrounding Field's state, or null outside one. */
 export const useFieldShell = (): FieldShellState | null => useContext(FieldShellContext);
 
+/**
+ * The autocomplete token a FormField names for the text control inside it (OD-67, slice 0.4-12):
+ * Input and Textarea use it, and «off» when there is none; PasswordInput keeps its own token.
+ */
+export const FieldAutoCompleteContext = createContext<string | undefined>(undefined);
+
+/** The token of the surrounding FormField, if it names one. */
+export const useFieldAutoComplete = (): string | undefined => useContext(FieldAutoCompleteContext);
+
 /** The text styles of the parts, shared with controls that render their own label. */
 export const FIELD_TEXT = {
   label: cn(

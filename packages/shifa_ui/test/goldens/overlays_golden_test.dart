@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import '../support/fixtures.dart';
 import 'support.dart';
 
 Widget _sheetOverScreen(BuildContext context) => Stack(
@@ -10,7 +11,7 @@ Widget _sheetOverScreen(BuildContext context) => Stack(
     Align(
       alignment: Alignment.bottomCenter,
       child: ShifaBottomSheet(
-        title: 'موعد ريم العلي',
+        title: 'موعد ${people[0].name}',
         subtitle: 'الثلاثاء 24/11/2026 · 10:30 · د. نادر الخطيب',
         onClose: () {},
         actions: [

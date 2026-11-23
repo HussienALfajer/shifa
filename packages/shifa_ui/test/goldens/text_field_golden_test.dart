@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import '../support/fixtures.dart';
 import 'support.dart';
 
 void main() {
@@ -16,7 +17,7 @@ void main() {
         ),
         'filled': ShifaTextField(
           label: 'الاسم الكامل',
-          controller: TextEditingController(text: 'سارة الأحمد'),
+          controller: TextEditingController(text: people[2].name),
         ),
         'digits with helper': ShifaTextField(
           label: 'رقم الهاتف',
@@ -48,7 +49,7 @@ void main() {
           'focused': ShifaTextField(
             label: 'الاسم الكامل',
             autofocus: true,
-            controller: TextEditingController(text: 'سارة الأحمد'),
+            controller: TextEditingController(text: people[2].name),
           ),
         },
       );

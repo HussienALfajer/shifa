@@ -6,7 +6,12 @@
 // Behaviour from UI SDK's Input; inside a Field it is wired to the label, hint and error.
 import { Input as BaseInput, InputGroup } from '@ui-sdk/react/input';
 import type { ComponentProps, ReactNode, Ref } from 'react';
-import { FIELD_BOX, useFieldShell, WithField } from '../field/field-shell.tsx';
+import {
+  FIELD_BOX,
+  useFieldAutoComplete,
+  useFieldShell,
+  WithField,
+} from '../field/field-shell.tsx';
 import { Icon, type IconName } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 
@@ -42,6 +47,12 @@ export interface InputProps extends NativeInput {
   required?: boolean | undefined;
   ref?: Ref<HTMLInputElement> | undefined;
   className?: string | undefined;
+  /**
+   * Off by default (OD-67): a shared clinic computer never offers one patient's details while
+   * another's are typed. Give an explicit token (`name`, `tel`, `bday`…) only on the patient's
+   * own booking forms.
+   */
+  autoComplete?: string | undefined;
 }
 
 /** The text of a control inside a field box. */
@@ -63,9 +74,11 @@ export function Input({
   required,
   name,
   className,
+  autoComplete,
   ...native
 }: InputProps) {
   const field = useFieldShell();
+  const fieldAutoComplete = useFieldAutoComplete();
   const isRequired = required ?? field?.required;
   const isDisabled = disabled ?? field?.disabled;
   return (
@@ -85,6 +98,7 @@ export function Input({
         )}
         <BaseInput
           {...native}
+          autoComplete={autoComplete ?? fieldAutoComplete ?? 'off'}
           type={type}
           {...(name === undefined ? {} : { name })}
           {...(value === undefined ? {} : { value })}

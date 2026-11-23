@@ -9,8 +9,8 @@ library;
 // consumer use them without importing dart:ui itself.
 export 'dart:ui' show Color;
 
-export 'src/fonts.dart';
 export 'src/generated/tokens.g.dart';
+export 'src/licences.dart';
 export 'src/theme/colors.dart';
 export 'src/theme/metrics.dart';
 export 'src/theme/status_colors.dart';

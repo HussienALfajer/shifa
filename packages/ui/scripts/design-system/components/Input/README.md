@@ -8,6 +8,9 @@ Coded from the sheet the owner approved on 2026-11-20 (Shifa Components (proposa
 - Short free text. A number with steps is NumberInput; a date is DatePicker; a time is TimeInput.
 - Latin content inside Arabic (phone, email, medicine name): `dir: 'auto'`, so it is written left to right and kept apart from the Arabic around it.
 
+## Privacy
+The browser stores nothing typed here (`autocomplete="off"`, OD-67): a shared clinic computer never offers one patient's details while another's are typed. Only the patient's own booking forms name a token (`autoComplete`: `name`, `tel`, `bday`).
+
 ## Look
 The field box shared with Select and NumberInput: 44 px (32 compact), radius 8, a light border that darkens on hover, the green focus ring at once. An error is a 2 px danger border with a warning icon and text under the field. Disabled is pale on the raised surface and leaves the tab order; read-only keeps its text readable on the raised surface and can be copied. An optional icon at the logical start (`startIcon`, e.g. search).
 

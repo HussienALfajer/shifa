@@ -51,6 +51,19 @@ export const Narrow: Story = {
   ),
 };
 
+/**
+ * A long label in a wide strip (OD-66): one line, at most 150 px, cut with an ellipsis; the full
+ * label is the button's name and shows in a tooltip on hover and focus.
+ */
+export const LongLabel: Story = {
+  render: () => (
+    <Toolbar aria-label="أدوات قائمة المرضى">
+      <ToolbarButton icon="file-text">تصدير قائمة المرضى المسجلين هذا الأسبوع</ToolbarButton>
+      <ToolbarButton icon="printer">طباعة</ToolbarButton>
+    </Toolbar>
+  ),
+};
+
 /** The text states: the label on the first button, a short one beside it. */
 const states = storyStates((label) => (
   <Toolbar aria-label="أدوات قائمة المرضى">

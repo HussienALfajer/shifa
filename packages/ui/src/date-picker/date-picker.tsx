@@ -22,7 +22,7 @@ import {
   DatePickerTrigger,
 } from '@ui-sdk/react/date-picker';
 import { type ReactNode, useState } from 'react';
-import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
+import { FIELD_BOX, FieldShell, useFieldAutoComplete } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { useWesternDigits } from '../lib/use-western-digits.ts';
@@ -105,6 +105,7 @@ export function DatePicker({
   className,
 }: DatePickerProps) {
   const dir = useDirection();
+  const autoComplete = useFieldAutoComplete() ?? 'off';
   const westernDigits = useWesternDigits();
   const [field, setField] = useState<HTMLDivElement | null>(null);
   const labels = LABELS[dir];
@@ -139,6 +140,8 @@ export function DatePicker({
         <div ref={setField} data-slot="date-picker-field" className={cn(FIELD_BOX, 'ps-3 pe-1')}>
           <DatePickerInput
             ref={westernDigits}
+            // Off unless a FormField names a token, such as bday (OD-67).
+            autoComplete={autoComplete}
             className="min-w-0 flex-1 border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none placeholder:text-text-muted"
           />
           <DatePickerTrigger aria-label={openLabel ?? labels.open} className={NAV}>

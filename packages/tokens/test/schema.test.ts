@@ -290,3 +290,39 @@ describe('contrast pairs', () => {
     expect(problems.join('\n')).toMatch(/tiny/);
   });
 });
+
+describe('icon pairs follow text pairs (C-5)', () => {
+  /** The fixture with an icon colour paired on its one surface. */
+  const withIcon = (): Sources => {
+    const sources = validSources();
+    const colour = node(sources.layers.semantic, 'color');
+    colour['icon'] = {
+      default: {
+        $description: 'Icons.',
+        $value: '{color.ink.900}',
+        $extensions: { shifa: { modes: { dark: '{color.ink.100}' } } },
+      },
+    };
+    sources.pairs.push({ text: 'color.icon.default', surface: 'color.bg.surface', class: 'ui' });
+    return sources;
+  };
+
+  it('a source whose text surfaces all carry an icon pair passes', () => {
+    expect(checkSchema(withIcon())).toEqual([]);
+  });
+
+  it('fails on a surface with a text pair and no icon pair', () => {
+    const sources = withIcon();
+    node(sources.layers.semantic, 'color.bg')['sunken'] = {
+      $description: 'Wells.',
+      $value: '{color.ink.100}',
+      $extensions: { shifa: { modes: { dark: '{color.night.900}' } } },
+    };
+    sources.pairs.push({ text: 'color.text.default', surface: 'color.bg.sunken', class: 'body' });
+    expect(checkSchema(sources).join('\n')).toMatch(
+      /color\.bg\.sunken: a surface with a text pair and no color\.icon\.\* pair/,
+    );
+    sources.pairs.push({ text: 'color.icon.default', surface: 'color.bg.sunken', class: 'ui' });
+    expect(checkSchema(sources)).toEqual([]);
+  });
+});

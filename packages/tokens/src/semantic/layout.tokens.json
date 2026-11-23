@@ -13,12 +13,21 @@
         "$description": "The one main action of a screen (call the next patient, book).",
         "$value": "{space.13}",
         "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } }
+      },
+      "select-narrow": {
+        "$description": "Width of a Select that holds a short number, such as pagination's rows per page: «100» and the chevron fit (OD-66).",
+        "$value": "{width.22}",
+        "$extensions": { "shifa": { "modes": { "compact": "{width.19}" } } }
       }
     },
     "row": { "$description": "Table and list rows.", "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
     "popover": { "$description": "Width of a popover that holds a short form, and of a calendar (capped by the screen).", "$value": "{width.80}" },
     "dialog": { "$description": "Width of a dialog (capped by the screen, less a margin).", "$value": "{width.120}" },
     "tooltip": { "$description": "Widest a tooltip grows before its text wraps.", "$value": "{width.60}" },
+    "toolbar-label": {
+      "$description": "Widest a toolbar button's label grows; a longer one is cut with an ellipsis and shown in a tooltip (OD-66).",
+      "$value": "{width.37-5}"
+    },
     "toast": { "$description": "Width of a toast (the screen less a margin on a phone).", "$value": "{width.90}" },
     "drawer": { "$description": "Width of a drawer from the side (capped by the screen).", "$value": "{width.100}" },
     "command": { "$description": "Width of the command palette (capped by the screen, less a margin).", "$value": "{width.140}" },

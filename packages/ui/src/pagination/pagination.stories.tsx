@@ -3,7 +3,8 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useId, useState } from 'react';
 import { storyStates } from '../../.storybook/story-states.tsx';
-import { Pagination } from './pagination.tsx';
+import { useDirection } from '../providers/direction-provider.tsx';
+import { Pagination, type PaginationCopy } from './pagination.tsx';
 
 const meta = {
   title: 'Components/Pagination',
@@ -12,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Page controls under a list: previous at the logical start and next at the end (arrows mirror in RTL), page numbers with ellipses, the current page green, an optional page-size select (25, 50, 100; a change goes back to page 1) and «عرض 51–75 من 312» in Western digits. The compact form says «الصفحة 3 من 13». Controlled: the caller loads the page.\n\n**Accessibility.** A `navigation` landmark named by `label` («ترقيم الصفحات» by default; give each pagination on one screen its own). Every step and page number is a native `button` that Tab reaches, pressed by Enter or Space; previous is disabled on the first page. A screen reader hears «الصفحة السابقة», «الصفحة التالية» and «الصفحة 4», and the current page as `aria-current="page"`; the ellipses are hidden. The page-size select is a labelled field («صفوف في الصفحة»).',
+          'Page controls under a list: previous at the logical start and next at the end (arrows mirror in RTL), page numbers with ellipses, the current page green, an optional page-size select (25, 50, 100; a change goes back to page 1) and «عرض 51–75 من 312» in Western digits. The form follows the pagination’s own width: below 430 px the compact form («الصفحة 3 من 13» between the arrows, the summary on a second line), from 430 px the page numbers; `form` forces one. The page-size select is 88 px wide (76 px compact). `copy` takes the words of an English screen. Controlled: the caller loads the page.\n\n**Accessibility.** A `navigation` landmark named by `label` («ترقيم الصفحات» by default; give each pagination on one screen its own). Every step and page number is a native `button` that Tab reaches, pressed by Enter or Space; previous is disabled on the first page. A screen reader hears «الصفحة السابقة», «الصفحة التالية» and «الصفحة 4», and the current page as `aria-current="page"`; the ellipses are hidden. The page-size select is a labelled field («صفوف في الصفحة»).',
       },
     },
   },
@@ -94,8 +95,71 @@ function TextState({ label }: { label: string }) {
   );
 }
 
+/** The words of an English screen, as a caller passes them (criterion 13 of slice 0.4-12). */
+const ENGLISH: PaginationCopy = {
+  summary: (first, last, total) => `Showing ${first}–${last} of ${total}`,
+  position: (page, pageCount) => `Page ${page} of ${pageCount}`,
+  page: (page) => `Page ${page}`,
+  previous: 'Previous page',
+  next: 'Next page',
+  pageSize: 'Rows per page',
+};
+
+/** At 200 % zoom the English region speaks English, as an English screen would. */
+function ZoomState() {
+  const english = useDirection() === 'ltr';
+  return (
+    <Pagination
+      label={`${english ? 'Save' : 'حفظ'} ${useId()}`}
+      page={248}
+      pageSize={25}
+      totalItems={12345}
+      form="compact"
+      onPageChange={() => undefined}
+      {...(english ? { copy: ENGLISH } : {})}
+    />
+  );
+}
+
 const states = storyStates((label) => <TextState label={label} />);
 export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
 export const MixedDirection: Story = states['MixedDirection'] ?? {};
-export const Zoom200: Story = states['Zoom200'] ?? {};
+export const Zoom200: Story = storyStates(() => <ZoomState />)['Zoom200'] ?? {};
 export const ReducedMotion: Story = states['ReducedMotion'] ?? {};
+
+/**
+ * The form follows the pagination's own width (OD-66): the compact form at 320 and 429 px, the page
+ * numbers at 430 and 600 px. Each box is a column of that width; the rows-per-page Select shows «100».
+ */
+function Widths() {
+  const label = useCopyLabel();
+  return (
+    <div className="flex flex-col gap-4">
+      {WIDTHS.map((width) => (
+        <div key={width} className="flex flex-col gap-1">
+          <span className="text-caption text-text-muted" dir="ltr">{`${String(width)} px`}</span>
+          <div
+            style={{ width }} // An outline, not a border: it takes no width, so the box is exactly the width it names.
+            className="outline-1 outline-dashed outline-border-default"
+          >
+            <Pagination
+              label={`${label} ${String(width)}`}
+              page={3}
+              pageSize={100}
+              totalItems={1300}
+              pageSizes={[25, 50, 100]}
+              onPageSizeChange={() => undefined}
+              onPageChange={() => undefined}
+            />
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Story fixture: the column widths of the narrow-width check (OD-66). */
+const WIDTHS = [320, 429, 430, 600] as const;
+
+/** The compact form below 430 px and the page numbers from it, in four column widths. */
+export const NarrowWidths: Story = { render: () => <Widths /> };

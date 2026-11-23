@@ -119,3 +119,66 @@ describe.each(DIRS)('Toolbar in %s', (dir) => {
     }
   });
 });
+
+// Slice 0.4-12 (OD-66; sheet "Before Phase A · 0.4-12 and 0.4-13", approved 2026-11-23): a long
+// button label stays on one line, at most 150 px, cut with an ellipsis; the icon keeps its size;
+// the full label is the button's name and shows in a tooltip when cut.
+const LONG_LABEL = 'تصدير قائمة المرضى المسجلين هذا الأسبوع';
+
+function LongTools() {
+  return (
+    <div style={{ width: 900 }}>
+      <Toolbar aria-label="أدوات قائمة المرضى">
+        <ToolbarButton icon="list">{LONG_LABEL}</ToolbarButton>
+        <ToolbarButton>طباعة</ToolbarButton>
+      </Toolbar>
+    </div>
+  );
+}
+
+const openTooltip = () => document.querySelector<HTMLElement>('[role="tooltip"][data-open]');
+
+describe.each(DIRS)('a long Toolbar label in %s', (dir) => {
+  it('stays on one line, at most 150 px, the icon full size', async () => {
+    const screen = await renderDir(<LongTools />, { dir });
+    const b = screen.getByRole('button', { name: LONG_LABEL }).element() as HTMLElement;
+    const label = b.querySelector<HTMLElement>('[data-slot="toolbar-label"]');
+    expect(label).not.toBeNull();
+    if (label === null) return;
+    expect(label.getClientRects()).toHaveLength(1);
+    expect(label.getBoundingClientRect().width).toBeLessThanOrEqual(150.5);
+    expect(getComputedStyle(label).textOverflow).toBe('ellipsis');
+    expect(label.scrollWidth).toBeGreaterThan(label.clientWidth);
+    const icon = b.querySelector('svg') as SVGElement;
+    const size = tokenPx('--shifa-size-icon-sm', b);
+    expect(icon.getBoundingClientRect().width).toBeCloseTo(size, 0);
+    expect(icon.getBoundingClientRect().height).toBeCloseTo(size, 0);
+    await screen.unmount();
+  });
+
+  it('shows the full label in a tooltip when cut, on focus and on hover', async () => {
+    const screen = await renderDir(<LongTools />, { dir });
+    await userEvent.tab();
+    await poll(() => openTooltip()?.textContent, 'open on focus').toBe(LONG_LABEL);
+    await userEvent.keyboard('{Escape}');
+    await screen.unmount();
+  });
+
+  it('a short label has no tooltip', async () => {
+    const screen = await renderDir(<LongTools />, { dir });
+    await userEvent.hover(screen.getByRole('button', { name: 'طباعة' }));
+    await new Promise((resolve) => setTimeout(resolve, 800));
+    expect(openTooltip()).toBeNull();
+    await screen.unmount();
+  });
+});
+
+/** A length token in px, as the element sees it. */
+function tokenPx(name: string, within: Element): number {
+  const probe = document.createElement('div');
+  probe.style.width = `var(${name})`;
+  within.appendChild(probe);
+  const px = probe.getBoundingClientRect().width;
+  probe.remove();
+  return px;
+}

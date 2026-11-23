@@ -13,6 +13,7 @@ Fields 16 px apart, two short ones may share a row (`half`). After a failed subm
 ## Behaviour (code)
 - Nothing is sent while a field is invalid; on submit the first invalid field, in page order, takes focus.
 - A Zod message is an i18n key; the app's `translate` gives the text. An error clears as soon as its field is corrected.
+- Its fields store nothing in the browser (`autocomplete="off"`, OD-67); a `FormField` on the patient's own booking form may name a token (`autoComplete`).
 - During an async submit the button stays busy with its label and a spinner and ignores a second press.
 
 ## What you provide

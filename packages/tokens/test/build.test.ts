@@ -147,6 +147,19 @@ describe('build (the token source)', () => {
     expect(block(css, "[data-density='compact']")).toContain('--shifa-');
   });
 
+  it('has the narrow Select width of the rows-per-page control in both densities (OD-66)', () => {
+    const css = files[OUTPUTS.css] ?? '';
+    expect(block(css, ':root')).toContain('--shifa-size-control-select-narrow: 88px;');
+    expect(block(css, "[data-density='compact']")).toContain(
+      '--shifa-size-control-select-narrow: 76px;',
+    );
+    const dart = files[OUTPUTS.dart] ?? '';
+    expect(dart).toContain('static const double sizeControlSelectNarrow = 88;');
+    expect(block(dart, 'abstract final class ShifaDensityCompact')).toContain(
+      'static const double sizeControlSelectNarrow = 76;',
+    );
+  });
+
   it('writes shadows, font stacks and easings as CSS values', () => {
     const root = block(files[OUTPUTS.css] ?? '', ':root');
     expect(root).toMatch(/--shifa-elevation-\w+: \d+px \d+px \d+px -?\d+px rgb\(/);

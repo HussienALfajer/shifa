@@ -15,6 +15,9 @@
   <p class="label">اضغط «بحث» ثم اكتب «احمد» · الأسهم تنقل · Enter يفتح · Esc يغلق</p>
   <div data-slot="palette"></div>
 </div>
+<!-- Names from the generator in @shifa/testing (slice 0.4-12): «أحمد توران» is test/fixtures.ts AHMAD
+     (personWhere, seed 40); «لينا الأسعد» people(1, { seed: 12 }); «لينا يونس» the first given name starting
+     with «ل» on seed 46. -->
 <script>
   window.Shifa.mount(document.querySelector('[data-slot="palette"]'), 'CommandPalette', {
     triggerLabel: 'بحث',
@@ -23,9 +26,9 @@
     emptyText: 'لا نتائج لـ «{query}»',
     groups: [
       { label: 'المرضى', items: [
-        { value: 'p1', label: 'أحمد خليل', description: 'ملف 1187', icon: 'user' },
-        { value: 'p2', label: 'سارة الأحمد', description: 'ملف 1042', icon: 'user' },
-        { value: 'p3', label: 'ليلى حداد', description: 'ملف 0412', icon: 'user' }
+        { value: 'p1', label: 'أحمد توران', description: 'ملف 1187', icon: 'user' },
+        { value: 'p2', label: 'لينا الأسعد', description: 'ملف 1042', icon: 'user' },
+        { value: 'p3', label: 'لينا يونس', description: 'ملف 0412', icon: 'user' }
       ] },
       { label: 'إجراءات', items: [
         { value: 'a1', label: 'موعد جديد', icon: 'calendar-plus' },

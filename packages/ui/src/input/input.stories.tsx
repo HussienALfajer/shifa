@@ -2,7 +2,7 @@
 // combinations of direction × theme × density and is checked by axe.
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { storyStates } from '../../.storybook/story-states.tsx';
-import { people } from '../../test/fixtures.ts';
+import { PATIENT, people } from '../../test/fixtures.ts';
 import { Input } from './input.tsx';
 
 const [patient] = people(1, { seed: 31 });
@@ -29,7 +29,7 @@ type Story = StoryObj<typeof meta>;
 export const States: Story = {
   render: (args) => (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-      <Input {...args} placeholder="مثال: سارة الأحمد" />
+      <Input {...args} placeholder={`مثال: ${PATIENT.name}`} />
       <Input {...args} defaultValue={name} />
       <Input {...args} required error="اكتب اسم المريض" />
       <Input {...args} defaultValue={name} disabled />

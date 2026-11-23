@@ -30,7 +30,9 @@ abstract final class ShifaTokens {
   static const double space16 = 64;
   static const double space05 = 2;
   static const double width14 = 56;
+  static const double width19 = 76;
   static const double width20 = 80;
+  static const double width22 = 88;
   static const double width24 = 96;
   static const double width60 = 240;
   static const double width80 = 320;
@@ -38,6 +40,7 @@ abstract final class ShifaTokens {
   static const double width100 = 400;
   static const double width120 = 480;
   static const double width140 = 560;
+  static const double width375 = 150;
   static const double radiusNone = 0;
   static const double radiusXs = 4;
   static const double radiusSm = 8;
@@ -86,6 +89,7 @@ abstract final class ShifaTokens {
   static const double sizePopover = 320;
   static const double sizeDialog = 480;
   static const double sizeTooltip = 240;
+  static const double sizeToolbarLabel = 150;
   static const double sizeToast = 360;
   static const double sizeDrawer = 400;
   static const double sizeCommand = 560;
@@ -184,6 +188,7 @@ abstract final class ShifaDensityComfortable {
   static const double sizeControlSm = 36;
   static const double sizeControlMd = 44;
   static const double sizeControlLg = 52;
+  static const double sizeControlSelectNarrow = 88;
   static const double sizeRow = 48;
   static const double insetControl = 16;
   static const double insetSurface = 24;
@@ -205,6 +210,7 @@ abstract final class ShifaDensityCompact {
   static const double sizeControlSm = 28;
   static const double sizeControlMd = 32;
   static const double sizeControlLg = 40;
+  static const double sizeControlSelectNarrow = 76;
   static const double sizeRow = 32;
   static const double insetControl = 12;
   static const double insetSurface = 16;

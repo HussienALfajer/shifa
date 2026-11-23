@@ -57,6 +57,7 @@ export {
   Combobox,
   type ComboboxItem,
   type ComboboxProps,
+  resultsAnnouncement,
 } from './combobox/combobox.tsx';
 export {
   CommandPalette,
@@ -132,6 +133,7 @@ export {
 export { Input, type InputProps } from './input/input.tsx';
 export { cn } from './lib/cn.ts';
 export { toWesternDigits } from './lib/digits.ts';
+export { foldArabic } from './lib/fold-arabic.ts';
 export {
   Menu,
   MenuContent,
@@ -149,6 +151,7 @@ export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
 export {
   type PageItem,
   Pagination,
+  type PaginationCopy,
   type PaginationProps,
   pageItems,
 } from './pagination/pagination.tsx';

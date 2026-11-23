@@ -1,6 +1,8 @@
 // Where each curated icon comes from (OD-65, slice 0.4-09): Solar's Broken style (480 Design,
 // CC BY 4.0), vendored as files in ./solar by scripts/icons-sync.ts from @iconify-json/solar,
-// and the Healthicons tooth (CC0) in ./health, since Solar has none. Plain data, so Node scripts
+// and the Healthicons tooth (CC0) in ./health, since Solar has none. The sync also writes
+// ./generated/icons.ts (the SVG of each name, which Icon draws) and the Flutter painters;
+// never edit them. Solar's licence is recorded in packages/ui/dependency-licences.json. Plain data, so Node scripts
 // (the sync, the design-system producer) read it without Vite. The names predate Solar
 // (slice 0.4-03) and stay, so no caller changes when the drawing does.
 

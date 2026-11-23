@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import 'support/fixtures.dart';
 import 'support/harness.dart';
 
 /// A screen with one button that opens a sheet and keeps what it returns.
@@ -21,7 +22,7 @@ class _Opener extends StatelessWidget {
       onPressed: () async {
         final result = await showShifaBottomSheet<String>(
           context,
-          title: 'موعد ريم العلي',
+          title: 'موعد ${people[0].name}',
           subtitle: 'الثلاثاء 24/11/2026 · 10:30',
           builder: (context) => Column(
             mainAxisSize: MainAxisSize.min,
@@ -50,10 +51,10 @@ void main() {
     final results = <String?>[];
     await pumpScreen(tester, _Opener(results));
     await _open(tester);
-    expect(find.text('موعد ريم العلي'), findsOneWidget);
+    expect(find.text('موعد ${people[0].name}'), findsOneWidget);
     await tester.tap(find.text('خيار 2'));
     await tester.pumpAndSettle();
-    expect(find.text('موعد ريم العلي'), findsNothing);
+    expect(find.text('موعد ${people[0].name}'), findsNothing);
     expect(results, ['خيار 2']);
   });
 
@@ -66,17 +67,17 @@ void main() {
     await _open(tester);
     await tester.tap(find.bySemanticsLabel('إغلاق'));
     await tester.pumpAndSettle();
-    expect(find.text('موعد ريم العلي'), findsNothing);
+    expect(find.text('موعد ${people[0].name}'), findsNothing);
 
     await _open(tester);
     await tester.tap(find.bySemanticsLabel('اسحب للإغلاق'));
     await tester.pumpAndSettle();
-    expect(find.text('موعد ريم العلي'), findsNothing);
+    expect(find.text('موعد ${people[0].name}'), findsNothing);
 
     await _open(tester);
     await tester.tapAt(const Offset(195, 40));
     await tester.pumpAndSettle();
-    expect(find.text('موعد ريم العلي'), findsNothing);
+    expect(find.text('موعد ${people[0].name}'), findsNothing);
     expect(results, [null, null, null]);
   });
 
@@ -84,9 +85,12 @@ void main() {
     final results = <String?>[];
     await pumpScreen(tester, _Opener(results));
     await _open(tester);
-    await tester.drag(find.text('موعد ريم العلي'), const Offset(0, 300));
+    await tester.drag(
+      find.text('موعد ${people[0].name}'),
+      const Offset(0, 300),
+    );
     await tester.pumpAndSettle();
-    expect(find.text('موعد ريم العلي'), findsNothing);
+    expect(find.text('موعد ${people[0].name}'), findsNothing);
   });
 
   testWidgets('never taller than 5/6 of the screen; scrolls inside', (
@@ -109,7 +113,7 @@ void main() {
         .getSemanticsData();
     expect(data.flagsCollection.scopesRoute, isTrue);
     expect(data.flagsCollection.namesRoute, isTrue);
-    expect(data.label, contains('موعد ريم العلي'));
+    expect(data.label, contains('موعد ${people[0].name}'));
   });
 
   testWidgets('rises in 240 ms; at once under reduced motion', (tester) async {

@@ -195,3 +195,28 @@ describe('component colour pairs', () => {
     expect(pairs).toContain('input.fg on input.bg');
   });
 });
+
+describe('icon pairs (C-5)', () => {
+  const pairs = loadSources().pairs.map((p) => `${p.text} on ${p.surface}`);
+
+  it.each(['color.brand.primary-soft', 'color.brand.accent-soft', 'color.selection.subtle'])(
+    'the icon colours are declared on %s as UI marks',
+    (surface) => {
+      for (const icon of ['color.icon.default', 'color.icon.muted']) {
+        expect(pairs).toContain(`${icon} on ${surface}`);
+      }
+      const declared = loadSources().pairs.filter(
+        (p) => p.surface === surface && p.text.startsWith('color.icon.'),
+      );
+      expect(declared.every((p) => p.class === 'ui')).toBe(true);
+    },
+  );
+
+  it('every icon pair passes in light and dark', () => {
+    const findings = checkContrast(loadSources()).filter((f) => f.text.startsWith('color.icon.'));
+    expect(findings.length).toBeGreaterThan(0);
+    for (const f of findings) {
+      expect(f.ratio, `${f.text} on ${f.surface} (${f.theme})`).toBeGreaterThanOrEqual(f.minimum);
+    }
+  });
+});

@@ -216,7 +216,9 @@
   --shifa-space-16: 64px;
   --shifa-space-0-5: 2px;
   --shifa-width-14: 56px;
+  --shifa-width-19: 76px;
   --shifa-width-20: 80px;
+  --shifa-width-22: 88px;
   --shifa-width-24: 96px;
   --shifa-width-60: 240px;
   --shifa-width-80: 320px;
@@ -224,6 +226,7 @@
   --shifa-width-100: 400px;
   --shifa-width-120: 480px;
   --shifa-width-140: 560px;
+  --shifa-width-37-5: 150px;
   --shifa-radius-none: 0px;
   --shifa-radius-xs: 4px;
   --shifa-radius-sm: 8px;
@@ -272,10 +275,12 @@
   --shifa-size-control-sm: 36px;
   --shifa-size-control-md: 44px;
   --shifa-size-control-lg: 52px;
+  --shifa-size-control-select-narrow: 88px;
   --shifa-size-row: 48px;
   --shifa-size-popover: 320px;
   --shifa-size-dialog: 480px;
   --shifa-size-tooltip: 240px;
+  --shifa-size-toolbar-label: 150px;
   --shifa-size-toast: 360px;
   --shifa-size-drawer: 400px;
   --shifa-size-command: 560px;
@@ -509,6 +514,7 @@
   --shifa-size-control-sm: 28px;
   --shifa-size-control-md: 32px;
   --shifa-size-control-lg: 40px;
+  --shifa-size-control-select-narrow: 76px;
   --shifa-size-row: 32px;
   --shifa-inset-control: 12px;
   --shifa-inset-surface: 16px;

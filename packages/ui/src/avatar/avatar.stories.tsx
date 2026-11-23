@@ -2,8 +2,11 @@
 // eight combinations of direction × theme × density and is checked by axe. Names are synthetic.
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { storyStates } from '../../.storybook/story-states.tsx';
-import { people } from '../../test/fixtures.ts';
+import { latinPeople, people } from '../../test/fixtures.ts';
 import { Avatar, AvatarGroup } from './avatar.tsx';
+
+/** A generated name in Latin letters, for the mixed-direction line (slice 0.4-12). */
+const LATIN = latinPeople(1)[0]?.name ?? '';
 
 const CREW = people(6, { seed: 31 });
 const name = (i: number) => CREW[i]?.name ?? '';
@@ -42,7 +45,7 @@ export const Initials: Story = {
     <div className="flex items-center gap-4">
       <Avatar name={name(1)} />
       <Avatar name={name(2)} />
-      <Avatar name="Rami Saleh" />
+      <Avatar name={LATIN} />
       <Avatar name={name(3).split(' ')[0] ?? ''} />
       <Avatar name={name(4)} src="/no-such-picture.png" />
     </div>
@@ -78,9 +81,9 @@ export const MixedDirection: Story = {
   ...states['MixedDirection'],
   render: () => (
     <div className="flex items-center gap-3">
-      <Avatar name="Rami Saleh" />
+      <Avatar name={LATIN} />
       <span className="text-body leading-heading font-medium">
-        د. <bdi>Rami Saleh</bdi>
+        د. <bdi>{LATIN}</bdi>
       </span>
     </div>
   ),
