@@ -100,9 +100,124 @@
       "name": "error service_unavailable",
       "schema": "ErrorEnvelope",
       "body": { "error": { "code": "service_unavailable", "message": "Service unavailable" } }
-    }
+    },
+    {
+      "name": "error phone_locked with its end",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "phone_locked",
+          "message": "Too many failed sign-ins for this phone",
+          "until": "2026-11-23T10:15:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "error invalid_credentials",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "invalid_credentials", "message": "Invalid phone or password" } }
+    },
+    {
+      "name": "error ip_blocked with its end",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "ip_blocked",
+          "message": "Too many failed sign-ins from this address",
+          "until": "2026-11-23T10:15:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "error session_expired",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "session_expired", "message": "Session expired" } }
+    },
+    {
+      "name": "session of an owner in one clinic",
+      "schema": "SessionView",
+      "body": {
+        "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+        "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+        "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+        "branchId": "4fab6e8c-a05b-4b1e-9f4c-6d8a9eafbc2d",
+        "roles": [
+          { "role": "owner", "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0", "branchId": null }
+        ],
+        "idleMinutes": 30,
+        "idleExpiresAt": "2026-11-23T08:30:00.000Z",
+        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+      }
+    },
+    {
+      "name": "session without a clinic",
+      "schema": "SessionView",
+      "body": {
+        "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+        "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+        "tenantId": null,
+        "branchId": null,
+        "roles": [],
+        "idleMinutes": 15,
+        "idleExpiresAt": "2026-11-23T08:15:00.000Z",
+        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+      }
+    },
+    {
+      "name": "two sessions",
+      "schema": "SessionList",
+      "body": {
+        "sessions": [
+          {
+            "id": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+            "device": "Android",
+            "browser": "Chrome",
+            "createdAt": "2026-11-23T08:00:00.000Z",
+            "lastActiveAt": "2026-11-23T08:10:00.000Z",
+            "current": true
+          },
+          {
+            "id": "3e9a5d7b-9f4a-4a0d-8e3b-5c7f8d9eab1c",
+            "device": null,
+            "browser": null,
+            "createdAt": "2026-11-22T08:00:00.000Z",
+            "lastActiveAt": "2026-11-22T09:00:00.000Z",
+            "current": false
+          }
+        ]
+      }
+    },
+    { "name": "sessions ended", "schema": "EndedSessions", "body": { "ended": 2 } }
   ],
   "invalid": [
+    {
+      "name": "session without a session id",
+      "schema": "SessionView",
+      "body": {
+        "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+        "tenantId": null,
+        "branchId": null,
+        "roles": [],
+        "idleMinutes": 15,
+        "idleExpiresAt": "2026-11-23T08:15:00.000Z",
+        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+      }
+    },
+    {
+      "name": "session summary without current",
+      "schema": "SessionList",
+      "body": {
+        "sessions": [
+          {
+            "id": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+            "device": null,
+            "browser": null,
+            "createdAt": "2026-11-23T08:00:00.000Z",
+            "lastActiveAt": "2026-11-23T08:10:00.000Z"
+          }
+        ]
+      }
+    },
     { "name": "health with no status", "schema": "HealthStatus", "body": {} },
     {
       "name": "unknown error code",

@@ -72,8 +72,11 @@ const NEEDS_PART: Readonly<Record<string, (typeof PARTS)[number]>> = {
   QUERY: 'query',
   PARAM: 'params',
 };
-/** Parameter decorators that read nothing a client can shape beyond headers. */
-const HARMLESS = new Set(['HEADERS', 'IP', 'HOST']);
+/**
+ * Parameter decorators that read nothing a client can shape beyond headers: Nest's own, and the
+ * two known own ones (routes.ts KNOWN_FACTORIES).
+ */
+const HARMLESS = new Set(['HEADERS', 'IP', 'HOST', 'PRINCIPAL', 'REQUEST_META']);
 
 /**
  * Route features the contract cannot see: input read without a schema (`@Req()`, `@RawBody()`,
@@ -89,6 +92,10 @@ function routeShapeProblems(route: RouteHandler, contract: Contract): string[] {
     } else if (!HARMLESS.has(kind)) {
       problems.push(`${kind} parameter bypasses the contract; read input with @Body/@Query/@Param`);
     }
+  }
+  // A public route authenticates nobody: the principal would be missing at request time.
+  if (route.public && route.args.includes('PRINCIPAL')) {
+    problems.push('@CurrentPrincipal() on a @Public route');
   }
   if (route.versioned) problems.push('@Version() is not supported by contracts yet');
   if (route.method === undefined) problems.push('no HTTP method decorator');

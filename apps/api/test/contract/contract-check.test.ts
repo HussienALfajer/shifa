@@ -4,7 +4,7 @@ import { Controller, Get, Post } from '@nestjs/common';
 import { defineContract } from '@shifa/contracts';
 import { afterEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { Public } from '../../src/access/index.ts';
+import { CurrentPrincipal, type Principal, Public, SignedIn } from '../../src/access/index.ts';
 import { Contract } from '../../src/platform/contract/index.ts';
 import { buildTestApp, offlineDb, type TestApp, testContract } from '../support.ts';
 
@@ -94,6 +94,24 @@ class TwinController {
   }
 }
 
+@Controller('__principal')
+class PrincipalController {
+  /** A public route authenticates nobody: the principal would be missing (A-01-02 review N4). */
+  @Public()
+  @Contract(testContract('GET', '/__principal/public'))
+  @Get('public')
+  open(@CurrentPrincipal() principal: Principal): string {
+    return principal.userId;
+  }
+
+  @SignedIn()
+  @Contract(testContract('GET', '/__principal/signed-in'))
+  @Get('signed-in')
+  mine(@CurrentPrincipal() principal: Principal): string {
+    return principal.userId;
+  }
+}
+
 let current: TestApp | undefined;
 
 afterEach(async () => {
@@ -129,6 +147,14 @@ describe('contract check at start', () => {
   it('refuses to start when two contracts share an operationId', async () => {
     const start = buildTestApp({ db: offlineDb(), controllers: [TwinController] });
     await expect(start).rejects.toThrow(/operationId testTwin is used by .*first.*second/);
+  });
+
+  it('refuses @CurrentPrincipal() on a @Public route, accepts it on @SignedIn', async () => {
+    const start = buildTestApp({ db: offlineDb(), controllers: [PrincipalController] });
+    await expect(start).rejects.toThrow(
+      /PrincipalController\.open: @CurrentPrincipal\(\) on a @Public route/,
+    );
+    await expect(start).rejects.not.toThrow(/PrincipalController\.mine/);
   });
 
   it('starts when every handler has a matching contract', async () => {

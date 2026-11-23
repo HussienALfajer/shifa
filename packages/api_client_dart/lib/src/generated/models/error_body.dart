@@ -11,7 +11,12 @@ part 'error_body.g.dart';
 
 @JsonSerializable()
 class ErrorBody {
-  const ErrorBody({required this.code, required this.message, this.details});
+  const ErrorBody({
+    required this.code,
+    required this.message,
+    this.details,
+    this.until,
+  });
 
   factory ErrorBody.fromJson(Map<String, Object?> json) =>
       _$ErrorBodyFromJson(json);
@@ -20,6 +25,8 @@ class ErrorBody {
   @JsonKey(includeIfNull: false)
   final List<ValidationIssue>? details;
   final String message;
+  @JsonKey(includeIfNull: false)
+  final DateTime? until;
 
   Map<String, Object?> toJson() => _$ErrorBodyToJson(this);
 }

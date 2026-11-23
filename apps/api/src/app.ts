@@ -3,16 +3,20 @@
 import 'reflect-metadata';
 import { NestFactory } from '@nestjs/core';
 import { FastifyAdapter, type NestFastifyApplication } from '@nestjs/platform-fastify';
-import type { ShifaDb } from '@shifa/db';
+import type { AuthDb, ShifaDb } from '@shifa/db';
 import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify';
 import { AppModule } from './app.module.ts';
+import type { IdentitySecrets } from './modules/identity/index.ts';
 import { envelopeFor, GlobalExceptionFilter } from './platform/errors.ts';
 import {
+  CLIENT_REQUEST_ID_KEY,
+  clientRequestId,
   type Logger,
   NestPinoLogger,
   REQUEST_ID_HEADER,
   requestIdFor,
 } from './platform/logging.ts';
+import { registerRequestGuard } from './platform/request-guard.ts';
 import { registerTelemetryHooks } from './telemetry/http.ts';
 
 /** 1 MB: no endpoint in Release 1 takes more in JSON (uploads go to object storage). */
@@ -44,6 +48,17 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   const fastify = app.getHttpAdapter().getInstance();
   registerTelemetryHooks(fastify);
+  registerRequestGuard(fastify);
+  // A client's own request id goes on its lines under a separate key (logs only, never exported).
+  fastify.addHook('onRequest', (request, reply, done) => {
+    const clientId = clientRequestId(request.raw);
+    if (clientId !== undefined) {
+      // Both: Fastify writes "request completed" through reply.log.
+      request.log = request.log.child({ [CLIENT_REQUEST_ID_KEY]: clientId });
+      reply.log = request.log;
+    }
+    done();
+  });
   fastify.addHook('onSend', async (request, reply, payload) => {
     void reply.header(REQUEST_ID_HEADER, request.id);
     return payload;
@@ -54,16 +69,20 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
 
 export async function createApp({
   db,
+  authDb,
+  secrets,
   logger,
   testRoutes = false,
 }: {
   db: ShifaDb;
+  authDb: AuthDb;
+  secrets: IdentitySecrets;
   logger: Logger;
   /** NODE_ENV=test only (config.testRoutes): registers platform/test-support.ts. */
   testRoutes?: boolean;
 }): Promise<NestFastifyApplication> {
   const app = await NestFactory.create<NestFastifyApplication>(
-    AppModule.register({ db, testRoutes }),
+    AppModule.register({ db, authDb, secrets, testRoutes }),
     createAdapter(logger),
     // From the first line on, so errors while Nest builds providers also go through pino.
     { logger: new NestPinoLogger(logger) },

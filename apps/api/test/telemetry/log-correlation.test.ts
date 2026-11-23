@@ -15,7 +15,13 @@ afterEach(async () => {
 
 const REQUEST_ID = 'req-corr-0001-abcdef';
 const isServer = (span: ReadableSpan) => span.kind === SpanKind.SERVER;
-const ofRequest = (records: LogRecord[]) => records.filter((r) => r['reqId'] === REQUEST_ID);
+// The client's id is logged as client_request_id; the request's own id (reqId) is generated.
+const reqIdOf = (records: LogRecord[]) =>
+  records.find((r) => r['client_request_id'] === REQUEST_ID)?.['reqId'];
+const ofRequest = (records: LogRecord[]) => {
+  const reqId = reqIdOf(records);
+  return records.filter((r) => reqId !== undefined && r['reqId'] === reqId);
+};
 
 // Runs first: the SDK is not started yet in this process.
 describe('without telemetry', () => {
@@ -36,6 +42,8 @@ describe('without telemetry', () => {
 
 describe('with telemetry', () => {
   let test: TestTelemetry;
+  /** The generated id of the request the first case sends (its app is closed afterwards). */
+  let correlatedReqId: unknown;
 
   it('puts the server span ids and the request id on every line of the request', async () => {
     test = startTestTelemetry();
@@ -47,6 +55,7 @@ describe('with telemetry', () => {
     const traceId = server?.spanContext().traceId;
     const spanId = server?.spanContext().spanId;
     const lines = ofRequest(current.logs.records());
+    correlatedReqId = reqIdOf(current.logs.records());
     // incoming request, the handler's own line, request completed
     expect(lines.length).toBeGreaterThanOrEqual(2);
     for (const line of lines) {
@@ -59,7 +68,7 @@ describe('with telemetry', () => {
     const [server] = await serverSpans(test, 1, isServer);
     const records = test.logExporter
       .getFinishedLogRecords()
-      .filter((r) => r.attributes['reqId'] === REQUEST_ID);
+      .filter((r) => r.attributes['reqId'] === correlatedReqId);
     expect(records.length).toBeGreaterThanOrEqual(2);
     for (const record of records) {
       expect(record.spanContext?.traceId).toBe(server?.spanContext().traceId);

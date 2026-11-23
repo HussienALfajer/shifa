@@ -1,9 +1,13 @@
 // Calls every registered route as every caller and compares the status class with the committed
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
-import { testDb } from '@shifa/db/testing';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { session } from '@shifa/db';
+import { syntheticPhones, testAuthDb, testDb } from '@shifa/db/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { NoAuthAdapter } from '../../src/access/auth.port.ts';
-import { ROLES } from '../../src/access/roles.ts';
+import { AUTH_PORT } from '../../src/access/auth.port.ts';
+import { ROLES, type Role } from '../../src/access/roles.ts';
+import { BetterAuthAdapter } from '../../src/modules/identity/index.ts';
+import { ContractCheck } from '../../src/platform/contract/contract-check.ts';
 import {
   HeaderAuthAdapter,
   headersFor,
@@ -11,12 +15,15 @@ import {
   principalFor,
   TEST_GRANTS,
 } from '../access/probe.ts';
+import { PASSWORD, seedPerson } from '../identity/support.ts';
 import { buildTestApp, type TestApp } from '../support.ts';
 import {
   type Caller,
   EXPECTED_MATRIX,
   type Matrix,
   type MatrixRow,
+  SAMPLE_REQUESTS,
+  type SampleContext,
   TEST_ONLY_ROUTES,
 } from './route-matrix.expected.ts';
 
@@ -30,14 +37,57 @@ function statusClass(status: number): number {
   return status;
 }
 
+/** One synthetic person per role, and one who signs in through the sample body. */
+const people = new Map<Caller, string>();
+let signInPerson: SampleContext['signIn'];
+
+async function seedPeople(): Promise<void> {
+  const phones = syntheticPhones(2026_11_13, ROLES.length + 1);
+  for (const [i, role] of ROLES.entries()) {
+    people.set(role, (await seedPerson(phones[i] ?? '')).userId);
+  }
+  const phone = phones[ROLES.length] ?? '';
+  await seedPerson(phone);
+  signInPerson = { phone, password: PASSWORD };
+}
+
+/** A fresh session row for `userId` (the route under test may end it). */
+async function newSession(userId: string): Promise<string> {
+  const id = randomUUID();
+  const now = new Date();
+  await testAuthDb().withAuth((tx) =>
+    tx.insert(session).values({
+      id,
+      userId,
+      token: randomBytes(24).toString('hex'),
+      expiresAt: new Date(now.getTime() + 12 * 3_600_000),
+      lastActiveAt: now,
+    }),
+  );
+  return id;
+}
+
 async function observe(app: TestApp): Promise<Observed> {
   const observed: Observed = {};
   for (const route of app.routes) {
     const [method, url] = route.split(' ') as [string, string];
     const row = {} as Record<Caller, number>;
     for (const caller of CALLERS) {
-      const headers = caller === 'anonymous' ? {} : headersFor(principalFor(caller));
-      const res = await app.app.inject({ method: method as 'GET', url, headers });
+      const userId = people.get(caller);
+      const headers =
+        userId === undefined
+          ? {}
+          : headersFor(
+              principalFor(caller as Role, { userId, sessionId: await newSession(userId) }),
+            );
+      const otherSessionId = userId === undefined ? randomUUID() : await newSession(userId);
+      const sample = SAMPLE_REQUESTS[route]?.({ signIn: signInPerson, otherSessionId }) ?? {};
+      const res = await app.app.inject({
+        method: method as 'GET',
+        url: sample.url ?? url,
+        headers,
+        ...(sample.body === undefined ? {} : { payload: sample.body as Record<string, unknown> }),
+      });
       row[caller] = statusClass(res.statusCode);
     }
     observed[route] = row;
@@ -78,8 +128,10 @@ let withProductionAuth: TestApp;
 let observed: Observed;
 
 beforeAll(async () => {
+  await seedPeople();
   withTestAuth = await buildTestApp({
     db: testDb(),
+    authDb: testAuthDb(),
     controllers: [ProbeController],
     auth: new HeaderAuthAdapter(),
     grants: TEST_GRANTS,
@@ -87,6 +139,7 @@ beforeAll(async () => {
   });
   withProductionAuth = await buildTestApp({
     db: testDb(),
+    authDb: testAuthDb(),
     controllers: [ProbeController],
     testRoutes: true,
   });
@@ -99,6 +152,17 @@ afterAll(async () => {
 });
 
 describe('route permission matrix', () => {
+  it('every route with a request body or a path parameter has a sample request', () => {
+    const needing = withTestAuth.app
+      .get(ContractCheck)
+      .routes()
+      .filter((r) => r.contract?.request?.body !== undefined || r.contract?.request?.params)
+      .map((r) => `${r.method ?? ''} ${r.paths[0] ?? ''}`)
+      .filter((route) => !TEST_ONLY_ROUTES.has(route) && !route.includes('/__'));
+    expect(needing).toContain('POST /auth/sign-in');
+    for (const route of needing) expect(SAMPLE_REQUESTS[route], route).toBeDefined();
+  });
+
   it('finds the routes it must cover', () => {
     expect(withTestAuth.routes).toContain('GET /health/live');
     expect(withTestAuth.routes).toContain('GET /__probe/read');
@@ -109,7 +173,7 @@ describe('route permission matrix', () => {
   });
 
   it('production auth: every protected route answers 401 to every caller', async () => {
-    expect(NoAuthAdapter).toBeDefined();
+    expect(withProductionAuth.app.get(AUTH_PORT)).toBeInstanceOf(BetterAuthAdapter);
     const production = await observe(withProductionAuth);
     for (const [route, row] of Object.entries(EXPECTED_MATRIX)) {
       for (const caller of CALLERS) {

@@ -25,6 +25,7 @@ interface Operation {
   >;
   'x-public'?: boolean;
   'x-permission'?: string;
+  'x-signed-in'?: boolean;
 }
 
 function operations(doc: OpenApiDocument): [string, Operation][] {
@@ -175,9 +176,16 @@ describe('OpenAPI document', () => {
         method.toLowerCase()
       ];
       expect(op, route).toBeDefined();
-      const isPublic = EXPECTED_MATRIX[route]?.anonymous === 200;
+      const row = EXPECTED_MATRIX[route];
+      const isPublic = row?.anonymous === 200;
+      // Signed-in routes: 401 for anonymous, 200 for every role.
+      const isSignedIn =
+        !isPublic &&
+        row !== undefined &&
+        Object.entries(row).every(([c, s]) => c === 'anonymous' || s === 200);
       expect(op?.['x-public'] === true, route).toBe(isPublic);
-      expect(typeof op?.['x-permission'] === 'string', route).toBe(!isPublic);
+      expect(op?.['x-signed-in'] === true, route).toBe(isSignedIn);
+      expect(typeof op?.['x-permission'] === 'string', route).toBe(!isPublic && !isSignedIn);
     }
     const sensitive = doc.paths['/__probe/sensitive']?.get as Operation;
     expect(sensitive['x-permission']).toBe('test.sensitive');
@@ -201,7 +209,16 @@ describe('OpenAPI document', () => {
 
   it('the production document lists only production routes', () => {
     const prod = buildOpenApiDocument(production.app);
-    expect(Object.keys(prod.paths).sort()).toEqual(['/health/live', '/health/ready']);
+    expect(Object.keys(prod.paths).sort()).toEqual([
+      '/auth/session',
+      '/auth/sessions',
+      '/auth/sessions/end-others',
+      '/auth/sessions/{id}',
+      '/auth/sign-in',
+      '/auth/sign-out',
+      '/health/live',
+      '/health/ready',
+    ]);
     expect(Object.keys(prod.components.schemas).some((n) => n.startsWith('Probe'))).toBe(false);
   });
 });

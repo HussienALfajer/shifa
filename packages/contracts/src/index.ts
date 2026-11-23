@@ -2,4 +2,6 @@
 export * from './define.ts';
 export * from './errors.ts';
 export * from './health.ts';
+export * from './identity.ts';
 export { anonymousSchemas, schemaId, unnamedSchemaExports } from './lint.ts';
+export * from './phone.ts';

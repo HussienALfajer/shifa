@@ -1,0 +1,3 @@
+# Contract test fixtures
+
+- `oas-3.1-schema-2022-10-07.json`: the OpenAPI 3.1 document schema published by the OpenAPI Initiative at `https://spec.openapis.org/oas/3.1/schema/2022-10-07`, copied unchanged except for formatting and one substitution (A-01-02): its four `"$dynamicRef": "#meta"` are `"$ref": "#/$defs/schema"`. Ajv 8.20 resolves that dynamic reference to the document root (whose `unevaluatedProperties: false` then refuses every schema keyword); in this schema the only `meta` anchor is `$defs/schema` and no dialect extends it, so the static reference validates the same documents. Licence: Apache License 2.0 (OpenAPI Specification, Copyright The Linux Foundation). Used by `openapi-meta-schema.test.ts` to validate the generated document.

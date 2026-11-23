@@ -2,7 +2,13 @@
 // error records for the log. PostgreSQL messages and `detail` can echo values (patient data),
 // so a database error is logged as SQLSTATE, constraint, table and column only.
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
-import { type ErrorEnvelope, envelopeFor, VALIDATION_FAILED_MESSAGE } from '@shifa/contracts';
+import {
+  CODE_MESSAGES,
+  type ErrorCode,
+  type ErrorEnvelope,
+  envelopeFor,
+  VALIDATION_FAILED_MESSAGE,
+} from '@shifa/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import { reportError } from '../telemetry/errors.ts';
 import { RequestValidationError } from './contract/validation.ts';
@@ -11,8 +17,31 @@ import { type Logger, routeTemplate } from './logging.ts';
 // The envelope, the code catalogue and the fixed messages live in @shifa/contracts.
 export { type ErrorEnvelope, envelopeFor };
 
+/**
+ * An answer with its own code from the catalogue (and, for locks, when it ends). The message is
+ * the code's fixed text: nothing from the request ever reaches it.
+ */
+export class ApiError extends HttpException {
+  constructor(
+    status: number,
+    readonly code: ErrorCode,
+    readonly until?: Date,
+  ) {
+    super(CODE_MESSAGES[code] ?? code, status);
+  }
+}
+
 /** The answer for `exception`: its status's envelope, with field details for validation. */
 function bodyFor(exception: unknown, status: number): ErrorEnvelope {
+  if (exception instanceof ApiError) {
+    return {
+      error: {
+        code: exception.code,
+        message: CODE_MESSAGES[exception.code] ?? envelopeFor(status).error.message,
+        ...(exception.until ? { until: exception.until.toISOString() } : {}),
+      },
+    };
+  }
   if (exception instanceof RequestValidationError) {
     return {
       error: {

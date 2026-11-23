@@ -1,7 +1,7 @@
 // Builds the OpenAPI 3.1 document from the routes Nest registered and their contracts. Named Zod
 // schemas become components/schemas (Zod 4 z.toJSONSchema, draft 2020-12, which OpenAPI 3.1
-// uses); operations reference them by $ref. Each operation carries its access note: x-public or
-// x-permission. No @nestjs/swagger and no documentation route.
+// uses); operations reference them by $ref. Each operation carries its access note: x-public,
+// x-signed-in or x-permission. No @nestjs/swagger and no documentation route.
 import type { INestApplication } from '@nestjs/common';
 import {
   type Contract,
@@ -24,6 +24,7 @@ export interface OpenApiOperation {
   requestBody?: Json;
   responses: Record<string, Json>;
   'x-public'?: true;
+  'x-signed-in'?: true;
   'x-permission'?: string;
 }
 
@@ -52,6 +53,13 @@ const ref = (schema: z.ZodType): Json => {
     throw new Error('contract schema without an id (the start-up check missed it)');
   return { $ref: `${REF_PREFIX}${id}` };
 };
+
+/** x-public, x-signed-in or x-permission: the route's one access annotation. */
+function accessNote(route: RouteHandler): Partial<OpenApiOperation> {
+  if (route.public) return { 'x-public': true };
+  if (route.signedIn) return { 'x-signed-in': true };
+  return { 'x-permission': route.permission ?? '' };
+}
 
 const toOpenApiPath = (path: string) => path.replaceAll(/:([A-Za-z0-9_]+)/g, '{$1}');
 
@@ -99,7 +107,8 @@ function operation(
   if (contract.request?.params || contract.request?.query || contract.request?.body) fallback(400);
   if (!route.public) {
     fallback(401);
-    fallback(403);
+    // A signed-in route checks no permission, so it never answers 403.
+    if (!route.signedIn) fallback(403);
   }
   const params = parameters(contract, components);
   const body = contract.request?.body;
@@ -111,7 +120,7 @@ function operation(
       ? { requestBody: { required: true, content: { [JSON_CONTENT]: { schema: ref(body) } } } }
       : {}),
     responses,
-    ...(route.public ? { 'x-public': true as const } : { 'x-permission': route.permission ?? '' }),
+    ...accessNote(route),
   };
 }
 

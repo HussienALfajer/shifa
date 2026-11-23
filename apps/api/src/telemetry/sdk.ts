@@ -2,6 +2,8 @@
 // resource detectors): only what this file names runs, and every exporter is wrapped or viewed
 // through the scrub.ts allowlists. Loaded only when OTEL_EXPORTER_OTLP_ENDPOINT is set (see
 // bootstrap.ts) or by tests that opt in with in-memory exporters.
+
+import { randomInt } from 'node:crypto';
 import {
   type MeterProvider as ApiMeterProvider,
   context,
@@ -15,7 +17,7 @@ import {
   trace,
 } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
-import { setGlobalErrorHandler, W3CTraceContextPropagator } from '@opentelemetry/core';
+import { setGlobalErrorHandler } from '@opentelemetry/core';
 import { type Instrumentation, registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
@@ -34,6 +36,9 @@ import {
 import {
   BatchSpanProcessor,
   ParentBasedSampler,
+  type Sampler,
+  SamplingDecision,
+  type SamplingResult,
   type SpanExporter,
   TraceIdRatioBasedSampler,
   TracerProvider,
@@ -112,6 +117,42 @@ export function installInstrumentations(): Instrumentation[] {
   return [installed.http, installed.pg, installed.runtime];
 }
 
+const RANDOM_RANGE = 1_000_000;
+
+/**
+ * Samples `ratio` of spans by a server-side random draw. For remote parents (A-01a criterion 16,
+ * review B2): their trace id is the client's choice, and the ratio sampler decides from the trace
+ * id alone, so a crafted id would be always or never sampled.
+ */
+export class RandomRatioSampler implements Sampler {
+  readonly #threshold: number;
+  constructor(private readonly ratio: number) {
+    this.#threshold = Math.round(Math.min(Math.max(ratio, 0), 1) * RANDOM_RANGE);
+  }
+  shouldSample(): SamplingResult {
+    const sampled = randomInt(RANDOM_RANGE) < this.#threshold;
+    return {
+      decision: sampled ? SamplingDecision.RECORD_AND_SAMPLED : SamplingDecision.NOT_RECORD,
+    };
+  }
+  toString(): string {
+    return `RandomRatioSampler{${String(this.ratio)}}`;
+  }
+}
+
+/**
+ * A remote parent is a client's traceparent (A-01a criterion 16): neither its sampled flag nor
+ * its trace id decides, so a public caller can neither force tracing nor hide its requests. Local
+ * parents (spans inside this process) are still followed.
+ */
+export function traceSampler(ratio: number): Sampler {
+  return new ParentBasedSampler({
+    root: new TraceIdRatioBasedSampler(ratio),
+    remoteParentSampled: new RandomRatioSampler(ratio),
+    remoteParentNotSampled: new RandomRatioSampler(ratio),
+  });
+}
+
 export interface TelemetryOptions {
   serviceVersion: string;
   environment: string;
@@ -164,7 +205,7 @@ export function startTelemetry(options: TelemetryOptions): Telemetry {
     resource,
     // A client controls user_agent.original: no free text of more than 256 characters per value.
     spanLimits: { attributeValueLengthLimit: 256 },
-    sampler: new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(options.samplerRatio) }),
+    sampler: traceSampler(options.samplerRatio),
     spanProcessors: [
       new BatchSpanProcessor({
         exporter: new ScrubbingSpanExporter(options.spanExporter),
@@ -188,7 +229,9 @@ export function startTelemetry(options: TelemetryOptions): Telemetry {
   });
 
   context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
-  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+  // No propagator: an incoming traceparent is never read, so a client can neither choose the
+  // exported trace id nor join or steer a trace (A-01a criterion 16). Outgoing requests are not
+  // instrumented, so nothing needs to pass one on.
   trace.setGlobalTracerProvider(tracerProvider);
   metrics.setGlobalMeterProvider(meterProvider);
   logs.setGlobalLoggerProvider(loggerProvider);

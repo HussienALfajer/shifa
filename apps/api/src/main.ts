@@ -1,7 +1,7 @@
 // Process entry point (bootstrap only): config, logger, database, app, signals.
-import { createDb } from '@shifa/db';
+import { createAuthDb, createDb, user } from '@shifa/db';
 import { createApp } from './app.ts';
-import { ConfigError, loadConfig } from './config/env.ts';
+import { ConfigError, loadConfig, loadIdentityConfig } from './config/env.ts';
 import { describeError, errorClass } from './platform/errors.ts';
 import { createLogger } from './platform/logging.ts';
 import { flushErrors, reportError } from './telemetry/errors.ts';
@@ -15,7 +15,7 @@ const SIGNALS = ['SIGTERM', 'SIGINT'] as const;
 
 function readConfig() {
   try {
-    return loadConfig(process.env);
+    return { ...loadConfig(process.env), identity: loadIdentityConfig(process.env) };
   } catch (err) {
     // Before the logger exists. ConfigError messages name keys only, never values.
     const message = err instanceof ConfigError ? err.message : 'configuration failed';
@@ -49,16 +49,32 @@ async function main(): Promise<void> {
       logger.warn({ err: describeError(err) }, 'idle database connection failed');
     },
   });
-  // Fail fast: createDb() refuses any role but shifa_app (owner, superuser, BYPASSRLS) on first use.
+  const authDb = createAuthDb(config.identity.databaseUrlAuth, {
+    onIdleError: (err) => {
+      logger.warn({ err: describeError(err) }, 'idle identity database connection failed');
+    },
+  });
+  // Fail fast: each factory refuses any role but its own (owner, superuser, BYPASSRLS) on first use.
   try {
     await db.ping();
+    await authDb.withAuth((tx) => tx.select({ id: user.id }).from(user).limit(1));
   } catch (err) {
     logger.fatal({ err: describeError(err) }, 'database check failed at startup');
     await db.close().catch(() => undefined);
+    await authDb.close().catch(() => undefined);
     process.exit(1);
   }
 
-  const app = await createApp({ db, logger, testRoutes: config.testRoutes });
+  const app = await createApp({
+    db,
+    authDb,
+    secrets: {
+      betterAuthSecret: config.identity.betterAuthSecret,
+      hmacKey: config.identity.hmacKey,
+    },
+    logger,
+    testRoutes: config.testRoutes,
+  });
   state.server = app.getHttpServer();
   if (config.testRoutes) logger.warn('NODE_ENV=test: test-only routes are registered');
   app.enableShutdownHooks([...SIGNALS], { useProcessExit: true });

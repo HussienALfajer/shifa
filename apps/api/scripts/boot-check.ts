@@ -8,11 +8,22 @@
 //      and log lines arrive over OTLP/HTTP), and once with SENTRY_DSN on a stub GlitchTip and
 //      NODE_ENV=test (GET /_test/fail sends one scrubbed error event),
 //   3. runs it again with the owner's URL and expects a non-zero exit (createDb refuses owners),
-//   4. checks that no database password ever appeared in the app's output.
+//   4. checks that no database password or identity secret ever appeared in the app's output.
+// Every start also gets the identity keys (A-01-02): shifa_auth and shifa_platform URLs from the
+// harness and throwaway secrets.
+import { randomBytes } from 'node:crypto';
 import { existsSync } from 'node:fs';
 import { createServer as createHttpServer } from 'node:http';
 import { acquireDbTestLock, startHarnessContainer } from '@shifa/db/harness';
-import { freePort, INSTRUMENT, MAIN, startApi, waitReady, withTimeout } from './api-process.ts';
+import {
+  freePort,
+  INSTRUMENT,
+  MAIN,
+  setIdentityEnv,
+  startApi,
+  waitReady,
+  withTimeout,
+} from './api-process.ts';
 
 const EXPORT_WARNING = 'telemetry export failed';
 /** The exporters retry with backoff before reporting a failure: wait up to this long for it. */
@@ -235,6 +246,13 @@ async function main(): Promise<void> {
   try {
     const harness = await startHarnessContainer();
     try {
+      const secrets = [randomBytes(36).toString('base64'), randomBytes(36).toString('base64')];
+      setIdentityEnv({
+        DATABASE_URL_AUTH: harness.url('auth'),
+        DATABASE_URL_PLATFORM: harness.url('platform'),
+        BETTER_AUTH_SECRET: secrets[0] ?? '',
+        AUTH_HMAC_KEY: secrets[1] ?? '',
+      });
       const output = [
         await checkAppRole(harness.url('app'), 'off'),
         await checkAppRole(harness.url('app'), 'collector down'),
@@ -242,9 +260,20 @@ async function main(): Promise<void> {
         await checkErrorReporting(harness.url('app')),
         await checkOwnerRefused(harness.url('owner')),
       ].join('\n');
-      const { appPassword, ownerPassword, superuserPassword } = harness.info;
-      if ([appPassword, ownerPassword, superuserPassword].some((pw) => output.includes(pw))) {
+      const { appPassword, ownerPassword, superuserPassword, authPassword, platformPassword } =
+        harness.info;
+      const passwords = [
+        appPassword,
+        ownerPassword,
+        superuserPassword,
+        authPassword,
+        platformPassword,
+      ];
+      if (passwords.some((pw) => output.includes(pw))) {
         throw new BootCheckError('a database password appeared in the API output');
+      }
+      if (secrets.some((secret) => output.includes(secret))) {
+        throw new BootCheckError('an identity secret appeared in the API output');
       }
       say('no credentials in the output');
     } finally {

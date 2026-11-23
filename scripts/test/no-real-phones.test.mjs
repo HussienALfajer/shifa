@@ -12,8 +12,15 @@ import { createRandom } from '../../packages/testing/src/synthetic/random.ts';
 
 const root = join(import.meta.dirname, '..', '..');
 const SCANNED = ['apps', 'packages', 'scripts', 'spikes', 'design'];
-/** Its rejected cases are real-format numbers on purpose: they prove `isSyntheticPhone`. */
-const EXEMPT = new Set(['packages/testing/test/synthetic/phones.test.ts']);
+/**
+ * Its rejected cases are real-format numbers on purpose: they prove `isSyntheticPhone`. The
+ * common-password list (A-01-02) is a public corpus: one of its entries, the ten-digit keyboard
+ * row typed backwards, happens to have a Syrian mobile's shape; it is a password, not a phone.
+ */
+const EXEMPT = new Set([
+  'packages/testing/test/synthetic/phones.test.ts',
+  'apps/api/src/modules/identity/common-passwords.json',
+]);
 const BINARY =
   /\.(png|jpe?g|gif|webp|ico|woff2?|ttf|otf|pdf|zip|gz|tgz|dcm|nii|bin|jar|keystore|mp4|webm)$/i;
 

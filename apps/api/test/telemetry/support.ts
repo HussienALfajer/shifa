@@ -29,14 +29,18 @@ export interface TestTelemetry {
 
 export const TEST_SERVICE_VERSION = '0.0.0-test';
 
-export function startTestTelemetry(): TestTelemetry {
+export function startTestTelemetry({
+  samplerRatio = 1,
+}: {
+  samplerRatio?: number;
+} = {}): TestTelemetry {
   const spanExporter = new InMemorySpanExporter();
   const logExporter = new InMemoryLogRecordExporter();
   const reader = new TestMetricReader();
   const telemetry = startTelemetry({
     serviceVersion: TEST_SERVICE_VERSION,
     environment: 'test',
-    samplerRatio: 1,
+    samplerRatio,
     spanExporter,
     metricReader: reader,
     logExporter,

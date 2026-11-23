@@ -39,6 +39,7 @@ export function principalFor(role: Role, overrides: Partial<Principal> = {}): Pr
   const assignment: RoleAssignment = { role, tenantId: TENANT_A, branchId: null };
   return {
     userId: `user-${role}`,
+    sessionId: null,
     tenantId: TENANT_A,
     branchId: null,
     roles: [assignment],
