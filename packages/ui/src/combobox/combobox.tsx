@@ -119,14 +119,14 @@ export function Combobox({
             })}
       >
         <div ref={setField} data-slot="combobox-field" className={cn(FIELD_BOX, 'px-3')}>
-          <Icon name="magnifying-glass" className="text-icon-muted" />
+          <Icon name="magnifying-glass" />
           <ComboboxInput
             {...(placeholder === undefined ? {} : { placeholder })}
             className="min-w-0 flex-1 border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit outline-none placeholder:text-text-muted"
           />
           <ComboboxClear
             aria-label={clearLabel}
-            className="inline-flex size-(--shifa-size-control-sm) shrink-0 border-0 bg-transparent cursor-pointer items-center justify-center rounded-input text-icon-muted hover:bg-selection-subtle focus-visible:outline-2 focus-visible:outline-border-focus"
+            className="inline-flex size-(--shifa-size-control-sm) shrink-0 border-0 bg-transparent cursor-pointer items-center justify-center rounded-input text-inherit hover:bg-selection-subtle focus-visible:outline-2 focus-visible:outline-border-focus"
           >
             <Icon name="x" />
           </ComboboxClear>

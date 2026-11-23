@@ -10,7 +10,7 @@ interface ImportMeta {
 // A stylesheet imported for its side effect (tests, Storybook).
 declare module '*.css';
 
-// A file's text, imported through Vite (`./health/tooth.svg?raw`).
+// A file's text, imported through Vite (`./file.svg?raw`).
 declare module '*?raw' {
   const text: string;
   export default text;

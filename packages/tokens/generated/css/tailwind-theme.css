@@ -19,8 +19,6 @@
   --color-text-disabled: var(--shifa-color-text-disabled);
   --color-icon-default: var(--shifa-color-icon-default);
   --color-icon-muted: var(--shifa-color-icon-muted);
-  --color-icon-tone-default: var(--shifa-color-icon-tone-default);
-  --color-icon-tone-current: var(--shifa-color-icon-tone-current);
   --color-border-default: var(--shifa-color-border-default);
   --color-border-strong: var(--shifa-color-border-strong);
   --color-border-focus: var(--shifa-color-border-focus);

@@ -116,7 +116,7 @@ export function Select({
                 : (labels.get(String(state.value)) ?? state.label)
             }
           </SelectValue>
-          <Icon name="caret-down" className="text-icon-muted" />
+          <Icon name="caret-down" />
         </SelectTrigger>
         <SelectContent
           side="bottom"

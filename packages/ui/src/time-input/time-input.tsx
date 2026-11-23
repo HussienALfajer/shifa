@@ -156,7 +156,7 @@ export function TimeInput({
             })
           }
         </BaseTimeInput>
-        <span className="inline-flex shrink-0 text-icon-muted">
+        <span className="inline-flex shrink-0">
           <Icon name="clock" />
         </span>
       </div>

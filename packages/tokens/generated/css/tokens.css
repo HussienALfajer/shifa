@@ -107,10 +107,8 @@
   --shifa-color-text-default: #1d2a26;
   --shifa-color-text-muted: #5b6a63;
   --shifa-color-text-disabled: #76857e;
-  --shifa-color-icon-default: #5b6a63;
-  --shifa-color-icon-muted: #76857e;
-  --shifa-color-icon-tone-default: #9ad8c5;
-  --shifa-color-icon-tone-current: #d4b463;
+  --shifa-color-icon-default: #1d2a26;
+  --shifa-color-icon-muted: #1d2a26;
   --shifa-color-border-default: #e6dfcf;
   --shifa-color-border-strong: #76857e;
   --shifa-color-border-focus: #1f6f5c;
@@ -404,9 +402,8 @@
   --shifa-color-bg-overlay: rgb(14 21 19 / 0.64);
   --shifa-color-text-default: #e6ede9;
   --shifa-color-text-muted: #a3b2ab;
-  --shifa-color-icon-default: #a3b2ab;
-  --shifa-color-icon-tone-default: #134a3d;
-  --shifa-color-icon-tone-current: #3a2f14;
+  --shifa-color-icon-default: #e6ede9;
+  --shifa-color-icon-muted: #e6ede9;
   --shifa-color-border-default: #2b3934;
   --shifa-color-border-focus: #6fc3ab;
   --shifa-color-selection-subtle: #0c2a23;

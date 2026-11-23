@@ -1,4 +1,4 @@
-// The curated icon list: Phosphor duotone and the Healthicons set. Directional icons mirror in
+// The curated icon list: Solar Broken (480 Design, CC BY 4.0) and the Healthicons tooth (OD-65). Directional icons mirror in
 // RTL (compare the RTL and LTR cells of the matrix).
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { DIRECTIONAL_ICONS, HEALTH_ICONS, ICON_NAMES, Icon } from './icon.tsx';
@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Phosphor (MIT) drawn duotone, 20 px in rows and controls, 24 px in navigation and cards; Healthicons (CC0) for medical glyphs. Decorative unless given a `label`. Only arrows, carets and sign-out mirror in RTL.',
+          'Solar icons by 480 Design (CC BY 4.0), Broken style: one tone, the stroke in the text colour; 20 px in rows and controls, 24 px in navigation and cards; the tooth is Healthicons (CC0). Decorative unless given a `label`. Only arrows, carets and sign-out mirror in RTL.',
       },
     },
   },

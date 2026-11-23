@@ -230,10 +230,8 @@ abstract final class ShifaColorsLight {
   static const Color colorTextDefault = Color(0xFF1D2A26);
   static const Color colorTextMuted = Color(0xFF5B6A63);
   static const Color colorTextDisabled = Color(0xFF76857E);
-  static const Color colorIconDefault = Color(0xFF5B6A63);
-  static const Color colorIconMuted = Color(0xFF76857E);
-  static const Color colorIconToneDefault = Color(0xFF9AD8C5);
-  static const Color colorIconToneCurrent = Color(0xFFD4B463);
+  static const Color colorIconDefault = Color(0xFF1D2A26);
+  static const Color colorIconMuted = Color(0xFF1D2A26);
   static const Color colorBorderDefault = Color(0xFFE6DFCF);
   static const Color colorBorderStrong = Color(0xFF76857E);
   static const Color colorBorderFocus = Color(0xFF1F6F5C);
@@ -347,10 +345,8 @@ abstract final class ShifaColorsDark {
   static const Color colorTextDefault = Color(0xFFE6EDE9);
   static const Color colorTextMuted = Color(0xFFA3B2AB);
   static const Color colorTextDisabled = Color(0xFF76857E);
-  static const Color colorIconDefault = Color(0xFFA3B2AB);
-  static const Color colorIconMuted = Color(0xFF76857E);
-  static const Color colorIconToneDefault = Color(0xFF134A3D);
-  static const Color colorIconToneCurrent = Color(0xFF3A2F14);
+  static const Color colorIconDefault = Color(0xFFE6EDE9);
+  static const Color colorIconMuted = Color(0xFFE6EDE9);
   static const Color colorBorderDefault = Color(0xFF2B3934);
   static const Color colorBorderStrong = Color(0xFF76857E);
   static const Color colorBorderFocus = Color(0xFF6FC3AB);

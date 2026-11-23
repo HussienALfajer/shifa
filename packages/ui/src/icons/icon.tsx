@@ -1,29 +1,17 @@
-// One Icon component over a curated list (design doc, "Iconography"): Phosphor (MIT) drawn
-// duotone, the second tone at 20 % of the stroke, and a small Healthicons set (CC0) for medical
-// glyphs, kept as files in ./health. Icons that point a direction mirror under dir="rtl".
+// One Icon component over a curated list (design doc, "Iconography"): Solar's Broken style (480
+// Design, CC BY 4.0, licence in ./solar) and the Healthicons tooth (CC0, ./health), outline in
+// one tone with the stroke in the text colour (OD-65). The SVG sources come from a generated plain
+// module, so any bundler can load the package. Icons that point a direction mirror under
+// dir="rtl".
 import { cn } from '../lib/cn.ts';
-import bloodDrop from './health/blood-drop.svg?raw';
-import heartOrgan from './health/heart-organ.svg?raw';
-import medicines from './health/medicines.svg?raw';
-import stethoscope from './health/stethoscope.svg?raw';
-import syringe from './health/syringe.svg?raw';
-import tooth from './health/tooth.svg?raw';
-import { PHOSPHOR, type PhosphorIcon } from './phosphor.ts';
+import { ICON_SVG } from './generated/icons.ts';
+import { HEALTH_NAMES, type IconName } from './sources.ts';
 
-/** Healthicons (outline, 24 px grid), as their SVG source. */
-const HEALTH = {
-  'blood-drop': bloodDrop,
-  'heart-organ': heartOrgan,
-  medicines,
-  stethoscope,
-  syringe,
-  tooth,
-} satisfies Record<string, string>;
+export type { IconName };
 
-export type IconName = keyof typeof PHOSPHOR | keyof typeof HEALTH;
-
-export const HEALTH_ICONS = Object.keys(HEALTH) as (keyof typeof HEALTH)[];
-export const ICON_NAMES = [...Object.keys(PHOSPHOR), ...HEALTH_ICONS] as IconName[];
+/** The medical glyphs (tooth, stethoscope…), a group of the list. */
+export const HEALTH_ICONS = HEALTH_NAMES;
+export const ICON_NAMES = Object.keys(ICON_SVG) as IconName[];
 
 /** Icons that point along the line; they mirror in RTL. Clocks, media and logos never do. */
 export const DIRECTIONAL_ICONS: readonly IconName[] = [
@@ -34,17 +22,10 @@ export const DIRECTIONAL_ICONS: readonly IconName[] = [
   'sign-out',
 ];
 
-type Source = { kind: 'phosphor'; component: PhosphorIcon } | { kind: 'health'; svg: string };
-
-/** What draws `name`; throws for a name outside the curated list. */
-export function iconSource(name: IconName): Source {
-  if (Object.hasOwn(PHOSPHOR, name)) {
-    return { kind: 'phosphor', component: PHOSPHOR[name as keyof typeof PHOSPHOR] };
-  }
-  if (Object.hasOwn(HEALTH, name)) {
-    return { kind: 'health', svg: HEALTH[name as keyof typeof HEALTH] };
-  }
-  throw new Error(`@shifa/ui: "${name}" is not in the icon list (src/icons/icon.tsx)`);
+/** The SVG source of `name`; throws for a name outside the curated list. */
+export function iconSource(name: IconName): string {
+  if (Object.hasOwn(ICON_SVG, name)) return ICON_SVG[name];
+  throw new Error(`@shifa/ui: "${name}" is not in the icon list (src/icons/sources.ts)`);
 }
 
 /** The inner markup of an SVG file, without its <svg> element. */
@@ -62,7 +43,7 @@ export interface IconProps {
 }
 
 export function Icon({ name, size = 'sm', label, className }: IconProps) {
-  const source = iconSource(name);
+  const svg = iconSource(name);
   const a11y =
     label === undefined
       ? { 'aria-hidden': true as const }
@@ -73,19 +54,17 @@ export function Icon({ name, size = 'sm', label, className }: IconProps) {
     DIRECTIONAL_ICONS.includes(name) && 'rtl:-scale-x-100',
     className,
   );
-  if (source.kind === 'phosphor') {
-    const Glyph = source.component;
-    return <Glyph weight="duotone" focusable="false" className={classes} {...a11y} />;
-  }
   return (
     <svg
       viewBox="0 0 24 24"
       fill="none"
       focusable="false"
+      data-shifa-icon={name}
       className={classes}
       {...a11y}
-      // Trusted markup: the CC0 files of ./health, bundled at build time; never user input.
-      dangerouslySetInnerHTML={{ __html: innerOf(source.svg) }}
+      // Trusted markup: the generated module of Solar and Healthicons sources, written at build
+      // time and checked against them by test/icons-vendored.test.ts; never user input.
+      dangerouslySetInnerHTML={{ __html: innerOf(svg) }}
     />
   );
 }

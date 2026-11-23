@@ -99,8 +99,6 @@ describe('the Warm values (design doc, "Design language")', () => {
   it('has icon, disabled-text and overlay colours', () => {
     has('color.icon.default');
     has('color.icon.muted');
-    has('color.icon-tone.default');
-    has('color.icon-tone.current');
     has('color.text.disabled');
     has('color.bg.overlay');
   });
@@ -119,6 +117,16 @@ describe('the Warm values (design doc, "Design language")', () => {
     for (const t of avatar) {
       expect(JSON.stringify([t.value, t.modes]), t.path).not.toContain('crimson');
     }
+  });
+
+  it('inks icons like text, with no second tone (OD-65, slice 0.4-09)', () => {
+    const text = byPath.get('color.text.default');
+    for (const path of ['color.icon.default', 'color.icon.muted']) {
+      const icon = byPath.get(path);
+      expect(icon?.value, path).toBe(text?.value);
+      expect(icon?.modes['dark'], path).toBe(text?.modes['dark']);
+    }
+    expect(tokens.filter((t) => t.path.startsWith('color.icon-tone.'))).toEqual([]);
   });
 
   it('the overlay is translucent in both themes', () => {

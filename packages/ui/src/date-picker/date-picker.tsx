@@ -142,7 +142,7 @@ export function DatePicker({
             className="min-w-0 flex-1 border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none placeholder:text-text-muted"
           />
           <DatePickerTrigger aria-label={openLabel ?? labels.open} className={NAV}>
-            <Icon name="calendar" className="text-icon-muted" />
+            <Icon name="calendar" />
           </DatePickerTrigger>
         </div>
         <DatePickerContent

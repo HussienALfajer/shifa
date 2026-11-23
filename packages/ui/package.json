@@ -17,11 +17,11 @@
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o storybook-static",
     "screenshots": "node scripts/screenshots.ts",
-    "design-system:build": "node scripts/design-system/build.ts"
+    "design-system:build": "node scripts/design-system/build.ts",
+    "icons:sync": "node scripts/icons-sync.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "7.0.7",
-    "@phosphor-icons/react": "2.1.10",
     "@shifa/tokens": "workspace:*",
     "@tanstack/react-table": "9.3.1",
     "@tanstack/react-virtual": "3.14.26",
@@ -36,6 +36,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@iconify-json/solar": "1.2.17",
     "@playwright/test": "1.65.1",
     "@shifa/eslint-config": "workspace:*",
     "@shifa/testing": "workspace:*",
@@ -52,7 +53,6 @@
     "@vitest/browser-playwright": "5.1.0",
     "axe-core": "4.14.1",
     "eslint": "10.14.0",
-    "healthicons": "3.1.0",
     "playwright": "1.65.1",
     "storybook": "10.6.7",
     "typescript": "6.0.3",
