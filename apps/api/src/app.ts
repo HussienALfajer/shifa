@@ -16,6 +16,7 @@ import {
   REQUEST_ID_HEADER,
   requestIdFor,
 } from './platform/logging.ts';
+import { registerRequestGuard } from './platform/request-guard.ts';
 import { registerTelemetryHooks } from './telemetry/http.ts';
 
 /** 1 MB: no endpoint in Release 1 takes more in JSON (uploads go to object storage). */
@@ -47,6 +48,7 @@ export async function configureApp(app: NestFastifyApplication, logger: Logger):
   app.useGlobalFilters(new GlobalExceptionFilter(logger));
   const fastify = app.getHttpAdapter().getInstance();
   registerTelemetryHooks(fastify);
+  registerRequestGuard(fastify);
   // A client's own request id goes on its lines under a separate key (logs only, never exported).
   fastify.addHook('onRequest', (request, reply, done) => {
     const clientId = clientRequestId(request.raw);

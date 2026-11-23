@@ -37,9 +37,9 @@ afterAll(async () => {
 const isServer = (span: ReadableSpan) => span.kind === SpanKind.SERVER;
 
 describe('tracestate', () => {
-  it('is continued as a trace but never exported', async () => {
+  it('is never read: the trace is not continued (A-01-02) and nothing is exported', async () => {
     const [server] = await serverSpans(test, 1, isServer);
-    expect(server?.spanContext().traceId).toBe('4'.repeat(32));
+    expect(server?.spanContext().traceId).not.toBe('4'.repeat(32));
     const payload = new TextDecoder().decode(
       JsonTraceSerializer.serializeRequest(await test.spans()),
     );

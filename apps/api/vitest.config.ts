@@ -28,6 +28,7 @@ const unit = [
   'test/telemetry/stack-strict.test.ts',
   'test/obs-smoke-parse.test.ts',
   'test/identity/password-rules.test.ts',
+  'test/identity/ip-key.test.ts',
   'test/telemetry/sampler.test.ts',
   'test/access/principal-schema.test.ts',
   'test/architecture/raw-routes.test.ts',

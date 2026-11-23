@@ -1,5 +1,5 @@
 // Criterion 2: one server span per request named by method and route template, PostgreSQL child
-// spans without statements or values, the resource attributes, and incoming traceparent honoured.
+// spans without statements or values, the resource attributes, and an incoming traceparent ignored.
 import { SpanKind } from '@opentelemetry/api';
 import type { ReadableSpan } from '@opentelemetry/sdk-trace';
 import { testDb } from '@shifa/db/testing';
@@ -70,16 +70,18 @@ describe('server spans', () => {
     expect(JSON.stringify(server?.attributes)).not.toMatch(/synthetic-(path|query)/);
   });
 
-  it('continues the trace of an incoming traceparent', async () => {
+  it('ignores an incoming traceparent: a new trace the client did not choose (A-01-02)', async () => {
     await start();
-    const traceId = '4bf92f3577b34da6a3ce929d0e0e4736';
+    // A phone number written as hex digits: it must reach no telemetry store.
+    const traceId = '00000000000000000963940012345000';
     const parentId = '00f067aa0ba902b7';
     await fetch(`${base}/health/live`, {
       headers: { traceparent: `00-${traceId}-${parentId}-01` },
     });
     const [server] = await serverSpans(test, 1, isServer);
-    expect(server?.spanContext().traceId).toBe(traceId);
-    expect(server?.parentSpanContext?.spanId).toBe(parentId);
+    expect(server?.spanContext().traceId).not.toBe(traceId);
+    expect(server?.parentSpanContext).toBeUndefined();
+    expect(JSON.stringify(await test.spans())).not.toContain(traceId);
   });
 });
 

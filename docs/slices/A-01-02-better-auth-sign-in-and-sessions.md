@@ -1,6 +1,6 @@
 # A-01-02 Better Auth sign-in and sessions
 
-Status: Built; waiting for the owner's go on locked-test edits (below) · Tier: T0 · Branch: `feat/A-01-02-better-auth-sign-in-and-sessions` (built on the cloud session branch `claude/inspiring-cori-1u1itc`, [cloud sessions](../process/cloud-sessions.md) §4)
+Status: PR open (reviews done, findings fixed) · Tier: T0 · Branch: `feat/A-01-02-better-auth-sign-in-and-sessions` (built on the cloud session branch `claude/inspiring-cori-1u1itc`, [cloud sessions](../process/cloud-sessions.md) §4)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 6–10, 14 (sign-in, lockout and session events), 15, 16; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criterion 13 (matrix asserts the Better Auth adapter) · Requirements: PLT-10, PLT-47, PLT-48 · Decisions: ADR-0016 (amended here: memberships in our own tables, no organization plugin, as both specs define), OD-77, OD-82
 
 After [A-01-01](A-01-01-data-model-and-rls.md) (merged).
@@ -43,7 +43,7 @@ Estimated hand-written lines: ~3,800 (gate ~250, contracts ~350, identity module
 - Not covered by Better Auth, done by us as planned: equal timing for an unknown phone (the plugin answers at once when no user matches), the throttle, idle limits, audit.
 
 ## Stopped at
-All four checkpoints built and green except two `verify` steps that need edits to locked tests (owner's go asked 2026-11-23, see "Locked tests"). Reviewer and security-reviewer: see Evidence. Next: owner's go, then the edits, `verify`, PR.
+All four checkpoints built; locked-test edits approved and made; reviewer and security-reviewer findings fixed; `verify` and `verify:full` green; PR open with auto-merge. Next: A-01-03.
 
 ## As built (differences from the plan)
 - **Access:** a third route annotation `@SignedIn()` (any signed-in person, no permission: the own-session routes); `AccessCheck`, the guard, the route matrix (`signedIn` rows) and OpenAPI (`x-signed-in`, no 403) know it. A-01-03's `@PlatformAdmin()` becomes the fourth. `Principal` gains `sessionId` and a nullable `tenantId` (a person without an active clinic); `PrincipalSchema` (Zod, strict) is the AuthPort contract, documented in `access/auth.port.ts`.
@@ -58,7 +58,7 @@ All four checkpoints built and green except two `verify` steps that need edits t
 - **Decision record:** [ADR-0044](../adr/0044-better-auth-as-library-behind-nest-routes.md) amends ADR-0016 (library behind Nest routes, no organization plugin).
 
 ## Locked tests
-Two `verify` steps fail on locked tests only, and need the owner's go for edits that change no assertion:
+Two `verify` steps failed on locked tests only. The owner approved both edits on 2026-11-23; no assertion changed:
 1. **Real-format phone numbers** (`scripts/test/no-real-phones.test.mjs`, 0.4-10 F2): `phone.test.ts`, `sign-in.test.ts`, `password-rules.test.ts` and `principal-schema.test.ts` use hand-typed numbers such as `+963 944 …`. Proposed: the same vectors on a synthetic, marker-bearing number (`+963 940 012 345`, `+90 532 001 23 45`) in every spelling.
 2. **Lint** (`no-unnecessary-type-assertion`, `no-unused-vars`): `res.json() as X` → `res.json<X>()` in `adapter`, `audit`, `sessions` and `sign-in` tests, and an unused destructured name in `openapi-meta-schema.test.ts`.
 
@@ -66,9 +66,12 @@ Two `verify` steps fail on locked tests only, and need the owner's go for edits 
 - Red phase: 13 test files written first and locked; all failed for the right reason (missing identity module and routes, principal not validated, client request id kept, raw route not reported, OpenAPI paths absent).
 - `@shifa/api` (Testcontainers, this cloud session): 47 files, 312 tests pass (unit 212 including config; db with identity 42; telemetry with sampling, request-id export and identity leak). `@shifa/contracts` 34, `api-client-ts` 43, `api_client_dart` 40, `@shifa/i18n` 51 pass.
 - `node scripts/check-drift.mjs --full`: migrations, openapi, api-client-ts, api-client-dart, i18n, tokens CLEAN.
-- `pnpm verify`: green except `scripts-test` (real-format phones in the four locked tests) and `typecheck+lint+test` (lint in five locked tests); see "Locked tests".
-- `verify:full` (boot check and harness touched): after the locked-test edits.
-- Reviewer and security-reviewer findings fixed: see below; deferred to backlog: see below.
+- Locked-test edits (owner's go): synthetic phones in four tests, `res.json<T>()` in five; assertions unchanged.
+- Reviewer findings fixed: **B1** parallel attempts outran the throttle (20 at once → 20 password checks): every attempt now reserves its slot under `SELECT … FOR UPDATE` before any password check (`sign-in-concurrency.test.ts`: 5 per phone, 30 per IP); **B2** a client-chosen trace id decided sampling: remote parents get a server-side random draw (`sampler.test.ts`); **N2** the list hid no idle-dead sessions (`sessions-review.test.ts`); **N4** `@CurrentPrincipal()` on a `@Public` route now stops the app (`contract-check.test.ts`); **N5** a person without a password verifies the dummy hash, a second-factor redirect is refused before the throttle is cleared; **N6** the `replaced` row names the person who signed in; **N7** the password maximum counts UTF-16 units.
+- Security-reviewer findings fixed (it confirmed B1, B2 and N5 fixed by re-running its probes): **M1** login CSRF through form posts: every unsafe request with a non-JSON body answers 415 and one whose `Sec-Fetch-Site` is not `same-origin`/`none` answers 403, before routing (`platform/request-guard.ts`, `security-review.test.ts`); **M2** one audit row per refused attempt (unbounded, append-only): only the first refusal of a lock writes a row; **L1** the client still chose the exported trace id: no propagator is installed, an incoming `traceparent` is never read (`tracing.test.ts`, `tracestate-leak.test.ts` updated); **L2** a lock-order deadlock between `reserve()` and `succeeded()`: same order now; **L3** IPv6 clients escaped the IP limit: IPv6 counts by /64, IPv4-mapped as IPv4 (`ip-key.test.ts`, `security-review.test.ts`).
+- Deferred to backlog: N1 fixed vs sliding window; N3 sweeper for lapsed sessions and throttle rows; origin allowlist and CORS for the web apps; a sign-in rate limit at the reverse proxy.
 
 ## Notes for the next session
-Until the reverse proxy exists (`/release`), `trustProxy` stays off and the IP limit keys the socket address; record that in the backlog item on client request ids.
+- Until the reverse proxy exists (`/release`), `trustProxy` stays off and the IP limit keys the socket address (backlog "Client IP and request ids behind the proxy").
+- **A-01-03:** a person with TOTP enrolled gets a second-factor redirect from Better Auth; `SignInService` throws on it today (no route can enrol TOTP yet). Replace the throw with the challenge flow (Better Auth has by then written `2fa-*` verification rows and a `two_factor` cookie). Create users with `internalAdapter.createUser(..., { method: 'admin' })` then `updateUser(id, { phoneNumber })` (gate note). `checkPasswordRules()` is ready for the setup link. `@PlatformAdmin()` becomes the fourth access annotation.
+- **Web shells (A-01-06):** unsafe requests must be JSON from the same origin (request guard); serving the web apps from another subdomain needs an origin allowlist with CORS first (backlog).

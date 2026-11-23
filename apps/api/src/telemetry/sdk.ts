@@ -17,7 +17,7 @@ import {
   trace,
 } from '@opentelemetry/api';
 import { AsyncLocalStorageContextManager } from '@opentelemetry/context-async-hooks';
-import { setGlobalErrorHandler, W3CTraceContextPropagator } from '@opentelemetry/core';
+import { setGlobalErrorHandler } from '@opentelemetry/core';
 import { type Instrumentation, registerInstrumentations } from '@opentelemetry/instrumentation';
 import { HttpInstrumentation } from '@opentelemetry/instrumentation-http';
 import { PgInstrumentation } from '@opentelemetry/instrumentation-pg';
@@ -229,7 +229,9 @@ export function startTelemetry(options: TelemetryOptions): Telemetry {
   });
 
   context.setGlobalContextManager(new AsyncLocalStorageContextManager().enable());
-  propagation.setGlobalPropagator(new W3CTraceContextPropagator());
+  // No propagator: an incoming traceparent is never read, so a client can neither choose the
+  // exported trace id nor join or steer a trace (A-01a criterion 16). Outgoing requests are not
+  // instrumented, so nothing needs to pass one on.
   trace.setGlobalTracerProvider(tracerProvider);
   metrics.setGlobalMeterProvider(meterProvider);
   logs.setGlobalLoggerProvider(loggerProvider);

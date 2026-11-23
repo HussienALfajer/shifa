@@ -65,11 +65,14 @@ export class SignInService implements OnModuleInit {
     // Counted before any password is checked, so parallel attempts cannot outrun the limit.
     const { refused, started } = await this.throttle.reserve(keys, this.clock.now());
     if (refused) {
-      const reason = refused.kind === 'ip' ? 'ip_blocked' : 'phone_locked';
-      await this.audit.record(
-        { event: 'auth.sign_in_failed', data: { reason } },
-        { actorId: null, targetId: null, requestId: meta.requestId },
-      );
+      // One row for the first refusal of a lock, not one per refused attempt (review M2).
+      if (refused.first) {
+        const reason = refused.kind === 'ip' ? 'ip_blocked' : 'phone_locked';
+        await this.audit.record(
+          { event: 'auth.sign_in_failed', data: { reason } },
+          { actorId: null, targetId: null, requestId: meta.requestId },
+        );
+      }
       await this.#auditLocks(started, null, meta.requestId);
       throw lockError(refused);
     }

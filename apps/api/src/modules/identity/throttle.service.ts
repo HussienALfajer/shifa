@@ -10,6 +10,7 @@ import { createHmac } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import { type AuthDb, authThrottle, type Tx } from '@shifa/db';
 import { and, eq, sql } from 'drizzle-orm';
+import { ipKey } from './ip-key.ts';
 import { AUTH_DB, IDENTITY_CONFIG, type IdentitySecrets } from './tokens.ts';
 
 export const PHONE_FAILURE_LIMIT = 5;
@@ -34,8 +35,11 @@ export interface Lock {
 
 /** The outcome of reserving an attempt. */
 export interface Reservation {
-  /** A lock already in force: no password may be checked. */
-  refused: Lock | null;
+  /**
+   * A lock already in force: no password may be checked. `first` is true for the first refusal
+   * of that lock only, so a refused attempt writes at most one audit row per lock (review M2).
+   */
+  refused: (Lock & { first: boolean }) | null;
   /** Locks this attempt set (an IP lock even when the phone then refused it). */
   started: Lock[];
 }
@@ -76,12 +80,10 @@ export class ThrottleService {
    */
   async succeeded(keys: ThrottleKeys, started: readonly Lock[]): Promise<void> {
     const phone = this.#hash('phone', keys.phone);
-    const ip = this.#hash('ip', keys.ip);
+    const ip = this.#hash('ip', ipKey(keys.ip));
     const ipLockStarted = started.some((lock) => lock.kind === 'ip');
+    // IP row first, then the phone row: the order reserve() locks them in (no deadlock, L2).
     await this.authDb.withAuth(async (tx) => {
-      await tx
-        .delete(authThrottle)
-        .where(and(eq(authThrottle.kind, 'phone'), eq(authThrottle.keyHash, phone)));
       await tx
         .update(authThrottle)
         .set({
@@ -89,6 +91,9 @@ export class ThrottleService {
           ...(ipLockStarted ? { lockedUntil: null } : {}),
         })
         .where(and(eq(authThrottle.kind, 'ip'), eq(authThrottle.keyHash, ip)));
+      await tx
+        .delete(authThrottle)
+        .where(and(eq(authThrottle.kind, 'phone'), eq(authThrottle.keyHash, phone)));
     });
   }
 
@@ -97,8 +102,8 @@ export class ThrottleService {
     kind: ThrottleKind,
     value: string,
     now: Date,
-  ): Promise<{ refused: Lock } | { started: Lock | null }> {
-    const keyHash = this.#hash(kind, value);
+  ): Promise<{ refused: Lock & { first: boolean } } | { started: Lock | null }> {
+    const keyHash = this.#hash(kind, kind === 'ip' ? ipKey(value) : value);
     const where = and(eq(authThrottle.kind, kind), eq(authThrottle.keyHash, keyHash));
     await tx
       .insert(authThrottle)
@@ -106,8 +111,16 @@ export class ThrottleService {
       .onConflictDoNothing({ target: [authThrottle.kind, authThrottle.keyHash] });
     const [row] = await tx.select().from(authThrottle).where(where).for('update');
     if (!row) throw new Error('throttle row missing after insert');
-    if (row.lockedUntil && row.lockedUntil > now)
-      return { refused: { kind, until: row.lockedUntil } };
+    if (row.lockedUntil && row.lockedUntil > now) {
+      // The first refusal moves the count past the limit; later ones change nothing.
+      const first = row.failures <= LIMIT[kind];
+      if (first)
+        await tx
+          .update(authThrottle)
+          .set({ failures: LIMIT[kind] + 1 })
+          .where(where);
+      return { refused: { kind, until: row.lockedUntil, first } };
+    }
     const windowOver = now.getTime() - row.windowStart.getTime() >= THROTTLE_WINDOW_MS;
     const failures = windowOver ? 1 : row.failures + 1;
     const lockedUntil = failures >= LIMIT[kind] ? new Date(now.getTime() + LOCK_MS) : null;
