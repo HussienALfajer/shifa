@@ -1,7 +1,7 @@
 # Cloud sessions (Claude Code on the web)
 
 Status: Living · Last updated: 2026-11-23 · Owner: product owner
-Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, OD-49, OD-81, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
+Sources: [WSL2 setup](wsl2-setup.md), [development workflow](development-workflow.md) §7 and §10, ADR-0028, ADR-0033, OD-24, OD-49, OD-81, OD-83, OD-84, [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
 
 Purpose: how to work on Shifa in a Claude Code cloud session (claude.ai/code or the Claude app), what the cloud container gives you, and what differs from the WSL2 machine ([setup guide](wsl2-setup.md)), which stays the primary environment. The rules of `CLAUDE.md` apply unchanged; only the mechanics below differ.
 
@@ -15,9 +15,10 @@ Cloud sessions run in the owner's personal cloud environment named `shifa`, atta
 - makes `/opt/flutter` owned by root (`chown -R root:root`) and creates `/root/.dart-tool`, so sandboxed Flutter commands can write there (section 3);
 - points Docker at the `mirror.gcr.io` registry mirror (Docker Hub refuses anonymous pulls from the cloud) and starts `dockerd` in login shells;
 - runs `pnpm install --frozen-lockfile` and `flutter pub get --enforce-lockfile`, as CI does;
+- installs the Chromium of the pinned `playwright` package into `/opt/pw-browsers` (`pnpm --filter @shifa/ui exec playwright install chromium`, from `cdn.playwright.dev`), as CI does: the image ships an older Playwright's browsers, and without this `ui-browser` and `ui-storybook` fail with `Executable doesn't exist at /opt/pw-browsers/chromium_headless_shell-<rev>`;
 - writes the git-ignored `.claude/settings.local.json` with `{"sandbox": {"enabled": false}}` (OD-83), which outranks `.claude/settings.json`: cloud sessions run without the Bash sandbox, WSL2 keeps it (section 3).
 
-Network access is limited: package registries, MCP servers, `storage.googleapis.com` (Flutter SDK) and `mirror.gcr.io`. Anything else is refused by the proxy; ask the owner to add an exact host in the environment settings rather than working around it. The container is ephemeral: work that is not pushed is lost when the session ends.
+Network access is `Full` (OD-84, owner, 2026-11-23): the session can reach any public host. The hosts the work actually needs are package registries, MCP servers, `storage.googleapis.com` (Flutter SDK), `mirror.gcr.io` (Docker images) and `cdn.playwright.dev` (Playwright's browsers); if the environment is set back to `Limited`, these are the allowlist, and a refused host is added by name in the environment settings rather than worked around. The container is ephemeral: work that is not pushed is lost when the session ends.
 
 When `ci.yml` moves to a new Flutter version, the next fresh container installs it; a running container keeps the old SDK until it is rebuilt.
 
@@ -28,7 +29,17 @@ pnpm env:check
 pnpm verify
 ```
 
-In a container built with the OD-83 setup script every check should be `ok`, Docker included, and `pnpm verify:full` runs the database, Docker and Playwright suites too (to be confirmed in the first fresh session; record the result here). The table below is the sandboxed state, still what a container built before OD-83 shows (checked 2026-11-17):
+Confirmed 2026-11-23 in the first session whose container was built with the OD-83 setup script (sandbox off):
+
+| Check | Cloud result | Meaning |
+|---|---|---|
+| `env:check` | every item `ok`, `docker` included (daemon 29.10.0) | Node reaches Docker |
+| `verify:full`, first run | 12 of 14 steps pass; `ui-browser` and `ui-storybook` `fail` with `Executable doesn't exist at /opt/pw-browsers/chromium_headless_shell-1255` | The image ships Playwright 1.63's browsers (revision 1243); the repository pins 1.65.1 (revision 1255), and `cdn.playwright.dev` was not allowed |
+| `verify:full`, after allowing `cdn.playwright.dev` and installing the pinned Chromium | all 14 steps pass, `all green`, 7 min 18 s wall time | Includes `@shifa/db` against PostgreSQL 18 and PgBouncer in Testcontainers (27 files, 156 tests, isolation suite included), `apps/api` (34 files, 224 tests), the script tests with the Docker suites (583 pass, 0 skipped), Vitest browser mode (66 files) and story tests (37 files) in Chromium, `boot`, and the screenshots in the Playwright Docker image |
+
+The setup script now installs that Chromium (section 1); a container built before that change lacks it until the same command is run by hand. Whether a container built with the new script passes `verify:full` without that manual step is unproven until a fresh session confirms it.
+
+The table below is the sandboxed state, still what a container built before OD-83 shows (checked 2026-11-17):
 
 | Check | Cloud result | Meaning |
 |---|---|---|
@@ -41,7 +52,7 @@ Any other `fail` means the setup script did not finish; read the fix `env:check`
 
 ## 3. The sandbox: off in the cloud (OD-83)
 
-Since OD-83 (owner, 2026-11-23) cloud sessions run Bash without the sandbox, so everything a terminal on the owner's machine runs also runs in the session: the database tests (Testcontainers), the isolation suite, the Docker script suites, screenshots in Docker, Playwright against the real backend, `obs:*` and `backup:*`. The setup script turns it off through the git-ignored `.claude/settings.local.json`; `.claude/settings.json` and its policy test are unchanged, and WSL2 keeps the sandbox. What still bounds a session: the environment's network allowlist, the ephemeral container (nothing on the owner's machine is reachable) and the hooks (no `--no-verify`, no force push, no push to `main`). Accepted risk: a command Claude runs, or is steered to by injected text, runs unrestricted inside the container, which holds the checkout and can push to the session's branch (already possible since OD-81). Not available in the cloud: the Android emulator (no KVM), Windows-only checks, physical devices.
+Since OD-83 (owner, 2026-11-23) cloud sessions run Bash without the sandbox, so everything a terminal on the owner's machine runs also runs in the session: the database tests (Testcontainers), the isolation suite, the Docker script suites, screenshots in Docker, Playwright against the real backend, `obs:*` and `backup:*`. The setup script turns it off through the git-ignored `.claude/settings.local.json`; `.claude/settings.json` and its policy test are unchanged, and WSL2 keeps the sandbox. What still bounds a session: the ephemeral container (nothing on the owner's machine is reachable) and the hooks (no `--no-verify`, no force push, no push to `main`). Accepted risk: a command Claude runs, or is steered to by injected text, runs unrestricted inside the container, which holds the checkout and can push to the session's branch (already possible since OD-81), and, with network access `Full` (OD-84), can reach any public host. Not available in the cloud: the Android emulator (no KVM), Windows-only checks, physical devices.
 
 The rest of this section describes the sandboxed state: WSL2, and a cloud container built before OD-83. There, Bash commands run in a sandbox (bubblewrap) built from the session's limits plus this repository's `sandbox` settings in `.claude/settings.json`, and retrying unsandboxed is disabled, as in WSL2 (OD-24). The owner allowed these exceptions (OD-49, OD-81), pinned by `scripts/test/sandbox-policy.test.mjs`:
 
