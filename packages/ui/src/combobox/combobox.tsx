@@ -67,17 +67,29 @@ export function matchesWordStart(label: string, query: string): boolean {
 
 /**
  * What a screen reader hears once typing pauses: the number of results, with Arabic plural forms
- * in RTL («لا نتائج», «نتيجة واحدة», «نتيجتان», «3 نتائج», «11 نتيجة») and English in LTR.
+ * in RTL («لا نتائج», «نتيجة واحدة», «نتيجتان», «3 نتائج», «11 نتيجة», «103 نتائج»: CLDR's
+ * Arabic plural rules) and English in LTR.
  */
+const ARABIC_PLURAL = new Intl.PluralRules('ar');
+
 export function resultsAnnouncement(count: number, dir: Direction): string {
   if (dir === 'ltr') {
     if (count === 0) return 'No results';
     return count === 1 ? '1 result' : `${String(count)} results`;
   }
-  if (count === 0) return 'لا نتائج';
-  if (count === 1) return 'نتيجة واحدة';
-  if (count === 2) return 'نتيجتان';
-  return count <= 10 ? `${String(count)} نتائج` : `${String(count)} نتيجة`;
+  switch (ARABIC_PLURAL.select(count)) {
+    case 'zero':
+      return 'لا نتائج';
+    case 'one':
+      return 'نتيجة واحدة';
+    case 'two':
+      return 'نتيجتان';
+    case 'few':
+      return `${String(count)} نتائج`;
+    case 'many':
+    case 'other':
+      return `${String(count)} نتيجة`;
+  }
 }
 
 /** The label with the typed part in bold, matched through the folding. */

@@ -4,6 +4,7 @@
 // with the field, Latin content takes dir="auto"; axe is clean, light and dark.
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { PATIENT, PATIENT_GIVEN } from '../../test/fixtures.ts';
 import {
   expectAxeClean,
   expectFocusRing,
@@ -26,8 +27,8 @@ describe.each(['rtl', 'ltr'] as const)('Input in %s', (dir) => {
       dir,
     });
     const input = screen.getByRole('textbox', { name: 'اسم المريض' }).element() as HTMLInputElement;
-    await typeArabic(input, 'سارة');
-    expect(onValueChange).toHaveBeenLastCalledWith('سارة');
+    await typeArabic(input, PATIENT_GIVEN);
+    expect(onValueChange).toHaveBeenLastCalledWith(PATIENT_GIVEN);
   });
 
   it('shows the focus ring on keyboard focus', async () => {
@@ -41,7 +42,7 @@ describe.each(['rtl', 'ltr'] as const)('Input in %s', (dir) => {
   it('disabled: out of the tab order and not editable', async () => {
     const screen = await renderDir(
       <>
-        <Input label="اسم المريض" defaultValue="سارة" disabled />
+        <Input label="اسم المريض" defaultValue={PATIENT_GIVEN} disabled />
         <button type="button">التالي</button>
       </>,
       { dir },
@@ -114,9 +115,14 @@ describe.each(['rtl', 'ltr'] as const)('Input in %s', (dir) => {
     for (const theme of ['light', 'dark'] as const) {
       const screen = await renderDir(
         <div className="flex flex-col gap-4">
-          <Input label="اسم المريض" placeholder="مثال: سارة الأحمد" />
-          <Input label="اسم المريض" defaultValue="سارة" error="اكتب الاسم كاملاً" required />
-          <Input label="اسم المريض" defaultValue="سارة" disabled />
+          <Input label="اسم المريض" placeholder={`مثال: ${PATIENT.name}`} />
+          <Input
+            label="اسم المريض"
+            defaultValue={PATIENT_GIVEN}
+            error="اكتب الاسم كاملاً"
+            required
+          />
+          <Input label="اسم المريض" defaultValue={PATIENT_GIVEN} disabled />
           <Input label="رقم الملف" defaultValue="1042" readOnly />
           <Input label="بحث" startIcon="magnifying-glass" hint="يكفي جزء من الاسم" />
         </div>,

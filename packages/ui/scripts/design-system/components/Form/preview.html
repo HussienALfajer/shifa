@@ -16,11 +16,12 @@
   <section class="panel" id="sign-in" data-theme="dark" dir="ltr" lang="en"></section>
 </div>
 <script>
+  // «لينا زيدان» is PATIENT of test/fixtures.ts: people(1, { seed: 81 }) from the generator.
   window.Shifa.mount(document.getElementById('registration'), 'Form', {
     title: 'تسجيل مريض جديد',
     summary: 'حقلان يحتاجان إلى تصحيح.',
     fields: [
-      { kind: 'input', label: 'الاسم الكامل', required: true, defaultValue: 'سارة الأحمد', half: true },
+      { kind: 'input', label: 'الاسم الكامل', required: true, defaultValue: 'لينا زيدان', half: true },
       { kind: 'input', label: 'رقم الهاتف', required: true, dir: 'auto', defaultValue: '0944 12', error: '10 أرقام تبدأ بـ 09', half: true },
       { kind: 'radio', label: 'الجنس', orientation: 'horizontal', defaultValue: 'female', items: [{ value: 'female', label: 'أنثى' }, { value: 'male', label: 'ذكر' }], half: true },
       { kind: 'time', label: 'الوقت المفضّل للمواعيد', defaultValue: '16:00', half: true },

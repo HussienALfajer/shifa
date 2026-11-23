@@ -6,7 +6,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { userEvent } from 'vitest/browser';
 import { z } from 'zod';
-import { PHONE } from '../../test/fixtures.ts';
+import { PATIENT_GIVEN, PHONE } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir } from '../../test/support/index.ts';
 import { Checkbox } from '../checkbox/checkbox.tsx';
 import { Input } from '../input/input.tsx';
@@ -86,7 +86,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
   it('blocks the submit and shows each translated error under its field', async () => {
     const onSubmit = vi.fn();
     const screen = await renderDir(
-      <Registration onSubmit={onSubmit} defaults={{ name: 'سارة' }} />,
+      <Registration onSubmit={onSubmit} defaults={{ name: PATIENT_GIVEN }} />,
       {
         dir,
       },
@@ -108,7 +108,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
 
   it('moves focus to the first invalid field on submit', async () => {
     const screen = await renderDir(
-      <Registration onSubmit={vi.fn()} defaults={{ name: 'سارة' }} />,
+      <Registration onSubmit={vi.fn()} defaults={{ name: PATIENT_GIVEN }} />,
       {
         dir,
       },
@@ -121,7 +121,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
 
   it('focuses a radio of an invalid group when the group is the first invalid field', async () => {
     const screen = await renderDir(
-      <Registration onSubmit={vi.fn()} defaults={{ name: 'سارة', phone: PHONE_DIGITS }} />,
+      <Registration onSubmit={vi.fn()} defaults={{ name: PATIENT_GIVEN, phone: PHONE_DIGITS }} />,
       { dir },
     );
     await userEvent.click(screen.getByRole('button', { name: 'سجّل' }));
@@ -135,7 +135,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
     const screen = await renderDir(
       <Registration
         onSubmit={onSubmit}
-        defaults={{ name: 'سارة', phone: '0944', sex: 'female', consent: true }}
+        defaults={{ name: PATIENT_GIVEN, phone: '0944', sex: 'female', consent: true }}
       />,
       { dir },
     );
@@ -148,7 +148,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
     await userEvent.click(screen.getByRole('button', { name: 'سجّل' }));
     await expect.poll(() => onSubmit.mock.calls.length).toBe(1);
     expect(onSubmit.mock.calls[0]?.[0]).toEqual({
-      name: 'سارة',
+      name: PATIENT_GIVEN,
       phone: PHONE_DIGITS,
       sex: 'female',
       consent: true,
@@ -166,7 +166,7 @@ describe.each(['rtl', 'ltr'] as const)('Form in %s', (dir) => {
     const screen = await renderDir(
       <Registration
         onSubmit={onSubmit}
-        defaults={{ name: 'سارة', phone: PHONE_DIGITS, sex: 'male', consent: true }}
+        defaults={{ name: PATIENT_GIVEN, phone: PHONE_DIGITS, sex: 'male', consent: true }}
       />,
       { dir },
     );

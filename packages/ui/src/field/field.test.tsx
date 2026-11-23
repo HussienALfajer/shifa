@@ -4,6 +4,7 @@
 // with the control; disabled reaches the control; it holds any control of the batch; axe is
 // clean, light and dark.
 import { describe, expect, it } from 'vitest';
+import { PATIENT_GIVEN } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir, tokenColor } from '../../test/support/index.ts';
 import { Input } from '../input/input.tsx';
 import { OtpInput } from '../otp-input/otp-input.tsx';
@@ -65,7 +66,7 @@ describe.each(['rtl', 'ltr'] as const)('Field in %s', (dir) => {
   it('passes disabled to its control', async () => {
     const screen = await renderDir(
       <Field label="اسم المريض" disabled>
-        <Input defaultValue="سارة" />
+        <Input defaultValue={PATIENT_GIVEN} />
       </Field>,
       { dir },
     );
@@ -105,7 +106,7 @@ describe.each(['rtl', 'ltr'] as const)('Field in %s', (dir) => {
             <Input dir="auto" defaultValue="0944 12" />
           </Field>
           <Field label="اسم المريض" disabled>
-            <Input defaultValue="سارة" />
+            <Input defaultValue={PATIENT_GIVEN} />
           </Field>
         </div>,
         { dir, theme },

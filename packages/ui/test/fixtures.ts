@@ -152,3 +152,8 @@ export function latinPeople(count: number, { seed = 64 }: { seed?: number } = {}
     name: generateLatinPersonName(createRandom(seed + i)).latin,
   }));
 }
+
+/** One generated patient, for a value typed into a name field (slice 0.4-12, P-N1). */
+export const PATIENT: Person = people(1, { seed: 81 })[0] ?? { id: '1001', name: '' };
+/** PATIENT's given name alone. */
+export const PATIENT_GIVEN = PATIENT.name.split(' ')[0] ?? '';

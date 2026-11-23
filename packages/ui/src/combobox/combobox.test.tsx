@@ -2,7 +2,7 @@
 // every name, and a query with a space matches at the start of a word.
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
-import { patientsSharing } from '../../test/fixtures.ts';
+import { patientsSharing, people } from '../../test/fixtures.ts';
 import { renderDir, typeArabic } from '../../test/support/index.ts';
 import { Combobox, type ComboboxItem, matchesWordStart } from './combobox.tsx';
 
@@ -11,14 +11,19 @@ const ITEMS: ComboboxItem[] = [...matching, ...others].map((p) => ({ value: p.id
 const optionCount = () => document.querySelectorAll('[role="option"]').length;
 const poll = (fn: () => unknown, message: string) => expect.poll(fn, { timeout: 1000, message });
 
+/** A generated name whose family name starts with «ال», so a query can start either word. */
+const WORDY = people(8, { seed: 83 }).find((p) => p.name.split(' ')[1]?.startsWith('ال'));
+const [GIVEN = '', FAMILY = ''] = WORDY?.name.split(' ') ?? [];
+
 describe('matchesWordStart', () => {
   it('matches a query that starts a word, spaces included', () => {
-    expect(matchesWordStart('سامر الحلبي', 'سا')).toBe(true);
-    expect(matchesWordStart('سامر الحلبي', 'الح')).toBe(true);
-    expect(matchesWordStart('سامر الحلبي', 'سامر ال')).toBe(true);
-    expect(matchesWordStart('سامر  الحلبي', 'سامر الحلبي')).toBe(true);
-    expect(matchesWordStart('سامر الحلبي', 'امر')).toBe(false);
-    expect(matchesWordStart('سامر الحلبي', 'سامر ب')).toBe(false);
+    const name = `${GIVEN} ${FAMILY}`;
+    expect(matchesWordStart(name, GIVEN.slice(0, 2))).toBe(true);
+    expect(matchesWordStart(name, FAMILY.slice(0, 3))).toBe(true);
+    expect(matchesWordStart(name, `${GIVEN} ال`)).toBe(true);
+    expect(matchesWordStart(`${GIVEN}  ${FAMILY}`, name)).toBe(true);
+    expect(matchesWordStart(name, GIVEN.slice(1))).toBe(false);
+    expect(matchesWordStart(name, `${GIVEN} ب`)).toBe(false);
   });
 });
 

@@ -5,6 +5,7 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { z } from 'zod';
 import { storyStates } from '../../.storybook/story-states.tsx';
+import { PATIENT_GIVEN } from '../../test/fixtures.ts';
 import { Checkbox } from '../checkbox/checkbox.tsx';
 import { Input } from '../input/input.tsx';
 import { PasswordInput } from '../password-input/password-input.tsx';
@@ -154,7 +155,7 @@ export const SubmittedWithErrors: Story = {
   parameters: { matrix: false },
   play: async ({ canvasElement }) => {
     const canvas = within(canvasElement);
-    await userEvent.type(canvas.getByRole('textbox', { name: 'الاسم الكامل' }), 'سارة');
+    await userEvent.type(canvas.getByRole('textbox', { name: 'الاسم الكامل' }), PATIENT_GIVEN);
     await userEvent.click(canvas.getByRole('button', { name: 'سجّل' }));
     const phone = canvas.getByRole('textbox', { name: 'رقم الهاتف' });
     await waitFor(() => expect(phone).toHaveAttribute('aria-invalid', 'true'));

@@ -138,7 +138,10 @@ function Widths() {
       {WIDTHS.map((width) => (
         <div key={width} className="flex flex-col gap-1">
           <span className="text-caption text-text-muted" dir="ltr">{`${String(width)} px`}</span>
-          <div style={{ width }} className="border border-dashed border-border-default">
+          <div
+            style={{ width }} // An outline, not a border: it takes no width, so the box is exactly the width it names.
+            className="outline-1 outline-dashed outline-border-default"
+          >
             <Pagination
               label={`${label} ${String(width)}`}
               page={3}

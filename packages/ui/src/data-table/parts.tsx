@@ -65,7 +65,11 @@ export function SelectMark({
   );
 }
 
-/** A header's text on one line, cut with an ellipsis when the column is narrower (OD-66). */
+/**
+ * A header's text on one line, cut with an ellipsis when the column is narrower (OD-66). The span
+ * takes the direction of its own text (`dir="auto"`), so an Arabic header in an English table
+ * keeps its start and the ellipsis lands at its end.
+ */
 const HEADER_LABEL = 'min-w-0 truncate text-200 leading-heading';
 
 type LabelRef = (node: HTMLElement | null) => void;
@@ -73,7 +77,8 @@ type LabelRef = (node: HTMLElement | null) => void;
 /**
  * A header cell whose text may be cut (slice 0.4-12, OD-66): while the label is wider than the
  * column, the full text shows in a tooltip, after 500 ms on hover and at once on keyboard focus.
- * The cell stays the focus target and keeps its name (its text); `children` gets the label's ref.
+ * The cell stays the focus target; the tooltip names it (`type="label"`) with the same text, so
+ * the name is said once, never repeated as a description. `children` gets the label's ref.
  */
 export function CutHeader({
   text,
@@ -84,7 +89,7 @@ export function CutHeader({
 }) {
   const [label, cut] = useOverflow();
   return (
-    <Tooltip content={text} disabled={!cut}>
+    <Tooltip content={text} type="label" disabled={!cut}>
       {children(label)}
     </Tooltip>
   );
@@ -106,7 +111,7 @@ export function HeaderBox({ end, children }: { end: boolean; children: ReactNode
 /** The text of a header that does not sort. */
 export function HeaderLabel({ text, labelRef }: { text: string; labelRef: LabelRef }) {
   return (
-    <span ref={labelRef} data-slot="header-label" className={HEADER_LABEL}>
+    <span ref={labelRef} data-slot="header-label" dir="auto" className={HEADER_LABEL}>
       {text}
     </span>
   );
@@ -133,7 +138,7 @@ export function SortButton({
       }}
       className="inline-flex h-full min-w-0 cursor-pointer items-center gap-1 border-0 bg-transparent p-0 font-ui text-200 font-medium text-current"
     >
-      <span ref={labelRef} data-slot="header-label" className={HEADER_LABEL}>
+      <span ref={labelRef} data-slot="header-label" dir="auto" className={HEADER_LABEL}>
         {label}
       </span>
       {direction !== null && (

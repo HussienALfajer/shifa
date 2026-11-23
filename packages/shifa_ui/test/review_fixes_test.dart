@@ -6,6 +6,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shifa_ui/shifa_ui.dart';
 
+import 'support/fixtures.dart';
 import 'support/harness.dart';
 
 void main() {
@@ -62,7 +63,7 @@ void main() {
     testWidgets('dropping the caller controller keeps the text', (
       tester,
     ) async {
-      final controller = TextEditingController(text: 'سارة الأحمد');
+      final controller = TextEditingController(text: people[2].name);
       addTearDown(controller.dispose);
       // One tree; only the field's controller changes (didUpdateWidget).
       final current = ValueNotifier<TextEditingController?>(controller);
@@ -77,7 +78,7 @@ void main() {
       );
       current.value = null;
       await tester.pump();
-      expect(find.text('سارة الأحمد'), findsOneWidget);
+      expect(find.text(people[2].name), findsOneWidget);
     });
   });
 
@@ -87,7 +88,7 @@ void main() {
         label: 'افتح',
         onPressed: () => showShifaBottomSheet<void>(
           context,
-          title: 'موعد ريم العلي',
+          title: 'موعد ${people[0].name}',
           builder: (context) => const SizedBox(height: 300),
         ),
       ),
@@ -99,7 +100,7 @@ void main() {
       await tester.pumpAndSettle();
       final top = tester.getTopLeft(find.byType(ShifaBottomSheet)).dy;
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('موعد ريم العلي')),
+        tester.getCenter(find.text('موعد ${people[0].name}')),
       );
       await gesture.moveBy(const Offset(0, 20));
       await gesture.moveBy(const Offset(0, 100));
@@ -119,7 +120,7 @@ void main() {
       final height = tester.getSize(find.byType(ShifaBottomSheet)).height;
       // Slowly down past the 0.6 line (alone, a release there would close)…
       final gesture = await tester.startGesture(
-        tester.getCenter(find.text('موعد ريم العلي')),
+        tester.getCenter(find.text('موعد ${people[0].name}')),
       );
       // Pointer events carry their own times: the velocity comes from them.
       var ms = 0;
@@ -140,7 +141,7 @@ void main() {
       }
       await gesture.up(timeStamp: Duration(milliseconds: ms + 5));
       await tester.pumpAndSettle();
-      expect(find.text('موعد ريم العلي'), findsOneWidget);
+      expect(find.text('موعد ${people[0].name}'), findsOneWidget);
     });
   });
 

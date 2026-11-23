@@ -133,7 +133,8 @@ export function Pagination({
   return (
     <div
       className={cn(
-        '@container flex flex-wrap items-center justify-between gap-4 font-ui text-text-default',
+        // Fills its container: its form follows that width, so it never sizes to its content.
+        '@container flex w-full flex-wrap items-center justify-between gap-4 font-ui text-text-default',
         className,
       )}
     >

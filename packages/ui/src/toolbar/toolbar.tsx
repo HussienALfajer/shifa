@@ -249,7 +249,7 @@ export function ToolbarButton({
   }, [register, id, children, icon, disabled, onClick]);
   if (context?.hidden.has(id) === true) return <span data-toolbar-slot={id} hidden />;
   return (
-    <Tooltip content={children} disabled={!cut}>
+    <Tooltip content={children} type="label" disabled={!cut}>
       <BaseToolbarButton
         data-toolbar-id={id}
         data-toolbar-slot={id}
@@ -263,6 +263,8 @@ export function ToolbarButton({
         <span
           ref={labelRef}
           data-slot="toolbar-label"
+          // Its own direction, so the ellipsis lands at the end of the text in either script.
+          dir="auto"
           className="min-w-0 max-w-(--shifa-size-toolbar-label) truncate"
         >
           {children}
