@@ -278,7 +278,26 @@ function checkPairs(
       );
     }
   }
-  return [...problems, ...componentPairs(sources, tokens)];
+  return [...problems, ...iconPairs(sources), ...componentPairs(sources, tokens)];
+}
+
+/**
+ * A surface that carries text also carries icons (a row's chevron, a field's leading icon), so
+ * every surface with a `color.text.*` pair has a `color.icon.*` pair too (C-5, slice 0.4-12).
+ * A source with no icon colours has nothing to pair.
+ */
+function iconPairs(sources: Sources): string[] {
+  const isText = (path: string) => path.startsWith('color.text.');
+  const isIcon = (path: string) => path.startsWith('color.icon.');
+  if (!sources.pairs.some((p) => isIcon(p.text))) return [];
+  const withIcon = new Set(sources.pairs.filter((p) => isIcon(p.text)).map((p) => p.surface));
+  const withText = new Set(sources.pairs.filter((p) => isText(p.text)).map((p) => p.surface));
+  return [...withText]
+    .filter((surface) => !withIcon.has(surface))
+    .map(
+      (surface) =>
+        `${surface}: a surface with a text pair and no color.icon.* pair (add one to src/contrast-pairs.json)`,
+    );
 }
 
 const lastSegment = (path: string) => path.slice(path.lastIndexOf('.') + 1);

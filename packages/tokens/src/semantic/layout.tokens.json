@@ -13,6 +13,11 @@
         "$description": "The one main action of a screen (call the next patient, book).",
         "$value": "{space.13}",
         "$extensions": { "shifa": { "modes": { "compact": "{space.10}" } } }
+      },
+      "select-narrow": {
+        "$description": "Width of a Select that holds a short number, such as pagination's rows per page: «100» and the chevron fit (OD-66).",
+        "$value": "{width.22}",
+        "$extensions": { "shifa": { "modes": { "compact": "{width.19}" } } }
       }
     },
     "row": { "$description": "Table and list rows.", "$value": "{space.12}", "$extensions": { "shifa": { "modes": { "compact": "{space.8}" } } } },
