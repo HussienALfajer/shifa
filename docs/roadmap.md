@@ -125,7 +125,7 @@ From [spec 0.4 follow-up](specs/design-system/0.4-followup-before-phase-a.md) (a
 | Slice | Title | Risk tier | Status |
 |---|---|---|---|
 | 0.4-12 | Narrow width and small items: data-table header ellipsis + tooltip, Pagination compact form by container query, Toolbar one-line labels, rows-per-page Select width (OD-66); Arabic folding (OD-40) in Combobox and Select, Arabic Combobox announcements; staff-side autocomplete off (OD-67); UI SDK dev-history guard (P-N2); icon contrast pairs (C-5); records C-6, C-7; Solar licence in Flutter (P-N7); generator names (P-N1); English copy in the Pagination LTR zoom story ([slice](slices/0.4-12-narrow-width-and-small-items.md)); criteria 1–13; five checkpoints (tokens first); ~2,500 lines | T1 | Done (#122); synced to the design system 2026-11-23 from 27ca8b7 |
-| 0.4-13 | Date and time choosers: Date Picker month and year panel from the heading (OD-68 B), segmented day/month/year entry on UI SDK `DateInput` after an RTL gate (OD-69 A), Time Input clock button opening a slot grid at a 15-minute default step (OD-70 B); criteria 14–19; five checkpoints (DateInput RTL gate first) ([slice](slices/0.4-13-date-and-time-choosers.md)); ~4,500 lines | T1 | Planned |
+| 0.4-13 | Date and time choosers: Date Picker month and year panel from the heading (OD-68 B), segmented day/month/year entry (OD-69 A; on our own model after the UI SDK `DateInput` gate, OD-72), Time Input clock button opening a slot grid at a 15-minute default step (OD-70 B); criteria 14–19; five checkpoints (DateInput RTL gate first) ([slice](slices/0.4-13-date-and-time-choosers.md)); ~4,500 lines | T1 | Built, PR open (OD-72, OD-73); design-system sync after the merge |
 
 ## Phase A slices
 

@@ -5,7 +5,7 @@
 // calendar's month; a day chosen in the calendar fills the segments. The error shows once focus
 // leaves the segments, or at once for an impossible date; the line under the field confirms a
 // complete date with its weekday (and the age, for birth dates).
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { Direction } from '../providers/direction-provider.tsx';
 import { dateError, isImpossible } from './date-errors.ts';
 import { type Entry, entryFromIso, toIso } from './date-fields.ts';
@@ -35,30 +35,51 @@ export function useDateEntry({
   showAge,
 }: DateEntryOptions) {
   const [inner, setInner] = useState<string | null>(defaultValue ?? null);
-  const current = value === undefined ? inner : value;
+  // Once controlled (a form field), an undefined value means empty, not the last typed date (a
+  // form reset to no default; the OTP field's fix in 0.4-12).
+  const [controlled, setControlled] = useState(value !== undefined);
+  if (value !== undefined && !controlled) setControlled(true);
+  const current = value === undefined ? (controlled ? null : inner) : value;
   const [entry, setEntryState] = useState<Entry>(() => entryFromIso(current));
   const [month, setMonth] = useState(() => monthOf(current));
   const [left, setLeft] = useState(false);
 
+  // What the field last reported: its own value coming back from a form is not a change from
+  // outside, so a half-typed date (reported as null) stays as typed.
+  const [echo, setEcho] = useState<string | null | undefined>(value);
   // A value set from outside (a controlled prop, a form reset) fills the segments, unless they
-  // already say the same, or hold a half-typed date while the value is null.
-  const [seen, setSeen] = useState(current);
-  if (seen !== current) {
-    setSeen(current);
-    if (current !== toIso(entry.fields)) setEntryState(entryFromIso(current));
+  // already hold that same date.
+  const [seen, setSeen] = useState(value);
+  if (seen !== value) {
+    setSeen(value);
+    const same = current !== null && current === toIso(entry.fields);
+    if (value !== echo && !same) setEntryState(entryFromIso(current));
   }
 
+  // The value last sent, read by handlers: several changes in one event build on each other.
+  const sent = useRef(current);
+  useEffect(() => {
+    sent.current = current;
+  }, [current]);
+
   const commit = (next: string | null) => {
-    if (next === current) return;
+    if (next === sent.current) return;
+    sent.current = next;
+    setEcho(next);
     if (value === undefined) setInner(next);
     onValueChange?.(next);
   };
+
+  /** Within min and max (ISO dates compare as text). */
+  const inRange = (iso: string) =>
+    (min === undefined || iso >= min) && (max === undefined || iso <= max);
 
   /** The segments changed: a complete date becomes the value and the calendar's month. */
   const setEntry = (next: Entry) => {
     setEntryState(next);
     const iso = toIso(next.fields);
-    commit(iso);
+    // A date outside min/max is shown with its error but is never the value (as UI SDK refused it).
+    commit(iso !== null && inRange(iso) ? iso : null);
     if (iso !== null) setMonth(iso.slice(0, 7));
   };
 

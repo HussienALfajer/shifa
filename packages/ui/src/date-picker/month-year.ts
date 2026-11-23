@@ -18,7 +18,8 @@ export function yearRange({ min, max, todayYear }: Bounds & { todayYear: number 
   const minYear = min === undefined ? undefined : Number(min.slice(0, 4));
   const maxYear = max === undefined ? undefined : Number(max.slice(0, 4));
   if (minYear !== undefined && maxYear !== undefined) return { first: minYear, last: maxYear };
-  if (minYear !== undefined) return { first: minYear, last: todayYear + 10 };
+  // A min more than ten years ahead still lists its own year.
+  if (minYear !== undefined) return { first: minYear, last: Math.max(minYear, todayYear + 10) };
   if (maxYear !== undefined) return { first: maxYear - 120, last: maxYear };
   return { first: 1900, last: todayYear + 10 };
 }

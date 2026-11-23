@@ -123,7 +123,18 @@ export function MonthYearPanel({
   }
 
   return (
-    <div id={id} data-slot="month-year-panel" className="flex flex-col gap-3">
+    <div
+      id={id}
+      data-slot="month-year-panel"
+      // Escape anywhere else in the panel («هذا الشهر») goes back to the days.
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          onBack();
+        }
+      }}
+      className="flex flex-col gap-3"
+    >
       <div className="flex gap-2">
         <div
           data-slot="year-scroll"

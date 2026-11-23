@@ -69,6 +69,8 @@ export interface DateSegmentsProps {
   onLeave: () => void;
   /** Focus came into them from outside. */
   onEnter: () => void;
+  /** Alt+Down: open the calendar, as from UI SDK's own date field. */
+  onOpenCalendar: () => void;
 }
 
 export function DateSegments({
@@ -80,6 +82,7 @@ export function DateSegments({
   required,
   onLeave,
   onEnter,
+  onOpenCalendar,
 }: DateSegmentsProps) {
   const field = useFieldControl();
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
@@ -87,6 +90,9 @@ export function DateSegments({
   const latest = useRef(entry);
   latest.current = entry;
   const groupRef = useRef<HTMLDivElement | null>(null);
+  // The segment focus moved to because the one before it filled itself: a separator typed there
+  // next is the person's habit, not a request to move on again (UI SDK's `advancedTo`).
+  const advancedTo = useRef<number | null>(null);
 
   const change = useCallback(
     (next: Entry) => {
@@ -108,13 +114,19 @@ export function DateSegments({
         if (/\d/.test(char)) {
           const typed = typeDigit(current, unit, char);
           change(typed.entry);
+          advancedTo.current = null;
           if (typed.done && index < DATE_UNITS.length - 1) {
             index += 1;
             inputs.current[index]?.focus();
+            advancedTo.current = index;
           }
         } else if (SEPARATOR.test(char)) {
           // Right after a segment filled itself, the separator the person types is skipped.
-          if (current.buffer?.unit !== unit && current.fields[unit] === null) continue;
+          const skip =
+            advancedTo.current === index ||
+            (current.buffer?.unit !== unit && current.fields[unit] === null);
+          advancedTo.current = null;
+          if (skip) continue;
           change(settle(current));
           if (index < DATE_UNITS.length - 1) {
             index += 1;
@@ -134,7 +146,18 @@ export function DateSegments({
         if (!event.cancelable || event.isComposing) return;
         if (event.inputType === 'insertFromPaste' || event.inputType === 'insertFromDrop') return;
         event.preventDefault();
-        if (event.inputType.startsWith('insert') && event.data !== null) insert(index, event.data);
+        const unit = DATE_UNITS[index];
+        if (event.inputType.startsWith('insert') && event.data !== null) {
+          insert(index, event.data);
+        } else if (unit !== undefined && event.inputType === 'deleteByCut') {
+          change({ fields: { ...latest.current.fields, [unit]: null }, buffer: null });
+        } else if (unit !== undefined && event.inputType.startsWith('delete')) {
+          // Deletions the keydown handler did not see (Ctrl+Backspace, a phone keyboard whose
+          // keys arrive as «Unidentified»): as Backspace.
+          const removed = removeDigit(latest.current, unit);
+          if (removed.back) inputs.current[index - 1]?.focus();
+          else change(removed.entry);
+        }
       };
       input.addEventListener('beforeinput', onBeforeInput);
       return () => {
@@ -177,6 +200,11 @@ export function DateSegments({
   }, [groupId]);
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>, index: number, unit: DateUnit) {
+    if (event.altKey && event.key === 'ArrowDown') {
+      event.preventDefault();
+      onOpenCalendar();
+      return;
+    }
     if (event.altKey || event.ctrlKey || event.metaKey || event.nativeEvent.isComposing) return;
     const current = latest.current;
     switch (event.key) {
@@ -251,7 +279,6 @@ export function DateSegments({
       ref={setGroup}
       role="group"
       dir="ltr"
-      {...(required === true ? { 'aria-required': true } : {})}
       onFocus={onFocus}
       onBlur={onBlur}
       // Left to right inside; in Arabic the date sits at the line's start, the right.
@@ -279,6 +306,7 @@ export function DateSegments({
             role="spinbutton"
             inputMode="numeric"
             aria-label={NAMES[dir][unit]}
+            {...(required === true ? { 'aria-required': true } : {})}
             aria-valuemin={min}
             aria-valuemax={max}
             {...(value === null ? {} : { 'aria-valuenow': value })}
@@ -300,6 +328,7 @@ export function DateSegments({
             }}
             onPaste={onPaste}
             onFocus={(event) => {
+              advancedTo.current = null;
               const input = event.currentTarget;
               requestAnimationFrame(() => {
                 if (document.activeElement === input) input.select();

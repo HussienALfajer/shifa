@@ -21,18 +21,23 @@ import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
 import type { Direction } from '../providers/direction-provider.tsx';
-import { DEFAULT_STEP, nextSlot, type Slot, timeSlots } from './slots.ts';
+import { checkStep, DEFAULT_STEP, nextSlot, type Slot, timeSlots } from './slots.ts';
 
 const LABELS = {
   rtl: {
     button: 'اختيار الوقت',
     nearest: 'أقرب وقت',
-    every: (step: number) => `كل ${String(step)} دقيقة`,
+    // Arabic counts: دقيقة، دقيقتين، 3–10 دقائق، 11 and up دقيقة.
+    every: (step: number) => {
+      if (step === 1) return 'كل دقيقة';
+      if (step === 2) return 'كل دقيقتين';
+      return `كل ${String(step)} ${step <= 10 ? 'دقائق' : 'دقيقة'}`;
+    },
   },
   ltr: {
     button: 'Choose a time',
     nearest: 'Nearest time',
-    every: (step: number) => `Every ${String(step)} minutes`,
+    every: (step: number) => (step === 1 ? 'Every minute' : `Every ${String(step)} minutes`),
   },
 } as const;
 const COLUMNS = 4;
@@ -223,7 +228,7 @@ export function TimeSlotGrid({
           </div>
           <div className="flex items-center justify-between gap-2 border-t border-border-default pt-2">
             <span className="text-200 leading-heading text-text-muted">
-              {labels.every(step ?? DEFAULT_STEP)}
+              {labels.every(checkStep(step ?? DEFAULT_STEP))}
               <bdi dir="ltr">{hours}</bdi>
             </span>
             <button

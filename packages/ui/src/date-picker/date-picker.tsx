@@ -146,6 +146,7 @@ export function DatePicker({
   };
   const panelId = useId();
   const headingButton = useRef<HTMLButtonElement | null>(null);
+  const trigger = useRef<HTMLButtonElement | null>(null);
   const content = useRef<HTMLDivElement | null>(null);
   // After a month is chosen, focus goes to its days; after Escape from the years, to the heading.
   const [focusTarget, setFocusTarget] = useState<{ to: 'days' | 'heading'; n: number } | null>(
@@ -219,8 +220,11 @@ export function DatePicker({
             required={required}
             onLeave={date.onLeave}
             onEnter={date.onEnter}
+            onOpenCalendar={() => {
+              trigger.current?.click();
+            }}
           />
-          <DatePickerTrigger aria-label={openLabel ?? labels.open} className={NAV}>
+          <DatePickerTrigger ref={trigger} aria-label={openLabel ?? labels.open} className={NAV}>
             <Icon name="calendar" />
           </DatePickerTrigger>
         </div>
@@ -255,6 +259,10 @@ export function DatePicker({
                     {...(panel ? { 'aria-controls': panelId } : {})}
                     onClick={() => {
                       setPanel(!panel);
+                    }}
+                    // Escape on the heading closes the panel, back to the days (the popup stays).
+                    onKeyDown={(event) => {
+                      if (event.key === 'Escape' && panelOpen.current) setPanel(false);
                     }}
                     className={HEADING}
                   >

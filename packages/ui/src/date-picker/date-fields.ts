@@ -97,7 +97,9 @@ function stepBounds(fields: DateFields, unit: DateUnit): readonly [number, numbe
 export function stepEntry(entry: Entry, unit: DateUnit, delta: number, today: DateFields): Entry {
   const { fields } = entry;
   const [min, max] = stepBounds(fields, unit);
-  const current = fields[unit];
+  // An impossible day (31 in February) steps from the month's last day.
+  const typed = fields[unit];
+  const current = typed === null ? null : Math.min(Math.max(typed, min), max);
   const span = max - min + 1;
   const value =
     current === null
