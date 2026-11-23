@@ -3,10 +3,11 @@
 // Saturday, Levantine month names in Arabic (تشرين الثاني), dates as dd/mm/yyyy in Western
 // digits. A field with a calendar button at its logical end; the calendar below it, starting at
 // its logical edge; today ringed in green, the chosen day filled green, days out of range muted.
-// Behaviour from UI SDK's Date Picker: one text field parsed in the locale's order, arrows in
-// the grid follow the reading direction, Page Up and Page Down by month, Enter chooses and
-// focus returns to the calendar button. Typed Arabic-Indic digits are made Western first
-// (UI SDK accepts them only in a locale that also shows them; RTL gate, fixed by a wrapper).
+// Behaviour from UI SDK's Date Picker: arrows in the grid follow the reading direction, Page Up
+// and Page Down by month, Enter chooses and focus returns to the calendar button.
+// Since slice 0.4-13 (OD-69 A, OD-72) the date is typed in three segments day / month / year
+// (`date-segments.tsx`, our own model), with Arabic errors and a confirmation line under the
+// field (`use-date-entry.ts`); segments and calendar share one value and one month.
 import {
   DatePicker as BaseDatePicker,
   CalendarDay,
@@ -18,19 +19,20 @@ import {
   CalendarWeekdays,
   CalendarWeeks,
   DatePickerContent,
-  DatePickerInput,
   DatePickerTrigger,
 } from '@ui-sdk/react/date-picker';
 import { type ReactNode, useState } from 'react';
-import { FIELD_BOX, FieldShell, useFieldAutoComplete } from '../field/field-shell.tsx';
+import { FIELD_BOX, FieldShell, hasError, useFieldAutoComplete } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
-import { useWesternDigits } from '../lib/use-western-digits.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
 import { useDirection } from '../providers/direction-provider.tsx';
+import { DATE_LOCALE } from './date-locale.ts';
+import { DateSegments } from './date-segments.tsx';
+import { useDateEntry } from './use-date-entry.ts';
 
-/** Levantine month names and Western digits in Arabic; day/month/year in English (OD-61). */
-export const DATE_LOCALE = { rtl: 'ar-SY-u-nu-latn', ltr: 'en-GB' } as const;
+export { DATE_LOCALE };
+
 /** Saturday, in UI SDK's numbering (0 is Sunday): the Syrian week (OD-61). */
 const SATURDAY = 6;
 
@@ -58,6 +60,10 @@ export interface DatePickerProps {
   /** The first date that can be chosen (ISO); earlier days are disabled. */
   min?: string | undefined;
   max?: string | undefined;
+  /** Said for a typed date after `max` instead of «اختر تاريخاً حتى …», such as «تاريخ الميلاد لا يكون بعد اليوم». */
+  maxMessage?: string | undefined;
+  /** Adds the age to the line under a complete date («· 39 سنة»): for birth dates (OD-72). */
+  showAge?: boolean | undefined;
   /** The name of the calendar button, for screen readers (Arabic by default in both languages). */
   openLabel?: string | undefined;
   hint?: ReactNode | undefined;
@@ -96,6 +102,8 @@ export function DatePicker({
   onValueChange,
   min,
   max,
+  maxMessage,
+  showAge = false,
   openLabel,
   hint,
   error,
@@ -106,14 +114,25 @@ export function DatePicker({
 }: DatePickerProps) {
   const dir = useDirection();
   const autoComplete = useFieldAutoComplete() ?? 'off';
-  const westernDigits = useWesternDigits();
   const [field, setField] = useState<HTMLDivElement | null>(null);
   const labels = LABELS[dir];
+  const date = useDateEntry({
+    dir,
+    value,
+    defaultValue,
+    onValueChange,
+    min,
+    max,
+    maxMessage,
+    showAge,
+  });
   return (
     <FieldShell
       label={label}
-      hint={hint}
-      error={error}
+      // A complete date is confirmed in the hint line, read with the field.
+      hint={date.line ?? hint}
+      // An error from the form wins over the typed date's own.
+      error={hasError(error) ? error : (date.error ?? undefined)}
       required={required}
       disabled={disabled}
       name={name}
@@ -124,25 +143,32 @@ export function DatePicker({
         weekStartsOn={SATURDAY}
         weekdayFormat="narrow"
         showOutsideDays
-        {...(value === undefined ? {} : { value })}
-        {...(defaultValue === undefined ? {} : { defaultValue })}
+        value={date.value}
+        onValueChange={(next: unknown) => {
+          date.choose(typeof next === 'string' ? next : null);
+        }}
+        month={date.month}
+        onMonthChange={(next: string) => {
+          date.setMonth(next);
+        }}
+        onOpenChange={(open: boolean) => {
+          if (open) date.openMonth();
+        }}
         {...(min === undefined ? {} : { min })}
         {...(max === undefined ? {} : { max })}
         {...(required === undefined ? {} : { required })}
-        {...(onValueChange === undefined
-          ? {}
-          : {
-              onValueChange: (next: unknown) => {
-                onValueChange(typeof next === 'string' ? next : null);
-              },
-            })}
       >
         <div ref={setField} data-slot="date-picker-field" className={cn(FIELD_BOX, 'ps-3 pe-1')}>
-          <DatePickerInput
-            ref={westernDigits}
+          <DateSegments
+            dir={dir}
+            entry={date.entry}
+            onEntryChange={date.setEntry}
             // Off unless a FormField names a token, such as bday (OD-67).
             autoComplete={autoComplete}
-            className="min-w-0 flex-1 border-0 bg-transparent p-0 font-ui text-body leading-heading in-data-[density=compact]:text-250 text-inherit tabular-nums outline-none placeholder:text-text-muted"
+            disabled={disabled}
+            required={required}
+            onLeave={date.onLeave}
+            onEnter={date.onEnter}
           />
           <DatePickerTrigger aria-label={openLabel ?? labels.open} className={NAV}>
             <Icon name="calendar" />
