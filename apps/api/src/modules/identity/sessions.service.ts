@@ -16,7 +16,7 @@ import {
   tenant,
   twoFactor,
 } from '@shifa/db';
-import { and, eq, gt, isNull, ne } from 'drizzle-orm';
+import { and, eq, gt, isNull, lt, ne, or } from 'drizzle-orm';
 import {
   type MfaState,
   mustEnrolMfa,
@@ -141,6 +141,9 @@ export class SessionsService {
       await tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id));
       return accountFactors(tx, row.userId);
     });
+    if (tenantView.active && row.activeTenantId) {
+      await this.#touchMember(row.userId, row.activeTenantId, now);
+    }
     const mfa: MfaState = !factors.totpEnrolled
       ? 'none'
       : row.mfaVerifiedAt
@@ -318,6 +321,26 @@ export class SessionsService {
    * Inside the active tenant (shifa_app, its RLS): is the person still an active member, the
    * clinic's idle minutes, the active branch if it is still one of the clinic's, and their roles.
    */
+  /**
+   * The member's last activity in the clinic (the team list, A-01b), written at most once a
+   * minute so a busy session does not write on every request.
+   */
+  async #touchMember(userId: string, tenantId: string, now: Date): Promise<void> {
+    const before = new Date(now.getTime() - MINUTE_MS);
+    await this.db.withTenant({ tenantId, userId }, (tx) =>
+      tx
+        .update(membership)
+        .set({ lastActiveAt: now })
+        .where(
+          and(
+            eq(membership.userId, userId),
+            eq(membership.status, 'active'),
+            or(isNull(membership.lastActiveAt), lt(membership.lastActiveAt, before)),
+          ),
+        ),
+    );
+  }
+
   async #tenantView(
     userId: string,
     tenantId: string | null,

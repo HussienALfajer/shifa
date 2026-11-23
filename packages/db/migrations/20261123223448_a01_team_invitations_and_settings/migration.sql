@@ -37,14 +37,35 @@ CREATE POLICY membership_auth_accept_only ON "membership" AS RESTRICTIVE FOR UPD
                         AND sl.used_at IS NOT NULL
                         AND sl.purpose IN ('owner_setup', 'member_setup', 'invitation')))
   WITH CHECK (user_id IS NOT NULL AND status = 'active'
+              -- Every link binds only the account of the phone the membership names
+              -- (security review L2), and never a super admin's (OD-89).
+              AND phone_e164 = (SELECT u.phone_number FROM "user" u
+                                 WHERE u.id = "membership".user_id)
+              AND NOT EXISTS (SELECT 1 FROM "platform_admin" pa
+                               WHERE pa.user_id = "membership".user_id)
               AND (NOT EXISTS (SELECT 1 FROM "setup_link" sl
                                 WHERE sl.tenant_id = "membership".tenant_id
                                   AND sl.membership_id = "membership".id
                                   AND sl.token_hash = current_link_token_hash()
                                   AND sl.purpose = 'invitation')
-                   OR (user_id = current_user_id()
-                       AND phone_e164 = (SELECT u.phone_number FROM "user" u
-                                          WHERE u.id = current_user_id()))));
+                   OR user_id = current_user_id()));
+--> statement-breakpoint
+
+-- Links written by a clinic (security review L2): only fresh member links and invitations of
+-- about 72 h, and afterwards only marked replaced. A used link never becomes usable again, and
+-- no clinic can make a long-lived reset credential.
+REVOKE UPDATE ON "setup_link" FROM shifa_app;
+--> statement-breakpoint
+GRANT UPDATE (replaced_at) ON "setup_link" TO shifa_app;
+--> statement-breakpoint
+CREATE POLICY setup_link_app_fresh_only ON "setup_link" AS RESTRICTIVE FOR INSERT TO shifa_app
+  WITH CHECK (used_at IS NULL AND replaced_at IS NULL
+              AND purpose IN ('member_setup', 'invitation')
+              -- 72 h by the API's clock; one hour of slack for its skew against now().
+              AND expires_at <= now() + interval '73 hours');
+--> statement-breakpoint
+CREATE POLICY setup_link_app_replace_only ON "setup_link" AS RESTRICTIVE FOR UPDATE TO shifa_app
+  USING (used_at IS NULL AND replaced_at IS NULL) WITH CHECK (replaced_at IS NOT NULL);
 --> statement-breakpoint
 
 -- The owner's idle setting (A-01a criterion 9, owner-approved column grant): a clinic changes

@@ -7,11 +7,20 @@
 // scope binding) around it, so a failed binding leaves no row.
 import { Inject, Injectable } from '@nestjs/common';
 import type { InvitationView } from '@shifa/contracts';
-import { type AuthDb, auditEvent, membership, type ShifaDb, setupLink, user } from '@shifa/db';
+import {
+  type AuthDb,
+  auditEvent,
+  membership,
+  platformAdmin,
+  type ShifaDb,
+  setupLink,
+  user,
+} from '@shifa/db';
 import { and, eq, gt, isNull } from 'drizzle-orm';
 import { linkScope, type Principal, withScope } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
+import { IdentityAudit } from './identity-audit.ts';
 import { linkTokenHash } from './links.ts';
 import { type ClinicLink, linkInvalid, SetupLinksService } from './setup-links.service.ts';
 import { AUTH_DB } from './tokens.ts';
@@ -25,6 +34,7 @@ export class InvitationsService {
     @Inject(SHIFA_DB) private readonly db: ShifaDb,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(SetupLinksService) private readonly links: SetupLinksService,
+    @Inject(IdentityAudit) private readonly audit: IdentityAudit,
   ) {}
 
   async view(token: string): Promise<InvitationView> {
@@ -64,12 +74,18 @@ export class InvitationsService {
       });
       // The auth step commits first; if this clinic transaction failed afterwards the binding
       // would stand without its row (two pools, as the owner support of A-01-03).
-      await this.#bind(principal.userId, token, found, answer);
+      await this.#bind(principal.userId, token, found, answer, requestId);
     });
   }
 
   /** On the auth path: the person's phone checked, the link used, the membership bound. */
-  #bind(userId: string, token: string, found: ClinicLink, answer: Answer): Promise<void> {
+  #bind(
+    userId: string,
+    token: string,
+    found: ClinicLink,
+    answer: Answer,
+    requestId: string,
+  ): Promise<void> {
     const now = this.clock.now();
     return this.authDb.withUserLink(userId, linkTokenHash(token), async (tx) => {
       const [person] = await tx
@@ -78,6 +94,12 @@ export class InvitationsService {
         .where(eq(user.id, userId));
       // Someone else signed in: the same answer as for any invalid link.
       if (person?.phone !== found.phoneE164) throw linkInvalid();
+      // A super admin's account never joins a clinic (OD-89; the database refuses it too).
+      const [admin] = await tx
+        .select({ id: platformAdmin.userId })
+        .from(platformAdmin)
+        .where(eq(platformAdmin.userId, userId));
+      if (admin) throw linkInvalid();
       const used = await tx
         .update(setupLink)
         .set({ usedAt: now })
@@ -91,13 +113,21 @@ export class InvitationsService {
         )
         .returning({ id: setupLink.id });
       if (used.length === 0) throw linkInvalid();
-      if (answer === 'declined') return;
-      const bound = await tx
-        .update(membership)
-        .set({ userId, status: 'active', updatedAt: now })
-        .where(eq(membership.id, found.membershipId))
-        .returning({ id: membership.id });
-      if (bound.length !== 1) throw linkInvalid();
+      if (answer === 'accepted') {
+        const bound = await tx
+          .update(membership)
+          .set({ userId, status: 'active', updatedAt: now })
+          .where(eq(membership.id, found.membershipId))
+          .returning({ id: membership.id });
+        if (bound.length !== 1) throw linkInvalid();
+      }
+      // Recorded on the auth path too, so the binding is audited even if the clinic's
+      // transaction failed after this one committed (security review N1).
+      await this.audit.record(
+        { event: 'auth.link_used', data: { purpose: 'invitation' } },
+        { actorId: userId, targetId: found.membershipId, requestId },
+        tx,
+      );
     });
   }
 

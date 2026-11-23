@@ -5,12 +5,28 @@
 // ending a member's sessions in one clinic, and the password reset of a one-clinic account.
 import { Inject, Injectable } from '@nestjs/common';
 import type { MemberLinkIssued } from '@shifa/contracts';
-import { type AuthDb, membership, platformAdmin, session } from '@shifa/db';
+import { type AuthDb, membership, platformAdmin, session, type Tx } from '@shifa/db';
 import { and, eq } from 'drizzle-orm';
-import { userIdByPhone } from './accounts.ts';
+import { CLOCK, type Clock } from '../../platform/clock.ts';
+import { ApiError } from '../../platform/errors.ts';
+import { clearPassword, userIdByPhone } from './accounts.ts';
 import { IdentityAudit } from './identity-audit.ts';
 import { type ActionBy, OwnerAccounts } from './owner-accounts.service.ts';
 import { AUTH_DB } from './tokens.ts';
+
+/** Under withUser(): a super admin, or a member of a clinic besides `tenantId`. */
+async function sharedIn(tx: Tx, userId: string, tenantId: string): Promise<boolean> {
+  const [admin] = await tx
+    .select({ id: platformAdmin.userId })
+    .from(platformAdmin)
+    .where(eq(platformAdmin.userId, userId));
+  if (admin) return true;
+  const rows = await tx
+    .select({ tenantId: membership.tenantId })
+    .from(membership)
+    .where(eq(membership.userId, userId));
+  return rows.some((r) => r.tenantId !== tenantId);
+}
 
 export interface NewMemberLink {
   tokenHash: string;
@@ -25,6 +41,7 @@ export class MemberAccounts {
     @Inject(AUTH_DB) private readonly authDb: AuthDb,
     @Inject(OwnerAccounts) private readonly accounts: OwnerAccounts,
     @Inject(IdentityAudit) private readonly audit: IdentityAudit,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   newLink(): NewMemberLink {
@@ -43,18 +60,7 @@ export class MemberAccounts {
 
   /** True when the account belongs to a clinic besides `tenantId`, or is a super admin. */
   isShared(userId: string, tenantId: string): Promise<boolean> {
-    return this.authDb.withUser(userId, async (tx) => {
-      const [admin] = await tx
-        .select({ id: platformAdmin.userId })
-        .from(platformAdmin)
-        .where(eq(platformAdmin.userId, userId));
-      if (admin) return true;
-      const rows = await tx
-        .select({ tenantId: membership.tenantId })
-        .from(membership)
-        .where(eq(membership.userId, userId));
-      return rows.some((r) => r.tenantId !== tenantId);
-    });
+    return this.authDb.withUser(userId, (tx) => sharedIn(tx, userId, tenantId));
   }
 
   /** Ends the person's sessions whose active clinic is `tenantId`; one audit row each. */
@@ -75,8 +81,22 @@ export class MemberAccounts {
     });
   }
 
-  /** The password stops at once and every session ends; the new link sets the next one. */
-  resetPassword(userId: string, by: ActionBy): Promise<void> {
-    return this.accounts.resetPassword(userId, by);
+  /**
+   * The password stops at once and every session ends; the new link sets the next one. Checked
+   * again in the same transaction: an account that joined another clinic since isShared() is
+   * refused (409 `account_shared`), never cleared (OD-86).
+   */
+  resetPassword(userId: string, tenantId: string, by: ActionBy): Promise<void> {
+    const now = this.clock.now();
+    return this.authDb.withUser(userId, async (tx) => {
+      if (await sharedIn(tx, userId, tenantId)) throw new ApiError(409, 'account_shared');
+      await clearPassword(tx, userId, now);
+      await tx.delete(session).where(eq(session.userId, userId));
+      await this.audit.record(
+        { event: 'auth.password_reset' },
+        { actorId: by.actorId, targetId: userId, requestId: by.requestId },
+        tx,
+      );
+    });
   }
 }

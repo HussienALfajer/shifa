@@ -78,7 +78,7 @@ export async function insertMembership(
   });
 }
 
-/** A setup link inside a tenant (withTenant()), valid until 2030. */
+/** A member setup link inside a tenant (withTenant()), valid 72 h (clinics write no longer). */
 export async function insertSetupLink(
   tx: Tx,
   row: { id: string; tenantId: string; membershipId: string; tokenHashHex: string },
@@ -89,6 +89,6 @@ export async function insertSetupLink(
     membershipId: row.membershipId,
     purpose: 'member_setup',
     tokenHash: row.tokenHashHex,
-    expiresAt: new Date('2030-01-01T00:00:00Z'),
+    expiresAt: new Date(Date.now() + 72 * 3_600_000),
   });
 }

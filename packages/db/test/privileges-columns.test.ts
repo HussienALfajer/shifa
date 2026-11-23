@@ -29,6 +29,7 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_app session.updated_at SELECT',
   'shifa_app session.user_agent SELECT',
   'shifa_app session.user_id SELECT',
+  'shifa_app setup_link.replaced_at UPDATE',
   'shifa_app tenant.idle_minutes UPDATE',
   'shifa_app tenant.updated_at UPDATE',
   'shifa_app two_factor.id SELECT',

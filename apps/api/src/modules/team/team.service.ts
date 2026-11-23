@@ -23,7 +23,7 @@ import {
   setupLink,
   type Tx,
 } from '@shifa/db';
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import {
   PERMISSION_CATALOGUE,
   PermissionCatalogue,
@@ -33,7 +33,7 @@ import {
 } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
-import { MemberAccounts } from '../identity/index.ts';
+import { MemberAccounts, type NewMemberLink } from '../identity/index.ts';
 import { activeOwners, findMember, listMembers, memberDetail } from './members.read.ts';
 
 type MembershipRow = typeof membership.$inferSelect;
@@ -66,6 +66,10 @@ export class TeamService {
     const link = this.accounts.newLink();
     return this.tenants.run(scope, async (tx) => {
       const roles = await validRoles(tx, input.roles);
+      // Two adds of one phone at once: the second waits, then sees the first (409, never 500).
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended('shifa.member-phone:' || current_tenant_id()::text || ${phone.e164}, 0))`,
+      );
       const [taken] = await tx
         .select({ id: membership.id })
         .from(membership)
@@ -104,6 +108,7 @@ export class TeamService {
       const row = await this.#member(tx, id);
       if (input.permissions) this.#checkSwitches(input.permissions.map((p) => p.key));
       if (input.roles) {
+        await lockOwners(tx);
         const roles = await validRoles(tx, input.roles, { allowEmpty: true });
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
@@ -114,13 +119,25 @@ export class TeamService {
         if (roles.length === 0) await this.#endSessions(row, scope, requestId);
       }
       for (const { key, granted } of input.permissions ?? []) {
-        await tx
-          .delete(permissionOverride)
-          .where(and(eq(permissionOverride.membershipId, row.id), eq(permissionOverride.key, key)));
-        if (granted !== null) {
+        if (granted === null) {
+          await tx
+            .delete(permissionOverride)
+            .where(
+              and(eq(permissionOverride.membershipId, row.id), eq(permissionOverride.key, key)),
+            );
+        } else {
+          // Upsert: two switches of the same key at once never collide on the unique key.
           await tx
             .insert(permissionOverride)
-            .values({ tenantId: scope.tenantId, membershipId: row.id, key, granted });
+            .values({ tenantId: scope.tenantId, membershipId: row.id, key, granted })
+            .onConflictDoUpdate({
+              target: [
+                permissionOverride.tenantId,
+                permissionOverride.membershipId,
+                permissionOverride.key,
+              ],
+              set: { granted, updatedAt: new Date() },
+            });
         }
         await audit(tx, scope, 'member.permissions_changed', row.id, requestId, { key, granted });
       }
@@ -130,6 +147,7 @@ export class TeamService {
 
   deactivate(scope: RequestScope, id: string, requestId: string): Promise<MemberDetail> {
     return this.tenants.run(scope, async (tx) => {
+      await lockOwners(tx);
       const row = await this.#member(tx, id);
       if (row.status === 'deactivated') throw new ConflictException();
       if (await isLastOwner(tx, row)) throw lastOwner();
@@ -159,6 +177,9 @@ export class TeamService {
    */
   async newLink(scope: RequestScope, id: string, requestId: string): Promise<MemberLinkIssued> {
     const row = await this.tenants.run(scope, (tx) => this.#member(tx, id));
+    // A deactivated member's link could never be used (the database binds pending members
+    // only): reactivate first.
+    if (row.status === 'deactivated') throw new ConflictException();
     const by = { actorId: scope.userId, requestId };
     if (row.userId && (await this.accounts.isShared(row.userId, scope.tenantId))) {
       await this.accounts.endSessionsInClinic(row.userId, scope.tenantId, by);
@@ -169,6 +190,25 @@ export class TeamService {
         ? 'member_setup'
         : 'invitation';
     const link = this.accounts.newLink();
+    try {
+      return await this.#issueLink(scope, row, purpose, link, requestId);
+    } catch (err) {
+      // Shared since the check above (a race): the same answer and effect (security review N4).
+      if (row.userId && err instanceof ApiError && err.code === 'account_shared') {
+        await this.accounts.endSessionsInClinic(row.userId, scope.tenantId, by);
+      }
+      throw err;
+    }
+  }
+
+  #issueLink(
+    scope: RequestScope,
+    row: MembershipRow,
+    purpose: 'member_setup' | 'invitation',
+    link: NewMemberLink,
+    requestId: string,
+  ): Promise<MemberLinkIssued> {
+    const by = { actorId: scope.userId, requestId };
     return this.tenants.run(scope, async (tx) => {
       await replaceLinks(tx, row.id);
       await tx.insert(setupLink).values({
@@ -179,7 +219,7 @@ export class TeamService {
         expiresAt: link.expiresAt,
       });
       await audit(tx, scope, 'member.link_issued', row.id, requestId);
-      if (row.userId) await this.accounts.resetPassword(row.userId, by);
+      if (row.userId) await this.accounts.resetPassword(row.userId, scope.tenantId, by);
       return link.issued;
     });
   }
@@ -212,6 +252,17 @@ export class TeamService {
       requestId,
     });
   }
+}
+
+/**
+ * Serialises the clinic's owner changes (review 1): two owners demoting or deactivating each
+ * other at once would both see two owners under READ COMMITTED. Transaction-scoped, so safe
+ * behind PgBouncer.
+ */
+async function lockOwners(tx: Tx): Promise<void> {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended('shifa.owners:' || current_tenant_id()::text, 0))`,
+  );
 }
 
 /** The clinic's only active owner is this member. */

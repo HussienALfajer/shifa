@@ -29,7 +29,8 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     membership: ['SELECT', 'INSERT', 'DELETE'],
     role_assignment: DML,
     permission_override: DML,
-    setup_link: DML,
+    // A-01-04: links are only marked replaced (column UPDATE below)
+    setup_link: ['SELECT', 'INSERT', 'DELETE'],
     audit_event: ['SELECT', 'INSERT'],
     user: ['SELECT'],
     // session, account and two_factor: column privileges only (below)
@@ -83,6 +84,7 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ['shifa_app', 'account', 'SELECT', ['id', 'user_id', 'account_id', 'provider_id', 'created_at']],
   ['shifa_app', 'two_factor', 'SELECT', ['id', 'user_id', 'verified']],
   ['shifa_app', 'membership', 'UPDATE', ['display_name', 'status', 'last_active_at', 'updated_at']],
+  ['shifa_app', 'setup_link', 'UPDATE', ['replaced_at']],
   ['shifa_app', 'tenant', 'UPDATE', ['idle_minutes', 'updated_at']],
   [
     'shifa_auth',

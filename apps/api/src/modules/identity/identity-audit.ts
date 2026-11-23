@@ -27,7 +27,10 @@ export type IdentityEvent =
   | { event: 'auth.locked'; data: { kind: 'phone' | 'ip' } }
   | { event: 'auth.session_ended'; data: { reason: SessionEndReason } }
   // A-01-03: setup links and MFA (target: the membership or person; never a token or code)
-  | { event: 'auth.link_used'; data: { purpose: 'owner_setup' | 'member_setup' | 'admin_setup' } }
+  | {
+      event: 'auth.link_used';
+      data: { purpose: 'owner_setup' | 'member_setup' | 'invitation' | 'admin_setup' };
+    }
   | { event: 'auth.mfa_enrolled' }
   | { event: 'auth.mfa_passed'; data: { method: 'totp' | 'recovery' } }
   | { event: 'auth.mfa_locked' }
