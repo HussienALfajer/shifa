@@ -1,6 +1,6 @@
 # WSL2 development setup
 
-Status: Accepted (spec 0.2-09a) · Last updated: 2026-11-17 · Owner: product owner
+Status: Accepted (spec 0.2-09a) · Last updated: 2026-11-23 · Owner: product owner
 Sources: [spec 0.2-09a](../specs/foundation/0.2-09a-wsl2-move.md), ADR-0023, ADR-0025, ADR-0027, ADR-0028
 
 Purpose: the one guide to set up the primary development environment, Ubuntu 26.04 LTS in WSL2, with Node 24, pnpm 12, FVM Flutter, Docker and the Claude Code sandbox. Linux matches CI, and the Claude Code sandbox (filesystem and network isolation) only runs there. The Windows checkout (`D:\shifa`) stays supported as a fallback without the sandbox. Run every command in a plain Ubuntu terminal unless a step says PowerShell; do the setup outside a Claude session, since the sandbox allowlist does not cover installers.
@@ -185,6 +185,7 @@ git status
 | `/mnt/c/Windows/System32/cmd.exe /c ver` | refused |
 | `pnpm view zod version` | works |
 | `docker info` | works: a command that starts with `docker` runs outside the sandbox (OD-49) |
+| `git commit`, `git push` (and `merge`, `rebase`, `cherry-pick`, `revert`, `pull`) | work: they run outside the sandbox (OD-75) |
 
 ## Troubleshooting
 
