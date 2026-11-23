@@ -1,6 +1,5 @@
 {
   "@hookform/resolvers": "MIT",
-  "@tabler/icons-react": "MIT",
   "@tanstack/react-table": "MIT",
   "@tanstack/react-virtual": "MIT",
   "@ui-sdk/core": "Apache-2.0",

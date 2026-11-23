@@ -1,6 +1,6 @@
 # Icon
 
-An icon by name from the curated set: Tabler Icons (MIT), outline in one tone, for interface actions, states and medical glyphs.
+An icon by name from the curated set: Solar icons by 480 Design (CC BY 4.0), Broken style, outline in one tone, for interface actions, states and medical glyphs; the tooth is Healthicons (CC0).
 
 ## When to use
 - Next to a word, never instead of one for a status (a status is a pill with an icon and a word).
@@ -15,4 +15,4 @@ An icon by name from the curated set: Tabler Icons (MIT), outline in one tone, f
 Only `arrow-forward`, `arrow-back`, `caret-forward`, `caret-back` and `sign-out` mirror in RTL ("forward" points to the end of the line). Clocks, media controls, medical glyphs and the logo never mirror.
 
 ## Tokens
-`shifa-size-icon-sm`, `shifa-size-icon-md`, `shifa-color-icon-default`, `shifa-color-icon-muted` (both the text colour: near-black in light, light in dark). No second tone.
+`shifa-size-icon-sm`, `shifa-size-icon-md`, `shifa-color-icon-default`, `shifa-color-icon-muted` (both the text colour: near-black in light, light in dark; inside a disabled control the icon takes the control's disabled text colour). No second tone.

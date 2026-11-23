@@ -42,7 +42,7 @@
     },
     "icon": {
       "default": {
-        "$description": "Icon strokes next to text and in controls (Tabler outline, one tone): the text colour, near-black in light and light in dark (OD-65).",
+        "$description": "Icon strokes next to text and in controls (Solar Broken, one tone): the text colour, near-black in light and light in dark (OD-65).",
         "$value": "{color.jasmine.ink.900}",
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.100}" } } }
       },

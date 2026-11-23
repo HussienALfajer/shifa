@@ -44,13 +44,13 @@ describe.each(['light', 'dark'] as const)('icon ink inside controls (%s)', (them
     async (name) => {
       for (const disabled of [false, true]) {
         const screen = await renderDir(CONTROLS[name]?.(disabled), { theme });
-        const icons = [...screen.container.querySelectorAll('svg.tabler-icon')];
+        const icons = [...screen.container.querySelectorAll('svg[data-shifa-icon] path')];
         const [first] = icons;
         if (first === undefined) throw new Error(`${name}: no icon drawn`);
         // Probed beside the icon, inside the theme region (dark is set there, not on the page).
         const want = tokenColor(
           disabled ? '--shifa-color-text-disabled' : '--shifa-color-icon-default',
-          first,
+          first.closest('svg') ?? first,
         );
         for (const icon of icons) {
           expect(getComputedStyle(icon).stroke, `${name} disabled=${String(disabled)}`).toBe(want);

@@ -17,12 +17,12 @@
     "storybook": "storybook dev -p 6006",
     "storybook:build": "storybook build -o storybook-static",
     "screenshots": "node scripts/screenshots.ts",
-    "design-system:build": "node scripts/design-system/build.ts"
+    "design-system:build": "node scripts/design-system/build.ts",
+    "icons:sync": "node scripts/icons-sync.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "7.0.7",
     "@shifa/tokens": "workspace:*",
-    "@tabler/icons-react": "3.52.0",
     "@tanstack/react-table": "9.3.1",
     "@tanstack/react-virtual": "3.14.26",
     "@ui-sdk/core": "0.1.0-beta.13",
@@ -36,6 +36,7 @@
     "zod": "4.6.7"
   },
   "devDependencies": {
+    "@iconify-json/solar": "1.2.17",
     "@playwright/test": "1.65.1",
     "@shifa/eslint-config": "workspace:*",
     "@shifa/testing": "workspace:*",

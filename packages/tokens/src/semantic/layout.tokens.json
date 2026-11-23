@@ -38,7 +38,7 @@
     "table": { "$description": "Height of a data table's scroll box: rows past it scroll under the sticky header (slice 0.4-07).", "$value": "{width.140}" },
     "target-min": { "$description": "The smallest touch target, in every density.", "$value": "{space.11}" },
     "icon": {
-      "$description": "Tabler icons, outline: sm in rows and controls, md in navigation and cards.",
+      "$description": "Solar icons, Broken style: sm in rows and controls, md in navigation and cards.",
       "sm": { "$value": "{space.5}" },
       "md": { "$value": "{space.6}" }
     }
