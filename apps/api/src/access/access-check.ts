@@ -1,10 +1,10 @@
-// Start-up check: every controller route handler carries exactly one of @Public or
+// Start-up check: every controller route handler carries exactly one of @Public, @SignedIn or
 // @RequirePermission. Runs on application bootstrap (inside configureApp's app.init()), so the
 // production server, the boot check and every test app refuse to start otherwise.
 import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
-import { PERMISSION_METADATA, PUBLIC_METADATA } from './decorators.ts';
+import { PERMISSION_METADATA, PUBLIC_METADATA, SIGNED_IN_METADATA } from './decorators.ts';
 
 export class AccessAnnotationError extends Error {
   override name = 'AccessAnnotationError';
@@ -22,7 +22,7 @@ export class AccessCheck implements OnApplicationBootstrap {
     const problems = this.problems();
     if (problems.length > 0) {
       throw new AccessAnnotationError(
-        `Every route handler needs exactly one of @Public() or @RequirePermission(key):\n${problems.join('\n')}`,
+        `Every route handler needs exactly one of @Public(), @SignedIn() or @RequirePermission(key):\n${problems.join('\n')}`,
       );
     }
   }
@@ -46,9 +46,14 @@ export class AccessCheck implements OnApplicationBootstrap {
         if (!isRoute) continue;
         const isPublic = this.reflector.get<unknown>(PUBLIC_METADATA, handler) === true;
         const hasKey = this.reflector.get<unknown>(PERMISSION_METADATA, handler) !== undefined;
+        const signedIn = this.reflector.get<unknown>(SIGNED_IN_METADATA, handler) === true;
         const label = `${String(wrapper.name)}.${name}`;
-        if (!isPublic && !hasKey) problems.push(`  ${label}: no access annotation`);
+        const count = [isPublic, hasKey, signedIn].filter(Boolean).length;
+        if (count === 0) problems.push(`  ${label}: no access annotation`);
         if (isPublic && hasKey) problems.push(`  ${label}: both @Public and @RequirePermission`);
+        if (signedIn && (isPublic || hasKey)) {
+          problems.push(`  ${label}: @SignedIn with @Public or @RequirePermission`);
+        }
       }
     }
     return problems.sort();

@@ -79,7 +79,7 @@ describe('request logging', () => {
 });
 
 describe('request id', () => {
-  it('keeps a well-formed x-request-id and returns it', async () => {
+  it('always generates its own id; a well-formed client id is logged under a separate key', async () => {
     const { app: nest, logs } = await app();
     const id = 'req-ABC_123-def456';
     const res = await nest.inject({
@@ -87,8 +87,10 @@ describe('request id', () => {
       url: '/health/live',
       headers: { 'x-request-id': id },
     });
-    expect(res.headers['x-request-id']).toBe(id);
-    expect(logs.records().some((r) => r['reqId'] === id)).toBe(true);
+    expect(res.headers['x-request-id']).toMatch(UUID);
+    expect(logs.records().some((r) => r['reqId'] === id)).toBe(false);
+    const lines = logs.records().filter((r) => r['reqId'] === res.headers['x-request-id']);
+    expect(lines.some((r) => r['client_request_id'] === id)).toBe(true);
   });
 
   it('replaces a forged x-request-id (newline) with a generated one', async () => {

@@ -12,12 +12,14 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
   details: (json['details'] as List<dynamic>?)
       ?.map((e) => ValidationIssue.fromJson(e as Map<String, dynamic>))
       .toList(),
+  until: json['until'] == null ? null : DateTime.parse(json['until'] as String),
 );
 
 Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'code': instance.code,
   'details': ?instance.details,
   'message': instance.message,
+  'until': ?instance.until?.toIso8601String(),
 };
 
 const _$ErrorCodeEnumMap = {
@@ -37,4 +39,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.tooManyRequests: 'too_many_requests',
   ErrorCode.internalError: 'internal_error',
   ErrorCode.serviceUnavailable: 'service_unavailable',
+  ErrorCode.invalidCredentials: 'invalid_credentials',
+  ErrorCode.phoneLocked: 'phone_locked',
+  ErrorCode.ipBlocked: 'ip_blocked',
+  ErrorCode.sessionExpired: 'session_expired',
 };

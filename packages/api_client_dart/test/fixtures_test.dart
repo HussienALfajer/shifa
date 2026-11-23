@@ -12,6 +12,9 @@ typedef _Json = Map<String, dynamic>;
 final _decoders = <String, Object Function(_Json)>{
   'HealthStatus': (json) => HealthStatus.fromJson(json).toJson(),
   'ErrorEnvelope': (json) => ErrorEnvelope.fromJson(json).toJson(),
+  'SessionView': (json) => SessionView.fromJson(json).toJson(),
+  'SessionList': (json) => SessionList.fromJson(json).toJson(),
+  'EndedSessions': (json) => EndedSessions.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

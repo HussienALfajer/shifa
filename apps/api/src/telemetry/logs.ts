@@ -3,7 +3,7 @@
 // OTLP record holds what stdout holds, except that an `err` keeps identifiers and stack frames
 // only (no message), plus the trace context the line names.
 import { logs, ROOT_CONTEXT, SeverityNumber, TraceFlags, trace } from '@opentelemetry/api';
-import type { LogForwarder } from '../platform/logging.ts';
+import { CLIENT_REQUEST_ID_KEY, type LogForwarder } from '../platform/logging.ts';
 import { stackFrames } from './stack.ts';
 
 const SCOPE = 'shifa-api';
@@ -69,6 +69,8 @@ export function otlpLogForwarder(): LogForwarder {
       const [severityNumber, severityText] = SEVERITY[Number(level)] ?? DEFAULT_SEVERITY;
       const attributes: Record<string, AttributeValue> = {};
       for (const [key, value] of Object.entries(fields)) {
+        // The client's own request id stays in local logs: it is never exported.
+        if (key === CLIENT_REQUEST_ID_KEY) continue;
         const attribute = attributeOf(key === 'err' ? exportedError(value) : value);
         if (attribute !== undefined) attributes[key] = attribute;
       }

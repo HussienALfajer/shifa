@@ -13,6 +13,7 @@
     "obs-smoke": "node scripts/obs-smoke.ts"
   },
   "dependencies": {
+    "@better-auth/drizzle-adapter": "1.7.27",
     "@nestjs/common": "12.4.0",
     "@nestjs/core": "12.4.0",
     "@nestjs/platform-fastify": "12.4.0",
@@ -33,6 +34,7 @@
     "@sentry/core": "11.11.0",
     "@shifa/contracts": "workspace:*",
     "@shifa/db": "workspace:*",
+    "better-auth": "1.7.27",
     "drizzle-orm": "1.0.0-rc.5",
     "fastify": "5.12.8",
     "import-in-the-middle": "3.6.0",
@@ -49,6 +51,7 @@
     "@shifa/testing": "workspace:*",
     "@shifa/tsconfig": "workspace:*",
     "@types/node": "24.19.2",
+    "ajv": "8.20.0",
     "eslint": "10.14.0",
     "tsdown": "0.23.7",
     "typescript": "6.0.3",

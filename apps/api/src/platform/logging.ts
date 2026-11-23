@@ -12,13 +12,24 @@ export type { Logger } from 'pino';
 
 export const REQUEST_ID_HEADER = 'x-request-id';
 
-/** Only plain ids are taken from clients; anything else (newlines, JSON, long) is replaced. */
+/** Only plain ids from clients are logged; anything else (newlines, JSON, long) is dropped. */
 const CLIENT_REQUEST_ID = /^[A-Za-z0-9_-]{8,64}$/;
 
-/** Fastify `genReqId`: the client's x-request-id when well-formed, otherwise a fresh UUID. */
-export function requestIdFor(req: IncomingMessage): string {
+/** Log key of a client's own x-request-id: local logs only, never exported (logs.ts drops it). */
+export const CLIENT_REQUEST_ID_KEY = 'client_request_id';
+
+/**
+ * Fastify `genReqId`: always a fresh UUID. A client could put a phone number in its own id, and
+ * the request id reaches spans, error events and audit rows (A-01a criterion 16).
+ */
+export function requestIdFor(): string {
+  return randomUUID();
+}
+
+/** The client's x-request-id when well-formed (for correlating with its own logs), else undefined. */
+export function clientRequestId(req: Pick<IncomingMessage, 'headers'>): string | undefined {
   const header = req.headers[REQUEST_ID_HEADER];
-  return typeof header === 'string' && CLIENT_REQUEST_ID.test(header) ? header : randomUUID();
+  return typeof header === 'string' && CLIENT_REQUEST_ID.test(header) ? header : undefined;
 }
 
 const SECRET_HEADERS = ['authorization', 'cookie', 'set-cookie', 'proxy-authorization'];

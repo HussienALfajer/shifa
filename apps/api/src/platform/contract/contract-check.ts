@@ -72,8 +72,11 @@ const NEEDS_PART: Readonly<Record<string, (typeof PARTS)[number]>> = {
   QUERY: 'query',
   PARAM: 'params',
 };
-/** Parameter decorators that read nothing a client can shape beyond headers. */
-const HARMLESS = new Set(['HEADERS', 'IP', 'HOST']);
+/**
+ * Parameter decorators that read nothing a client can shape beyond headers: Nest's own, and the
+ * two known own ones (routes.ts KNOWN_FACTORIES).
+ */
+const HARMLESS = new Set(['HEADERS', 'IP', 'HOST', 'PRINCIPAL', 'REQUEST_META']);
 
 /**
  * Route features the contract cannot see: input read without a schema (`@Req()`, `@RawBody()`,

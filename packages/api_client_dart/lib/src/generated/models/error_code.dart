@@ -38,7 +38,15 @@ enum ErrorCode {
   @JsonValue('internal_error')
   internalError('internal_error'),
   @JsonValue('service_unavailable')
-  serviceUnavailable('service_unavailable');
+  serviceUnavailable('service_unavailable'),
+  @JsonValue('invalid_credentials')
+  invalidCredentials('invalid_credentials'),
+  @JsonValue('phone_locked')
+  phoneLocked('phone_locked'),
+  @JsonValue('ip_blocked')
+  ipBlocked('ip_blocked'),
+  @JsonValue('session_expired')
+  sessionExpired('session_expired');
 
   const ErrorCode(this.json);
 

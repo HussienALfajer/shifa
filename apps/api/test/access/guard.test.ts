@@ -10,6 +10,7 @@ import {
   headersFor,
   ProbeController,
   principalFor,
+  TENANT_A,
   TENANT_B,
   TEST_GRANTS,
 } from './probe.ts';
@@ -76,12 +77,12 @@ describe('access guard', () => {
     const app = await probeApp();
     const elsewhere = principalFor('doctor', {
       branchId: BRANCH_1,
-      roles: [{ role: 'doctor', tenantId: principalFor('doctor').tenantId, branchId: BRANCH_2 }],
+      roles: [{ role: 'doctor', tenantId: TENANT_A, branchId: BRANCH_2 }],
     });
     expect((await get(app, '/__probe/read', headersFor(elsewhere))).statusCode).toBe(403);
     const here = principalFor('doctor', {
       branchId: BRANCH_1,
-      roles: [{ role: 'doctor', tenantId: principalFor('doctor').tenantId, branchId: BRANCH_1 }],
+      roles: [{ role: 'doctor', tenantId: TENANT_A, branchId: BRANCH_1 }],
     });
     expect((await get(app, '/__probe/read', headersFor(here))).statusCode).toBe(200);
   });

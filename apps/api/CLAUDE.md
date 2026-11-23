@@ -5,13 +5,14 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 ## Layout
 - `src/main.ts` bootstrap only: config → logger → `createDb()` + startup check → `createApp()` → signals.
 - `src/app.ts` adapter (body limit 1 MB, request timeout 30 s, `trustProxy` off, request ids, routing errors → envelope), global filter, hooks. Tests use the same `createAdapter()` + `configureApp()`.
-- `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info), `OTEL_*`, `SENTRY_*`, `NODE_ENV` (`.env.example`). Errors name the key, never the value.
+- `src/config/env.ts` Zod config: `DATABASE_URL` (shifa_app), `API_PORT` (3000), `API_HOST` (127.0.0.1), `LOG_LEVEL` (info), `OTEL_*`, `SENTRY_*`, `NODE_ENV`; `loadIdentityConfig()`: `DATABASE_URL_AUTH`, `DATABASE_URL_PLATFORM`, `BETTER_AUTH_SECRET`, `AUTH_HMAC_KEY` (`.env.example`). Errors name the key, never the value.
 - `src/platform/` database module (`SHIFA_DB` token, pool closed at shutdown), logging, errors.
 - `src/modules/<context>/` one folder per bounded context; others import only its `index.ts`. `src/platform/` and `src/access/` never import a module. Enforced by lint (`shifa/module-boundaries`, `tooling/eslint-config/rules/`) and by `test/architecture/module-imports.test.ts`, which also fails on any comment silencing the rule.
 
 ## Access (fail-closed)
-- `src/access/`: permission keys (empty until Phase A), PLT-42 roles with empty grants, `Principal` + `hasPermission()` (same tenant; tenant-wide or exact-branch role; `platform_admin` never counts for tenant work), `@Public()` / `@RequirePermission(key)`, `AUTH_PORT` (production `NoAuthAdapter` authenticates nobody → every protected route 401).
-- Global `AccessGuard`: no annotation → 500; anonymous → 401 `unauthorized`; missing key → 403 `forbidden`. Denials are logged with route template and handler only.
+- `src/access/`: permission keys (empty until Phase A), PLT-42 roles with empty grants, `Principal` + `PrincipalSchema` (the AuthPort contract, `auth.port.ts`) + `hasPermission()` (same tenant; tenant-wide or exact-branch role; `platform_admin` never counts for tenant work), `@Public()` / `@SignedIn()` / `@RequirePermission(key)`, `@CurrentPrincipal()`, `AUTH_PORT` (production: `BetterAuthAdapter` from `modules/identity`, wired by `AppModule`).
+- Global `AccessGuard`: not exactly one annotation → 500; anonymous → 401 `unauthorized` (an expired session → 401 `session_expired`); missing key → 403 `forbidden`. Denials are logged with route template and handler only.
+- `src/modules/identity/` (A-01-02, ADR-0044): Better Auth as a library (`auth.api.*`, no handler) on `createAuthDb()`; sign-in, sessions (`__Host-shifa.sid`, idle and 12 h limits with the injected `CLOCK`), throttle, identity audit. Handlers read request metadata only through `@ClientRequest()`.
 - `AccessCheck` runs at bootstrap and lists every handler with no or both annotations; the app does not start.
 - Tests: `test/access/probe.ts` holds test keys, grants and a header-driven `AuthPort` (`buildTestApp({ auth, grants })`). `test/architecture/route-matrix.expected.ts` is the reviewed route × role matrix.
 

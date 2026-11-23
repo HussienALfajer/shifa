@@ -11,7 +11,13 @@ import {
 import { RouteParamtypes } from '@nestjs/common/enums/route-paramtypes.enum.js';
 import type { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
 import type { Contract } from '@shifa/contracts';
-import { PERMISSION_METADATA, PUBLIC_METADATA } from '../../access/decorators.ts';
+import {
+  currentPrincipalFactory,
+  PERMISSION_METADATA,
+  PUBLIC_METADATA,
+  SIGNED_IN_METADATA,
+} from '../../access/decorators.ts';
+import { requestMetaFactory } from '../request-meta.ts';
 import { CONTRACT_METADATA } from './decorator.ts';
 
 export interface RouteHandler {
@@ -29,6 +35,8 @@ export interface RouteHandler {
   successStatus: number;
   contract: Contract | undefined;
   public: boolean;
+  /** @SignedIn(): any authenticated person. */
+  signedIn: boolean;
   permission: string | undefined;
 }
 
@@ -49,15 +57,27 @@ export function joinPath(...parts: string[]): string {
   return `/${segments.join('/')}`;
 }
 
+/**
+ * Own parameter decorators that read no client input the contract should see: the principal the
+ * guard authenticated, and the request's id, address, user agent and cookies.
+ */
+const KNOWN_FACTORIES = new Map<unknown, string>([
+  [currentPrincipalFactory, 'PRINCIPAL'],
+  [requestMetaFactory, 'REQUEST_META'],
+]);
+
 /** Kinds of the handler's parameter decorators, from Nest's route-argument metadata. */
 function argumentKinds(metatype: Type, name: string): string[] {
   const metadata: unknown = Reflect.getMetadata(ROUTE_ARGS_METADATA, metatype, name);
   if (!metadata || typeof metadata !== 'object') return [];
   // Keys are `<RouteParamtypes>:<index>`, or `<id>__customRouteArgs__:<index>` for own decorators.
-  const kinds = Object.keys(metadata).map((key) => {
-    const type = Number(key.split(':')[0]);
-    return Number.isInteger(type) ? (RouteParamtypes[type] ?? 'UNKNOWN') : 'CUSTOM';
-  });
+  const kinds = Object.entries(metadata as Record<string, { factory?: unknown }>).map(
+    ([key, value]) => {
+      const type = Number(key.split(':')[0]);
+      if (Number.isInteger(type)) return RouteParamtypes[type] ?? 'UNKNOWN';
+      return KNOWN_FACTORIES.get(value.factory) ?? 'CUSTOM';
+    },
+  );
   return [...new Set(kinds)].sort();
 }
 
@@ -92,6 +112,7 @@ export function routeHandlers({ discovery, scanner, reflector }: RouteDiscovery)
         paths: prefixes.flatMap((prefix) => asList(own).map((path) => joinPath(prefix, path))),
         contract: reflector.get<Contract | undefined>(CONTRACT_METADATA, handler),
         public: reflector.get<unknown>(PUBLIC_METADATA, handler) === true,
+        signedIn: reflector.get<unknown>(SIGNED_IN_METADATA, handler) === true,
         permission: typeof permission === 'string' ? permission : undefined,
       });
     }

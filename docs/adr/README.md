@@ -53,7 +53,7 @@ What we will do, stated precisely.
 | [0013](0013-api-contract-openapi-zod.md) | REST + OpenAPI 3.1 from named Zod schemas; generated TS and Dart clients | Accepted |
 | [0014](0014-offline-sync-engine.md) | Offline reception and patient app; sync engine chosen by spike | Accepted (engine in 0031) |
 | [0015](0015-realtime-centrifugo.md) | Realtime with Centrifugo fed from the outbox | Accepted |
-| [0016](0016-identity-better-auth-reverse-whatsapp.md) | Better Auth; reverse WhatsApp phone verification; no SMS | Accepted |
+| [0016](0016-identity-better-auth-reverse-whatsapp.md) | Better Auth; reverse WhatsApp phone verification; no SMS | Accepted (amended by 0036, 0044) |
 | [0017](0017-notifications-push-whatsapp.md) | Push + in-app inbox primary; WhatsApp via self-hosted WAHA secondary | Accepted (amended by 0036, 0038) |
 | [0018](0018-money-three-currencies.md) | Money: SYP/TRY/USD, minor units, clinic rates, mixed-currency receipts, cash sessions | Accepted |
 | [0019](0019-imaging-orthanc-ohif.md) | Imaging: unmodified Orthanc per tenant behind our gateway; OHIF viewer | Accepted (amended by 0035) |
@@ -81,3 +81,4 @@ What we will do, stated precisely.
 | [0041](0041-ui-sdk-skill-not-vendored-agent-bridge-off.md) | The upstream `ui-sdk` skill is not vendored (our `/ui-component` skill holds the guidance); the agent bridge stays off, with the conditions for any later use; amends 0039 | Accepted |
 | [0042](0042-screens-drawn-per-ui-batch-with-analysis.md) | Screens: `/spec` writes a screen inventory in words; each UI batch slice draws its screens after the API, with an analysis of API gaps, spec gaps and creative improvements, then the owner approves; amends 0040 | Accepted |
 | [0043](0043-database-roles-auth-and-platform.md) | Two more database roles: `shifa_auth` (identity, setup links, own memberships) and `shifa_platform` (audited super-admin work); privileges keep both off clinic data, role-specific policies need a reason; amends 0005 | Accepted |
+| [0044](0044-better-auth-as-library-behind-nest-routes.md) | Better Auth as a library behind Nest routes (no handler, no organization plugin; phone-number and two-factor plugins; adapter on `withAuth()`; `__Host-shifa.sid` sessions with our idle and absolute limits); amends 0016 | Accepted |

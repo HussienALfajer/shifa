@@ -12,7 +12,7 @@ paths:
 - Every new runtime npm import must also be in `apps/api/package.json` `dependencies` (the bundle resolves externals from there).
 - Inject with explicit tokens (`@Inject(Service)`), not by type alone.
 - New feature code lives in `src/modules/<context>/` with an `index.ts` public surface; import other modules only through their `index.ts`. `src/platform/` and `src/access/` never import a module. Never disable `shifa/module-boundaries`: the architecture test fails on it.
-- Every route handler carries exactly one of `@RequirePermission(key)` (default) or `@Public()` from `src/access/index.ts`; the app refuses to start otherwise. Every route has a row in `test/architecture/route-matrix.expected.ts`. Use `/add-endpoint`.
+- Every route handler carries exactly one of `@RequirePermission(key)` (default), `@SignedIn()` (a person's own session or account, never tenant data) or `@Public()` from `src/access/index.ts`; the app refuses to start otherwise. Read the principal with `@CurrentPrincipal()` and request metadata with `@ClientRequest()`, never `@Req()`. Every route has a row in `test/architecture/route-matrix.expected.ts`. Use `/add-endpoint`.
 - Every route handler carries `@Contract(c)` (`src/platform/contract/index.ts`) with a contract from `@shifa/contracts`; the app refuses to start without one or when its method/path differ. Read input only through `@Param()`, `@Query()`, `@Body()`: they hold the validated values. Never validate by hand or answer 400 yourself.
 - Never grant permissions outside `src/access/roles.ts`, never read the principal from headers yourself, and never add test permission keys to `src/`.
 - Config keys are added to `src/config/env.ts` (Zod) with a test; read `process.env` nowhere else.

@@ -164,7 +164,14 @@ export function startTelemetry(options: TelemetryOptions): Telemetry {
     resource,
     // A client controls user_agent.original: no free text of more than 256 characters per value.
     spanLimits: { attributeValueLengthLimit: 256 },
-    sampler: new ParentBasedSampler({ root: new TraceIdRatioBasedSampler(options.samplerRatio) }),
+    // A remote parent is a client's traceparent (A-01a criterion 16): its sampled flag decides
+    // nothing, so a public caller can neither force 100 % tracing nor hide its requests. Local
+    // parents (spans inside this process) are still followed.
+    sampler: new ParentBasedSampler({
+      root: new TraceIdRatioBasedSampler(options.samplerRatio),
+      remoteParentSampled: new TraceIdRatioBasedSampler(options.samplerRatio),
+      remoteParentNotSampled: new TraceIdRatioBasedSampler(options.samplerRatio),
+    }),
     spanProcessors: [
       new BatchSpanProcessor({
         exporter: new ScrubbingSpanExporter(options.spanExporter),

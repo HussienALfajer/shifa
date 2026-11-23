@@ -5,6 +5,7 @@ import { defineConfig } from 'vitest/config';
 const unit = [
   'test/config.test.ts',
   'test/config-host-env.test.ts',
+  'test/config-identity.test.ts',
   'test/logging.test.ts',
   'test/logging-sanitise.test.ts',
   'test/framework-errors.test.ts',
@@ -26,6 +27,10 @@ const unit = [
   'test/telemetry/error-transport.test.ts',
   'test/telemetry/stack-strict.test.ts',
   'test/obs-smoke-parse.test.ts',
+  'test/identity/password-rules.test.ts',
+  'test/access/principal-schema.test.ts',
+  'test/architecture/raw-routes.test.ts',
+  'test/contract/openapi-meta-schema.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
@@ -38,6 +43,9 @@ const telemetry = [
   'test/telemetry/tracestate-leak.test.ts',
   'test/telemetry/error-reporting.test.ts',
   'test/telemetry/error-frames.test.ts',
+  'test/telemetry/sampling.test.ts',
+  'test/telemetry/request-id-export.test.ts',
+  'test/telemetry/identity-leak.test.ts',
 ];
 
 const db = dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] });

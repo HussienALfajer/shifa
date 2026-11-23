@@ -26,6 +26,9 @@ const fixtures = readJson(join(contractsDir, 'fixtures', 'responses.json')) as {
 // The document's components are registered as one schema; refs stay `#/components/schemas/X`.
 const ajv = new Ajv2020({ allErrors: true, strict: true });
 ajv.addVocabulary(['components']);
+// Zod writes a `pattern` beside each of these formats (A-01-02): the pattern does the checking.
+ajv.addFormat('uuid', true);
+ajv.addFormat('date-time', true);
 ajv.addSchema({ $id: 'openapi.json', components: document.components });
 
 function validate(fixture: Fixture) {

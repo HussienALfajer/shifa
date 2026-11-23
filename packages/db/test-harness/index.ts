@@ -210,12 +210,25 @@ export function withoutTenant<T>(db: ShifaDb, fn: (tx: Tx) => Promise<T>): Promi
 let authHandle: AuthDb | undefined;
 let platformHandle: PlatformDb | undefined;
 
-/** `createAuthDb()` as shifa_auth on this worker's database, shared within a file. */
+/**
+ * `createAuthDb()` as shifa_auth on this worker's database, shared within a file until someone
+ * closes it (an app under test owns and closes its handle at shutdown, A-01-02); the next call
+ * then opens a new one, as testDb() does.
+ */
 export function testAuthDb(): AuthDb {
   if (!authHandle) {
     const db = createAuthDb(urlFor(info(), 'auth', workerDatabaseName()));
     closers.push(() => db.close());
-    authHandle = db;
+    const handle: AuthDb = {
+      withAuth: (fn) => db.withAuth(fn),
+      withUser: (userId, fn) => db.withUser(userId, fn),
+      withSetupLink: (hash, fn) => db.withSetupLink(hash, fn),
+      close: () => {
+        if (authHandle === handle) authHandle = undefined;
+        return db.close();
+      },
+    };
+    authHandle = handle;
   }
   return authHandle;
 }

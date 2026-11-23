@@ -35,6 +35,16 @@ export interface Running {
   exited: Promise<{ code: number | null; signal: NodeJS.Signals | null }>;
 }
 
+/**
+ * Identity keys every start gets (A-01-02): the harness's shifa_auth and shifa_platform URLs and
+ * throwaway secrets, set once by the caller after the harness is up.
+ */
+let identityEnv: Record<string, string> = {};
+
+export function setIdentityEnv(env: Record<string, string>): void {
+  identityEnv = { ...env };
+}
+
 export function startApi(
   databaseUrl: string,
   port: number,
@@ -46,6 +56,7 @@ export function startApi(
     API_HOST: '127.0.0.1',
     API_PORT: String(port),
     LOG_LEVEL: 'info',
+    ...identityEnv,
     ...extra,
   };
   for (const key of ['PATH', 'SYSTEMROOT', 'TEMP', 'TMP']) {

@@ -10,7 +10,7 @@ import { dirname } from 'node:path';
 import { NestFactory } from '@nestjs/core';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { anonymousSchemas } from '@shifa/contracts';
-import type { ShifaDb } from '@shifa/db';
+import type { AuthDb, ShifaDb } from '@shifa/db';
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
 import { buildOpenApiDocument, serializeDocument } from '../src/platform/contract/openapi.ts';
@@ -26,9 +26,21 @@ const db: ShifaDb = {
   close: () => Promise.resolve(),
 };
 
+const authDb: AuthDb = {
+  withAuth: refuse,
+  withUser: refuse,
+  withSetupLink: refuse,
+  close: () => Promise.resolve(),
+};
+// Never used: the generator signs no one in; the identity module only needs values of the shape.
+const secrets = {
+  betterAuthSecret: 'openapi-generator-'.repeat(2),
+  hmacKey: 'openapi-hmac-key-'.repeat(2),
+};
+
 const logger = createLogger({ level: 'silent' });
 const app = await NestFactory.create<NestFastifyApplication>(
-  AppModule.register({ db }),
+  AppModule.register({ db, authDb, secrets }),
   createAdapter(logger),
   { logger: false },
 );

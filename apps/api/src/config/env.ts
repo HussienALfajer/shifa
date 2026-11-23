@@ -48,6 +48,10 @@ const KNOWN_KEYS = new Set([
   'DEPLOYMENT_ENVIRONMENT',
   'SENTRY_DSN',
   'SENTRY_RELEASE',
+  'BETTER_AUTH_SECRET',
+  'AUTH_HMAC_KEY',
+  'DATABASE_URL_AUTH',
+  'DATABASE_URL_PLATFORM',
 ]);
 
 /**
@@ -100,6 +104,40 @@ function isNearMiss(key: string): boolean {
       (known) => key.slice(0, 3) === known.slice(0, 3) && distance(key, known) <= 2,
     )
   );
+}
+
+const postgresUrl = () =>
+  z.string().refine((value) => {
+    try {
+      const url = new URL(value);
+      return url.protocol === 'postgres:' || url.protocol === 'postgresql:';
+    } catch {
+      return false;
+    }
+  });
+
+/** A server secret: at least 32 printable characters, no spaces. */
+const serverSecret = () => z.string().regex(/^[\x21-\x7E]{32,512}$/);
+
+const identitySchema = z
+  .object({
+    BETTER_AUTH_SECRET: serverSecret(),
+    AUTH_HMAC_KEY: serverSecret(),
+    DATABASE_URL_AUTH: postgresUrl(),
+    DATABASE_URL_PLATFORM: postgresUrl(),
+  })
+  .refine((v) => v.BETTER_AUTH_SECRET !== v.AUTH_HMAC_KEY, { path: ['AUTH_HMAC_KEY'] });
+
+/** The identity path (A-01-02, ADR-0043): its secrets and the two side-role database URLs. */
+export interface IdentityConfig {
+  /** Better Auth's secret: signs the session cookie, encrypts TOTP secrets. */
+  betterAuthSecret: string;
+  /** HMAC key of the sign-in throttle (auth_throttle.key_hash): never the phone or IP itself. */
+  hmacKey: string;
+  /** PostgreSQL URL of shifa_auth (createAuthDb()). */
+  databaseUrlAuth: string;
+  /** PostgreSQL URL of shifa_platform (createPlatformDb(); used from A-01-03). */
+  databaseUrlPlatform: string;
 }
 
 const schema = z.object({
@@ -187,5 +225,30 @@ export function loadConfig(env: Readonly<Record<string, string | undefined>>): A
     },
     errors: { dsn: parsed.data.SENTRY_DSN, release: parsed.data.SENTRY_RELEASE },
     testRoutes,
+  };
+}
+
+/**
+ * The identity keys, required to run the API (separate from loadConfig() so checks that need only
+ * the base keys, such as error-reporting bootstrap, keep working without them). Errors name keys.
+ */
+export function loadIdentityConfig(
+  env: Readonly<Record<string, string | undefined>>,
+): IdentityConfig {
+  const parsed = identitySchema.safeParse({
+    BETTER_AUTH_SECRET: env['BETTER_AUTH_SECRET'],
+    AUTH_HMAC_KEY: env['AUTH_HMAC_KEY'],
+    DATABASE_URL_AUTH: env['DATABASE_URL_AUTH'],
+    DATABASE_URL_PLATFORM: env['DATABASE_URL_PLATFORM'],
+  });
+  if (!parsed.success) {
+    const keys = [...new Set(parsed.error.issues.map((issue) => String(issue.path[0])))].sort();
+    throw new ConfigError(`missing or invalid configuration: ${keys.join(', ')}`);
+  }
+  return {
+    betterAuthSecret: parsed.data.BETTER_AUTH_SECRET,
+    hmacKey: parsed.data.AUTH_HMAC_KEY,
+    databaseUrlAuth: parsed.data.DATABASE_URL_AUTH,
+    databaseUrlPlatform: parsed.data.DATABASE_URL_PLATFORM,
   };
 }

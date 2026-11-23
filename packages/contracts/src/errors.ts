@@ -21,6 +21,11 @@ export const ErrorCode = z
     'too_many_requests',
     'internal_error',
     'service_unavailable',
+    // identity (A-01-02)
+    'invalid_credentials',
+    'phone_locked',
+    'ip_blocked',
+    'session_expired',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -60,6 +65,8 @@ export const ErrorBody = z
     message: z.string(),
     /** Present only when `code` is `validation_failed`. */
     details: z.array(ValidationIssue).optional(),
+    /** End of a lock (ISO 8601, UTC): present only with `phone_locked` and `ip_blocked`. */
+    until: z.iso.datetime().optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -85,6 +92,14 @@ export const STATUS_ERRORS: Readonly<Record<number, { code: ErrorCode; message: 
   429: { code: 'too_many_requests', message: 'Too many requests' },
   500: { code: 'internal_error', message: 'Internal server error' },
   503: { code: 'service_unavailable', message: 'Service unavailable' },
+};
+
+/** Fixed messages of the codes that are not a plain status (clients translate the code). */
+export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
+  invalid_credentials: 'Invalid phone or password',
+  phone_locked: 'Too many failed sign-ins for this phone',
+  ip_blocked: 'Too many failed sign-ins from this address',
+  session_expired: 'Session expired',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

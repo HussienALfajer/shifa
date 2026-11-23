@@ -5,13 +5,15 @@ import type { Type } from '@nestjs/common';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
 import { Test } from '@nestjs/testing';
 import { type Contract, defineContract, type HttpMethod } from '@shifa/contracts';
-import type { ShifaDb } from '@shifa/db';
+import type { AuthDb, ShifaDb } from '@shifa/db';
+import type { FastifyInstance } from 'fastify';
 import { z } from 'zod';
 import { ROLE_GRANTS } from '../src/access/access.module.ts';
 import { AUTH_PORT, type AuthPort } from '../src/access/auth.port.ts';
 import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../src/access/roles.ts';
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
+import type { Clock } from '../src/platform/clock.ts';
 import { createLogger } from '../src/platform/logging.ts';
 import { otlpLogForwarder } from '../src/telemetry/logs.ts';
 
@@ -100,6 +102,23 @@ export function offlineDb(): ShifaDb & { calls: number } {
   return db;
 }
 
+/** An identity database that must never be reached (apps that never sign anyone in). */
+export function offlineAuthDb(): AuthDb {
+  const refuse = () => Promise.reject(new Error('offline test identity database'));
+  return {
+    withAuth: refuse,
+    withUser: refuse,
+    withSetupLink: refuse,
+    close: () => Promise.resolve(),
+  };
+}
+
+/** Test-only secrets: never used outside tests. */
+export const TEST_SECRETS = {
+  betterAuthSecret: 'test-better-auth-secret-0123456789abcdef',
+  hmacKey: 'test-auth-hmac-key-0123456789abcdef01234',
+} as const;
+
 export interface TestApp {
   app: NestFastifyApplication;
   logs: CapturedLogs;
@@ -109,6 +128,9 @@ export interface TestApp {
 
 export async function buildTestApp({
   db,
+  authDb = offlineAuthDb(),
+  clock,
+  beforeInit,
   controllers = [],
   auth,
   grants,
@@ -116,12 +138,18 @@ export async function buildTestApp({
   testRoutes = false,
 }: {
   db: ShifaDb;
+  /** shifa_auth handle for the identity module; offline by default. */
+  authDb?: AuthDb;
+  /** Clock of the identity module (session limits, locks); the system clock by default. */
+  clock?: Clock;
+  /** Runs on the Fastify instance before the app initialises (raw-route tests). */
+  beforeInit?: (fastify: FastifyInstance) => void;
   /** Register the test-only routes of src/platform/test-support.ts (as NODE_ENV=test does). */
   testRoutes?: boolean;
   /** Also send every log line to the OpenTelemetry log pipeline (telemetry tests). */
   forwardLogs?: boolean;
   controllers?: Type[];
-  /** Replaces the production NoAuthAdapter. */
+  /** Replaces the production BetterAuthAdapter. */
   auth?: AuthPort;
   /** Added to the production role grants (never replaces them), so the matrix sees both. */
   grants?: RoleGrants;
@@ -133,7 +161,15 @@ export async function buildTestApp({
     ...(forwardLogs ? { forward: otlpLogForwarder() } : {}),
   });
   let builder = Test.createTestingModule({
-    imports: [AppModule.register({ db, testRoutes })],
+    imports: [
+      AppModule.register({
+        db,
+        authDb,
+        secrets: TEST_SECRETS,
+        ...(clock ? { clock } : {}),
+        testRoutes,
+      }),
+    ],
     controllers,
   });
   if (auth) builder = builder.overrideProvider(AUTH_PORT).useValue(auth);
@@ -152,6 +188,7 @@ export async function buildTestApp({
       const methods = Array.isArray(route.method) ? route.method : [route.method];
       for (const method of methods) registered.push({ method, url: route.url });
     });
+  beforeInit?.(app.getHttpAdapter().getInstance());
   await configureApp(app, logger);
   return { app, logs, routes: routeList(registered) };
 }
