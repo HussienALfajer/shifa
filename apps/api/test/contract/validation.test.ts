@@ -9,6 +9,8 @@ import { ContractProbeController } from './probe.ts';
 // Recognisable synthetic values standing in for patient data.
 const MARKER = 'synthetic-value-7731';
 const ID = '00000000-0000-4000-8000-000000000123';
+/** From the generator (seed 410, 'SY'), with its 00 marker. */
+const PHONE = '0930024973';
 
 let current: TestApp | undefined;
 
@@ -40,7 +42,7 @@ describe('request validation', () => {
     const t = await app();
     const res = await post(t, `/__contract/items/${ID}?limit=5`, {
       name: 'n',
-      phone: '0999000111',
+      phone: PHONE,
     });
     expect(res.statusCode).toBe(200);
     expect(res.json()).toEqual({
@@ -48,7 +50,7 @@ describe('request validation', () => {
       limit: 5,
       kind: null,
       name: 'n',
-      phone: '0999000111',
+      phone: PHONE,
     });
   });
 
@@ -56,7 +58,7 @@ describe('request validation', () => {
     const t = await app();
     const res = await post(t, `/__contract/items/${ID}?limit=5&kind=second`, {
       name: 'n',
-      phone: '0999000111',
+      phone: PHONE,
       extra: MARKER,
     });
     expect(res.statusCode).toBe(200);
@@ -84,7 +86,7 @@ describe('request validation', () => {
     const t = await app();
     const res = await post(t, `/__contract/items/${ID}?limit=${MARKER}`, {
       name: 'n',
-      phone: '0999000111',
+      phone: PHONE,
     });
     expect(res.statusCode).toBe(400);
     expect(res.json()).toEqual(failure([{ path: 'query.limit', code: 'invalid_type' }]));
@@ -95,7 +97,7 @@ describe('request validation', () => {
     const t = await app();
     const res = await post(t, `/__contract/items/${ID}?limit=500&kind=third`, {
       name: 'n',
-      phone: '0999000111',
+      phone: PHONE,
     });
     expect(res.json()).toEqual(
       failure([

@@ -21,8 +21,9 @@ const LEAKS = {
   tenant: 'LEAK-TENANT-not-a-uuid',
   eventMessage: 'LEAK-EVENT-MESSAGE',
   forged: 'LEAK-FORGED-CONTENT-TYPE',
-  phone: '+963 944 123 456',
-  phoneNational: '0944123456',
+  // Mobile-shaped, so the scrubber is still tested on phones; synthetic (generator's 00 marker).
+  phone: '+963 930 024 973',
+  phoneNational: '0930024973',
   basic: 'Basic dXNlcjpzZWNyZXQ=',
 };
 const WAIT_MS = 60_000;

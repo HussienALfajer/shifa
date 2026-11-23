@@ -3,7 +3,7 @@
 // story renders in the eight combinations of direction × theme × density and is checked by axe.
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useId, useState } from 'react';
-import { people } from '../../test/fixtures.ts';
+import { nationalPhone, people, phones } from '../../test/fixtures.ts';
 import { Badge, type BadgeTone } from '../badge/badge.tsx';
 import { Pagination } from '../pagination/pagination.tsx';
 import { DataTable, type DataTableColumn } from './data-table.tsx';
@@ -26,11 +26,13 @@ const STATUS: Patient['status'][] = [
   { tone: 'queue-booked', label: 'محجوز' },
 ];
 
+const PHONES = phones(8, { seed: 41 }).map(nationalPhone);
+
 const PATIENTS: Patient[] = people(8, { seed: 41 }).map((p, i) => ({
   id: p.id,
   name: p.name,
   file: `P-${String(10400 + i * 37)}`,
-  phone: `+963 9${String(33 + (i % 3) * 11)} ${String(100 + i * 71)} ${String(200 + i * 53)}`,
+  phone: PHONES[i] ?? '',
   visit: `${String(22 - i)}/11/2026`,
   status: STATUS[i % STATUS.length] ?? { tone: 'queue-done', label: 'انتهت' },
   balance: [0, 45000, 0, 120000, 0, 15500, 1250000, 0][i] ?? 0,

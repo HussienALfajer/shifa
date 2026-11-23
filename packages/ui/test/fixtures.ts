@@ -1,7 +1,7 @@
 // Synthetic people for component tests and stories (slice 0.4-04): names from the generator in
 // @shifa/testing only, never real ones (.claude/rules/patient-data.md). Seeds are fixed, so the
 // same names come back on every run and in every screenshot.
-import { createRandom, generatePersonName } from '@shifa/testing';
+import { createRandom, generatePersonName, generatePhone, type PhoneCountry } from '@shifa/testing';
 
 export interface Person {
   /** A stable id, like a record number. */
@@ -42,6 +42,39 @@ export function people(
   if (out.length < count) throw new Error(`only ${String(out.length)} distinct first letters`);
   return out;
 }
+
+/**
+ * `count` synthetic mobile numbers in E.164 (slice 0.4-10 F2): from the generator only, so each
+ * carries its `00` marker and `scripts/test/no-real-phones.test.mjs` lets it through.
+ */
+export function phones(
+  count: number,
+  { seed = 410, country = 'SY' }: { seed?: number; country?: PhoneCountry } = {},
+): string[] {
+  const random = createRandom(seed);
+  return Array.from({ length: count }, () => generatePhone(random, country));
+}
+
+/**
+ * A number in the national form a patient types: `0930 012 345` (Syria, 4-3-3) or
+ * `0530 001 23 45` (Turkey, 4-3-2-2).
+ */
+export function nationalPhone(e164: string): string {
+  const syrian = e164.startsWith('+963');
+  const national = `0${e164.slice(syrian ? 4 : 3)}`;
+  const groups = syrian ? [4, 3, 3] : [4, 3, 2, 2];
+  let at = 0;
+  return groups
+    .map((size) => {
+      const part = national.slice(at, at + size);
+      at += size;
+      return part;
+    })
+    .join(' ');
+}
+
+/** One synthetic number for a single field, in national form (`0930 024 973`). */
+export const PHONE = nationalPhone(phones(1)[0] ?? '');
 
 /** Four doctors, «د.» before each name. */
 export const DOCTORS = people(4, { seed: 11, prefix: 'د. ' });

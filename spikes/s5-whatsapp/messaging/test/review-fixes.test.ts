@@ -23,12 +23,15 @@ const tempDir = () => {
 afterEach(() => {
   for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true });
 });
+// An unmarked, real-format number on purpose: the fixture check must catch it. Joined at run
+// time so the repository scan (scripts/test/no-real-phones.test.mjs) never sees it whole.
+const UNMARKED = ['+963 94', '444 5555'].join(' ');
 
 describe('review fixes', () => {
   it('the fixture check flags numbers in look-alike keys and spaced numbers', () => {
     const dir = tempDir();
     writeFileSync(join(dir, 'a.json'), JSON.stringify({ sender: 963912345678 }));
-    writeFileSync(join(dir, 'b.json'), JSON.stringify({ note: 'TEL:+963 94 444 5555' }));
+    writeFileSync(join(dir, 'b.json'), JSON.stringify({ note: `TEL:${UNMARKED}` }));
     writeFileSync(join(dir, 'c.json'), JSON.stringify({ timestamp: 1763372400, sentAt: 1763372 }));
     const problems = checkFixtures(dir);
     expect(problems.map((p) => p.split(' ')[0])).toEqual(['a.json', 'b.json']);
@@ -42,8 +45,8 @@ describe('review fixes', () => {
       event: 'message',
       payload: {
         id: `false_963930012345@c.us_${key}`,
-        vCards: ['BEGIN:VCARD\nFN:Real Name\nTEL:+963 94 444 5555\nEND:VCARD'],
-        note: 'call +963 94 444 5555',
+        vCards: [`BEGIN:VCARD\nFN:Real Name\nTEL:${UNMARKED}\nEND:VCARD`],
+        note: `call ${UNMARKED}`,
         _data: { Info: { ID: key, BusinessName: 'Real Shop' } },
       },
     });

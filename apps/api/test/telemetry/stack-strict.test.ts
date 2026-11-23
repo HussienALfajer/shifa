@@ -3,7 +3,9 @@
 import { describe, expect, it } from 'vitest';
 import { leadingStackFrames } from '../../src/telemetry/stack.ts';
 
-const FAKE = '    at Ahmad Khalil (0944123456:12:34)';
+/** Mobile-shaped, so the test still covers a phone in a stack; synthetic (00 marker). */
+const PHONE = '0930024973';
+const FAKE = `    at Ahmad Khalil (${PHONE}:12:34)`;
 
 function lines(text: string): string[] {
   return text.split('\n');
@@ -11,13 +13,13 @@ function lines(text: string): string[] {
 
 describe('leadingStackFrames', () => {
   it('keeps the real frames after a multi-line message', () => {
-    const err = new Error(`Failed query\nparams: Hikmat Khalil,0944123456\n${FAKE}`);
+    const err = new Error(`Failed query\nparams: Hikmat Khalil,${PHONE}\n${FAKE}`);
     const out = leadingStackFrames(err.stack ?? '', 'Error', err.message);
     const [type, ...frames] = lines(out);
     expect(type).toBe('Error');
     expect(frames.length).toBeGreaterThan(0);
     expect(out).not.toContain('Khalil');
-    expect(out).not.toContain('0944123456');
+    expect(out).not.toContain(PHONE);
   });
 
   it('a message changed after creation yields the type alone', () => {
@@ -32,7 +34,7 @@ describe('leadingStackFrames', () => {
     err.stack = `${err.stack ?? ''}\nCaused by: Error: inner Hikmat\n${FAKE}`;
     const out = leadingStackFrames(err.stack, 'Error', err.message);
     expect(out).not.toContain('Hikmat');
-    expect(out).not.toContain('0944123456');
+    expect(out).not.toContain(PHONE);
     expect(lines(out).length).toBeGreaterThan(1);
   });
 
