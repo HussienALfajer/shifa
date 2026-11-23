@@ -28,7 +28,29 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_app two_factor.id SELECT',
   'shifa_app two_factor.user_id SELECT',
   'shifa_app two_factor.verified SELECT',
+  'shifa_auth membership.status UPDATE',
+  'shifa_auth membership.updated_at UPDATE',
+  'shifa_auth membership.user_id UPDATE',
   'shifa_auth setup_link.used_at UPDATE',
+  'shifa_platform membership.display_name SELECT',
+  'shifa_platform membership.id SELECT',
+  'shifa_platform membership.phone_e164 SELECT',
+  'shifa_platform membership.status SELECT',
+  'shifa_platform membership.tenant_id SELECT',
+  'shifa_platform membership.user_id SELECT',
+  'shifa_platform role_assignment.id SELECT',
+  'shifa_platform role_assignment.membership_id SELECT',
+  'shifa_platform role_assignment.role SELECT',
+  'shifa_platform role_assignment.tenant_id SELECT',
+  'shifa_platform setup_link.created_at SELECT',
+  'shifa_platform setup_link.expires_at SELECT',
+  'shifa_platform setup_link.id SELECT',
+  'shifa_platform setup_link.membership_id SELECT',
+  'shifa_platform setup_link.purpose SELECT',
+  'shifa_platform setup_link.replaced_at SELECT',
+  'shifa_platform setup_link.replaced_at UPDATE',
+  'shifa_platform setup_link.tenant_id SELECT',
+  'shifa_platform setup_link.used_at SELECT',
 ];
 
 /** Column ACL entries (not table grants) of the application roles in `public`. */
@@ -55,13 +77,13 @@ describe('column-level grants', () => {
     let found: string[] = [];
     await expect(
       ownerDb(await ensureWorkerDatabase('9997')).transaction(async (tx) => {
-        await tx.execute(sql`grant select (phone_e164) on membership to shifa_platform`);
+        await tx.execute(sql`grant select (token_hash) on setup_link to shifa_platform`);
         const { rows } = await tx.execute<{ g: string }>(columnGrants);
         found = rows.map((r) => r.g);
         throw new RolledBack();
       }),
     ).rejects.toThrow(RolledBack);
-    expect(found).toContain('shifa_platform membership.phone_e164 SELECT');
+    expect(found).toContain('shifa_platform setup_link.token_hash SELECT');
     expect(found).not.toEqual(EXPECTED_COLUMN_GRANTS);
   });
 

@@ -134,11 +134,76 @@
       "body": { "error": { "code": "session_expired", "message": "Session expired" } }
     },
     {
+      "name": "error link_invalid",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "link_invalid", "message": "This link is no longer valid" } }
+    },
+    {
+      "name": "error password_too_short",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "password_too_short", "message": "Password too short" } }
+    },
+    {
+      "name": "error password_common",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "password_common", "message": "Password too common" } }
+    },
+    {
+      "name": "error password_contains_phone",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "password_contains_phone",
+          "message": "Password contains the phone number"
+        }
+      }
+    },
+    {
+      "name": "error mfa_enrolment_required",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "mfa_enrolment_required", "message": "Two-factor enrolment required" }
+      }
+    },
+    {
+      "name": "error mfa_challenge_required",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "mfa_challenge_required", "message": "Two-factor code required" }
+      }
+    },
+    {
+      "name": "error mfa_locked with its end",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "mfa_locked",
+          "message": "Too many wrong codes",
+          "until": "2026-11-23T10:15:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "error invalid_code",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "invalid_code", "message": "Invalid code" } }
+    },
+    {
+      "name": "error clock_skew",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "clock_skew", "message": "Code from a device whose clock is off" }
+      }
+    },
+    {
       "name": "session of an owner in one clinic",
       "schema": "SessionView",
       "body": {
         "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
         "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+        "platformAdmin": false,
+        "mfa": "verified",
+        "mfaRequired": true,
         "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
         "branchId": "4fab6e8c-a05b-4b1e-9f4c-6d8a9eafbc2d",
         "roles": [
@@ -155,6 +220,9 @@
       "body": {
         "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
         "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+        "platformAdmin": true,
+        "mfa": "pending",
+        "mfaRequired": true,
         "tenantId": null,
         "branchId": null,
         "roles": [],

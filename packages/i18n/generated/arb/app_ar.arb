@@ -49,6 +49,10 @@
   "@errorsBadRequest": {
     "description": "errors.bad_request"
   },
+  "errorsClockSkew": "الرمز لا يطابق الوقت. اضبط وقت الهاتف تلقائيًا ثم أعد المحاولة.",
+  "@errorsClockSkew": {
+    "description": "errors.clock_skew"
+  },
   "errorsConflict": "تغيّرت البيانات في أثناء ذلك. حدّث الصفحة وحاول مرة أخرى.",
   "@errorsConflict": {
     "description": "errors.conflict"
@@ -61,6 +65,10 @@
   "@errorsInternalError": {
     "description": "errors.internal_error"
   },
+  "errorsInvalidCode": "الرمز غير صحيح.",
+  "@errorsInvalidCode": {
+    "description": "errors.invalid_code"
+  },
   "errorsInvalidCredentials": "رقم الهاتف أو كلمة المرور غير صحيحة",
   "@errorsInvalidCredentials": {
     "description": "errors.invalid_credentials"
@@ -69,9 +77,25 @@
   "@errorsIpBlocked": {
     "description": "errors.ip_blocked"
   },
+  "errorsLinkInvalid": "هذا الرابط لم يعد صالحًا. اطلب رابطًا جديدًا.",
+  "@errorsLinkInvalid": {
+    "description": "errors.link_invalid"
+  },
   "errorsMethodNotAllowed": "هذا الإجراء غير مدعوم.",
   "@errorsMethodNotAllowed": {
     "description": "errors.method_not_allowed"
+  },
+  "errorsMfaChallengeRequired": "أدخل رمز التحقق للمتابعة.",
+  "@errorsMfaChallengeRequired": {
+    "description": "errors.mfa_challenge_required"
+  },
+  "errorsMfaEnrolmentRequired": "فعّل التحقق بخطوتين للمتابعة.",
+  "@errorsMfaEnrolmentRequired": {
+    "description": "errors.mfa_enrolment_required"
+  },
+  "errorsMfaLocked": "رموز خاطئة كثيرة. أُوقف التحقق مؤقتًا.",
+  "@errorsMfaLocked": {
+    "description": "errors.mfa_locked"
   },
   "errorsNotAcceptable": "تعذّر تقديم الاستجابة بالصيغة المطلوبة.",
   "@errorsNotAcceptable": {
@@ -80,6 +104,18 @@
   "errorsNotFound": "العنصر المطلوب غير موجود.",
   "@errorsNotFound": {
     "description": "errors.not_found"
+  },
+  "errorsPasswordCommon": "كلمة المرور شائعة وسهلة التخمين. اختر غيرها.",
+  "@errorsPasswordCommon": {
+    "description": "errors.password_common"
+  },
+  "errorsPasswordContainsPhone": "كلمة المرور تحتوي رقم الهاتف. اختر غيرها.",
+  "@errorsPasswordContainsPhone": {
+    "description": "errors.password_contains_phone"
+  },
+  "errorsPasswordTooShort": "كلمة المرور أقصر من الحد الأدنى.",
+  "@errorsPasswordTooShort": {
+    "description": "errors.password_too_short"
   },
   "errorsPayloadTooLarge": "حجم البيانات المرسلة أكبر من المسموح.",
   "@errorsPayloadTooLarge": {

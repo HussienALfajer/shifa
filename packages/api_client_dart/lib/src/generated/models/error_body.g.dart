@@ -43,4 +43,13 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.phoneLocked: 'phone_locked',
   ErrorCode.ipBlocked: 'ip_blocked',
   ErrorCode.sessionExpired: 'session_expired',
+  ErrorCode.linkInvalid: 'link_invalid',
+  ErrorCode.passwordTooShort: 'password_too_short',
+  ErrorCode.passwordCommon: 'password_common',
+  ErrorCode.passwordContainsPhone: 'password_contains_phone',
+  ErrorCode.mfaEnrolmentRequired: 'mfa_enrolment_required',
+  ErrorCode.mfaChallengeRequired: 'mfa_challenge_required',
+  ErrorCode.mfaLocked: 'mfa_locked',
+  ErrorCode.invalidCode: 'invalid_code',
+  ErrorCode.clockSkew: 'clock_skew',
 };

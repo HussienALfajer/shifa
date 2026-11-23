@@ -5,6 +5,7 @@ export {
   AUTH_THROTTLE_KINDS,
   account,
   authThrottle,
+  platformAdmin,
   session,
   twoFactor,
   user,

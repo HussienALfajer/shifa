@@ -9,6 +9,7 @@ export const PLATFORM_EVENTS = [
   'owner.link_issued',
   'owner.mfa_reset',
   'owner.sessions_ended',
+  'platform.admin_created',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 

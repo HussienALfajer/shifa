@@ -44,6 +44,7 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     membership: ['SELECT'],
     setup_link: ['SELECT'],
     audit_event: ['INSERT'],
+    platform_admin: ['SELECT'],
   },
   shifa_platform: {
     tenant: ['SELECT', 'INSERT', 'UPDATE'],
@@ -51,6 +52,11 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     organization: ['INSERT'],
     branch: ['INSERT'],
     audit_event: ['INSERT'],
+    // A-01-03: the owner at clinic creation (create-only policies), super admins (seed only)
+    membership: ['INSERT'],
+    role_assignment: ['INSERT'],
+    setup_link: ['INSERT'],
+    platform_admin: ['INSERT'],
   },
 };
 
@@ -76,6 +82,30 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ['shifa_app', 'account', 'SELECT', ['id', 'user_id', 'account_id', 'provider_id', 'created_at']],
   ['shifa_app', 'two_factor', 'SELECT', ['id', 'user_id', 'verified']],
   ['shifa_auth', 'setup_link', 'UPDATE', ['used_at']],
+  ['shifa_auth', 'membership', 'UPDATE', ['user_id', 'status', 'updated_at']],
+  [
+    'shifa_platform',
+    'membership',
+    'SELECT',
+    ['id', 'tenant_id', 'user_id', 'phone_e164', 'display_name', 'status'],
+  ],
+  ['shifa_platform', 'role_assignment', 'SELECT', ['id', 'tenant_id', 'membership_id', 'role']],
+  [
+    'shifa_platform',
+    'setup_link',
+    'SELECT',
+    [
+      'id',
+      'tenant_id',
+      'membership_id',
+      'purpose',
+      'expires_at',
+      'used_at',
+      'replaced_at',
+      'created_at',
+    ],
+  ],
+  ['shifa_platform', 'setup_link', 'UPDATE', ['replaced_at']],
 ];
 
 /** Secret columns no role but shifa_auth may read. */

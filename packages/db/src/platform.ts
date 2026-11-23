@@ -22,7 +22,13 @@ export interface PlatformAction {
   requestId?: string;
   /** What the action is about (a tenant, an owner); can also be set during the work. */
   targetId?: string;
+  /** Small allowlisted details (enum values, flags): never a phone, name, token or code. */
+  data?: Readonly<Record<string, string | boolean | null>>;
 }
+
+/** Keys and values allowed in `data`: identifiers and enum-like words only. */
+const DATA_KEY = /^[a-z][a-zA-Z]{0,31}$/;
+const DATA_VALUE = /^[a-z0-9_-]{0,32}$/;
 
 /** Lets the work name its target once it is known (e.g. the id of a clinic it created). */
 export interface AuditTarget {
@@ -56,6 +62,11 @@ function assertAction(action: PlatformAction): void {
     throw new TenantContextError('requestId must be 1 to 64 letters, digits or ._:-');
   }
   if (action.targetId !== undefined) assertUuid('targetId', action.targetId);
+  for (const [key, value] of Object.entries(action.data ?? {})) {
+    if (!DATA_KEY.test(key) || (typeof value === 'string' && !DATA_VALUE.test(value))) {
+      throw new TenantContextError('audit data must be short identifiers and enum values');
+    }
+  }
 }
 
 async function runAsPlatformAdmin<T>(
@@ -77,9 +88,10 @@ async function runAsPlatformAdmin<T>(
     targets.set(platformTx, audit);
     const result = await fn(platformTx, audit);
     // Written last, so the row carries the target the work named; a throw above leaves none.
-    await tx.execute(sql`insert into audit_event (tenant_id, actor_id, target_id, event, request_id)
+    await tx.execute(sql`insert into audit_event
+        (tenant_id, actor_id, target_id, event, request_id, data)
       values (null, ${action.actorId}, ${targetId ?? null}, ${action.event},
-              ${action.requestId ?? null})`);
+              ${action.requestId ?? null}, ${JSON.stringify(action.data ?? {})}::jsonb)`);
     return result;
   });
 }

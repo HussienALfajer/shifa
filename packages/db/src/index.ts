@@ -7,7 +7,17 @@ export {
 } from './audit.ts';
 export { type AuthDb, createAuthDb } from './auth.ts';
 export { type CreateDbOptions, createDb, type ShifaDb } from './client.ts';
-export { type CreatedClinic, createClinic, MAIN_BRANCH_NAME, type NewClinic } from './clinic.ts';
+export {
+  type CreatedClinic,
+  createClinic,
+  issueOwnerLink,
+  MAIN_BRANCH_NAME,
+  type NewClinic,
+  type NewLink,
+  type NewOwner,
+  type OwnerLink,
+  registerPlatformAdmin,
+} from './clinic.ts';
 export { MIGRATIONS_DIR, migrate, ROLES_SQL } from './migrate.ts';
 export {
   type AuditTarget,

@@ -10,6 +10,7 @@ export 'models/error_body.dart';
 export 'models/error_code.dart';
 export 'models/error_envelope.dart';
 export 'models/health_status.dart';
+export 'models/mfa_state.dart';
 export 'models/session_list.dart';
 export 'models/session_role.dart';
 export 'models/session_role_assignment.dart';

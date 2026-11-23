@@ -62,7 +62,16 @@
           "invalid_credentials",
           "phone_locked",
           "ip_blocked",
-          "session_expired"
+          "session_expired",
+          "link_invalid",
+          "password_too_short",
+          "password_common",
+          "password_contains_phone",
+          "mfa_enrolment_required",
+          "mfa_challenge_required",
+          "mfa_locked",
+          "invalid_code",
+          "clock_skew"
         ],
         "type": "string"
       },
@@ -88,6 +97,14 @@
           "status"
         ],
         "type": "object"
+      },
+      "MfaState": {
+        "enum": [
+          "none",
+          "pending",
+          "verified"
+        ],
+        "type": "string"
       },
       "SessionList": {
         "properties": {
@@ -215,6 +232,15 @@
             "minimum": 1,
             "type": "integer"
           },
+          "mfa": {
+            "$ref": "#/components/schemas/MfaState"
+          },
+          "mfaRequired": {
+            "type": "boolean"
+          },
+          "platformAdmin": {
+            "type": "boolean"
+          },
           "roles": {
             "items": {
               "$ref": "#/components/schemas/SessionRoleAssignment"
@@ -247,6 +273,9 @@
         "required": [
           "userId",
           "sessionId",
+          "platformAdmin",
+          "mfa",
+          "mfaRequired",
           "tenantId",
           "branchId",
           "roles",

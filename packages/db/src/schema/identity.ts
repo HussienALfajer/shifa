@@ -6,6 +6,7 @@
 // Plus `auth_throttle` (A-01a criterion 7): keyed by an HMAC, never the phone or IP itself.
 import { sql } from 'drizzle-orm';
 import {
+  bigint,
   boolean,
   check,
   index,
@@ -58,6 +59,8 @@ export const session = pgTable(
     activeBranchId: uuid('active_branch_id'),
     /** Idle expiry (OD-77): refreshed by the API, compared with the clinic's idle minutes. */
     lastActiveAt: at('last_active_at'),
+    /** When this session passed the TOTP challenge or enrolment (A-01-03); null: not yet. */
+    mfaVerifiedAt: at('mfa_verified_at'),
   },
   (t) => [index('session_user_id_idx').on(t.userId)],
 );
@@ -110,12 +113,25 @@ export const twoFactor = pgTable(
     verified: boolean('verified').default(true),
     failedVerificationCount: integer('failed_verification_count').default(0),
     lockedUntil: at('locked_until'),
+    /** The last TOTP time step accepted (A-01a criterion 12): never accepted again or earlier. */
+    lastUsedStep: bigint('last_used_step', { mode: 'number' }),
   },
   (t) => [
     index('two_factor_secret_idx').on(t.secret),
     index('two_factor_user_id_idx').on(t.userId),
   ],
 );
+
+/**
+ * Super admins (A-01a criterion 13): written only by the seed command on the platform path
+ * (`platform.admin_created`); no route creates one. Read by the auth path to build the principal.
+ */
+export const platformAdmin = pgTable('platform_admin', {
+  userId: uuid('user_id')
+    .primaryKey()
+    .references(() => user.id, { onDelete: 'cascade' }),
+  createdAt: createdAt(),
+});
 
 export const AUTH_THROTTLE_KINDS = ['phone', 'ip'] as const;
 

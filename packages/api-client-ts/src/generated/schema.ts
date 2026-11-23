@@ -158,7 +158,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -166,6 +166,8 @@ export interface components {
             /** @constant */
             status: "ok";
         };
+        /** @enum {string} */
+        MfaState: "none" | "pending" | "verified";
         SessionList: {
             sessions: components["schemas"]["SessionSummary"][];
         };
@@ -195,6 +197,9 @@ export interface components {
             /** Format: date-time */
             idleExpiresAt: string;
             idleMinutes: number;
+            mfa: components["schemas"]["MfaState"];
+            mfaRequired: boolean;
+            platformAdmin: boolean;
             roles: components["schemas"]["SessionRoleAssignment"][];
             /** Format: uuid */
             sessionId: string;

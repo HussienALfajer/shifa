@@ -27,11 +27,26 @@ export const SessionRoleAssignment = z
   })
   .meta({ id: 'SessionRoleAssignment' });
 
+/**
+ * The session's second factor (A-01a criteria 11, 12): `none` (no TOTP enrolled), `pending`
+ * (enrolled, challenge not yet passed in this session), `verified` (passed in this session).
+ */
+export const MfaState = z.enum(['none', 'pending', 'verified']).meta({ id: 'MfaState' });
+export type MfaState = z.infer<typeof MfaState>;
+
 /** The signed-in person's current session: who, where, and when it ends. */
 export const SessionView = z
   .object({
     userId: z.uuid(),
     sessionId: z.uuid(),
+    /** A super admin (admin web); never a clinic role. */
+    platformAdmin: z.boolean(),
+    mfa: MfaState,
+    /**
+     * True when this person must enrol TOTP before anything else (owners, super admins). With
+     * `mfa: 'pending'`, anyone must pass the challenge first.
+     */
+    mfaRequired: z.boolean(),
     /** Active clinic; null when the person has none or must choose (A-01-05). */
     tenantId: z.uuid().nullable(),
     branchId: z.uuid().nullable(),
