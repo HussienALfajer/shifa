@@ -17,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A white surface on cream: an optional header (title, description, actions at the logical end), a body and a footer. Not a control by itself. A link card puts one CardLink in its title: a press anywhere on the card follows it and its focus ring is drawn on the card; buttons inside stay their own controls.',
+          'A white surface on cream: an optional header (title, description, actions at the logical end), a body and a footer. Not a control by itself. A link card puts one CardLink in its title: a press anywhere on the card follows it and its focus ring is drawn on the card; buttons inside stay their own controls.\n\n**Accessibility.** The card is a plain `div` with no role and no Tab stop; its title is a heading (`h3` by default, `headingLevel` for 2 or 4) and a screen reader reaches it in the heading list. The card itself has no keyboard interaction; Tab reaches the controls inside it. In a link card, CardLink is a native link named by the title text: Tab reaches it and Enter follows it, and a button in the header or footer stays its own Tab stop. Keep a link card to one CardLink and never put a control inside the link.',
       },
     },
   },

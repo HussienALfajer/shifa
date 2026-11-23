@@ -16,7 +16,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'One line of text in the shared field box (44 px, 32 compact): hover darkens the border, focus shows the green ring at once, an error is a 2 px danger border with an icon and text, disabled is pale and out of the tab order, read-only stays readable. `dir="auto"` for Latin content (phone, email, medicine).',
+          'One line of text in the shared field box (44 px, 32 compact): hover darkens the border, focus shows the green ring at once, an error is a 2 px danger border with an icon and text, disabled is pale, read-only stays readable. `dir="auto"` for Latin content (phone, email, medicine).\n\n**Accessibility.** A native `input` (a `textbox`), named by its `label`, by an enclosing Field, or by an `aria-label` when it has neither (a toolbar search box); one of them is required. Tab reaches it unless disabled (out of the tab order, not editable); read-only stays focusable but takes no typing. An error sets `aria-invalid` and is read through `aria-describedby` after the hint; `required` is announced while the asterisk is hidden. The `startIcon` is decorative and hidden from screen readers.',
       },
     },
   },

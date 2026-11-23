@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Six 48 × 52 slots, left to right in both directions (numbers never mirror), one field for screen readers with autocomplete="one-time-code". Arabic-Indic digits are accepted and kept as Western ones; a pasted code fills every slot.',
+          'Six 48 × 52 slots, left to right in both directions (numbers never mirror). Arabic-Indic digits are accepted and kept as Western ones; a pasted code fills every slot.\n\n**Accessibility.** One real text input sits behind the slots, so a screen reader announces one textbox with `autocomplete="one-time-code"` and a numeric keyboard, not six fields. Tab reaches it once; digits are typed in, letters are ignored, and Arrow Left and Arrow Right move to the slot on that side of the screen in both directions. It is named by its `label` or a Field, else by «رمز التحقق» (pass `aria-label` for another name). An error sets `aria-invalid` and is read with the field through `aria-describedby`; the drawn caret is hidden.',
       },
     },
   },

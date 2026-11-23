@@ -25,7 +25,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A short message after something happened. One `ToastProvider` per app; `useToast().show({ type, title, description, action })`. Bottom, at the logical end (the bottom left in Arabic); three at most, the newest at the bottom, the rest wait. Success and info close after 5 s, warning after 8 s, errors stay until closed. Announced politely, errors at once; timers pause on hover and focus.',
+          'A short message after something happened. One `ToastProvider` per app; `useToast().show({ type, title, description, action })`. Bottom, at the logical end (the bottom left in Arabic); three at most, the newest at the bottom, the rest wait. Success and info close after 5 s, warning after 8 s, errors stay until closed; timers pause on hover and focus.\n\n**Accessibility.** The toasts sit in a `role="region"` named «الإشعارات» (`label`); each toast is announced through a live region, politely, and an error assertively (at once). F6 moves focus to the toasts from anywhere, a text field included; Tab goes through each toast, its action and its close button, and Escape closes the focused toast. A toast is named by its title and described by its description; the status icon is hidden from screen readers (the words carry the meaning) and the close button is named «إغلاق الإشعار» (`closeLabel`).',
       },
     },
   },

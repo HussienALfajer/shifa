@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A list of actions from a button. Icons on the logical start; a submenu chevron points to the logical end and the forward arrow of the reading direction (Left in Arabic) opens it. The danger item (brick, never red) comes last, after a separator. A disabled item is reachable and says why in `hint`. Typing a letter (Arabic too) moves to the item that starts with it. For a choice that stays shown, use Select.',
+          'A list of actions from a button. Icons on the logical start; a submenu chevron points to the logical end. The danger item (brick, never red) comes last, after a separator. A disabled item says why in `hint`. For a choice that stays shown, use Select.\n\n**Accessibility.** The trigger is a native `button` with `aria-haspopup="menu"` and `aria-expanded`; the list is a `role="menu"` of `menuitem`s, and a submenu is a `menu` named by its item. Down Arrow on the trigger opens it on the first item; Up and Down move, Home and End jump to the first and last; the forward arrow of the reading direction (Left in Arabic, Right in English) opens a submenu and the backward one closes it; typing a letter (Arabic too) moves to the item that starts with it. Enter or Space runs the item, and Enter and Escape return focus to the trigger. A disabled item stays reachable, is announced with `aria-disabled` and its `hint`, and never runs; an icon-only trigger needs an `aria-label`.',
       },
     },
   },

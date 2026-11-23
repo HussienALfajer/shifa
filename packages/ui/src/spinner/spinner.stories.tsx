@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Shifa’s loading indicator: the four jasmine petals of the logo light in turn. For waits without a known shape (a button, a panel, a page); content with a known shape uses Skeleton. Alone it is a status named «جارٍ التحميل»; inside a busy Button it is hidden (the button says aria-busy). It shows after 400 ms and then stays at least 400 ms; still under reduced motion.',
+          'Shifa’s loading indicator: the four jasmine petals of the logo light in turn. For waits without a known shape (a button, a panel, a page); content with a known shape uses Skeleton. It shows after 400 ms and then stays at least 400 ms; still under reduced motion.\n\n**Accessibility.** Alone it renders `role="status"` named by `label` («جارٍ التحميل» by default); the petals are hidden from screen readers, and so is the visible text of `showLabel`, so the name is read once. It has no keyboard interaction and takes no focus. Before the delay nothing is rendered, so a quick load announces nothing. Inside a busy Button it is hidden and the button says `aria-busy="true"` instead.',
       },
     },
   },

@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A password in the field box with a 36 px show toggle inside at the logical end. The toggle keeps one name and reports its state with aria-pressed; typing is left to right; a submit hides the password again. Never logged or stored by the component.',
+          'A password in the field box with a 36 px show toggle inside at the logical end. Typing is left to right; a submit hides the password again. Never logged or stored by the component.\n\n**Accessibility.** A password input named by its `label` (or `aria-label`), then a toggle `button`. Tab goes from the field to the toggle, and Space shows or hides the password. The toggle keeps one name, «إظهار كلمة المرور» (`showLabel`), and a screen reader hears its state from `aria-pressed`. An error sets `aria-invalid` and is read with the field through `aria-describedby`; disabled disables the toggle too.',
       },
     },
   },

@@ -17,7 +17,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'One primary button per view. Secondary for the other actions, ghost for light actions inside cards and tables, danger (brick, never red) for actions that delete or cancel. Disabled leaves the tab order; loading keeps focus and its label, shows a spinner first and ignores presses. Accessibility: a native `button`; Enter and Space activate; an icon-only button needs `aria-label`; wrap Latin parts of an Arabic label in `<bdi>`.',
+          'One primary button per view. Secondary for the other actions, ghost for light actions inside cards and tables, danger (brick, never red) for actions that delete or cancel. Disabled leaves the tab order; loading keeps focus and its label, shows a spinner first and ignores presses.\n\n**Accessibility.** A native `button` of type button, named by its label. Enter and Space activate it; a disabled button is natively disabled and leaves the tab order. A loading button stays focusable and is announced with `aria-busy` and `aria-disabled`; a press still running after a second is announced as `pendingAnnouncement` («جارٍ التنفيذ»). An icon-only button needs an `aria-label`; wrap Latin parts of an Arabic label in `<bdi>`.',
       },
     },
   },

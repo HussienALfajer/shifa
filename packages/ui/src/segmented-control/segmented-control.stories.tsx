@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'One choice of two to five that switches a view at once. The chosen option is a white raised segment with heavier text. One Tab stop; the arrows move and choose together and follow the reading direction (Left is next in Arabic), Home and End reach the ends, a disabled option is skipped. For a value sent with a form, use RadioGroup.',
+          'One choice of two to five that switches a view at once. The chosen option is a white raised segment with heavier text. For a value sent with a form, use RadioGroup.\n\n**Accessibility.** A `role="radiogroup"` with one `role="radio"` per option, named by its label; the chosen one is announced checked (`aria-checked`). It has no visible name, so `aria-label` is required («عرض التقويم»). One Tab stop, on the chosen option. The arrows move and choose together and follow the reading direction (Arrow Left is next in Arabic, Arrow Right in English), Home and End choose the first and last enabled option, and a disabled option is skipped.',
       },
     },
   },

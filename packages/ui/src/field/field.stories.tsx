@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'The label above the control, a danger asterisk when required (hidden from screen readers), a muted hint, and an error with its warning icon; the hint and then the error are read with the control.',
+          'The label above the control, a danger asterisk when required, a muted hint, and an error with its warning icon, so an error is never told by colour alone.\n\n**Accessibility.** The label names the control inside it (its accessible name, without the asterisk); no keyboard interaction of its own (Tab goes to the control). The hint and then the error are read with the control through `aria-describedby`; an error sets `aria-invalid` and `required` makes the control required, so a screen reader announces “required” while the asterisk is hidden (`aria-hidden`). `label` is required; `disabled` passes on to the control.',
       },
     },
   },

@@ -3,6 +3,9 @@ import '../src/styles/tailwind.css';
 import { withMatrix } from './matrix.tsx';
 
 const preview: Preview = {
+  // A docs page for every stories file: the meta's description (usage, then accessibility) and
+  // every story of the component (spec 0.4 criterion 9).
+  tags: ['autodocs'],
   decorators: [withMatrix],
   parameters: {
     layout: 'padded',

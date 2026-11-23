@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'One search over patients and actions, in a modal panel near the top. Focus stays in the field; the up and down arrows move the active option, Enter runs it and closes; Escape clears the text, then closes. Matching folds case, diacritics, tatweel and alef forms (pass `normalise` for the full name rules); the matched part is marked in gold.',
+          'One search over patients and actions, in a modal panel near the top. Matching folds case, diacritics, tatweel and alef forms (pass `normalise` for the full name rules); the matched part is marked in gold.\n\n**Accessibility.** A modal `role="dialog"` named by its `title`, which is shown only to screen readers; inside it the search field is a `role="combobox"` named by `inputLabel`, over a `listbox` of `option`s in titled groups, the matched part in a `<mark>`. Focus starts and stays in the field: Up and Down Arrow move the active option (the field’s `aria-activedescendant`), Enter runs it and closes, Escape clears the text, then closes, and focus returns to the trigger. After typing pauses, the number of results is announced (`resultsLabel`, «3 نتيجة» or «لا نتائج»); the line of key hints under the list is hidden from screen readers.',
       },
     },
   },

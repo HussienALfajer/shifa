@@ -19,7 +19,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A question that needs an explicit answer before something that cannot be undone. A status mark and a question, one or two sentences, then «رجوع» and the action last (the left in Arabic). No close button; a press outside does nothing; focus starts on «رجوع»; Escape and «رجوع» close it and focus returns to the trigger. An action that returns a Promise keeps the dialog open and busy; a failure keeps it open with `errorText`.',
+          'A question that needs an explicit answer before something that cannot be undone. A status mark and a question, one or two sentences, then «رجوع» and the action last (the left in Arabic). No close button; a press outside does nothing. An action that returns a Promise keeps the dialog open and busy; a failure keeps it open with `errorText`.\n\n**Accessibility.** A modal `role="alertdialog"` with `aria-modal`, named by its title (the question) and described by its sentences through `aria-describedby`; the trigger and both answers are native `button`s. Focus starts on «رجوع» and Tab stays inside the dialog; Escape and «رجوع» close it and focus returns to the trigger, but while the action runs Escape does nothing. The busy action is announced with `aria-busy` and keeps its label, a run longer than a second is announced as `pendingAnnouncement` («جارٍ التنفيذ»), and a failure’s `errorText` is a `role="alert"`.',
       },
     },
   },

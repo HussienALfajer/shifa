@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'One of a few choices: a 20 px ring at the logical start, green ring and dot when checked. One Tab stop; arrows move and check, follow the reading direction in a row (Left is next in Arabic), skip disabled options and wrap.',
+          'One of a few choices: a 20 px ring at the logical start, green ring and dot when checked.\n\n**Accessibility.** A `role="radiogroup"` named by its `label`, with one `role="radio"` per option, named by its text and announced checked or not; a `description` is read with its option. The group is one Tab stop, on the checked option or else the first. Arrow keys move and check together: Arrow Down is next, and in a row the arrows follow the reading direction (Arrow Left is next in Arabic, Arrow Right in English); they skip disabled options and wrap. A group error sets `aria-invalid` on the group and is read with it through `aria-describedby`; a disabled group takes no focus.',
       },
     },
   },

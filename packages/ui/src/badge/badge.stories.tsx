@@ -11,7 +11,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A small mark that is never pressed. neutral, brand and outline follow the clinic’s theme; the status tones (success, warning, danger, info) and the visit-queue tones use the locked colours and always carry an icon besides their word. Sizes sm 24 and md 28. CountBadge shows a count on a tab or menu item (Western tabular digits, 99+ at most, nothing at 0) read by its label, or a dot.',
+          'A small mark that is never pressed. neutral, brand and outline follow the clinic’s theme; the status tones (success, warning, danger, info) and the visit-queue tones use the locked colours and always carry an icon besides their word. Sizes sm 24 and md 28. CountBadge shows a count on a tab or menu item (Western tabular digits, 99+ at most, nothing at 0) read by its label, or a dot.\n\n**Accessibility.** A Badge is a plain `span` of text with no role; its icon is hidden (`aria-hidden`) and screen readers read only its word, so the word must say the state on its own. It has no keyboard interaction: a badge is never focused or pressed. CountBadge needs a `label`: the visible number is hidden and the label («12 رسالة غير مقروءة») is read in its place; a dot is a `role="img"` named by its label.',
       },
     },
   },

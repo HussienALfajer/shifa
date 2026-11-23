@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A setting that acts at once: a 44 × 24 track; on, green with the thumb at the logical end (the left in Arabic) and a tick. Space toggles, Enter never does.',
+          'A setting that acts at once: a 44 × 24 track; on, green with the thumb at the logical end (the left in Arabic) and a tick.\n\n**Accessibility.** It renders `role="switch"` inside a `label`, so its text (`children`) is its name and a click on the text toggles it too. Tab reaches it; Space toggles, Enter never does; a disabled switch leaves the tab order. Screen readers announce it as on or off (checked), and `description` is read with it through `aria-describedby`; the tick and thumb are drawing only.',
       },
     },
   },

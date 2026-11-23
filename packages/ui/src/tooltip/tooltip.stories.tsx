@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A short explanation in a dark ink bubble above its trigger (below with `side="bottom"` or when there is no room), at most 240 px wide. Keyboard focus opens it at once, hover after 500 ms, a touch tap never; Escape closes it. It never holds the only copy of something a person needs: a field hint belongs under the field. On an icon button use `tooltip` on `IconButton`, which repeats its label as its name.',
+          'A short explanation in a dark ink bubble above its trigger (below with `side="bottom"` or when there is no room), at most 240 px wide; hover opens it after 500 ms, a touch tap never. It never holds the only copy of something a person needs: a field hint belongs under the field.\n\n**Accessibility.** The bubble renders `role="tooltip"`; the trigger keeps its own element and role. Tab to the trigger opens it at once and Escape closes it, focus staying on the trigger; the tooltip itself never takes focus, so `content` is plain text with no links or buttons. By default screen readers hear it as the trigger’s description (`aria-describedby`); with `type="label"` it is the trigger’s name instead. On an icon button use `tooltip` on `IconButton`, which repeats its label as its name and adds no second description.',
       },
     },
   },

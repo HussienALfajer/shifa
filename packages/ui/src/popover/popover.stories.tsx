@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A small panel under its trigger, starting at the trigger’s logical edge (the right in Arabic), for a short form or details. Focus moves to its first field; Escape or a press outside closes it and focus returns to the trigger. Give it a `title`. For a list of actions use Menu; for choices use Select.',
+          'A small panel under its trigger, starting at the trigger’s logical edge (the right in Arabic), for a short form or details. Give it a `title`. For a list of actions use Menu; for choices use Select.\n\n**Accessibility.** The trigger is a `button` with `aria-expanded`; Enter opens the panel, which has `role="dialog"` and is named by its `title`, so the `title` is required. Focus moves to its first field. Escape or a press outside closes it and focus returns to the trigger.',
       },
     },
   },

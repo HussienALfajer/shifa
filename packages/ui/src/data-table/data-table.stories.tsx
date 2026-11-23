@@ -3,6 +3,7 @@
 // story renders in the eight combinations of direction × theme × density and is checked by axe.
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { useId, useState } from 'react';
+import { storyStates } from '../../.storybook/story-states.tsx';
 import { nationalPhone, people, phones } from '../../test/fixtures.ts';
 import { Badge, type BadgeTone } from '../badge/badge.tsx';
 import { Pagination } from '../pagination/pagination.tsx';
@@ -97,7 +98,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A dense grid that stays fast with thousands of rows. One Tab stop on the active cell; the arrows follow the reading direction (Left is the next column in Arabic), Home/End, Ctrl+Home/End, PageUp/PageDown; Space selects, Enter opens the row (or sorts on a header, or enters a control in a cell; Escape comes back). Sorting, selection with select-all, column visibility (the columns menu under the table), sticky header and pinned first column, both densities, loading and empty states. Columns and rows in; no data fetching.',
+          'A dense grid that stays fast with thousands of rows. Sorting, selection with select-all, column visibility (the columns menu under the table), sticky header and pinned first column, both densities, loading and empty states. Columns and rows in; no data fetching.\n\n**Accessibility.** A `role="grid"` named by the required `aria-label`, with `aria-rowcount` (`totalRows` when `rows` is one page) and `aria-colcount`. One Tab stop on the active cell; the arrows follow the reading direction (Left is the next column in Arabic), Home and End reach the row’s ends, Ctrl+Home and Ctrl+End the table’s, PageUp and PageDown move by a visible page; Space selects the row, Enter opens it (or sorts on a header, or enters a control in a cell; Escape comes back). A screen reader hears `aria-sort` on sortable headers, `aria-selected` on rows and a mixed state on select-all; while loading the grid is `aria-busy` and its skeleton rows are hidden. Latin cells (`kind: "latin"`) are isolated, so callers add no `<bdi>`.',
       },
     },
   },
@@ -181,3 +182,25 @@ export const Empty: Story = {
     />
   ),
 };
+
+/** The text states: a long Arabic column header and the same text in a cell, three patients. */
+function TextState({ label }: { label: string }) {
+  const columns: DataTableColumn<Patient>[] = [
+    { id: 'name', header: label, value: (p) => p.name },
+    { id: 'note', header: 'ملاحظة', value: () => label },
+  ];
+  return (
+    <DataTable
+      aria-label={useCopyLabel('قائمة المرضى')}
+      columns={columns}
+      rows={PATIENTS.slice(0, 3)}
+      getRowId={(p) => p.id}
+    />
+  );
+}
+
+const states = storyStates((label) => <TextState label={label} />);
+export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
+export const MixedDirection: Story = states['MixedDirection'] ?? {};
+export const Zoom200: Story = states['Zoom200'] ?? {};
+export const ReducedMotion: Story = states['ReducedMotion'] ?? {};

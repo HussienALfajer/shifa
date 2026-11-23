@@ -27,7 +27,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Search a long list as you type: a name matches when one of its words starts with the typed text; the typed part is bold. Focus stays in the field; Down and Up move, Enter chooses, Escape closes. Say what happens when nothing matches (`emptyMessage`).',
+          'Search a long list as you type: a name matches when one of its words starts with the typed text; the typed part is bold. Say what happens when nothing matches (`emptyMessage`).\n\n**Accessibility.** The field is a `role="combobox"` named by its required `label`, with `aria-expanded` and `aria-autocomplete="list"`; the suggestions are a `listbox` of `option`s, and the highlighted one is the field’s `aria-activedescendant`. Focus stays in the field while typing: Down and Up Arrow move the highlight, Enter chooses it and closes the list, Escape closes the list. The clear button is a native `button` named by `clearLabel` («مسح»); the typed part of a name is bold, never told by colour alone.',
       },
     },
   },

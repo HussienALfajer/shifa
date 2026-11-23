@@ -14,7 +14,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A modal dialog for a decision or a short form. Title (a question for a confirmation), one or two sentences, then the actions at the end of the line with the main one last (the left in Arabic). Focus starts on the first field, else on the safe action (`DialogClose`); it stays inside; Escape and the close button close it and focus returns to the trigger.',
+          'A modal dialog for a decision or a short form. Title (a question for a confirmation), one or two sentences, then the actions at the end of the line with the main one last (the left in Arabic).\n\n**Accessibility.** A `role="dialog"` with `aria-modal="true"`, named by its `title` (a heading) and described by its `description` through `aria-describedby`; the trigger is a native `button` with `aria-haspopup="dialog"`. Focus starts on the first field, else on the safe action (`DialogClose`), else on the close button; Tab and Shift+Tab stay inside. Escape, the close button or the safe action close it and focus returns to the trigger. The close button is icon-only and named «إغلاق» by default (`closeLabel` to change it).',
       },
     },
   },
