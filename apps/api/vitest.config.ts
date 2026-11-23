@@ -48,8 +48,18 @@ const telemetry = [
   'test/telemetry/identity-leak.test.ts',
 ];
 
-const db = dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] });
-const telemetryProject = dbTestProject({ name: 'telemetry', include: telemetry });
+// The identity tests sign in up to 30 times per case, and every attempt verifies a scrypt hash on
+// purpose (criterion 6): on a loaded runner that outlasts the harness's 20 s default.
+const IDENTITY_TEST_TIMEOUT_MS = 90_000;
+const withIdentityTimeout = (project: ReturnType<typeof dbTestProject>) =>
+  ({
+    ...project,
+    test: { ...project.test, testTimeout: IDENTITY_TEST_TIMEOUT_MS },
+  }) as ReturnType<typeof dbTestProject>;
+const db = withIdentityTimeout(dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] }));
+const telemetryProject = withIdentityTimeout(
+  dbTestProject({ name: 'telemetry', include: telemetry }),
+);
 
 export default defineConfig({
   test: {
