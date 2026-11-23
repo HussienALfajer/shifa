@@ -150,7 +150,7 @@ Specs in order ("clinic day first", owner 2026-11-23, OD-75); each is split into
 | A-12 | Reports and data export | Not started |
 | — | `/release` and the first deployment (OD-74) | Not started |
 
-A-01a and A-01b are planned together as eight sequential slices (plan of 2026-11-23, awaiting the owner's approval; OD-82): five T0 backend slices, schema first and serialised, then the web shells and two UI batch slices, each opening with the draw, analyse and approve checkpoint of ADR-0042. A-01-06 changes no schema or contract and may run in a parallel worktree after A-01-02.
+A-01a and A-01b are planned together as eight sequential slices (plan approved by the owner 2026-11-23: the eight slices, OD-82 closed with two database roles, the added web-shell slice A-01-06 and tier T1 for the two UI batches; the owner waived the second-session critique of the T0 plans): five T0 backend slices, schema first and serialised, then the web shells and two UI batch slices, each opening with the draw, analyse and approve checkpoint of ADR-0042. A-01-06 changes no schema or contract and may run in a parallel worktree after A-01-02.
 
 | Slice | Title | Risk tier | Status |
 |---|---|---|---|
