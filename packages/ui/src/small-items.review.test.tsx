@@ -84,7 +84,8 @@ describe('N5: NumberInput and DatePicker autocomplete (OD-67)', () => {
     const tokens = [...document.querySelectorAll('input:not([type="hidden"])')].map((i) =>
       i.getAttribute('autocomplete'),
     );
-    expect(tokens).toContain('bday');
+    // Since 0.4-13 the date is three segments, each with its part of the token.
+    expect(tokens).toEqual(expect.arrayContaining(['bday-day', 'bday-month', 'bday-year']));
     await screen.unmount();
   });
 });

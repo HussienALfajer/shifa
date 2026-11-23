@@ -8,13 +8,20 @@
 // Behaviour from UI SDK's Time Input: each segment is a spinbutton named by its unit; digits
 // fill a segment and move on; Up and Down step and wrap. This wrapper adds the Arabic and
 // English segment names and OD-20 (Arabic-Indic digits accepted, Western ones shown).
-import { TimeInput as BaseTimeInput, TimeInputSegment } from '@ui-sdk/react/time-input';
-import type { ReactNode, Ref } from 'react';
+// Since slice 0.4-13 (OD-70 B) the clock is a button that opens the clinic's slots
+// (`time-slot-grid.tsx`): Enter or Space on it, or Alt+Down from a segment; one press fills the
+// segments. Typing stays the main way in.
+import {
+  TimeInput as BaseTimeInput,
+  createTimeInputController,
+  TimeInputSegment,
+} from '@ui-sdk/react/time-input';
+import { type ReactNode, type Ref, useState } from 'react';
 import { FIELD_BOX, hasError, useFieldShell, WithField } from '../field/field-shell.tsx';
-import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { useArabicIndicKeys } from '../lib/use-arabic-indic-keys.ts';
 import { useDirection } from '../providers/direction-provider.tsx';
+import { TimeSlotGrid } from './time-slot-grid.tsx';
 
 /**
  * Western digits in both languages (OD-20); the 12-hour period is ص / م in Arabic and AM / PM in
@@ -44,6 +51,8 @@ export interface TimeInputProps {
   /** The earliest and latest time ("09:00"). */
   min?: string | undefined;
   max?: string | undefined;
+  /** Minutes between the slots the clock button offers: 15 by default; it must divide 60. */
+  step?: number | undefined;
   disabled?: boolean | undefined;
   readOnly?: boolean | undefined;
   required?: boolean | undefined;
@@ -68,6 +77,7 @@ export function TimeInput({
   hourCycle = 24,
   min,
   max,
+  step,
   disabled,
   readOnly,
   required,
@@ -84,6 +94,13 @@ export function TimeInput({
   const invalid = hasError(error) || field?.invalid === true;
   const arabicIndicKeys = useArabicIndicKeys();
   const names = SEGMENT_NAMES[dir];
+  // The slot grid fills the segments through UI SDK's controller, as typing would.
+  const [controller] = useState(createTimeInputController);
+  const [box, setBox] = useState<HTMLDivElement | null>(null);
+  const [open, setOpen] = useState(false);
+  // The time shown, so the grid can mark it, whether the field is controlled or not.
+  const [own, setOwn] = useState<string | null>(defaultValue ?? null);
+  const current = value === undefined ? own : value;
   return (
     <WithField
       label={label}
@@ -94,7 +111,23 @@ export function TimeInput({
       className={className}
       mutedLabelWhenDisabled
     >
-      <div data-focus-ring="" className={cn(FIELD_BOX, 'w-auto px-3')}>
+      <div
+        ref={setBox}
+        data-focus-ring=""
+        // Alt+Down from a segment opens the slots, as a select opens its list.
+        onKeyDown={(event) => {
+          if (
+            event.altKey &&
+            event.key === 'ArrowDown' &&
+            isDisabled !== true &&
+            readOnly !== true
+          ) {
+            event.preventDefault();
+            setOpen(true);
+          }
+        }}
+        className={cn(FIELD_BOX, 'w-auto ps-3 pe-1')}
+      >
         <BaseTimeInput
           ref={(el: HTMLDivElement | null) => {
             const cleanup = arabicIndicKeys(el);
@@ -109,6 +142,7 @@ export function TimeInput({
           dir="ltr"
           locale={TIME_LOCALE[dir]}
           hourCycle={hourCycle}
+          controller={controller}
           {...(value === undefined ? {} : { value })}
           {...(defaultValue === undefined ? {} : { defaultValue })}
           {...(min === undefined ? {} : { min })}
@@ -122,13 +156,10 @@ export function TimeInput({
           {...(label === undefined && field === null
             ? { 'aria-label': ariaLabel ?? GROUP_NAME[dir] }
             : {})}
-          {...(onValueChange === undefined
-            ? {}
-            : {
-                onValueChange: (next: string | null) => {
-                  onValueChange(next);
-                },
-              })}
+          onValueChange={(next: string | null) => {
+            setOwn(next);
+            onValueChange?.(next);
+          }}
           // Left to right inside; in Arabic the time sits at the line's start, the right.
           className={cn(
             'flex flex-1 items-center tabular-nums',
@@ -156,9 +187,21 @@ export function TimeInput({
             })
           }
         </BaseTimeInput>
-        <span className="inline-flex shrink-0">
-          <Icon name="clock" />
-        </span>
+        <TimeSlotGrid
+          dir={dir}
+          anchor={box}
+          open={open}
+          onOpenChange={setOpen}
+          value={current}
+          min={min}
+          max={max}
+          step={step}
+          hourCycle={hourCycle}
+          disabled={isDisabled === true || readOnly === true}
+          onChoose={(next) => {
+            controller.setValue(next);
+          }}
+        />
       </div>
     </WithField>
   );

@@ -28,5 +28,14 @@ Read with `ui-sdk.md`. Copy the closest component: Select (a field with a list),
 - The spacing scale is the token scale only (0–13, 16, 0.5): `py-2.5` or `min-h-20` silently do nothing.
 - A label of a disabled group (not a native input) fails axe contrast in the disabled grey: `mutedLabelWhenDisabled` on FieldShell.
 
+## Slice 0.4-13 traps
+- UI SDK controls join the nearest UI SDK Field: a Listbox or a popover trigger inside a field's popup takes that field's label as its name and may take its control. Wrap it in `<Field className="contents">` from `@ui-sdk/react/field`.
+- A custom control wired with `useFieldControl().props(…)` must keep the `ref` it returns (merge it with yours); without it the Field labels the first input it finds.
+- Read a UI SDK model before relying on it: `DateInput` clamps a day to its month (31/02 → 28/02). Check the docs' "Keyboard" and "Tested behavior" lists against the sheet's states, not only the gate's list.
+- UI SDK writes some attributes over your props (a segment's `placeholder`); an element given to `render` keeps its own props over UI SDK's.
+- A change callback can be refused: `onOpenChange(open, details)` with `details.cancel()` keeps a popup open (Escape that steps back inside it).
+- Playwright's `getByRole(…, { name })` matches by substring: a month name «تشرين الثاني» also finds the heading «تشرين الثاني 2026»; pass `exact: true`.
+- Lint the tests before locking them; a locked test changes only with the owner's approval.
+
 ## Design system
 A public component needs a folder in `scripts/design-system/components/<Name>/` (README and preview) and an entry in `BUNDLE_COMPONENTS` and `bundle-entry.tsx`. A composed component (Tabs, Menu) takes its content as data in `scripts/design-system/compound.tsx`; its parts are listed in `PARTS`.

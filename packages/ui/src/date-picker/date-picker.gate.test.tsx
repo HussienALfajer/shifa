@@ -29,7 +29,8 @@ async function setup(dir: 'rtl' | 'ltr', props: Partial<Parameters<typeof DatePi
     </div>,
     { dir },
   );
-  const input = screen.getByRole('textbox', { name: 'تاريخ الموعد' }).element() as HTMLInputElement;
+  // Since 0.4-13 the field is a group of three spinbuttons (day / month / year), not a textbox.
+  const input = screen.getByRole('group', { name: 'تاريخ الموعد' }).element() as HTMLElement;
   const button = screen.getByRole('button', { name: OPEN[dir] }).element() as HTMLElement;
   return { screen, input, button, onValueChange };
 }
@@ -45,8 +46,9 @@ async function openCalendar(
   return { ...s, grid: grid.element() as HTMLElement };
 }
 
-/** What a person reads: the value without invisible bidi marks (U+200E, U+200F, U+061C). */
-const plain = (text: string) => text.replace(/[‎‏؜]/g, '');
+/** What a person reads: the three segments as dd/mm/yyyy. */
+const shown = (group: HTMLElement) =>
+  [...group.querySelectorAll('input')].map((segment) => segment.value).join('/');
 
 /** The focused day, as its day-of-month number. */
 const focusedDay = () => document.activeElement?.textContent.trim();
@@ -54,19 +56,18 @@ const focusedDay = () => document.activeElement?.textContent.trim();
 describe.each(DIRS)('Date Picker gate in %s', (dir) => {
   it('shows the date as dd/mm/yyyy in Western digits', async () => {
     const { input } = await setup(dir);
-    expect(plain(input.value)).toBe('24/11/2026');
+    expect(shown(input)).toBe('24/11/2026');
   });
 
   it('accepts a date typed in Arabic-Indic or Western digits', async () => {
     const { input, onValueChange } = await setup(dir, { defaultValue: null });
-    for (const typed of ['٢٥/١١/٢٠٢٦', '26/11/2026']) {
-      await userEvent.clear(input);
-      await userEvent.type(input, typed);
-      await userEvent.tab();
+    for (const typed of ['٢٥١١٢٠٢٦', '26112026']) {
+      input.querySelector('input')?.focus();
+      await userEvent.keyboard(typed);
       await poll(() => onValueChange.mock.lastCall?.[0], `${typed} is understood`).toBe(
         typed.startsWith('٢') ? '2026-11-25' : '2026-11-26',
       );
-      expect(plain(input.value)).toBe(typed.startsWith('٢') ? '25/11/2026' : '26/11/2026');
+      expect(shown(input)).toBe(typed.startsWith('٢') ? '25/11/2026' : '26/11/2026');
     }
   });
 
@@ -124,7 +125,7 @@ describe.each(DIRS)('Date Picker gate in %s', (dir) => {
     await userEvent.keyboard(`{${arrows(dir).forward}}{Enter}`);
     expect(onValueChange).toHaveBeenLastCalledWith('2026-11-25');
     await expect.element(screen.getByRole('grid')).not.toBeInTheDocument();
-    expect(plain(input.value)).toBe('25/11/2026');
+    expect(shown(input)).toBe('25/11/2026');
     await poll(() => document.activeElement, 'focus back on the button').toBe(button);
   });
 
@@ -133,7 +134,7 @@ describe.each(DIRS)('Date Picker gate in %s', (dir) => {
     await userEvent.keyboard('{Escape}');
     await expect.element(screen.getByRole('grid')).not.toBeInTheDocument();
     expect(onValueChange).not.toHaveBeenCalled();
-    expect(plain(input.value)).toBe('24/11/2026');
+    expect(shown(input)).toBe('24/11/2026');
     await poll(() => document.activeElement, 'focus back on the button').toBe(button);
   });
 
