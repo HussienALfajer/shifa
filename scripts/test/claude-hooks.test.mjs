@@ -211,6 +211,20 @@ describe('checkBash', () => {
     'bun add react',
     'bun install',
     'sudo npm install -g x',
+    // runners that fetch, found by the 0.4 audit (F4, slice 0.4-10)
+    'pnpx skills add x',
+    'pnpx.cmd skills',
+    'pnpm exec npx -y skills',
+    'yarn exec npx skills@latest',
+    'corepack npm install x',
+    'pnpm --filter ui exec npx -y x',
+    'pnpm -r exec npx --yes x',
+    'pnpm x npx -y skills',
+    'bun x npx -y skills',
+    'corepack pnpm dlx skills',
+    'corepack yarn add react',
+    'corepack pnpm exec npx -y skills',
+    'pnpm exec corepack npm install x',
   ];
   for (const cmd of blocked) {
     it(`blocks: ${cmd}`, () => assert.notEqual(checkBash(cmd), null));
@@ -254,6 +268,13 @@ describe('checkBash', () => {
     'npx vitest run --project node',
     'pnpm --filter @shifa/ui exec playwright install --with-deps chromium',
     `npx ${'--- '.repeat(40)}tsc`,
+    // runners around a local bin or pnpm stay allowed (F4, slice 0.4-10)
+    'pnpm exec tsc',
+    'pnpm exec npx tsc -p tsconfig.json',
+    'pnpm --filter ui exec vitest run',
+    'yarn exec tsc',
+    'corepack pnpm install',
+    'corepack enable',
   ];
   for (const cmd of allowed) {
     it(`allows: ${cmd}`, () => assert.equal(checkBash(cmd), null));
