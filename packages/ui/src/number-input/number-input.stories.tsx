@@ -13,7 +13,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A number with steppers: «إنقاص» at the logical start, «زيادة» at the end, each a 44 px target. Western digits, tabular, comma grouping (OD-20, OD-61); typed Arabic-Indic digits are accepted and kept as Western ones. Up and Down step by one, Page Up and Page Down by ten; the stepper at a limit is disabled. Amounts: `steppers={false}` and a `unit`.',
+          'A number with steppers: «إنقاص» at the logical start, «زيادة» at the end, each a 44 px target. Western digits, tabular, comma grouping (OD-20, OD-61); typed Arabic-Indic digits are accepted and kept as Western ones. The stepper at a limit is disabled. Amounts: `steppers={false}` and a `unit`.\n\n**Accessibility.** The field has `role="spinbutton"` with `aria-valuenow`, `aria-valuemin` and `aria-valuemax`, named by its `label`. Arrow Up and Arrow Down step by one, Page Up and Page Down by ten. The steppers are native buttons named «إنقاص» and «زيادة», kept out of the Tab order, so Tab goes from the number to the next field. An error sets `aria-invalid` and is read with the field through `aria-describedby`, like the hint; a `unit` is read after the field, so name it in the label too when it matters.',
       },
     },
   },

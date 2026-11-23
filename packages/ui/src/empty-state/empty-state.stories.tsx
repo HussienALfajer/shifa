@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Says what is empty or what went wrong and the next step: a line drawing (jasmine or the eight-point star with the gold dot) or an icon for search and errors, a title, a description and up to two actions. panel inside a card or table, page for a whole empty screen. The text is the caller’s.',
+          'Says what is empty or what went wrong and the next step: a line drawing (jasmine or the eight-point star with the gold dot) or an icon for search and errors, a title, a description and up to two actions. panel inside a card or table, page for a whole empty screen. The text is the caller’s.\n\n**Accessibility.** The title is a real heading (`h3` by default; set `headingLevel` to 2 or 4 to fit the page outline) and the description a paragraph. No keyboard interaction of its own: Tab reaches only the action buttons the caller passes. The drawing and the icon are decorative and hidden from screen readers (`aria-hidden`), so the title must say what happened. It is not a live region: shown after a search or a failed load, it is not announced on its own.',
       },
     },
   },

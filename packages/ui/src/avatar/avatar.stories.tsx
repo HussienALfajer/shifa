@@ -1,6 +1,7 @@
 // Avatar stories, as on the approved sheet (owner, 2026-11-22, OD-64). Every story renders in the
 // eight combinations of direction × theme × density and is checked by axe. Names are synthetic.
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { storyStates } from '../../.storybook/story-states.tsx';
 import { people } from '../../test/fixtures.ts';
 import { Avatar, AvatarGroup } from './avatar.tsx';
 
@@ -14,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A person’s picture; while it loads or when it fails, the first letters of the first and last names («ال» and «د.» skipped; a Latin name two capitals) on one of six avatar hues chosen from the name. Sizes xs 24, sm 32, md 40, lg 56, xl 80. The full name is the accessible name. AvatarGroup overlaps toward the logical end and names the rest («و3 آخرون»).',
+          'A person’s picture; while it loads or when it fails, the first letters of the first and last names («ال» and «د.» skipped; a Latin name two capitals) on one of six avatar hues chosen from the name. Sizes xs 24, sm 32, md 40, lg 56, xl 80. AvatarGroup overlaps toward the logical end and counts the rest.\n\n**Accessibility.** A `role="img"` whose accessible name is the full name; the picture (`alt=""`) and the initials are hidden from screen readers, and Latin initials are isolated in `<bdi>`. It has no keyboard interaction: an avatar is never focused or pressed (put it inside a link or button for that). AvatarGroup is a `role="group"` named by its required `label`; the count of the rest is announced in words («و3 آخرون», `moreLabel`), not as «+3».',
       },
     },
   },
@@ -63,3 +64,26 @@ export const Group: Story = {
     </div>
   ),
 };
+
+/** The text states: the avatar drawn from the label as a name, the name beside it. */
+const states = storyStates((label) => (
+  <div className="flex items-center gap-3">
+    <Avatar name={label} />
+    <span className="text-body leading-heading font-medium">{label}</span>
+  </div>
+));
+export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
+/** Mixed direction: a Latin name (two capitals, isolated) beside an Arabic title. */
+export const MixedDirection: Story = {
+  ...states['MixedDirection'],
+  render: () => (
+    <div className="flex items-center gap-3">
+      <Avatar name="Rami Saleh" />
+      <span className="text-body leading-heading font-medium">
+        د. <bdi>Rami Saleh</bdi>
+      </span>
+    </div>
+  ),
+};
+export const Zoom200: Story = states['Zoom200'] ?? {};
+export const ReducedMotion: Story = states['ReducedMotion'] ?? {};

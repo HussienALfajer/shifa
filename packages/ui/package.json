@@ -42,6 +42,7 @@
     "@shifa/testing": "workspace:*",
     "@shifa/tsconfig": "workspace:*",
     "@storybook/addon-a11y": "10.6.7",
+    "@storybook/addon-docs": "10.6.7",
     "@storybook/addon-vitest": "10.6.7",
     "@storybook/react-vite": "10.6.7",
     "@tailwindcss/node": "4.3.5",

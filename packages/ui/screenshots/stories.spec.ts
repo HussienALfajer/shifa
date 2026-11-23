@@ -1,13 +1,14 @@
 // One screenshot per story of the built Storybook. Each story already shows the eight
 // combinations of direction × theme × density (.storybook/matrix.tsx). Stories with a play
 // function are left to the Storybook test run: their end state is focus, not a picture.
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 
 interface Entry {
   id: string;
   type: 'story' | 'docs';
+  importPath: string;
   tags?: string[];
 }
 
@@ -22,6 +23,43 @@ const stories = Object.values(index.entries).filter(
 test('the built Storybook has stories', () => {
   expect(stories.length).toBeGreaterThan(0);
 });
+
+const listStories = (dir: string): string[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.isDirectory()
+      ? listStories(join(dir, e.name))
+      : e.name.endsWith('.stories.tsx')
+        ? [e.name]
+        : [],
+  );
+const docs = Object.values(index.entries).filter((e) => e.type === 'docs');
+
+// Autodocs (preview.tsx): one docs page per stories file, every component (spec 0.4 criterion
+// 9). Docs pages get no screenshot; each of their stories already has one.
+test('the built Storybook has one docs page per stories file', () => {
+  const onDisk = listStories(join(import.meta.dirname, '..', 'src'));
+  const entries = Object.values(index.entries);
+  const files = new Set(entries.map((e) => e.importPath));
+  expect(onDisk.length).toBeGreaterThan(0);
+  expect(files.size).toBe(onDisk.length);
+  expect(docs).toHaveLength(onDisk.length);
+  expect(new Set(docs.map((e) => e.importPath))).toEqual(files);
+});
+
+// A reader can reach the notes: no story opens a modal over the docs page (a modal story renders
+// in its own frame, `parameters.docs.story.inline: false`), so the accessibility paragraph is
+// visible and neither inert nor hidden from screen readers.
+for (const entry of docs) {
+  test(`${entry.id}: the accessibility notes can be read`, async ({ page }) => {
+    await page.goto(`/iframe.html?id=${entry.id}&viewMode=docs`);
+    await page.locator('.docs-story').first().waitFor();
+    await page.waitForLoadState('networkidle');
+    const notes = page.getByText('Accessibility.', { exact: true }).first();
+    await expect(notes).toBeVisible();
+    expect(await notes.evaluate((el) => el.closest('[inert], [aria-hidden="true"]'))).toBeNull();
+    await expect(page.locator('[aria-modal="true"]:visible')).toHaveCount(0);
+  });
+}
 
 for (const story of stories) {
   test(story.id, async ({ page }) => {

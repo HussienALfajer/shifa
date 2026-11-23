@@ -22,9 +22,12 @@ const meta = {
   component: Drawer,
   parameters: {
     docs: {
+      // Stories open a modal on load: inline on the docs page they would cover it (and make it
+      // inert), so each docs story renders in its own frame.
+      story: { inline: false, iframeHeight: 640 },
       description: {
         component:
-          'A panel to edit a record without leaving the page. From the logical end by default (the left in Arabic), 400 px; `side="start"` for navigation; `side="bottom"` on a tablet or phone, with a named grabber. Focus starts on the first field and stays inside; Escape, the close button, a press outside or a drag toward its edge close it and focus returns to the trigger.',
+          'A panel to edit a record without leaving the page. From the logical end by default (the left in Arabic), 400 px; `side="start"` for navigation; `side="bottom"` on a tablet or phone, with a grabber.\n\n**Accessibility.** A `role="dialog"` with `aria-modal="true"`, named by its `title` (a heading) and described by its `description`; the trigger is a native `button`. Focus starts on the first field, else on the close button, and Tab stays inside. Escape, the close button, a press outside or a drag toward its edge close it and focus returns to the trigger. The icon-only close button is named «إغلاق» (`closeLabel`) and the bottom drawer’s grabber is a `button` named «اسحب لتغيير الحجم أو للإغلاق» (`handleLabel`).',
       },
     },
   },

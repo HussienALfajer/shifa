@@ -1,6 +1,7 @@
 // Icon Button stories, as on the approved sheet (owner, 2026-11-20). Every story renders in the
 // eight combinations of direction × theme × density and is checked by axe.
 import type { Meta, StoryObj } from '@storybook/react-vite';
+import { storyStates } from '../../.storybook/story-states.tsx';
 import { IconButton } from './icon-button.tsx';
 
 const meta = {
@@ -11,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A square Button with one icon and no visible text, so `label` (its name) is required. The Button variants; md 44 px and sm 36 px (32 and 28 compact).',
+          'A square Button with one icon and no visible text, so `label` (its name) is required. The Button variants; md 44 px and sm 36 px (32 and 28 compact).\n\n**Accessibility.** A native `button` whose `aria-label` is `label`; the icon is hidden from screen readers. Tab reaches it, Enter and Space press it; disabled leaves the tab order. `tooltip` shows the same words on hover and keyboard focus (never on touch) and names the button instead of describing it twice. The label says what the button does («تعديل», «حذف المرفق»), never the icon’s shape; an `aria-label` holds no markup, so a Latin word in it cannot take `<bdi>`.',
       },
     },
   },
@@ -37,3 +38,18 @@ export const States: Story = {
     </div>
   ),
 };
+
+/**
+ * The text states: the label is the button's name and its tooltip, so it shows beside the button
+ * here (a tooltip opens one at a time; the Tooltip stories show it open).
+ */
+const states = storyStates((label) => (
+  <div className="flex items-center gap-2">
+    <IconButton icon="pencil" label={label} tooltip />
+    <span className="text-data text-text-muted">{label}</span>
+  </div>
+));
+export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
+export const MixedDirection: Story = states['MixedDirection'] ?? {};
+export const Zoom200: Story = states['Zoom200'] ?? {};
+export const ReducedMotion: Story = states['ReducedMotion'] ?? {};

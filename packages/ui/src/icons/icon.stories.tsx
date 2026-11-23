@@ -15,7 +15,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Solar icons by 480 Design (CC BY 4.0), Broken style: one tone, the stroke in the text colour; 20 px in rows and controls, 24 px in navigation and cards; the tooth is Healthicons (CC0). Decorative unless given a `label`. Only arrows, carets and sign-out mirror in RTL.',
+          'Solar icons by 480 Design (CC BY 4.0), Broken style: one tone, the stroke in the text colour; 20 px in rows and controls, 24 px in navigation and cards; the tooth is Healthicons (CC0). Only arrows, carets and sign-out mirror in RTL.\n\n**Accessibility.** An inline `svg` that is never focusable: no keyboard interaction. Without a `label` it is decorative and hidden from screen readers (`aria-hidden="true"`); with one it is `role="img"` with that `aria-label`. Give a `label` only when the icon carries meaning no nearby text gives; an icon-only button is named on the button (`aria-label`), not on the icon.',
       },
     },
   },

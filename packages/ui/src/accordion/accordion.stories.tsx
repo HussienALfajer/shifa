@@ -16,7 +16,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Sections of one record that fold away. Each header is a 48 px button in a heading (32 compact), the caret at the logical end; open, the caret turns over and the text is heavier. Enter and Space open and close; the vertical arrows move between headers, Home and End reach the ends, a disabled header is skipped. One section open at a time; `multiple` keeps several open.',
+          'Sections of one record that fold away. Each header is a 48 px button in a heading (32 compact), the caret at the logical end; open, the caret turns over and the text is heavier. One section open at a time; `multiple` keeps several open.\n\n**Accessibility.** Each header is a native `button` inside an `h3`, with `aria-expanded` and `aria-controls`; its panel is a `role="region"` named by the header. Tab reaches every header; Enter and Space open and close; Down and Up Arrow move between headers (wrapping at the ends, the same in RTL and LTR), Home and End jump to the first and last, and the arrows skip a disabled header. The header’s accessible name is its title alone; a `badge` is hidden and read after it through `aria-describedby`. A disabled header stays reachable by Tab, is announced as disabled and never opens.',
       },
     },
   },

@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Longer text in the field box; it grows with its text, Enter adds a line. With `maxLength`, a «n / max» counter in Western digits at the logical end.',
+          'Longer text in the field box; it grows with its text. With `maxLength`, a «n / max» counter in Western digits at the logical end.\n\n**Accessibility.** It renders a native `textarea` (`role="textbox"`) named by its `label`. Tab reaches it (a disabled one is skipped, a read-only one is reached but not edited); Enter adds a line and never submits the form. Screen readers hear the label, the hint and the error through `aria-describedby`, and `aria-invalid` when there is an error; the counter is hidden from them. Give it a `label`, or place it in a `Field` that has one.',
       },
     },
   },

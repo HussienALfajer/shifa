@@ -25,7 +25,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Choose one of a short, known list. The list opens below the field at its logical start, at least as wide; the chosen option has a check. Typing a letter (Arabic too) moves to the option whose name starts with it; a title such as «د.» is skipped. An unavailable option says why in `hint`. For a long or searched list, use Combobox.',
+          'Choose one of a short, known list. The list opens below the field at its logical start, at least as wide; the chosen option has a check. An unavailable option says why in `hint`. For a long or searched list, use Combobox.\n\n**Accessibility.** The field is a `role="combobox"` named by its `label`, with `aria-expanded`; the list is a `role="listbox"` of `role="option"` rows, the chosen one `aria-selected` and an unavailable one `aria-disabled`. Arrow Down opens the list, Arrow Down and Arrow Up move, and Enter chooses, closes the list and returns focus to the field; Escape closes it and keeps the value. Typing a letter (Arabic too) moves to the option whose name starts with it; a title such as «د.» is skipped. An error sets `aria-invalid` and is read with the field through `aria-describedby`.',
       },
     },
   },

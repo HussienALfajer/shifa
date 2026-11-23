@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A 20 px mark at the logical start and its text, the line a 44 px target (32 compact). Checked: green with a tick; some: a dash. Space and a press on the text toggle.',
+          'A 20 px mark at the logical start and its text, the line a 44 px target (32 compact). Checked: green with a tick; some: a dash. A press on the text toggles.\n\n**Accessibility.** A `role="checkbox"` named by its text, announced as checked, not checked or mixed (`aria-checked="mixed"` for some). Tab reaches it and Space toggles it; a disabled checkbox leaves the tab order and never toggles. Its `description` and `error` are read with it through `aria-describedby`, and an error also sets `aria-invalid`. The text is required: it is the accessible name.',
       },
     },
   },

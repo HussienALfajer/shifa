@@ -10,7 +10,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Placeholders for content whose shape is known: blocks, text lines (the last one shorter) and a circle on the raised surface. Hidden from screen readers; SkeletonGroup is the busy, named container. A soft pulse that stops under reduced motion. Waits without a shape use Spinner.',
+          'Placeholders for content whose shape is known: blocks, text lines (the last one shorter) and a circle on the raised surface. A soft pulse that stops under reduced motion. Waits without a shape use Spinner.\n\n**Accessibility.** It has no keyboard interaction: nothing in it takes focus. Every piece is `aria-hidden`, so screen readers skip it. Wrap the pieces in SkeletonGroup, a `role="status"` with `aria-busy="true"`, whose required `label` («جارٍ تحميل بطاقة المريض») is what is announced while the content loads.',
       },
     },
   },

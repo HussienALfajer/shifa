@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Tabs switch between views of one thing (a patient record). The selected tab is green, heavier and underlined. Arrows follow the reading direction (Left is next in Arabic), Home and End reach the ends; only the selected tab is a Tab stop. A disabled tab is reachable, announced as disabled, and never selected. Give `TabList` an `aria-label`.',
+          'Tabs switch between views of one thing (a patient record). The selected tab is green, heavier and underlined.\n\n**Accessibility.** It renders `role="tablist"` of `tab`s, each tab `aria-controls` its `tabpanel`. Only the selected tab is a Tab stop; the Arrow keys follow the reading direction (ArrowLeft is next in Arabic, ArrowRight in English), Home and End reach the first and last tab, and the tab that takes focus is selected at once. Screen readers announce each tab with its selected state; a disabled tab is reachable by the arrows and announced as disabled (`aria-disabled`), but Enter never selects it. `TabList` needs an `aria-label` that names the set («ملف المريض»).',
       },
     },
   },

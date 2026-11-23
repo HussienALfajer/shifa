@@ -2,6 +2,7 @@
 // combinations of direction × theme × density and is checked by axe.
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import type { CSSProperties } from 'react';
+import { storyStates } from '../../.storybook/story-states.tsx';
 import { Toolbar, ToolbarButton, ToolbarSeparator } from './toolbar.tsx';
 
 const meta = {
@@ -11,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A strip of light buttons with one Tab stop: the arrows follow the reading direction (Left is next in Arabic), Home and End reach the ends, a disabled button is skipped, no wrapping. Groups are split by separators; a toggle that is on is pressed (aria-pressed). When narrow, the last buttons move into «المزيد».',
+          'A strip of light buttons, groups split by separators; a toggle that is on shows the selected tint. When narrow, the last buttons move into «المزيد».\n\n**Accessibility.** A `role="toolbar"` named by the required `aria-label`, its buttons native `button`s named by their text. One Tab stop: Tab enters on one button and the next Tab leaves the strip; the arrows follow the reading direction (Left is next in Arabic), Home and End reach the ends, a disabled button is skipped, no wrapping. A screen reader hears a toggle that is on as pressed (`aria-pressed`) and a separator as vertical. Buttons that moved into «المزيد» are items of its menu, under the same names.',
       },
     },
   },
@@ -49,3 +50,15 @@ export const Narrow: Story = {
     </div>
   ),
 };
+
+/** The text states: the label on the first button, a short one beside it. */
+const states = storyStates((label) => (
+  <Toolbar aria-label="أدوات قائمة المرضى">
+    <ToolbarButton icon="printer">{label}</ToolbarButton>
+    <ToolbarButton icon="file-text">تصدير</ToolbarButton>
+  </Toolbar>
+));
+export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
+export const MixedDirection: Story = states['MixedDirection'] ?? {};
+export const Zoom200: Story = states['Zoom200'] ?? {};
+export const ReducedMotion: Story = states['ReducedMotion'] ?? {};

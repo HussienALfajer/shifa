@@ -4,6 +4,7 @@
 import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, waitFor, within } from 'storybook/test';
 import { z } from 'zod';
+import { storyStates } from '../../.storybook/story-states.tsx';
 import { Checkbox } from '../checkbox/checkbox.tsx';
 import { Input } from '../input/input.tsx';
 import { PasswordInput } from '../password-input/password-input.tsx';
@@ -133,7 +134,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'React Hook Form with a Zod resolver: `useShifaForm(schema)`, `<Form translate>`, `<FormField name>`, `<FormSubmit>`. Zod messages are i18n keys; nothing is sent while a field is invalid; the first invalid field takes focus; an async submit keeps the button busy.',
+          'React Hook Form with a Zod resolver: `useShifaForm(schema)`, `<Form translate>`, `<FormField name>`, `<FormSubmit>`. Zod messages are i18n keys; nothing is sent while a field is invalid; an async submit keeps the button busy.\n\n**Accessibility.** A native `form` (the browser’s own validation off, so every message is ours and translated). Enter in a field or Enter and Space on `FormSubmit` (a native submit `button`) submit it; a busy submit keeps focus and ignores a second press. After a failed submit the first invalid field, in page order, takes focus (a radio group’s checked or first option, a Select’s trigger); each invalid control is `aria-invalid` and its message is read through `aria-describedby`; `errorSummary` adds a `role="alert"` line that a screen reader announces at once. A `FormField` with a `label` names its control by it; without one, a checkbox, switch or radio group is named by its own text.',
       },
     },
   },
@@ -161,3 +162,26 @@ export const SubmittedWithErrors: Story = {
     await expect(canvas.getByRole('alert')).toBeVisible();
   },
 };
+
+const note = z.object({ note: z.string() });
+
+/** The text states: the label of a field and of the submit button. */
+function TextState({ label }: { label: string }) {
+  const form = useShifaForm(note, { defaultValues: { note: '' } });
+  return (
+    <Form form={form} translate={translate} onSubmit={() => undefined}>
+      <FormField name="note" label={label}>
+        {(field) => <Input {...field} />}
+      </FormField>
+      <div className="flex justify-end">
+        <FormSubmit>{label}</FormSubmit>
+      </div>
+    </Form>
+  );
+}
+
+const states = storyStates((label) => <TextState label={label} />);
+export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
+export const MixedDirection: Story = states['MixedDirection'] ?? {};
+export const Zoom200: Story = states['Zoom200'] ?? {};
+export const ReducedMotion: Story = states['ReducedMotion'] ?? {};
