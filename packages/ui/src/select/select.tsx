@@ -5,6 +5,10 @@
 // not told by colour alone; an unavailable option says why. Behaviour from UI SDK's Select:
 // arrows, Home and End, typeahead (Arabic letters included), Enter chooses, Escape keeps the
 // value, focus returns to the field. Typing matches the name without a title such as «د.».
+// Slice 0.4-12 (OD-40): typeahead matches through `foldArabic`. UI SDK's typeahead compares the
+// typed key with each item's `label` through its own folding, which keeps hamza forms apart, so
+// the labels it gets are folded and so is the typed key (a capture-phase handler hands UI SDK the
+// folded key instead). The option and the trigger still show the label as written.
 import {
   Select as BaseSelect,
   SelectItem as BaseSelectItem,
@@ -13,10 +17,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@ui-sdk/react/select';
-import type { ReactNode } from 'react';
+import type { KeyboardEvent, ReactNode } from 'react';
 import { FIELD_BOX_SELF, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
+import { foldArabic } from '../lib/fold-arabic.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
 
 export interface SelectItem {
@@ -48,8 +53,31 @@ export interface SelectProps {
 /** Titles that typing skips, so «س» finds «د. سامر» (Arabic and English forms). */
 const TITLE = /^(?:د|أ|م|Dr|Mr|Mrs|Ms|Prof)\.\s*/u;
 
-/** The text typeahead matches: the label without a leading title. */
-export const typeaheadText = (label: string) => label.replace(TITLE, '');
+/** The text typeahead matches: the label without a leading title, folded (OD-40). */
+export const typeaheadText = (label: string) => foldArabic(label.replace(TITLE, ''));
+
+/**
+ * Hands typeahead the folded key: «أ» arrives as «ا», «ة» as «ه», «٣» as «3». The original event
+ * stops before UI SDK sees it and the same key, folded, is sent to the same element. A key that
+ * folds to itself, or to nothing (a haraka), goes through as it is.
+ */
+function foldTypedKey(event: KeyboardEvent<HTMLElement>) {
+  const { key, ctrlKey, metaKey, altKey } = event;
+  if (key.length !== 1 || ctrlKey || metaKey || altKey) return;
+  const folded = foldArabic(key);
+  if (folded === key || folded.length !== 1) return;
+  event.preventDefault();
+  event.stopPropagation();
+  event.nativeEvent.stopImmediatePropagation();
+  event.target.dispatchEvent(
+    new globalThis.KeyboardEvent('keydown', {
+      key: folded,
+      bubbles: true,
+      cancelable: true,
+      shiftKey: event.shiftKey,
+    }),
+  );
+}
 
 const ITEM = cn(
   'flex min-h-(--shifa-size-row) cursor-pointer select-none items-center gap-2 rounded-input px-3 outline-none',
@@ -104,6 +132,7 @@ export function Select({
             })}
       >
         <SelectTrigger
+          onKeyDownCapture={foldTypedKey}
           className={cn(
             FIELD_BOX_SELF,
             'cursor-pointer justify-between px-3 text-start outline-none',
@@ -119,6 +148,7 @@ export function Select({
           <Icon name="caret-down" />
         </SelectTrigger>
         <SelectContent
+          onKeyDownCapture={foldTypedKey}
           side="bottom"
           align="start"
           sideOffset={4}

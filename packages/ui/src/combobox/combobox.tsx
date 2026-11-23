@@ -4,7 +4,10 @@
 // suggestion shows the name, the typed part in bold (never a colour), and a muted second line;
 // no match says so. Behaviour from UI SDK's Combobox: focus stays in the field, Up and Down move
 // the highlight, Enter chooses, Escape closes. A name matches when one of its words starts with
-// what was typed (the sheet's rule), Arabic included.
+// what was typed (the sheet's rule), Arabic included. Slice 0.4-12 (OD-40): both sides are folded
+// by `foldArabic`, so «احمد» finds «أحمد», «فاطمه» finds «فاطمة» and harakat do not matter; the
+// typed part is marked through the same folding. The number of results is announced once typing
+// pauses (UI SDK's `announcement`), in Arabic in RTL and in English in LTR.
 import {
   Combobox as BaseCombobox,
   ComboboxItem as BaseComboboxItem,
@@ -19,7 +22,9 @@ import { type ReactNode, useState } from 'react';
 import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
+import { foldArabic, foldedMatch } from '../lib/fold-arabic.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
+import { type Direction, useDirection } from '../providers/direction-provider.tsx';
 
 export interface ComboboxItem {
   value: string;
@@ -48,14 +53,44 @@ export interface ComboboxProps {
 }
 
 /**
- * True when `query` starts at the start of a word of `label` (case-insensitive, runs of spaces as
- * one): «سا» and «سامر ال» both find «سامر الحلبي»; «امر» does not.
+ * True when `query` starts at the start of a word of `label`, both folded by `foldArabic` (case,
+ * harakat, alef forms, final ة and ى; runs of spaces as one): «سا» and «سامر ال» both find «سامر
+ * الحلبي»; «امر» does not; «احمد» finds «أحمد».
  */
 export function matchesWordStart(label: string, query: string): boolean {
-  const squash = (text: string) => text.trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
+  const squash = (text: string) =>
+    foldArabic(text).trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
   const q = squash(query);
   if (q === '') return true;
   return ` ${squash(label)}`.includes(` ${q}`);
+}
+
+/**
+ * What a screen reader hears once typing pauses: the number of results, with Arabic plural forms
+ * in RTL («لا نتائج», «نتيجة واحدة», «نتيجتان», «3 نتائج», «11 نتيجة») and English in LTR.
+ */
+export function resultsAnnouncement(count: number, dir: Direction): string {
+  if (dir === 'ltr') {
+    if (count === 0) return 'No results';
+    return count === 1 ? '1 result' : `${String(count)} results`;
+  }
+  if (count === 0) return 'لا نتائج';
+  if (count === 1) return 'نتيجة واحدة';
+  if (count === 2) return 'نتيجتان';
+  return count <= 10 ? `${String(count)} نتائج` : `${String(count)} نتيجة`;
+}
+
+/** The label with the typed part in bold, matched through the folding. */
+function marked(label: string, query: string): ReactNode {
+  const match = foldedMatch(label, query, { wordStart: true });
+  if (match === null) return label;
+  return (
+    <>
+      {label.slice(0, match.start)}
+      <strong className="font-bold">{label.slice(match.start, match.end)}</strong>
+      {label.slice(match.end)}
+    </>
+  );
 }
 
 const ITEM = cn(
@@ -84,6 +119,7 @@ export function Combobox({
   // page, hidden), and the field box the list is placed against (not the bare input).
   const [query, setQuery] = useState('');
   const [field, setField] = useState<HTMLDivElement | null>(null);
+  const dir = useDirection();
   const shown = items.filter((item) => matchesWordStart(item.label, query));
   return (
     <FieldShell
@@ -100,6 +136,16 @@ export function Combobox({
           label: item.label,
           disabled: item.disabled === true,
         }))}
+        announcement={(change: {
+          type: string;
+          count?: number;
+          loading?: boolean;
+          label?: string;
+        }) => {
+          if (change.type === 'removed') return null;
+          if (change.loading === true) return dir === 'ltr' ? 'Loading' : 'جارٍ التحميل';
+          return resultsAnnouncement(change.count ?? 0, dir);
+        }}
         filter={(item: unknown, query: string) =>
           matchesWordStart((item as { label?: string }).label ?? String(item), query)
         }
@@ -155,20 +201,7 @@ export function Combobox({
                 {...(item.disabled === true ? { disabled: true } : {})}
                 className={ITEM}
               >
-                <ComboboxItemText className="min-w-0">
-                  {(state) =>
-                    state.segments.map((segment, index) =>
-                      segment.match ? (
-                        // biome-ignore lint/suspicious/noArrayIndexKey: segments have no id; their order is fixed
-                        <strong key={index} className="font-bold">
-                          {segment.text}
-                        </strong>
-                      ) : (
-                        segment.text
-                      ),
-                    )
-                  }
-                </ComboboxItemText>
+                <ComboboxItemText className="min-w-0">{marked(item.label, query)}</ComboboxItemText>
                 {item.description !== undefined && (
                   <span className="text-200 leading-body text-text-muted">{item.description}</span>
                 )}

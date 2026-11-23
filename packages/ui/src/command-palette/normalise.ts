@@ -1,23 +1,11 @@
-// Text folding for the command palette (slice 0.4-06): a simple default so an Arabic query finds
-// a name whatever its diacritics, tatweel or alef form. Phase A passes the full name normaliser
-// (ADR-0034, OD-40) through `normalise`; this one is not it.
+// Search folding for the command palette (slice 0.4-06; since slice 0.4-12 the shared Arabic
+// folding of OD-40, `foldArabic`, also used by Combobox and Select). Phase A may pass the full
+// name normaliser (ADR-0034) through `normalise`.
 import { createElement, Fragment, type ReactNode } from 'react';
-import { toWesternDigits } from '../lib/digits.ts';
+import { foldArabic, foldedMatch } from '../lib/fold-arabic.ts';
 
-/** Harakat, shadda, sukun, superscript alef and the Quranic marks. */
-const DIACRITICS = /[ً-ٰٟۖ-ۭ]/g;
-const TATWEEL = /ـ/g;
-/** Alef with hamza above or below, with madda, and wasla, folded to a bare alef. */
-const ALEF_FORMS = /[آأإٱ]/g;
-
-/** Lower case, no diacritics or tatweel, one alef form, Western digits (OD-20). */
-export function normaliseForSearch(text: string): string {
-  return toWesternDigits(text)
-    .toLocaleLowerCase()
-    .replace(DIACRITICS, '')
-    .replace(TATWEEL, '')
-    .replace(ALEF_FORMS, 'ا');
-}
+/** The palette's default matching: the shared Arabic folding (OD-40). */
+export const normaliseForSearch: (text: string) => string = foldArabic;
 
 /**
  * `label` with the part matching `query` in a <mark>, compared through `normalise` one character
@@ -29,32 +17,17 @@ export function highlight(
   query: string,
   normalise: (text: string) => string,
 ): ReactNode {
-  const wanted = normalise(query.trim());
-  if (wanted === '') return label;
-  // One UTF-16 unit at a time: Arabic letters and their marks are each one unit.
-  let folded = '';
-  const origin: number[] = [];
-  for (let index = 0; index < label.length; index++) {
-    const out = normalise(label.charAt(index));
-    folded += out;
-    origin.push(...Array.from({ length: out.length }, () => index));
-  }
-  const at = folded.indexOf(wanted);
-  const start = origin[at];
-  const last = origin[at + wanted.length - 1];
-  if (at === -1 || start === undefined || last === undefined) return label;
-  let end = last + 1;
-  // Marks after the last matched letter (its diacritics) belong to it.
-  while (end < label.length && normalise(label.charAt(end)) === '') end++;
+  const match = foldedMatch(label, query, { normalise });
+  if (match === null) return label;
   return createElement(
     Fragment,
     null,
-    label.slice(0, start),
+    label.slice(0, match.start),
     createElement(
       'mark',
       { className: 'rounded-xs bg-brand-accent-soft font-semibold text-text-default' },
-      label.slice(start, end),
+      label.slice(match.start, match.end),
     ),
-    label.slice(end),
+    label.slice(match.end),
   );
 }

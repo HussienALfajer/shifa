@@ -109,3 +109,23 @@ export function patientsSharing(): { query: string; matching: Person[]; others: 
     .filter((p): p is Person => p !== undefined);
   return { query, matching, others };
 }
+
+/**
+ * The first generated person whose given name passes `test` (slice 0.4-12): a name that starts
+ * with «أ» or ends with «ة», for the Arabic folding tests, without typing one in.
+ */
+export function personWhere(
+  test: (given: string) => boolean,
+  { seed = 40, id = '2001' }: { seed?: number; id?: string } = {},
+): Person {
+  const random = createRandom(seed);
+  for (let i = 0; i < 2000; i++) {
+    const n = generatePersonName(random, {
+      sex: i % 2 === 0 ? 'female' : 'male',
+      adult: true,
+      region: i % 3 === 0 ? 'azaz' : 'aleppo',
+    });
+    if (test(n.given)) return { id, name: `${n.given} ${n.family}` };
+  }
+  throw new Error('no generated name passes the test');
+}
