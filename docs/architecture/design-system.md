@@ -1,6 +1,6 @@
 # Design system
 
-Status: Draft · Last updated: 2026-11-20 · Owner: product owner
+Status: Draft · Last updated: 2026-11-23 · Owner: product owner
 Sources: RN-17, RN-19
 
 Shifa has its own design system, built on UI SDK headless behaviours for the web (Base UI as per-component fallback) and on a matching Flutter widget library, both generated from one set of design tokens ([ADR-0011 and ADR-0039](../adr/README.md)). Phase 0.4 builds it from [spec 0.4](../specs/design-system/0.4-design-system-foundations.md). This document defines the token model, the component plan, RTL and typography rules, clinic theming, and how quality is checked.
@@ -25,7 +25,7 @@ Format: W3C Design Tokens (DTCG 2025.10). Source of truth: `packages/tokens`, ed
 
 Pipeline (built in slice 0.4-01): Style Dictionary v5 builds
 - CSS custom properties (`--shifa-*`: light on `:root`, then what changes under `[data-theme='dark']` and `[data-density='compact']`) and a Tailwind v4 theme for web packages;
-- Dart constants consumed by `packages/shifa_ui` (both themes, both densities; `ThemeExtension`s wrap them in slice 0.4-08);
+- Dart constants consumed by `packages/shifa_ui` (both themes, both densities; `ShifaThemeData` wraps them, slice 0.4-08; no Material `ThemeExtension`);
 - the Shifa Design System's tokens file (`packages/tokens/generated/design-system/tokens.json`, the Design System artifact type's list format, names = the CSS custom properties; slice 0.4-02b, ADR-0040);
 - the `tokens` drift check of `verify` fails if generated outputs are stale.
 
@@ -153,7 +153,7 @@ Idea: a welcoming place. Generous cards, rounder shapes, larger text and a littl
 | Surfaces | white cards on cream with a light border and one small soft shadow (0 1 px 2 px, 8 %); dropdowns one level higher, dialogs one more; no blur, no large shadow. In dark the border carries the card | `elevation.1`–`3`, `shadow.card`, `.dropdown`, `.modal` |
 | Type | ratio 1.25 from 16 px: data 15 (compact 14), body 16 (phone and reading 18), headings 20, 25, 31, display numbers 44; line height 1.6 body, 1.3 headings, 1.8 reading; weights 400 body, 500 labels, 600 headings, 700 display numbers | `font.size.*`, `text.size.*`, `text.weight.*` |
 | Density | comfortable: 44 px controls (the prototype drew 48; the tokens keep 44 with 52 for large), 48 px rows, card rows with 8 px gaps; compact (pointer devices only): 32 px controls and ruled rows, at least ten queue rows at 1366 × 768 | `size.control.*`, `size.row` |
-| Icons | Solar by 480 Design (CC BY 4.0, credited with the icons and on the apps' About screen), Broken style: one round 1.5 px stroke with deliberate gaps on a 24 grid, no fill, no second tone; 20 px in rows and controls and 24 px in navigation and cards; medical glyphs from Solar, the tooth from Healthicons (CC0). Ink is the text colour: near-black in light, light in dark, greyed inside a disabled control (OD-65, replacing Phosphor duotone). Mirror only directional icons | `size.icon.*`, `color.icon.*` |
+| Icons | Solar by 480 Design (CC BY 4.0, credited with the icons, and on each app's About screen when that screen is built), Broken style: one round 1.5 px stroke with deliberate gaps on a 24 grid, no fill, no second tone; 20 px in rows and controls and 24 px in navigation and cards; medical glyphs from Solar, the tooth from Healthicons (CC0). Ink is the text colour: near-black in light, light in dark, greyed inside a disabled control (OD-65, replacing Phosphor duotone). Mirror only directional icons | `size.icon.*`, `color.icon.*` |
 | Motion | 150 ms hover and press, 200 ms popovers, 240 ms dialogs and sheets; ease-out, 8 px rise; off under reduced motion | `motion.duration.*`, `motion.easing.*` |
 | Numerals | Western digits, tabular; the queue number at 44 px, weight 700, in a round badge | `text.size.display`, `text.weight.display` |
 | Ornament | a small jasmine or eight-point star drawing in empty states only | — |
@@ -237,7 +237,7 @@ Decided in [ADR-0040](../adr/0040-design-first-in-claude-design-code-as-source.m
 
 | Part | Type | Holds | Changed by |
 |---|---|---|---|
-| Shifa Design System | Design System, synced from code (read-only); not the account's default (that setting covers every project on the account), so sessions name it | Brand book, tokens in both themes, type, spacing, radius, shadows, fonts, logo and icons, the components of `packages/ui` with live previews and guidelines | The repository only: token output and `/design-sync` |
+| Shifa Design System | Design System, synced from code (read-only); not the account's default (that setting covers every project on the account), so sessions name it | Brand book, tokens in both themes, type, spacing, radius, shadows, fonts, logo and icons, the components of `packages/ui` with live previews and guidelines | The repository only: token output and the producer (`pnpm design-system:build`, then a publish, `docs/process/ui-screenshots.md`) |
 | Shifa Guide | Design canvas | One guide page drawn from the tokens: the layer flow, then 01 Foundations, 02 Theme, 03 Tokens, 04 Effects, 05 Typography, 06 Rules | Redrawn after a token change |
 | Shifa Components (proposals) | Design canvas, one page per batch | The sheet of a component batch before it is coded | The session with the owner |
 | Shifa Screens | One Design canvas per app (clinic web, admin, display, booking pages, patient app), one page per module | Screens, assembled from the design system's components | The session with the owner |
@@ -256,7 +256,7 @@ Every new design for Shifa (a component sheet, a screen, a prototype, a deck) fo
 
 ```
 packages/tokens ──generate──▶ design-system tokens ──sync──▶ Shifa Design System ──▶ Guide, sheets, screens
-packages/ui (tested) ──/design-sync──▶ Shifa Design System (components)
+packages/ui (tested) ──design-system:build + publish──▶ Shifa Design System (components)
 approved sheet ──▶ component code            approved screen ──▶ screen code
 ```
 
@@ -269,7 +269,7 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 1. **Sheet:** every component of the batch in all its states (default, hover, focus, pressed, disabled, invalid, loading), light and dark, RTL and LTR, both densities, with the real tokens and synthetic names.
 2. **Approval:** the owner approves the sheet, once per batch; changes are made on the sheet.
 3. **Code:** built in `packages/ui` to match the sheet, with the RTL, axe and screenshot tests.
-4. **Sync:** `/design-sync` pushes the real components; the sheet is marked superseded.
+4. **Sync:** `pnpm design-system:build` and the publish in `docs/process/ui-screenshots.md` push the real components; the sheet is marked superseded.
 
 ### Screen cycle (Phase A onward)
 
@@ -290,7 +290,7 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 - `/spec` draws the screens of a feature with UI and `/build-slice` compares the built screen with the approved drawing (ADR-0040).
 - The `/ui-component` skill holds the component checklist (the design sheet and its approval, API conventions, RTL, a11y, stories, tests, the sync to the design system) and points to the best existing component to copy.
-- The upstream `ui-sdk` agent skill is vendored at a pinned commit after review (ADR-0039).
+- The upstream `ui-sdk` agent skill is not vendored; `/ui-component` (`references/ui-sdk.md`) holds our notes, re-read at every UI SDK upgrade (ADR-0041).
 
 ## Effort and risks
 

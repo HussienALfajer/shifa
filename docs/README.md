@@ -11,6 +11,8 @@ Map of the documentation. Each kind of information has exactly one home; link to
 | Arabic ↔ English terms | [product/glossary.md](product/glossary.md) |
 | Project status and phases | [roadmap.md](roadmap.md) |
 | Questions waiting for the owner | [open-decisions.md](open-decisions.md) |
+| Non-blocking follow-ups | [backlog.md](backlog.md) |
+| Phase audits | [audits/](audits/) (latest: [0.4](audits/0.4-2026-11-23.md)) |
 | How we build (Claude Code workflow, tiers, definition of done) | [process/development-workflow.md](process/development-workflow.md) |
 | Set up the development machine (WSL2, `pnpm env:check`) | [process/wsl2-setup.md](process/wsl2-setup.md) |
 | Work in a Claude Code cloud session (what runs there, PRs without `gh`) | [process/cloud-sessions.md](process/cloud-sessions.md) |

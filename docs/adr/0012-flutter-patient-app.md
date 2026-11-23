@@ -1,6 +1,6 @@
 # ADR-0012: Patient app in Flutter with the official MVVM architecture and Riverpod 3
 
-Status: Accepted · Date: 2026-11-08 · Deciders: product owner
+Status: Accepted; Flutter pin moved to 3.50.x in slice 0.4-08 (owner, 2026-11-23) · Date: 2026-11-08 · Deciders: product owner
 
 ## Context
 The patient app targets Android first (about 95–96% of Syrian mobile traffic, many low-end devices), Arabic RTL, family profiles, live queue tracking and offline tolerance. On 2026-11-07 research recommended React Native + Expo for TypeScript code sharing [RN-17 §8]; on 2026-11-08 the owner chose Flutter for a "professional and creative" app. Flutter renders RTL natively, is consistent on low-end Android, and is moving toward custom design systems (Material and Cupertino split into packages in 3.47) [RN-19 §B1].
