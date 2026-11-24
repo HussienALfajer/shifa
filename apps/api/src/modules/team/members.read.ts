@@ -85,7 +85,8 @@ function summary(
     status: row.status,
     roles,
     lastActiveAt: row.lastActiveAt?.toISOString() ?? null,
-    linkExpiresAt: link?.toISOString() ?? null,
+    // A pending member's link only: an active member's unused recovery link is not «انتهى الرابط».
+    linkExpiresAt: row.status === 'pending' ? (link?.toISOString() ?? null) : null,
     isSelf: row.userId !== null && row.userId === viewer.userId,
   };
 }

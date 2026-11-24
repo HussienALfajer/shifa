@@ -6,7 +6,7 @@
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { type MemberLinkIssued, normalisePhone } from '@shifa/contracts';
 import { membership, setupLink, type Tx } from '@shifa/db';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, isNull, ne } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -53,6 +53,19 @@ export class MemberCorrections {
     return this.tenants.run(scope, async (tx) => {
       // The same lock as an add of this phone: one of two writes waits and sees the other.
       await lockMemberPhone(tx, phone.e164);
+      // The open links before the membership, in the order accepting or using a link takes them
+      // (link, then membership): a phone edit racing an acceptance waits, never deadlocks (review 1).
+      await tx
+        .select({ id: setupLink.id })
+        .from(setupLink)
+        .where(
+          and(
+            eq(setupLink.membershipId, id),
+            isNull(setupLink.usedAt),
+            isNull(setupLink.replacedAt),
+          ),
+        )
+        .for('update');
       const [row] = await tx.select().from(membership).where(eq(membership.id, id)).for('update');
       if (!row) throw new NotFoundException();
       if (row.userId) throw new ApiError(409, 'member_account_exists');
