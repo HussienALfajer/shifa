@@ -14,7 +14,15 @@ import {
 import type { ReactNode } from 'react';
 import type { ShellClient } from './client.ts';
 import { decideRoute, owesMfa, type RouteKind, type ShellApp } from './guard.ts';
-import { type SessionState, sessionQuery, sessionQueryKey, signOut } from './session.ts';
+import {
+  fetchSession,
+  type SessionState,
+  sessionQuery,
+  sessionQueryKey,
+  signOut,
+  signOutCount,
+} from './session.ts';
+import { onOtherTabSignOut } from './tabs.ts';
 import { IdleBoundary } from './use-idle.tsx';
 
 export type { ShellApp } from './guard.ts';
@@ -30,6 +38,8 @@ export interface ShellPages {
   /** Clinic web only: the setup link page and the page naming admin web. */
   setup?: ComponentType;
   adminWeb?: ComponentType;
+  /** Clinic web only: the clinic chooser with its branch step (A-01-07 checkpoint 4). */
+  choose?: ComponentType;
   notFound?: ComponentType;
 }
 
@@ -114,6 +124,7 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   if (app === 'clinic' && pages.adminWeb) {
     children.push(route('/admin-web', 'admin-web', pages.adminWeb));
   }
+  if (app === 'clinic' && pages.choose) children.push(route('/choose', 'choose', pages.choose));
   return root.addChildren(children);
 }
 
@@ -150,12 +161,31 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     // A single-page app, never rendered on a server: redirects always navigate.
     isServer: false,
   });
+  // Another tab signed out: while this tab asks the server, a 401 names that tab's reason.
+  let otherTab: string | undefined;
   // Mid-session only: a 401 for a visitor who never had a session is the guard's business.
   const offEnded = shell.onSessionEnded((code, reason) => {
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
-    void router.navigate({ to: '/sign-in', search: searchFor(reason ?? code) });
+    void router.navigate({ to: '/sign-in', search: searchFor(reason ?? otherTab ?? code) });
+  });
+  // Never on the message alone: the server's answer decides (tabs.ts).
+  const offTabs = onOtherTabSignOut((tabReason) => {
+    const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
+    if (known?.kind !== 'signed-in') return;
+    otherTab = tabReason;
+    const asked = signOutCount();
+    void fetchSession(shell)
+      .then((state) => {
+        if (state.kind === 'signed-in' && signOutCount() === asked) {
+          queryClient.setQueryData(sessionQueryKey, state);
+        }
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        otherTab = undefined;
+      });
   });
   // Another person, session or clinic behind the same page (a switch or a sign-in in another
   // tab): nothing cached for the previous one may stay on screen (security review M1).
@@ -172,8 +202,10 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     if (event.type !== 'updated') return;
     const state = event.query.state.data as SessionState | undefined;
     if (state?.kind !== 'signed-in') return;
-    const { userId, sessionId, tenantId } = state.session;
-    const next = `${userId}|${sessionId}|${tenantId ?? ''}`;
+    // The branch too: a switch to another branch of the same clinic keeps nothing cached for the
+    // previous one (A-01-07 checkpoint 4 review finding 1).
+    const { userId, sessionId, tenantId, branchId } = state.session;
+    const next = `${userId}|${sessionId}|${tenantId ?? ''}|${branchId ?? ''}`;
     const changed = identity !== undefined && identity !== next;
     const rotated = changed && isMfaRotation(before, state);
     identity = next;
@@ -186,6 +218,7 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
   });
   const dispose = () => {
     offEnded();
+    offTabs();
     offCache();
   };
   return { router, dispose };

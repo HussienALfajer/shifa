@@ -63,8 +63,15 @@ export interface IdleTracker {
   tick(): void;
   /** True once a refresh found no session: the 401 rule, not the idle timer, ends the page. */
   gone(): boolean;
-  /** Another tab refreshed. */
+  /** Another tab refreshed: only a later idle limit is taken. */
   receive(message: unknown): void;
+  /** A newer server answer for this session (a switch's re-read): its idle limit, as it is. */
+  answer(expiry: SessionExpiry): void;
+  /**
+   * «متابعة العمل»: asks the server now, whatever the once-a-minute limit. True when the session
+   * is still there (its new limits taken), false when it is gone; rejects when the request failed.
+   */
+  extend(): Promise<boolean>;
 }
 
 export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
@@ -81,6 +88,17 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
     return true;
   };
 
+  /**
+   * The server's own answer, taken as it is: a switch to a clinic with a shorter setting, or the
+   * owner shortening it, must bring the warning forward (A-01-07 checkpoint 4 review). Messages
+   * from other tabs stay later-only (`take`): a page must not shorten another's limit.
+   */
+  const adopt = (idleExpiresAt: number): boolean => {
+    if (idleExpiresAt === current.idleExpiresAt) return false;
+    current = { idleExpiresAt, absoluteExpiresAt: absolute };
+    return true;
+  };
+
   const refresh = () => {
     const now = options.now();
     if (ended || now - lastRefresh < REFRESH_EVERY_MS) return;
@@ -92,7 +110,7 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
           ended = true;
           return;
         }
-        if (take(next.idleExpiresAt)) options.post({ type: 'session', ...current });
+        if (adopt(next.idleExpiresAt)) options.post({ type: 'session', ...current });
       },
       // A failed refresh changes nothing: the limits stay, the next activity asks again.
       () => {
@@ -114,6 +132,25 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
     gone: () => ended,
     receive(message) {
       if (isIdleMessage(message)) take(message.idleExpiresAt);
+    },
+    answer(expiry) {
+      if (!ended) adopt(expiry.idleExpiresAt);
+    },
+    async extend() {
+      if (ended) return false;
+      lastRefresh = options.now();
+      try {
+        const next = await options.refresh();
+        if (next === null) {
+          ended = true;
+          return false;
+        }
+        if (adopt(next.idleExpiresAt)) options.post({ type: 'session', ...current });
+        return true;
+      } catch (error) {
+        lastRefresh = Number.NEGATIVE_INFINITY;
+        throw error;
+      }
     },
   };
 }

@@ -12,8 +12,9 @@ import { useNavigate } from '@tanstack/react-router';
 import { type SyntheticEvent, useCallback, useRef, useState } from 'react';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
-import { type SessionView, sessionQueryKey, signOut } from '../session.ts';
+import { type SessionView, sessionQueryKey } from '../session.ts';
 import { useText } from '../text.ts';
+import { useSignOut } from '../use-sign-out.ts';
 import { AuthLayout } from './auth-layout.tsx';
 import { type Lock, lockOf, useLock } from './lock.ts';
 import { LockCallout } from './lock-callout.tsx';
@@ -30,6 +31,7 @@ export function MfaChallenge({ session }: { session: SessionView }) {
   const { shell } = useShell();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
+  const signOutNow = useSignOut();
   const name = useMyName(session.userId);
   const [method, setMethod] = useState<Method>('totp');
   const [code, setCode] = useState('');
@@ -174,18 +176,7 @@ export function MfaChallenge({ session }: { session: SessionView }) {
       </Button>
       <p className="m-0 text-data leading-body text-text-muted">{text('challengeLost')}</p>
       <div>
-        <Button
-          variant="ghost"
-          size="sm"
-          startIcon="sign-out"
-          onClick={async () => {
-            const ended = await signOut(shell, queryClient);
-            await navigate({
-              to: '/sign-in',
-              search: { reason: ended ? 'signed_out' : 'sign_out_failed' },
-            });
-          }}
-        >
+        <Button variant="ghost" size="sm" startIcon="sign-out" onClick={signOutNow}>
           {text('signOutShort')}
         </Button>
       </div>

@@ -48,6 +48,23 @@
   "@commonBack": {
     "description": "common.back"
   },
+  "commonBranchBack": "كل العيادات",
+  "@commonBranchBack": {
+    "description": "common.branchBack"
+  },
+  "commonBranchText": "لك دور في أكثر من فرع من {clinic}. اختر الفرع الذي تعمل فيه الآن.",
+  "@commonBranchText": {
+    "description": "common.branchText",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchTitle": "اختر الفرع",
+  "@commonBranchTitle": {
+    "description": "common.branchTitle"
+  },
   "commonBrandAdminText": "العيادات ومالكوها واشتراكاتها، دون أي بيانات مرضى.",
   "@commonBrandAdminText": {
     "description": "common.brandAdminText"
@@ -120,6 +137,116 @@
   "commonChallengeUseTotp": "استخدام رمز التطبيق",
   "@commonChallengeUseTotp": {
     "description": "common.challengeUseTotp"
+  },
+  "commonChooserActiveHours": "{count, plural, zero {آخر نشاط الآن} one {آخر نشاط قبل ساعة} two {آخر نشاط قبل ساعتين} few {آخر نشاط قبل {count} ساعات} many {آخر نشاط قبل {count} ساعة} other {آخر نشاط قبل {count} ساعة}}",
+  "@commonChooserActiveHours": {
+    "description": "common.chooserActiveHours",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonChooserActiveMinutes": "{count, plural, zero {آخر نشاط الآن} one {آخر نشاط قبل دقيقة} two {آخر نشاط قبل دقيقتين} few {آخر نشاط قبل {count} دقائق} many {آخر نشاط قبل {count} دقيقة} other {آخر نشاط قبل {count} دقيقة}}",
+  "@commonChooserActiveMinutes": {
+    "description": "common.chooserActiveMinutes",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonChooserActiveOn": "آخر نشاط {date}",
+  "@commonChooserActiveOn": {
+    "description": "common.chooserActiveOn",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChooserActiveYesterday": "آخر نشاط أمس {time}",
+  "@commonChooserActiveYesterday": {
+    "description": "common.chooserActiveYesterday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChooserInviteExpires": "تنتهي الدعوة {date} الساعة {time}",
+  "@commonChooserInviteExpires": {
+    "description": "common.chooserInviteExpires",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChooserInviteFrom": "{clinic} يدعوك",
+  "@commonChooserInviteFrom": {
+    "description": "common.chooserInviteFrom",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChooserInviteHow": "لقبولها افتح الرابط الذي أرسلته لك العيادة. تظهر هنا بعد القبول.",
+  "@commonChooserInviteHow": {
+    "description": "common.chooserInviteHow"
+  },
+  "commonChooserInvitesTitle": "دعوات بانتظارك",
+  "@commonChooserInvitesTitle": {
+    "description": "common.chooserInvitesTitle"
+  },
+  "commonChooserLastUsed": "آخر استعمال",
+  "@commonChooserLastUsed": {
+    "description": "common.chooserLastUsed"
+  },
+  "commonChooserLoading": "جارٍ تحميل عياداتك",
+  "@commonChooserLoading": {
+    "description": "common.chooserLoading"
+  },
+  "commonChooserNoClinicYet": "لا عيادة لك بعد. تبدأ العمل حين تقبل دعوة من رابطها.",
+  "@commonChooserNoClinicYet": {
+    "description": "common.chooserNoClinicYet"
+  },
+  "commonChooserRoleOwner": "مالك",
+  "@commonChooserRoleOwner": {
+    "description": "common.chooserRoleOwner"
+  },
+  "commonChooserSuspended": "موقوفة",
+  "@commonChooserSuspended": {
+    "description": "common.chooserSuspended"
+  },
+  "commonChooserSuspendedText": "حساب العيادة موقوف. بياناتها محفوظة؛ تواصل مع إدارة شفاء.",
+  "@commonChooserSuspendedText": {
+    "description": "common.chooserSuspendedText"
+  },
+  "commonChooserText": "اختر العيادة التي تعمل فيها الآن. تبدّلها لاحقاً من أعلى الصفحة دون خروج.",
+  "@commonChooserText": {
+    "description": "common.chooserText"
+  },
+  "commonChooserTitle": "أهلاً {name}، اختر العيادة",
+  "@commonChooserTitle": {
+    "description": "common.chooserTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChooserTitlePlain": "اختر العيادة",
+  "@commonChooserTitlePlain": {
+    "description": "common.chooserTitlePlain"
+  },
+  "commonChooserTrial": "تجريبية",
+  "@commonChooserTrial": {
+    "description": "common.chooserTrial"
   },
   "commonClockSkewText": "افتح إعدادات الهاتف واجعل التاريخ والوقت «تلقائياً»، ثم اكتب الرمز الجديد من التطبيق.",
   "@commonClockSkewText": {
@@ -348,6 +475,44 @@
   "@commonHomeTitle": {
     "description": "common.homeTitle"
   },
+  "commonIdleContinue": "متابعة العمل",
+  "@commonIdleContinue": {
+    "description": "common.idleContinue"
+  },
+  "commonIdleContinueFailed": "تعذّر الوصول إلى الخادم. أعد المحاولة.",
+  "@commonIdleContinueFailed": {
+    "description": "common.idleContinueFailed"
+  },
+  "commonIdleEndsAt": "تُغلق الجلسة الساعة {time} ما لم تتابع.",
+  "@commonIdleEndsAt": {
+    "description": "common.idleEndsAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleSafety": "الإغلاق يحمي بيانات المرضى إن تُرك الجهاز. ما لم يُحفظ بعد قد يضيع.",
+  "@commonIdleSafety": {
+    "description": "common.idleSafety"
+  },
+  "commonIdleSignOutNow": "خروج الآن",
+  "@commonIdleSignOutNow": {
+    "description": "common.idleSignOutNow"
+  },
+  "commonIdleText": "{count, plural, zero {لم نرَ نشاطاً منذ قليل. نُغلق الجلسة بعد:} one {لم نرَ نشاطاً منذ دقيقة. نُغلق الجلسة بعد:} two {لم نرَ نشاطاً منذ دقيقتين. نُغلق الجلسة بعد:} few {لم نرَ نشاطاً منذ {count} دقائق. نُغلق الجلسة بعد:} many {لم نرَ نشاطاً منذ {count} دقيقة. نُغلق الجلسة بعد:} other {لم نرَ نشاطاً منذ {count} دقيقة. نُغلق الجلسة بعد:}}",
+  "@commonIdleText": {
+    "description": "common.idleText",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonIdleTitle": "هل ما زلت تعمل؟",
+  "@commonIdleTitle": {
+    "description": "common.idleTitle"
+  },
   "commonIdleWarning": "{count, plural, zero {تنتهي الجلسة الآن} one {تنتهي الجلسة بعد ثانية واحدة} two {تنتهي الجلسة بعد ثانيتين} few {تنتهي الجلسة بعد {count} ثوانٍ} many {تنتهي الجلسة بعد {count} ثانيةً} other {تنتهي الجلسة بعد {count} ثانية}}",
   "@commonIdleWarning": {
     "description": "common.idleWarning",
@@ -450,6 +615,14 @@
   "commonMfaTitle": "التحقق بخطوتين",
   "@commonMfaTitle": {
     "description": "common.mfaTitle"
+  },
+  "commonNoClinicText": "لم يعد لك دور في أي عيادة، ولا دعوة بانتظارك. اطلب من مالك العيادة رابط دعوة، أو تواصل مع إدارة شفاء.",
+  "@commonNoClinicText": {
+    "description": "common.noClinicText"
+  },
+  "commonNoClinicTitle": "لا توجد عيادة متاحة لحسابك",
+  "@commonNoClinicTitle": {
+    "description": "common.noClinicTitle"
   },
   "commonNoResults": "لا توجد نتائج.",
   "@commonNoResults": {
@@ -572,6 +745,24 @@
   "commonServerErrorTitle": "تعذّر الدخول الآن",
   "@commonServerErrorTitle": {
     "description": "common.serverErrorTitle"
+  },
+  "commonSessionEndsText": "مرّت قرابة {hours} ساعة على دخولك. احفظ عملك؛ ستحتاج إلى الدخول من جديد بعدها.",
+  "@commonSessionEndsText": {
+    "description": "common.sessionEndsText",
+    "placeholders": {
+      "hours": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSessionEndsTitle": "تنتهي جلستك عند {time}",
+  "@commonSessionEndsTitle": {
+    "description": "common.sessionEndsTitle",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "commonSetupAccountExistsText": "ادخل برقمك وكلمة مرورك. إن نسيت كلمة المرور فاطلب رابط إعداد جديداً ممن أرسل إليك هذا الرابط.",
   "@commonSetupAccountExistsText": {
@@ -815,6 +1006,46 @@
         "type": "String"
       }
     }
+  },
+  "commonSwitchBranchArchivedText": "أغلقه مالك العيادة. حدّثنا القائمة؛ اختر فرعاً آخر.",
+  "@commonSwitchBranchArchivedText": {
+    "description": "common.switchBranchArchivedText"
+  },
+  "commonSwitchBranchArchivedTitle": "أُغلق هذا الفرع",
+  "@commonSwitchBranchArchivedTitle": {
+    "description": "common.switchBranchArchivedTitle"
+  },
+  "commonSwitchBranchNotHeldText": "غيّر مالك العيادة أدوارك. اختر فرعاً آخر.",
+  "@commonSwitchBranchNotHeldText": {
+    "description": "common.switchBranchNotHeldText"
+  },
+  "commonSwitchBranchNotHeldTitle": "لم يعد لك دور في هذا الفرع",
+  "@commonSwitchBranchNotHeldTitle": {
+    "description": "common.switchBranchNotHeldTitle"
+  },
+  "commonSwitchGoneText": "تغيّرت عضويتك فيها. حدّثنا القائمة؛ اختر من جديد.",
+  "@commonSwitchGoneText": {
+    "description": "common.switchGoneText"
+  },
+  "commonSwitchGoneTitle": "لم تعد هذه العيادة في قائمتك",
+  "@commonSwitchGoneTitle": {
+    "description": "common.switchGoneTitle"
+  },
+  "commonSwitchRefusedText": "حدّثنا القائمة. إن تكرر ذلك فاخرج وادخل من جديد.",
+  "@commonSwitchRefusedText": {
+    "description": "common.switchRefusedText"
+  },
+  "commonSwitchRefusedTitle": "تعذّر فتح هذه العيادة الآن",
+  "@commonSwitchRefusedTitle": {
+    "description": "common.switchRefusedTitle"
+  },
+  "commonSwitchSuspendedText": "أوقفته إدارة شفاء للتو. بياناتها محفوظة. اختر عيادة أخرى أو تواصل مع الإدارة.",
+  "@commonSwitchSuspendedText": {
+    "description": "common.switchSuspendedText"
+  },
+  "commonSwitchSuspendedTitle": "حساب هذه العيادة موقوف الآن",
+  "@commonSwitchSuspendedTitle": {
+    "description": "common.switchSuspendedTitle"
   },
   "commonTheme": "المظهر",
   "@commonTheme": {

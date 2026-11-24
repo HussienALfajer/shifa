@@ -42,4 +42,5 @@ export {
   watchFocus,
 } from './session.ts';
 export { type ThemePreference, useThemePreference } from './theme.ts';
-export { IdleBoundary, useIdle, useIdleState } from './use-idle.tsx';
+export { IdleBoundary, type IdleView, useIdle, useIdleState, useIdleView } from './use-idle.tsx';
+export { useSignOut } from './use-sign-out.ts';

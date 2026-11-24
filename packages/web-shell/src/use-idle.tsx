@@ -1,8 +1,9 @@
 // The idle limit on the page (slice A-01-06, A-01a criterion 9), run once at the root of every
-// app (IdleBoundary), so a page cannot forget it; pages read the state with useIdleState() to
-// draw the warning (A-01-07). Activity is pointer, key, wheel, scroll and touch; a one-second
-// tick; a BroadcastChannel shared by the app's tabs; the server's clock, not the browser's
-// (clockOffset). At expiry it signs out and goes to sign-in with `reason=idle`, unless a
+// app (IdleBoundary), so a page cannot forget it; the boundary also draws the idle dialog
+// (A-01-07 checkpoint 4) and pages read the state with useIdleView() (the 12-hour notice).
+// Activity is pointer, key, wheel, scroll and touch; a one-second tick; a BroadcastChannel shared
+// by the app's tabs; the server's clock, not the browser's (clockOffset). At expiry it signs out
+// and goes to sign-in with `reason=idle` (`absolute` when the 12-hour limit came first), unless a
 // refresh already found the session gone: then the 401 rule names the real reason.
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -16,28 +17,90 @@ import {
   useState,
 } from 'react';
 import type { ShellClient } from './client.ts';
+import { IdleDialog } from './idle-dialog.tsx';
 import {
   clockOffset,
   createIdleTracker,
   type IdleState,
+  type IdleTracker,
   idleAction,
   type SessionExpiry,
 } from './idle-timer.ts';
 import { useShell } from './providers.tsx';
-import { fetchSession, type SessionView, sessionQueryKey, signOut, useSession } from './session.ts';
+import {
+  fetchSession,
+  type SessionView,
+  sessionQueryKey,
+  signOut,
+  signOutCount,
+  useSession,
+} from './session.ts';
+import { TAB_CHANNEL } from './tabs.ts';
 
-const CHANNEL = 'shifa-session';
 const ACTIVITY = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const;
+
+/** The 12-hour notice shows this long before the absolute limit (improvement f). */
+export const ABSOLUTE_NOTICE_MS = 10 * 60_000;
 
 const expiryOf = (session: SessionView): SessionExpiry => ({
   idleExpiresAt: Date.parse(session.idleExpiresAt),
   absoluteExpiresAt: Date.parse(session.absoluteExpiresAt),
 });
 
-export function useIdle(shell: ShellClient, session: SessionView | undefined): IdleState {
+export interface IdleView {
+  state: IdleState;
+  /** Which limit ends the session first: only the idle one can be moved by working on. */
+  cause: 'idle' | 'absolute';
+  /** The idle setting that applies (minutes), for the dialog's text. */
+  idleMinutes: number | undefined;
+  /** The 12-hour limit (ms since the epoch) once it is ten minutes away or less. */
+  absoluteEndsAt: number | undefined;
+  /** «متابعة العمل»: asks the server now; rejects when the request failed. */
+  continueWork: () => Promise<void>;
+  /** «خروج الآن»: signs out, tells the other tabs, goes to sign-in. */
+  signOutNow: () => Promise<void>;
+}
+
+const NONE: IdleView = {
+  state: { kind: 'active' },
+  cause: 'idle',
+  idleMinutes: undefined,
+  absoluteEndsAt: undefined,
+  continueWork: () => Promise.resolve(),
+  signOutNow: () => Promise.resolve(),
+};
+
+interface Facts {
+  state: IdleState;
+  cause: IdleView['cause'];
+  absoluteEndsAt: number | undefined;
+}
+
+const factsOf = (tracker: IdleTracker, now: number): Facts => {
+  const expiry = tracker.expiry();
+  return {
+    state: tracker.state(),
+    cause: expiry.absoluteExpiresAt < expiry.idleExpiresAt ? 'absolute' : 'idle',
+    absoluteEndsAt:
+      expiry.absoluteExpiresAt - now <= ABSOLUTE_NOTICE_MS ? expiry.absoluteExpiresAt : undefined,
+  };
+};
+
+export function useIdle(shell: ShellClient, session: SessionView | undefined): IdleView {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const [state, setState] = useState<IdleState>({ kind: 'active' });
+  const [facts, setFacts] = useState<Facts>({
+    state: { kind: 'active' },
+    cause: 'idle',
+    absoluteEndsAt: undefined,
+  });
+  const live = useRef<{
+    tracker: IdleTracker;
+    now: () => number;
+    end: () => void;
+    /** A newer answer for the same session (a switch, a page's request): its limits and clock. */
+    take: (session: SessionView) => void;
+  } | null>(null);
   // One tracker per session: later refreshes reach it through `refresh`, not a new tracker.
   const sessionId = session?.sessionId;
   // Read at sign-out only: a new idle setting (a switch, the owner's change) must not re-create
@@ -52,16 +115,23 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
   );
 
   useEffect(() => {
-    if (!start) return undefined;
+    if (!start) {
+      setFacts({ state: { kind: 'active' }, cause: 'idle', absoluteEndsAt: undefined });
+      return undefined;
+    }
     let offset = start.offset;
+    const now = () => Date.now() + offset;
     const channel =
-      typeof BroadcastChannel === 'function' ? new BroadcastChannel(CHANNEL) : undefined;
+      typeof BroadcastChannel === 'function' ? new BroadcastChannel(TAB_CHANNEL) : undefined;
     const tracker = createIdleTracker({
       expiry: start.expiry,
-      now: () => Date.now() + offset,
+      now,
       refresh: async () => {
+        const asked = signOutCount();
         const next = await fetchSession(shell);
-        if (next.kind !== 'signed-in') return null;
+        // A sign-out started meanwhile (the press that fired this refresh): its answer is stale
+        // and must not put the ended session back in the cache (review finding 2).
+        if (next.kind !== 'signed-in' || signOutCount() !== asked) return null;
         offset = clockOffset(next.session, Date.now());
         queryClient.setQueryData(sessionQueryKey, next);
         return expiryOf(next.session);
@@ -78,22 +148,37 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
     const listen = { passive: true, capture: true } as const;
     for (const type of ACTIVITY) globalThis.addEventListener(type, onActivity, listen);
     let ended = false;
+    live.current = {
+      tracker,
+      now,
+      end: () => {
+        ended = true;
+      },
+      take: (next) => {
+        offset = clockOffset(next, Date.now());
+        tracker.answer(expiryOf(next));
+      },
+    };
     const tick = setInterval(() => {
+      // Signing out (the limit, or «خروج الآن»): nothing more to show or do.
+      if (ended) return;
       tracker.tick();
-      const next = tracker.state();
-      setState(next);
-      const action = idleAction(next, { gone: tracker.gone(), ended });
+      const next = factsOf(tracker, now());
+      setFacts(next);
+      const action = idleAction(next.state, { gone: tracker.gone(), ended });
       if (action === 'none') return;
       ended = true;
       const ran = minutes.current;
-      void signOut(shell, queryClient).finally(() =>
+      const reason = next.cause;
+      void signOut(shell, queryClient, reason).finally(() =>
         navigate({
           to: '/sign-in',
-          search: ran === undefined ? { reason: 'idle' } : { reason: 'idle', minutes: ran },
+          search: reason === 'idle' && ran !== undefined ? { reason, minutes: ran } : { reason },
         }),
       );
     }, 1000);
     return () => {
+      live.current = null;
       clearInterval(tick);
       for (const type of ACTIVITY) globalThis.removeEventListener(type, onActivity, listen);
       channel?.removeEventListener('message', onMessage);
@@ -101,13 +186,46 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
     };
   }, [start, shell, queryClient, navigate]);
 
-  return state;
+  // Every newer answer for this session reaches the tracker: after a switch the clinic's idle
+  // setting applies at once, not from the next activity (only a later limit is taken).
+  useEffect(() => {
+    if (session) live.current?.take(session);
+  }, [session]);
+
+  return useMemo<IdleView>(
+    () => ({
+      ...facts,
+      idleMinutes: session?.idleMinutes,
+      continueWork: async () => {
+        const current = live.current;
+        if (!current) return;
+        await current.tracker.extend();
+        setFacts(factsOf(current.tracker, current.now()));
+      },
+      signOutNow: async () => {
+        live.current?.end();
+        // The dialog closes at once; the timer is stopped, so nothing reopens it.
+        setFacts((f) => ({ ...f, state: { kind: 'active' } }));
+        const done = await signOut(shell, queryClient, 'signed_out');
+        await navigate({
+          to: '/sign-in',
+          search: { reason: done ? 'signed_out' : 'sign_out_failed' },
+        });
+      },
+    }),
+    [facts, session?.idleMinutes, shell, queryClient, navigate],
+  );
 }
 
-const IdleContext = createContext<IdleState>({ kind: 'active' });
+const IdleContext = createContext<IdleView>(NONE);
 
-/** The idle state of the current session, for the warning (A-01-07 draws it). */
+/** The idle state of the current session. */
 export function useIdleState(): IdleState {
+  return useContext(IdleContext).state;
+}
+
+/** The idle view: state, which limit ends first, the 12-hour notice, and the dialog's answers. */
+export function useIdleView(): IdleView {
   return useContext(IdleContext);
 }
 
@@ -116,5 +234,10 @@ export function IdleBoundary({ children }: { children: ReactNode }) {
   const { shell } = useShell();
   const state = useSession(shell);
   const idle = useIdle(shell, state?.kind === 'signed-in' ? state.session : undefined);
-  return <IdleContext value={idle}>{children}</IdleContext>;
+  return (
+    <IdleContext value={idle}>
+      {children}
+      <IdleDialog view={idle} />
+    </IdleContext>
+  );
 }
