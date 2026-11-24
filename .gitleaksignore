@@ -30,3 +30,7 @@ b80138af4feda858256d6e4cedb933e4b052703b:scripts/test/backup-env.test.mjs:generi
 cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/test/config-identity.test.ts:generic-api-key:6
 cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/test/identity/better-auth.gate.test.ts:generic-api-key:13
 cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/src/modules/identity/common-passwords.json:generic-api-key:96
+
+# A-01-07 checkpoint 3: a synthetic setup-link token in a page test ("ZyXwVu…", the reversed
+# alphabet and digits), replaced by repeated letters afterwards. No credential.
+36bc1612d23604554e7bc2855dde36ff4f6f6940:packages/web-shell/test/checkpoint3-review.test.tsx:generic-api-key:13

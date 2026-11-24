@@ -9,8 +9,9 @@ import { sessionQueryKey } from '../src/session.ts';
 import { button, click, flush, type Rendered, renderShell, type } from './render.tsx';
 import { errorAnswer, type FakeApi, fakeApi, json, SESSION } from './support.ts';
 
-const TOKEN_1 = 'AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-AbCde';
-const TOKEN_2 = 'ZyXwVuTsRqPoNmLkJiHgFeDcBa9876543210-_ZyXwv';
+// Synthetic tokens in the token's form (43 base64url characters), low entropy on purpose.
+const TOKEN_1 = 'a'.repeat(43);
+const TOKEN_2 = 'b'.repeat(43);
 const VIEW = {
   clinicName: 'عيادة تجريبية',
   personName: 'شخص تجريبي',
