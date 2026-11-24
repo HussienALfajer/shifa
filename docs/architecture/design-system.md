@@ -258,7 +258,8 @@ The layers of the guide are the token layers: Foundations = primitive, Theme = b
 Every new design for Shifa (a component sheet, a screen, a prototype, a deck) follows these steps, in any session:
 1. **Use the Shifa Design System.** Find it by name among the account's Design System artifacts (it is not the account default, so name it), read its `project/README.md` first, and install it on the canvas so its tokens, type styles, fonts and (from 0.4-03) components are the ones drawn with. Never another design system, a look-alike or an own palette.
 2. **Keep the Shifa Guide's rules** (06 Rules, the README's usage rules): meanings not palette steps; status never by colour alone; red for critical clinical alerts only; locked colours never themed; contrast in light and dark; Arabic RTL first with Western digits; synthetic data only.
-3. **Missing value or component:** do not invent one on the canvas. Add it in `packages/tokens` or `packages/ui`, regenerate, sync, and then draw with it.
+3. **Missing value or component:** do not invent a one-off on the canvas. A missing token is added in `packages/tokens`, regenerated and synced first. A missing component found by a UI batch is drawn in that batch from the system's tokens and real components: on its own sheet with every state and at once on every screen that needs it; the owner approves it or asks for changes; then it is built in `packages/ui` with `/ui-component` and synced before the screens' code uses it (ADR-0046).
+5. **Use the whole API.** A screen batch uses every route, response field and error its API gives, or names why one is not shown; missing or unprofessional API answers are reported to the owner and fixed in the API (ADR-0046).
 4. **Exploration outside the system** (for example comparing palettes) is allowed only on a separate canvas, never inside the Shifa Design System, and the owner's choice then goes into code first.
 
 ### Direction of flow
