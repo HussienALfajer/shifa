@@ -32,6 +32,7 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
   const [state, setState] = useState<IdleState>({ kind: 'active' });
   // One tracker per session: later refreshes reach it through `refresh`, not a new tracker.
   const sessionId = session?.sessionId;
+  const minutes = session?.idleMinutes;
   const start = useMemo(
     () =>
       session ? { expiry: expiryOf(session), offset: clockOffset(session, Date.now()) } : undefined,
@@ -74,7 +75,10 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       if (action === 'none') return;
       ended = true;
       void signOut(shell, queryClient).finally(() =>
-        navigate({ to: '/sign-in', search: { reason: 'idle' } }),
+        navigate({
+          to: '/sign-in',
+          search: minutes === undefined ? { reason: 'idle' } : { reason: 'idle', minutes },
+        }),
       );
     }, 1000);
     return () => {
@@ -83,7 +87,7 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       channel?.removeEventListener('message', onMessage);
       channel?.close();
     };
-  }, [start, shell, queryClient, navigate]);
+  }, [start, shell, queryClient, navigate, minutes]);
 
   return state;
 }

@@ -48,6 +48,26 @@
   "@commonBack": {
     "description": "common.back"
   },
+  "commonBrandAdminText": "العيادات ومالكوها واشتراكاتها، دون أي بيانات مرضى.",
+  "@commonBrandAdminText": {
+    "description": "common.brandAdminText"
+  },
+  "commonBrandAdminTitle": "إدارة شفاء",
+  "@commonBrandAdminTitle": {
+    "description": "common.brandAdminTitle"
+  },
+  "commonBrandClinicText": "المواعيد والدور والملفات والفواتير في مكان واحد، لعيادتك وفروعها.",
+  "@commonBrandClinicText": {
+    "description": "common.brandClinicText"
+  },
+  "commonBrandClinicTitle": "نظام العيادة",
+  "@commonBrandClinicTitle": {
+    "description": "common.brandClinicTitle"
+  },
+  "commonBrandSafety": "لا نرسل رسائل نصية ولا نطلب كلمة المرور بالهاتف. لا تشاركها مع أحد.",
+  "@commonBrandSafety": {
+    "description": "common.brandSafety"
+  },
   "commonCancel": "إلغاء",
   "@commonCancel": {
     "description": "common.cancel"
@@ -76,6 +96,34 @@
   "commonLoading": "جارٍ التحميل…",
   "@commonLoading": {
     "description": "common.loading"
+  },
+  "commonLockIpText": "محاولات خاطئة كثيرة من هذا الاتصال.",
+  "@commonLockIpText": {
+    "description": "common.lockIpText"
+  },
+  "commonLockIpTitle": "توقّف الدخول من هذه الشبكة مؤقتاً",
+  "@commonLockIpTitle": {
+    "description": "common.lockIpTitle"
+  },
+  "commonLockPhoneText": "محاولات خاطئة كثيرة بهذا الرقم.",
+  "@commonLockPhoneText": {
+    "description": "common.lockPhoneText"
+  },
+  "commonLockPhoneTitle": "توقّف الدخول بهذا الرقم مؤقتاً",
+  "@commonLockPhoneTitle": {
+    "description": "common.lockPhoneTitle"
+  },
+  "commonLockWait": "يمكنك المحاولة بعد {wait} (الساعة {time}).",
+  "@commonLockWait": {
+    "description": "common.lockWait",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      },
+      "wait": {
+        "type": "String"
+      }
+    }
   },
   "commonMfaPending": "تُرسم شاشة التحقق بخطوتين في الشريحة التالية.",
   "@commonMfaPending": {
@@ -108,6 +156,71 @@
   "commonNotFound": "الصفحة غير موجودة.",
   "@commonNotFound": {
     "description": "common.notFound"
+  },
+  "commonNoticeAbsoluteText": "تُغلق كل جلسة بعد مدة محددة مهما كان النشاط، لحماية البيانات. ادخل من جديد لتتابع.",
+  "@commonNoticeAbsoluteText": {
+    "description": "common.noticeAbsoluteText"
+  },
+  "commonNoticeAbsoluteTitle": "انتهت المدة القصوى للجلسة",
+  "@commonNoticeAbsoluteTitle": {
+    "description": "common.noticeAbsoluteTitle"
+  },
+  "commonNoticeEndedText": "أُنهيت من جهاز آخر أو من إدارة الحساب أو بعد تغيير كلمة المرور. ادخل من جديد لتتابع.",
+  "@commonNoticeEndedText": {
+    "description": "common.noticeEndedText"
+  },
+  "commonNoticeEndedTitle": "أُنهيت جلستك",
+  "@commonNoticeEndedTitle": {
+    "description": "common.noticeEndedTitle"
+  },
+  "commonNoticeExpiredText": "ادخل من جديد لتتابع.",
+  "@commonNoticeExpiredText": {
+    "description": "common.noticeExpiredText"
+  },
+  "commonNoticeExpiredTitle": "انتهت جلستك",
+  "@commonNoticeExpiredTitle": {
+    "description": "common.noticeExpiredTitle"
+  },
+  "commonNoticeIdleMinutes": "{count, plural, zero {أغلقنا الجلسة لعدم النشاط} one {مرّت دقيقة واحدة دون نشاط فأغلقنا الجلسة} two {مرّت دقيقتان دون نشاط فأغلقنا الجلسة} few {مرّت {count} دقائق دون نشاط فأغلقنا الجلسة} many {مرّت {count} دقيقةً دون نشاط فأغلقنا الجلسة} other {مرّت {count} دقيقة دون نشاط فأغلقنا الجلسة}} لحماية البيانات. ادخل من جديد لتتابع.",
+  "@commonNoticeIdleMinutes": {
+    "description": "common.noticeIdleMinutes",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonNoticeIdleText": "مرّت مدة دون نشاط فأغلقنا الجلسة لحماية البيانات. ادخل من جديد لتتابع.",
+  "@commonNoticeIdleText": {
+    "description": "common.noticeIdleText"
+  },
+  "commonNoticeIdleTitle": "خرجت تلقائياً",
+  "@commonNoticeIdleTitle": {
+    "description": "common.noticeIdleTitle"
+  },
+  "commonNoticeNotAdminText": "حسابك ليس حساب مشرف. لعيادتك ادخل إلى نظام العيادة.",
+  "@commonNoticeNotAdminText": {
+    "description": "common.noticeNotAdminText"
+  },
+  "commonNoticeNotAdminTitle": "هذه صفحة إدارة شفاء",
+  "@commonNoticeNotAdminTitle": {
+    "description": "common.noticeNotAdminTitle"
+  },
+  "commonNoticeSignOutFailedText": "قد تبقى الجلسة مفتوحة. أغلق المتصفح إن كان الجهاز مشتركًا.",
+  "@commonNoticeSignOutFailedText": {
+    "description": "common.noticeSignOutFailedText"
+  },
+  "commonNoticeSignOutFailedTitle": "تعذّر إنهاء الجلسة على الخادم",
+  "@commonNoticeSignOutFailedTitle": {
+    "description": "common.noticeSignOutFailedTitle"
+  },
+  "commonNoticeSignedOutText": "لن يبقى أحد داخلاً من هذا الجهاز.",
+  "@commonNoticeSignedOutText": {
+    "description": "common.noticeSignedOutText"
+  },
+  "commonNoticeSignedOutTitle": "خرجت من حسابك",
+  "@commonNoticeSignedOutTitle": {
+    "description": "common.noticeSignedOutTitle"
   },
   "commonReasonIdle": "انتهت الجلسة لعدم النشاط. سجّل الدخول من جديد.",
   "@commonReasonIdle": {
@@ -158,9 +271,69 @@
   "@commonSetupTitle": {
     "description": "common.setupTitle"
   },
+  "commonSignInAdminLine": "لمشرفي شفاء فقط.",
+  "@commonSignInAdminLine": {
+    "description": "common.signInAdminLine"
+  },
+  "commonSignInArabicLetters": "تكتب بأحرف عربية. هل لوحة المفاتيح على العربية؟",
+  "@commonSignInArabicLetters": {
+    "description": "common.signInArabicLetters"
+  },
+  "commonSignInCapsLock": "زر الأحرف الكبيرة (Caps Lock) مفعّل.",
+  "@commonSignInCapsLock": {
+    "description": "common.signInCapsLock"
+  },
+  "commonSignInClinicLine": "ادخل برقم هاتفك المسجّل في العيادة.",
+  "@commonSignInClinicLine": {
+    "description": "common.signInClinicLine"
+  },
+  "commonSignInForgetPhone": "ليس رقمك؟ امسحه",
+  "@commonSignInForgetPhone": {
+    "description": "common.signInForgetPhone"
+  },
+  "commonSignInHelp": "نسيت كلمة المرور؟ اطلب من مالك العيادة رابط إعداد جديداً. المالك يطلبه من إدارة شفاء.",
+  "@commonSignInHelp": {
+    "description": "common.signInHelp"
+  },
+  "commonSignInPassword": "كلمة المرور",
+  "@commonSignInPassword": {
+    "description": "common.signInPassword"
+  },
+  "commonSignInPasswordEmpty": "اكتب كلمة المرور.",
+  "@commonSignInPasswordEmpty": {
+    "description": "common.signInPasswordEmpty"
+  },
   "commonSignInPending": "تُرسم شاشة تسجيل الدخول في الشريحة التالية.",
   "@commonSignInPending": {
     "description": "common.signInPending"
+  },
+  "commonSignInPhone": "رقم الهاتف",
+  "@commonSignInPhone": {
+    "description": "common.signInPhone"
+  },
+  "commonSignInPhoneEmpty": "اكتب رقم الهاتف.",
+  "@commonSignInPhoneEmpty": {
+    "description": "common.signInPhoneEmpty"
+  },
+  "commonSignInPhoneHint": "مثال: {local} أو {international}، بأرقام عربية أو غربية.",
+  "@commonSignInPhoneHint": {
+    "description": "common.signInPhoneHint",
+    "placeholders": {
+      "international": {
+        "type": "String"
+      },
+      "local": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSignInPhoneRemembered": "آخر رقم دخل من هذا الجهاز.",
+  "@commonSignInPhoneRemembered": {
+    "description": "common.signInPhoneRemembered"
+  },
+  "commonSignInSubmit": "دخول",
+  "@commonSignInSubmit": {
+    "description": "common.signInSubmit"
   },
   "commonSignInTitle": "تسجيل الدخول",
   "@commonSignInTitle": {
@@ -194,6 +367,14 @@
   "commonThemeSystem": "حسب الجهاز",
   "@commonThemeSystem": {
     "description": "common.themeSystem"
+  },
+  "commonUnreachableText": "تأكد من الاتصال بالإنترنت. سنعيد المحاولة بأنفسنا حين يعود الاتصال.",
+  "@commonUnreachableText": {
+    "description": "common.unreachableText"
+  },
+  "commonUnreachableTitle": "تعذّر الوصول إلى الخادم",
+  "@commonUnreachableTitle": {
+    "description": "common.unreachableTitle"
   },
   "errorsAccountShared": "هذا الحساب مستخدم في عيادة أخرى؛ استعادة كلمة المرور عبر إدارة المنصة.",
   "@errorsAccountShared": {

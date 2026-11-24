@@ -1,30 +1,21 @@
-// Placeholder pages (slice A-01-06): no product screen is drawn or coded here. Each names the
-// page, who is signed in and the session's state, so the journeys can check the shell; A-01-07
-// (clinic web) and A-01-08 (admin web) replace them with the approved drawings.
+// The shell's pages. Sign-in is the approved screen of A-01-07 (`auth/sign-in.tsx`); the others
+// are still the placeholders of A-01-06, which name the page, who is signed in and the session's
+// state so the journeys can check the shell, until A-01-07's next checkpoints and A-01-08 replace
+// them with the approved drawings.
 import type { CommonKey } from '@shifa/i18n';
 import { Button, Card, CardBody, SegmentedControl } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate, useSearch } from '@tanstack/react-router';
+import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
+import { SignInPage } from './auth/sign-in.tsx';
 import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
 import { type SessionView, signOut, useSession } from './session.ts';
+import { useText } from './text.ts';
 import { type ThemePreference, useThemePreference } from './theme.ts';
 import { useIdleState } from './use-idle.tsx';
 
-/** The shell's texts, typed by the keys of `common`. */
-export function useText(): (key: CommonKey, values?: Record<string, unknown>) => string {
-  const { t } = useTranslation('common');
-  return (key, values) => t(key, values ?? {});
-}
-
-const REASONS: Partial<Record<string, CommonKey>> = {
-  session_expired: 'reasonSessionExpired',
-  idle: 'reasonIdle',
-  sign_out_failed: 'reasonSignOutFailed',
-  not_admin: 'reasonNotAdmin',
-};
+export { useText };
 
 const MFA_TEXT: Record<SessionView['mfa'], CommonKey> = {
   none: 'mfaStateNone',
@@ -85,7 +76,10 @@ function SignOutButton() {
       onClick={async () => {
         // Always back to sign-in; say so when the server did not end the session.
         const ended = await signOut(shell, queryClient);
-        await navigate({ to: '/sign-in', search: ended ? {} : { reason: 'sign_out_failed' } });
+        await navigate({
+          to: '/sign-in',
+          search: { reason: ended ? 'signed_out' : 'sign_out_failed' },
+        });
       }}
     >
       {text('signOut')}
@@ -120,24 +114,6 @@ function CurrentSession() {
   const { shell } = useShell();
   const state = useSession(shell);
   return state?.kind === 'signed-in' ? <SessionSummary session={state.session} /> : null;
-}
-
-function SignInPage() {
-  const text = useText();
-  const search: Record<string, unknown> = useSearch({ strict: false });
-  const reason = typeof search['reason'] === 'string' ? search['reason'] : undefined;
-  const key = reason ? (REASONS[reason] ?? 'reasonSignedOut') : undefined;
-  return (
-    <Page title="signInTitle">
-      {key ? (
-        <p data-testid="sign-in-reason" data-reason={reason} role="status">
-          {text(key)}
-        </p>
-      ) : null}
-      <p className="text-text-muted">{text('signInPending')}</p>
-      <Link to="/about">{text('aboutTitle')}</Link>
-    </Page>
-  );
 }
 
 function MfaPage() {
@@ -208,7 +184,7 @@ function NotFoundPage() {
   );
 }
 
-export const placeholderPages: ShellPages = {
+export const shellPages: ShellPages = {
   signIn: SignInPage,
   mfa: MfaPage,
   home: HomePage,

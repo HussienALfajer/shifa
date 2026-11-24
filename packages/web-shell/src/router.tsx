@@ -41,12 +41,18 @@ export interface ShellRouterContext {
 
 export interface SignInSearch {
   reason?: string;
+  /** With `reason=idle` from the page's own timer: the idle limit it ran, for the notice. */
+  minutes?: number;
 }
 
-const signInSearch = (search: Record<string, unknown>): SignInSearch =>
-  typeof search['reason'] === 'string' && search['reason'] !== ''
-    ? { reason: search['reason'] }
-    : {};
+const signInSearch = (search: Record<string, unknown>): SignInSearch => {
+  const reason = search['reason'];
+  if (typeof reason !== 'string' || reason === '') return {};
+  const minutes = Number(search['minutes']);
+  return reason === 'idle' && Number.isInteger(minutes) && minutes > 0 && minutes <= 1440
+    ? { reason, minutes }
+    : { reason };
+};
 
 const searchFor = (reason: string | undefined): SignInSearch =>
   reason === undefined || reason === 'unauthorized' ? {} : { reason };
@@ -125,11 +131,11 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     isServer: false,
   });
   // Mid-session only: a 401 for a visitor who never had a session is the guard's business.
-  const offEnded = shell.onSessionEnded((code) => {
+  const offEnded = shell.onSessionEnded((code, reason) => {
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
-    void router.navigate({ to: '/sign-in', search: searchFor(code) });
+    void router.navigate({ to: '/sign-in', search: searchFor(reason ?? code) });
   });
   // Another person, session or clinic behind the same page (a switch or a sign-in in another
   // tab): nothing cached for the previous one may stay on screen (security review M1).

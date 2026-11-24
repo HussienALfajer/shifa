@@ -15,8 +15,20 @@ export type ShellApp = 'clinic' | 'admin';
  */
 export type RouteKind = 'signed-out' | 'open' | 'mfa' | 'admin-web' | 'signed-in';
 
-/** Why sign-in was shown; `?reason=` on /sign-in. */
-export type SignInReason = 'session_expired' | 'idle' | 'not_admin' | (string & {});
+/**
+ * Why sign-in was shown; `?reason=` on /sign-in. `idle`, `absolute` and `ended` are the server's
+ * reason of a `session_expired` (or the page's own idle timer); `session_expired` alone when the
+ * server named none.
+ */
+export type SignInReason =
+  | 'session_expired'
+  | 'idle'
+  | 'absolute'
+  | 'ended'
+  | 'not_admin'
+  | 'signed_out'
+  | 'sign_out_failed'
+  | (string & {});
 
 export type GuardOutcome =
   | { action: 'stay' }
@@ -37,7 +49,7 @@ export function decideRoute(app: ShellApp, kind: RouteKind, state: SessionState)
     // A visitor who simply has no session needs no reason; a lapsed session says why.
     return state.code === 'unauthorized'
       ? { action: 'redirect', to: '/sign-in' }
-      : { action: 'redirect', to: '/sign-in', reason: state.code };
+      : { action: 'redirect', to: '/sign-in', reason: state.reason ?? state.code };
   }
   const { session } = state;
   if (app === 'admin' && !session.platformAdmin) {
