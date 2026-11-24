@@ -1,0 +1,10 @@
+{
+  "extends": "@shifa/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["es2024", "dom"],
+    // `vitest`: @shifa/db/harness (scripts/backend.ts) augments Vitest's ProvidedContext, and the
+    // augmentation needs the module in the program. No globals: vitest/globals is not loaded.
+    "types": ["node", "vitest"]
+  },
+  "include": ["tests", "support", "scripts", "*.config.ts"]
+}

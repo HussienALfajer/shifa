@@ -1,6 +1,6 @@
 // Public surface of @shifa/i18n: the source loader, the checks and the generated key types.
 // The messages themselves are the JSON files under src/locales (exported as ./locales/*).
-export type { MessageKeys, Namespace } from '../generated/keys.ts';
+export type { CommonKey, ErrorsKey, MessageKeys, Namespace } from '../generated/keys.ts';
 export {
   checkErrorCodes,
   checkIcu,

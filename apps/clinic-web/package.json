@@ -1,0 +1,33 @@
+{
+  "name": "@shifa/clinic-web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The clinic web system: the signed-out-safe shell of slice A-01-06; screens from A-01-07.",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@shifa/i18n": "workspace:*",
+    "@shifa/ui": "workspace:*",
+    "@shifa/web-shell": "workspace:*",
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.14.0",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

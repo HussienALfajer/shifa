@@ -1,0 +1,51 @@
+// Where a route sends a visitor (slice A-01-06), as one pure decision the router's `beforeLoad`
+// applies. Order: no session → sign-in; admin web without platformAdmin → sign out; clinic web
+// with a super admin → the page naming admin web; MFA owed → /mfa; then the signed-out and MFA
+// pages send a finished session home.
+import type { SessionState, SessionView } from './session.ts';
+
+export type ShellApp = 'clinic' | 'admin';
+
+/**
+ * - `signed-out`: sign-in; a session goes home.
+ * - `open`: anyone (about, the setup link page).
+ * - `mfa`: a session that owes MFA; any other goes home.
+ * - `admin-web`: clinic web's page for a super admin.
+ * - `signed-in`: everything else.
+ */
+export type RouteKind = 'signed-out' | 'open' | 'mfa' | 'admin-web' | 'signed-in';
+
+/** Why sign-in was shown; `?reason=` on /sign-in. */
+export type SignInReason = 'session_expired' | 'idle' | 'not_admin' | (string & {});
+
+export type GuardOutcome =
+  | { action: 'stay' }
+  | { action: 'redirect'; to: '/' | '/sign-in' | '/mfa' | '/admin-web'; reason?: SignInReason }
+  | { action: 'sign-out'; reason: 'not_admin' };
+
+const STAY: GuardOutcome = { action: 'stay' };
+
+/** The MFA step owed: enrolment where required, or the challenge of an enrolled factor. */
+export function owesMfa(session: SessionView): boolean {
+  return session.mfa === 'pending' || (session.mfaRequired && session.mfa !== 'verified');
+}
+
+export function decideRoute(app: ShellApp, kind: RouteKind, state: SessionState): GuardOutcome {
+  if (kind === 'open') return STAY;
+  if (state.kind === 'signed-out') {
+    if (kind === 'signed-out') return STAY;
+    // A visitor who simply has no session needs no reason; a lapsed session says why.
+    return state.code === 'unauthorized'
+      ? { action: 'redirect', to: '/sign-in' }
+      : { action: 'redirect', to: '/sign-in', reason: state.code };
+  }
+  const { session } = state;
+  if (app === 'admin' && !session.platformAdmin) return { action: 'sign-out', reason: 'not_admin' };
+  if (app === 'clinic' && session.platformAdmin) {
+    return kind === 'admin-web' ? STAY : { action: 'redirect', to: '/admin-web' };
+  }
+  if (kind === 'admin-web') return { action: 'redirect', to: '/' };
+  if (owesMfa(session)) return kind === 'mfa' ? STAY : { action: 'redirect', to: '/mfa' };
+  if (kind === 'signed-out' || kind === 'mfa') return { action: 'redirect', to: '/' };
+  return STAY;
+}

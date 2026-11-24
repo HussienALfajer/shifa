@@ -31,6 +31,8 @@ describe('verify parts', () => {
       'docs:instructions',
       'docs:lint-root',
       'docs:scripts-test',
+      'e2e:build',
+      'e2e:e2e',
       'node:typecheck+lint+test',
       'ui:ui-browser',
       'ui:ui-screenshots',

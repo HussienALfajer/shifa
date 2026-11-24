@@ -36,9 +36,11 @@
  *   dart  — pub-get, drift and Turborepo typecheck/lint/test of the pub workspace packages;
  *   build — build and the API boot check;
  *   ui    — the browser checks of packages/ui: component tests, the Storybook test run (axe),
- *           the Storybook build and the screenshot comparison in the pinned image (Docker).
+ *           the Storybook build and the screenshot comparison in the pinned image (Docker);
+ *   e2e   — the build again (its own job), then the Playwright journeys against the built API,
+ *           a harness database and the built apps (slice A-01-06; Docker and Chromium).
  */
-export const PARTS = Object.freeze(['node', 'dart', 'build', 'ui']);
+export const PARTS = Object.freeze(['node', 'dart', 'build', 'ui', 'e2e']);
 
 /** The steps of the `ui` part, in order (full mode only; fast mode runs no browser). */
 const UI_STEPS = ['ui-browser', 'ui-storybook', 'ui-storybook-build', 'ui-screenshots'];
@@ -59,6 +61,7 @@ export function verifySteps(mode, { affected = [], part, dartPackages = [] } = {
   const byName = Object.fromEntries(steps.map((s) => [s.name, s]));
   const turbo = byName['typecheck+lint+test'];
   if (part === 'build') return [byName.build, byName.boot];
+  if (part === 'e2e') return [byName.build, byName.e2e];
   if (part === 'ui') return UI_STEPS.map((name) => byName[name]);
   if (part === 'node') {
     // No pub-get here: no task outside the pub workspace runs Dart.
@@ -163,6 +166,16 @@ function allSteps(mode, affected) {
       requires: 'build',
       cmd: 'pnpm',
       args: ['--filter', '@shifa/api', 'run', 'boot-check'],
+    },
+    // The journeys (slice A-01-06, scripts/lib/e2e.mjs): full mode on the build above; fast mode
+    // (no build step) only when --affected reaches @shifa/e2e, building what they need itself, so
+    // it waits for the Turborepo run (one at a time). Takes a DB test slot like boot.
+    {
+      name: 'e2e',
+      requires: 'build',
+      after: ['typecheck+lint+test'],
+      cmd: 'node',
+      args: ['scripts/run-e2e.mjs', ...(mode === 'fast' ? ['--fast'] : [])],
     },
     // Full only (slice 0.4-03): packages/ui in Chromium. Each waits for the one before, so two
     // browsers and two Vite servers never compete for the machine; the screenshots compare the

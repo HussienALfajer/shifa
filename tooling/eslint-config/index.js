@@ -13,6 +13,8 @@ export const MAX_LINES = 400;
 const REPO_ROOT = join(import.meta.dirname, '..', '..');
 /** The only package that may import the UI library (ADR-0039). */
 export const UI_ROOT = join(REPO_ROOT, 'packages', 'ui');
+/** App code: raw buttons are refused here (slice A-01-06). */
+export const APPS_ROOT = join(REPO_ROOT, 'apps');
 const TAILWIND_THEME = join(
   REPO_ROOT,
   'packages',
@@ -41,6 +43,7 @@ export function uiRules() {
     'shifa/no-hardcoded-design-values': ['error', { spacing: [...spacingSteps()] }],
     'shifa/ui-sdk-only-in-ui': ['error', { uiRoot: UI_ROOT }],
     'shifa/no-ui-sdk-agent': 'error',
+    'shifa/no-raw-button': ['error', { appsRoot: APPS_ROOT }],
   };
 }
 

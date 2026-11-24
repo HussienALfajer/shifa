@@ -1,5 +1,45 @@
 {
   "@@locale": "ar",
+  "commonAboutIcons": "أيقونات {iconSet} من {author}، برخصة {licence}.",
+  "@commonAboutIcons": {
+    "description": "common.aboutIcons",
+    "placeholders": {
+      "author": {
+        "type": "String"
+      },
+      "iconSet": {
+        "type": "String"
+      },
+      "licence": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAboutLicence": "نص الرخصة",
+  "@commonAboutLicence": {
+    "description": "common.aboutLicence"
+  },
+  "commonAboutTitle": "حول التطبيق",
+  "@commonAboutTitle": {
+    "description": "common.aboutTitle"
+  },
+  "commonAboutVersion": "الإصدار {version}",
+  "@commonAboutVersion": {
+    "description": "common.aboutVersion",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAdminWebBody": "يعمل حساب مدير المنصة في تطبيق إدارة المنصة، لا في تطبيق العيادة.",
+  "@commonAdminWebBody": {
+    "description": "common.adminWebBody"
+  },
+  "commonAdminWebTitle": "هذا حساب مدير المنصة",
+  "@commonAdminWebTitle": {
+    "description": "common.adminWebTitle"
+  },
   "commonAppName": "شفاء",
   "@commonAppName": {
     "description": "common.appName"
@@ -16,13 +56,74 @@
   "@commonClose": {
     "description": "common.close"
   },
+  "commonHomePending": "تُرسم الشاشة الرئيسية في شريحة لاحقة.",
+  "@commonHomePending": {
+    "description": "common.homePending"
+  },
+  "commonHomeTitle": "الرئيسية",
+  "@commonHomeTitle": {
+    "description": "common.homeTitle"
+  },
+  "commonIdleWarning": "{count, plural, zero {تنتهي الجلسة الآن} one {تنتهي الجلسة بعد ثانية واحدة} two {تنتهي الجلسة بعد ثانيتين} few {تنتهي الجلسة بعد {count} ثوانٍ} many {تنتهي الجلسة بعد {count} ثانيةً} other {تنتهي الجلسة بعد {count} ثانية}}",
+  "@commonIdleWarning": {
+    "description": "common.idleWarning",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
   "commonLoading": "جارٍ التحميل…",
   "@commonLoading": {
     "description": "common.loading"
   },
+  "commonMfaPending": "تُرسم شاشة التحقق بخطوتين في الشريحة التالية.",
+  "@commonMfaPending": {
+    "description": "common.mfaPending"
+  },
+  "commonMfaRequiredNote": "يجب تفعيل التحقق بخطوتين قبل المتابعة.",
+  "@commonMfaRequiredNote": {
+    "description": "common.mfaRequiredNote"
+  },
+  "commonMfaStateNone": "التحقق بخطوتين غير مفعّل.",
+  "@commonMfaStateNone": {
+    "description": "common.mfaStateNone"
+  },
+  "commonMfaStatePending": "بانتظار رمز التحقق بخطوتين.",
+  "@commonMfaStatePending": {
+    "description": "common.mfaStatePending"
+  },
+  "commonMfaStateVerified": "تم التحقق بخطوتين.",
+  "@commonMfaStateVerified": {
+    "description": "common.mfaStateVerified"
+  },
+  "commonMfaTitle": "التحقق بخطوتين",
+  "@commonMfaTitle": {
+    "description": "common.mfaTitle"
+  },
   "commonNoResults": "لا توجد نتائج.",
   "@commonNoResults": {
     "description": "common.noResults"
+  },
+  "commonNotFound": "الصفحة غير موجودة.",
+  "@commonNotFound": {
+    "description": "common.notFound"
+  },
+  "commonReasonIdle": "انتهت الجلسة لعدم النشاط. سجّل الدخول من جديد.",
+  "@commonReasonIdle": {
+    "description": "common.reasonIdle"
+  },
+  "commonReasonNotAdmin": "هذا الحساب ليس حساب مدير المنصة.",
+  "@commonReasonNotAdmin": {
+    "description": "common.reasonNotAdmin"
+  },
+  "commonReasonSessionExpired": "انتهت جلستك. سجّل الدخول من جديد.",
+  "@commonReasonSessionExpired": {
+    "description": "common.reasonSessionExpired"
+  },
+  "commonReasonSignedOut": "انتهت الجلسة أو لم تسجّل الدخول. سجّل الدخول للمتابعة.",
+  "@commonReasonSignedOut": {
+    "description": "common.reasonSignedOut"
   },
   "commonResultsCount": "{count, plural, zero {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {{count} نتائج} many {{count} نتيجةً} other {{count} نتيجة}}",
   "@commonResultsCount": {
@@ -44,6 +145,51 @@
   "commonSearch": "بحث",
   "@commonSearch": {
     "description": "common.search"
+  },
+  "commonSetupPending": "تُرسم شاشة إعداد الحساب في الشريحة التالية.",
+  "@commonSetupPending": {
+    "description": "common.setupPending"
+  },
+  "commonSetupTitle": "إعداد الحساب",
+  "@commonSetupTitle": {
+    "description": "common.setupTitle"
+  },
+  "commonSignInPending": "تُرسم شاشة تسجيل الدخول في الشريحة التالية.",
+  "@commonSignInPending": {
+    "description": "common.signInPending"
+  },
+  "commonSignInTitle": "تسجيل الدخول",
+  "@commonSignInTitle": {
+    "description": "common.signInTitle"
+  },
+  "commonSignOut": "تسجيل الخروج",
+  "@commonSignOut": {
+    "description": "common.signOut"
+  },
+  "commonSignedInAs": "مسجّل الدخول، رقم الحساب {userId}",
+  "@commonSignedInAs": {
+    "description": "common.signedInAs",
+    "placeholders": {
+      "userId": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTheme": "المظهر",
+  "@commonTheme": {
+    "description": "common.theme"
+  },
+  "commonThemeDark": "داكن",
+  "@commonThemeDark": {
+    "description": "common.themeDark"
+  },
+  "commonThemeLight": "فاتح",
+  "@commonThemeLight": {
+    "description": "common.themeLight"
+  },
+  "commonThemeSystem": "حسب الجهاز",
+  "@commonThemeSystem": {
+    "description": "common.themeSystem"
   },
   "errorsAccountShared": "هذا الحساب مستخدم في عيادة أخرى؛ استعادة كلمة المرور عبر إدارة المنصة.",
   "@errorsAccountShared": {

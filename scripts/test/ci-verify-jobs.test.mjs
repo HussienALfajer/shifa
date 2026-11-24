@@ -12,7 +12,7 @@ import { parse } from 'yaml';
 
 const root = join(import.meta.dirname, '..', '..');
 const ci = parse(readFileSync(join(root, '.github', 'workflows', 'ci.yml'), 'utf8'));
-const PART_JOBS = ['node', 'build', 'dart', 'ui'];
+const PART_JOBS = ['node', 'build', 'dart', 'ui', 'e2e'];
 const CODE_JOBS = ['checks', ...PART_JOBS];
 // Jobs that run only pinned tools (never repository or dependency code) or nothing at all.
 const TOOL_JOBS = ['scope', 'caches', 'verify', 'audit', 'secrets', 'workflows'];
@@ -33,6 +33,7 @@ describe('ci.yml verify jobs', () => {
       'build: node scripts/verify.mjs full --part build',
       'checks: node scripts/verify.mjs docs',
       'dart: node scripts/verify.mjs full --part dart',
+      'e2e: node scripts/verify.mjs full --part e2e',
       'node: node scripts/verify.mjs full --part node',
       'ui: node scripts/verify.mjs full --part ui',
     ]);
@@ -122,6 +123,7 @@ describe('ci.yml verify jobs', () => {
       'caches',
       'checks',
       'dart',
+      'e2e',
       'node',
       'scope',
       'ui',
@@ -138,6 +140,7 @@ describe('ci.yml verify jobs', () => {
       BUILD: '${{ needs.build.result }}',
       DART: '${{ needs.dart.result }}',
       UI: '${{ needs.ui.result }}',
+      E2E: '${{ needs.e2e.result }}',
     });
     const names = Object.values(ci.jobs).map((j) => j.name);
     assert.equal(names.filter((n) => n === 'verify (full)').length, 1);
@@ -275,7 +278,7 @@ describe('verify (full) aggregator script', () => {
       encoding: 'utf8',
       env: { PATH: process.env.PATH, ...env },
     }).status;
-  const all = (result) => ({ NODE: result, BUILD: result, DART: result, UI: result });
+  const all = (result) => ({ NODE: result, BUILD: result, DART: result, UI: result, E2E: result });
   const pr = { EVENT: 'pull_request', SCOPE: 'success', CACHES: 'skipped', CHECKS: 'success' };
   const push = { ...pr, EVENT: 'push', CACHES: 'success' };
 
@@ -292,7 +295,7 @@ describe('verify (full) aggregator script', () => {
 
   it('fails on any failed, cancelled or wrongly skipped part', { skip }, () => {
     for (const bad of ['failure', 'cancelled', 'skipped']) {
-      for (const job of ['NODE', 'BUILD', 'DART', 'UI']) {
+      for (const job of ['NODE', 'BUILD', 'DART', 'UI', 'E2E']) {
         assert.equal(decide({ MODE: 'full', ...pr, ...all('success'), [job]: bad }), 1);
       }
     }

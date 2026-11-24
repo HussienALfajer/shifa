@@ -18,6 +18,7 @@ Multi-tenant clinic platform for Syria (Aleppo, Azaz): clinic web system, super 
 - `pnpm backup:up` / `backup:full` / `backup:check` / `backup:restore` / `backup:drill` — local pgBackRest + Garage stack and restore drill (`docs/process/backup-restore.md`); needs Docker.
 - `pnpm format` — Biome formats; ESLint (type-aware, `tooling/eslint-config`) lints. Files over 400 lines fail lint.
 - Script and hook tests: `node scripts/run-script-tests.mjs`.
+- Web apps: `pnpm --filter @shifa/clinic-web dev` (5173) and `@shifa/admin-web` (5174), `/api` proxied to the API (`SHIFA_API_URL`, default `http://127.0.0.1:3000`). End-to-end journeys: `pnpm --filter @shifa/e2e e2e` after the build (Docker; `e2e/CLAUDE.md`).
 - Database tests need Docker running (Testcontainers, PostgreSQL 18); see `packages/db/CLAUDE.md`. Schema changes: `/db-migration`.
 
 ## Slice loop

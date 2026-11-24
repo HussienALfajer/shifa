@@ -1,0 +1,11 @@
+{
+  "extends": "@shifa/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src", "test", "*.config.ts"]
+}

@@ -2,6 +2,8 @@ packages:
   - apps/*
   - packages/*
   - tooling/*
+  # End-to-end journeys (A-01-06): one package, run by verify's `e2e` step.
+  - e2e
   # Throwaway spikes (0.3-S1): linted and typechecked in verify like any package. Their test
   # suites are `test:spike` scripts, run by the spike's manual workflow, not by verify (OD-31).
   - spikes/*/*

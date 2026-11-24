@@ -7,7 +7,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./locales/*": "./src/locales/*",
-    "./arb/*": "./generated/arb/*"
+    "./arb/*": "./generated/arb/*",
+    "./runtime": "./src/runtime.ts"
   },
   "scripts": {
     "generate": "node ../../scripts/check-drift.mjs --fix",
@@ -16,7 +17,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@formatjs/icu-messageformat-parser": "3.5.23"
+    "@formatjs/icu-messageformat-parser": "3.5.23",
+    "i18next": "27.2.4",
+    "i18next-icu": "2.7.1",
+    "intl-messageformat": "12.2.0"
   },
   "devDependencies": {
     "@shifa/contracts": "workspace:*",

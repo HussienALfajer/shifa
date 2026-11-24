@@ -1,0 +1,33 @@
+{
+  "name": "@shifa/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "End-to-end journeys: Playwright against the built API, a real database and the built web apps (slice A-01-06).",
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@shifa/admin-web": "workspace:*",
+    "@shifa/api": "workspace:*",
+    "@shifa/clinic-web": "workspace:*",
+    "@shifa/contracts": "workspace:*",
+    "@shifa/db": "workspace:*",
+    "@shifa/testing": "workspace:*"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/pg": "8.23.1",
+    "drizzle-orm": "1.0.0-rc.5",
+    "eslint": "10.14.0",
+    "pg": "8.23.1",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}
