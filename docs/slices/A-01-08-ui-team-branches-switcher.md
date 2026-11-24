@@ -1,7 +1,7 @@
 # A-01-08 UI batch 3: team, branches and switcher screens
 
-Status: In progress · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher`
-Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
+Status: In progress (checkpoint 1 approved 2026-11-24; waiting for A-01-12) · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher`
+Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94, OD-102 to OD-106
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) (merged); may run beside [A-01-10](A-01-10-ui-account-settings-admin-web.md). The clinic chooser moved to A-01-07 in the 2026-11-24 re-plan. Last A-01 slice with A-01-10; A-01a and A-01b are done when it merges and the owner accepts.
 
@@ -37,7 +37,7 @@ Tests written first: component tests per screen state; the four Playwright journ
 Estimated hand-written lines: ~3,100 (switcher ~400, invitation ~300, team and drawer ~1,300, branches ~500, journeys ~600); missing components are separate `/ui-component` work.
 
 ## Drawings and analysis
-Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic web", new page "A-01-08 Team batch": one interactive prototype (`Team08`, marked interactive, Play), the analysis board (`Analysis08`, Arabic, for the owner) and the sheet of the one missing component (`MenuGroupsSheet`). The 2026-11-23 drafts `Switcher`, `Team`, `Member` and `Branches` on page "A-01 Foundation" were reviewed and are superseded by `Team08` (a note on the page says so). The installed Shifa Design System copy is unchanged (the same version as A-01-10 used). Colours, spaces, radii, shadows and sizes are `--shifa-*` tokens and type uses the named styles; before showing, every `--shifa-` name was checked against the installed `tokens.css` and `bundle.css` (five names that do not exist were replaced) and no literal colour is left. Callout, CopyField and QrCode are not yet in the synced bundle, so they are drawn by hand from their approved sheets; the team table is drawn by hand at DataTable's sizes (in code: DataTable with a link cell); the member drawer is drawn from Drawer's tokens (the bundle's Drawer takes text fields only). **Awaiting the owner's approval.**
+Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic web", new page "A-01-08 Team batch": one interactive prototype (`Team08`, marked interactive, Play), the analysis board (`Analysis08`, Arabic, for the owner) and the sheet of the one missing component (`MenuGroupsSheet`). The 2026-11-23 drafts `Switcher`, `Team`, `Member` and `Branches` on page "A-01 Foundation" were reviewed and are superseded by `Team08` (a note on the page says so). The installed Shifa Design System copy is unchanged (the same version as A-01-10 used). Colours, spaces, radii, shadows and sizes are `--shifa-*` tokens and type uses the named styles; before showing, every `--shifa-` name was checked against the installed `tokens.css` and `bundle.css` (five names that do not exist were replaced) and no literal colour is left. Callout, CopyField and QrCode are not yet in the synced bundle, so they are drawn by hand from their approved sheets; the team table is drawn by hand at DataTable's sizes (in code: DataTable with a link cell); the member drawer is drawn from Drawer's tokens (the bundle's Drawer takes text fields only). **Approved by the owner on 2026-11-24 («موافق على كل شئ»): all screens of the prototype, the Menu groups addition, every improvement (a–i) and every proposal of the gap list; API gaps 1, 5, 6 and 8 accepted as proposed (OD-102 to OD-105); spec question 4 kept as built (OD-106).** API gaps 1–8 are closed in the T0 slice [A-01-12](A-01-12-team-branch-api-gaps.md) before checkpoint 2.
 
 ### The prototype (`Team08`)
 A control panel outside the device frame switches theme (light, dark), size (desktop 1280 × 800, tablet 768 × 1024, phone 390 × 844), the person (an owner in three clinics: owner of a three-branch clinic, doctor in two branches of a second, staff of a suspended third, with a pending invitation; a doctor in two clinics, one branch in one and every branch in the other; a solo clinic's owner; a receptionist with one clinic and one branch), a "go to" list (home and switcher, team, branches, clinic settings, invitation page), the data (full, empty team, loading), the invitation page's case (signed out, signed in as the invitee, signed in as someone else, invalid link), the server's answer to the next press (per context, every error code of the table below; it falls back to success after each press), a checkbox per improvement and per API-gap proposal.
@@ -63,21 +63,21 @@ Flows that run end to end: header switcher → another clinic (one branch held: 
 | `GET …/archive-preview`, `POST …/archive` | `members` named in the confirmation; `lastBranch` disables archiving with the reason | 409 `last_branch` in the confirmation; 409 `branch_archived` moves it to archived; no connection |
 
 ### API gaps (to close in the API before or in this slice, never worked around in the client)
-1. **Sensitive toggles when adding:** no catalogue route and no `permissions` in `AddMemberRequest`, so the owner neither sees the role default nor changes it before the link is sent. Proposal: `GET /team/permissions` (sensitive keys with each role's default) and `permissions` on add. Or keep it as drawn (changed after saving). **Owner decision.**
+1. **Sensitive toggles when adding:** no catalogue route and no `permissions` in `AddMemberRequest`, so the owner neither sees the role default nor changes it before the link is sent. Proposal: `GET /team/permissions` (sensitive keys with each role's default) and `permissions` on add. Or keep it as drawn (changed after saving). **Accepted (OD-102).**
 2. **Bare 409s:** deactivating a deactivated member, reactivating one who is not, a link for a deactivated member. Proposal: `member_deactivated`, `member_not_deactivated`.
 3. **Undeclared statuses:** 400 on `teamAddMember`, `teamUpdateMember`, `branchesCreate`, `branchesUpdate`; `branch_archived` not named on `teamAddMember`.
 4. **Pending member's link expiry not returned:** proposal `linkExpiresAt` on `MemberSummary`, so a row says «انتهى الرابط» (improvement b), as `owner.linkExpiresAt` in A-01-11.
-5. **Name or phone cannot be corrected:** a typo leaves an invitation to a wrong number. Proposal: edit the name of any member and the phone while pending (as OD-99). **Owner decision.**
-6. **Invitation while signed in as someone else:** accept answers 404 `link_invalid`, as for a used link, so the person cannot tell their number is the problem. Proposal: `phoneMasked` in `InvitationView` (as the setup link) and `invitation_other_phone` for a signed-in other person. **Owner decision.**
+5. **Name or phone cannot be corrected:** a typo leaves an invitation to a wrong number. Proposal: edit the name of any member and the phone while pending (as OD-99). **Accepted (OD-103).**
+6. **Invitation while signed in as someone else:** accept answers 404 `link_invalid`, as for a used link, so the person cannot tell their number is the problem. Proposal: `phoneMasked` in `InvitationView` (as the setup link) and `invitation_other_phone` for a signed-in other person. **Accepted (OD-104).**
 7. **"You" in the team:** `MemberSummary` does not say which row is the owner themselves, so «رابط لكلمة مرور جديدة» and the TOTP reset would show on oneself. Proposal: `isSelf`, and the server refusing deactivate, new link and TOTP reset on oneself (`self_action`).
-8. **No branch restore:** an archived branch cannot come back. Proposal: `POST /branches/:id/restore`, or archiving stays final. **Owner decision.**
+8. **No branch restore:** an archived branch cannot come back. Proposal: `POST /branches/:id/restore`, or archiving stays final. **Accepted: restore (OD-105).**
 9. **Not gaps for Release 1:** no paging on the team (small teams; searched in the client); `memberCount` excludes tenant-wide roles (the card says so).
 
 ### Spec gaps (to add to A-01b)
 1. A solo clinic has no branch screens, so its owner has nowhere to add the second branch. Proposal: a «الفروع» card in clinic settings (improvement f).
 2. "Last active branch, archive disabled" is reachable only after archiving down to one branch while on the page; the page then leaves the menu.
 3. Team on a phone (the spec lists desktop and tablet): a list of cards, the drawer as a bottom sheet. Branches on tablet and phone: two columns, then one.
-4. The owner role does not grant `clinical.notes.view`: an owner who is not a doctor sees no clinical notes unless the switch is turned on for them. Intended (OD-78)? **Owner question.**
+4. The owner role does not grant `clinical.notes.view`: an owner who is not a doctor sees no clinical notes unless the switch is turned on for them. Kept as built (OD-106).
 5. Removing every role is allowed by the API: drawn with a confirmation that the person leaves this clinic.
 6. Pending invitations in the header switcher are information only, answered on their link (OD-91).
 7. A doctor with one branch in a clinic: no branch group; the button reads «clinic · branch».
@@ -95,6 +95,8 @@ Flows that run end to end: header switcher → another clinic (one branch held: 
 | h (ح) | Ask before closing the link without a copy or share | ~15 lines, reuses admin web |
 | i (ط) | QR code of the link for a member who is present | ~15 lines with QrCode |
 
+Accepted by the owner 2026-11-24: all nine. Declined: none.
+
 ### Components
 - **Menu groups (an addition to Menu, not a new component; sheet `MenuGroupsSheet`):** `MenuGroup` with a label, `MenuRadioItem` with an avatar or icon, a second line, a badge, the check at the logical end and a busy state, and an in-place branch step; states default, hover, keyboard focus, checked, disabled with the reason (suspended clinic), busy, one group only, dark, compact, LTR English; on a phone the same rows in a bottom Drawer. Built with `/ui-component` and synced before checkpoint 2.
 - **No new chip:** Badge `outline` carries «role · branch»; Badge's locked tones carry the status in words.
@@ -105,7 +107,7 @@ Flows that run end to end: header switcher → another clinic (one branch held: 
 Tests and code: the plan's tests are written after the approval (no code before it, OD-80).
 
 ## Stopped at
-Checkpoint 1 drawn and analysed (2026-11-24): `Team08`, `Analysis08` and `MenuGroupsSheet` on page "A-01-08 Team batch"; awaiting the owner's approval and the decisions on API gaps 1, 5, 6 and 8 and spec question 4. The API gaps accepted then go to a T0 API slice before checkpoint 2, as A-01-09 and A-01-11 did.
+Checkpoint 1 approved by the owner (2026-11-24). Next: the API gaps in [A-01-12](A-01-12-team-branch-api-gaps.md) (T0), then the Menu groups addition with `/ui-component` and the `buildings` and `archive` icons, synced, then checkpoint 2 with its tests first.
 
 ## Evidence
 - `verify` (full): —
