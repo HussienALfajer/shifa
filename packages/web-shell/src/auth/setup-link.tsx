@@ -11,7 +11,7 @@ import type { Schemas } from '@shifa/api-client-ts';
 import type { CommonKey } from '@shifa/i18n';
 import { Avatar, Button, Callout, EmptyState, Icon, PasswordInput, SkeletonText } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
-import { useNavigate, useRouter } from '@tanstack/react-router';
+import { useNavigate, useRouterState } from '@tanstack/react-router';
 import { type SyntheticEvent, useEffect, useRef, useState } from 'react';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
@@ -48,27 +48,47 @@ type Shown =
   | { kind: 'loading' }
   | { kind: 'invalid' }
   | { kind: 'unreachable' }
+  | { kind: 'server' }
   | { kind: 'view'; view: SetupLinkView };
 
-/** The token of the fragment, once; null when there is none or it is no token. */
-function useFragmentToken(): string | null {
-  const router = useRouter();
+const tokenOf = (hash: string): string | null => {
+  const raw = hash.replace(/^#/, '');
+  return TOKEN.test(raw) ? raw : null;
+};
+
+/**
+ * The token of the fragment, and a number that changes with each new fragment: a second link
+ * opened in the same tab (a fragment-only navigation keeps this page mounted) is read too, and
+ * every fragment leaves the address and history at once (review B1).
+ */
+function useFragmentToken(): { token: string | null; generation: number } {
   const navigate = useNavigate();
-  const [token] = useState(() => {
-    const hash = router.state.location.hash.replace(/^#/, '');
-    return TOKEN.test(hash) ? hash : null;
-  });
+  const hash = useRouterState({ select: (s) => s.location.hash });
+  const [read, setRead] = useState(() => ({ token: tokenOf(hash), generation: 0 }));
+  // The fragment already read: the first one at mount, then each new one once.
+  const consumed = useRef(hash);
   useEffect(() => {
-    if (router.state.location.hash === '') return;
+    if (hash === '') {
+      consumed.current = '';
+      return;
+    }
+    if (hash !== consumed.current) {
+      consumed.current = hash;
+      setRead((r) => ({ token: tokenOf(hash), generation: r.generation + 1 }));
+    }
     void navigate({ to: '/setup', hash: '', replace: true });
-  }, [router, navigate]);
-  return token;
+  }, [hash, navigate]);
+  return read;
 }
 
 export function SetupLinkPage() {
+  const { token, generation } = useFragmentToken();
+  return <SetupLink key={generation} token={token} />;
+}
+
+function SetupLink({ token }: { token: string | null }) {
   const text = useText();
   const { shell } = useShell();
-  const token = useFragmentToken();
   const [shown, setShown] = useState<Shown>(token ? { kind: 'loading' } : { kind: 'invalid' });
   const asked = useRef(false);
 
@@ -76,8 +96,12 @@ export function SetupLinkPage() {
     if (token === null) return;
     setShown({ kind: 'loading' });
     try {
-      const { data } = await shell.api.POST('/auth/setup-link/view', { body: { token } });
-      setShown(data ? { kind: 'view', view: data } : { kind: 'invalid' });
+      const { data, error } = await shell.api.POST('/auth/setup-link/view', { body: { token } });
+      if (data) setShown({ kind: 'view', view: data });
+      // Only the server's «this link is gone» is an invalid link; any other failure may pass
+      // (review N5): asking for a new link would replace a valid one for nothing.
+      else if (errorFacts(error).code === 'link_invalid') setShown({ kind: 'invalid' });
+      else setShown({ kind: 'server' });
     } catch {
       setShown({ kind: 'unreachable' });
     }
@@ -98,18 +122,18 @@ export function SetupLinkPage() {
         </div>
       )}
       {shown.kind === 'invalid' && <InvalidLink />}
-      {shown.kind === 'unreachable' && (
+      {(shown.kind === 'unreachable' || shown.kind === 'server') && (
         <Callout
           tone="danger"
-          icon="wifi-slash"
-          title={text('unreachableTitle')}
+          icon={shown.kind === 'unreachable' ? 'wifi-slash' : 'warning'}
+          title={text(shown.kind === 'unreachable' ? 'unreachableTitle' : 'serverErrorTitle')}
           action={
             <Button size="sm" variant="secondary" onClick={load}>
               {text('retry')}
             </Button>
           }
         >
-          {text('unreachableText')}
+          {text(shown.kind === 'unreachable' ? 'unreachableText' : 'serverErrorText')}
         </Callout>
       )}
       {shown.kind === 'view' && token !== null && shown.view.purpose === 'invitation' && (
@@ -179,7 +203,7 @@ function SetPassword({
     | null
     | { field: 'password'; key: CommonKey }
     | { field: 'repeat'; key: CommonKey }
-    | { field: 'page'; kind: 'pending' | 'network' | 'server' }
+    | { field: 'page'; kind: 'pending' | 'account' | 'network' | 'server' }
   >(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
@@ -218,6 +242,9 @@ function SetPassword({
       if (rule) setProblem({ field: 'password', key: rule });
       else if (code === 'link_invalid') onInvalid();
       else if (code === 'owner_setup_pending') setProblem({ field: 'page', kind: 'pending' });
+      // The server's 409 for an account made with this phone after the link was issued (review
+      // N1): signing in is the way on; retrying the link can only fail again.
+      else if (code === 'conflict') setProblem({ field: 'page', kind: 'account' });
       else setProblem({ field: 'page', kind: 'server' });
     } catch {
       setProblem({ field: 'page', kind: 'network' });
@@ -266,6 +293,19 @@ function SetPassword({
       {page === 'pending' && (
         <Callout tone="warning" title={text('setupOwnerPendingTitle')}>
           {text('setupOwnerPendingText')}
+        </Callout>
+      )}
+      {page === 'account' && (
+        <Callout
+          tone="warning"
+          title={text('setupAccountExistsTitle')}
+          action={
+            <Button size="sm" variant="secondary" onClick={() => navigate({ to: '/sign-in' })}>
+              {text('signInSubmit')}
+            </Button>
+          }
+        >
+          {text('setupAccountExistsText')}
         </Callout>
       )}
       {(page === 'network' || page === 'server') && (

@@ -2,7 +2,7 @@
 // pass (`mfa: pending`), enrolment when it has none and must enrol (`mfaRequired`). The guard
 // sends a session here only while it owes the second factor. When the session becomes verified
 // the screen that did it stays (enrolment still shows the recovery codes); a session verified
-// elsewhere (another tab) goes on.
+// elsewhere (another tab) goes on: here for the challenge, in `MfaEnrol` for enrolment.
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef } from 'react';
 import { useShell } from '../providers.tsx';

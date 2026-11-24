@@ -573,6 +573,14 @@
   "@commonServerErrorTitle": {
     "description": "common.serverErrorTitle"
   },
+  "commonSetupAccountExistsText": "ادخل برقمك وكلمة مرورك. إن نسيت كلمة المرور فاطلب رابط إعداد جديداً ممن أرسل إليك هذا الرابط.",
+  "@commonSetupAccountExistsText": {
+    "description": "common.setupAccountExistsText"
+  },
+  "commonSetupAccountExistsTitle": "لهذا الرقم حساب من قبل",
+  "@commonSetupAccountExistsTitle": {
+    "description": "common.setupAccountExistsTitle"
+  },
   "commonSetupInvalidText": "استُخدم من قبل، أو انتهت مدته، أو صدر رابط أحدث منه. اطلب رابطاً جديداً ممن أرسله إليك.",
   "@commonSetupInvalidText": {
     "description": "common.setupInvalidText"

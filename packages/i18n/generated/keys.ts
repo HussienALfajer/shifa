@@ -124,6 +124,8 @@ export type CommonKey =
   | 'search'
   | 'serverErrorText'
   | 'serverErrorTitle'
+  | 'setupAccountExistsText'
+  | 'setupAccountExistsTitle'
   | 'setupInvalidText'
   | 'setupInvalidTitle'
   | 'setupLoading'

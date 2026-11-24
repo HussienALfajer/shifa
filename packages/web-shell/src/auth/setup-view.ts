@@ -35,3 +35,7 @@ export function rememberCodesLeft(queryClient: QueryClient, left: number): void 
 export function codesLeft(queryClient: QueryClient): number | undefined {
   return queryClient.getQueryData<number>(CODES_LEFT_KEY);
 }
+
+export function forgetCodesLeft(queryClient: QueryClient): void {
+  queryClient.removeQueries({ queryKey: CODES_LEFT_KEY, exact: true });
+}
