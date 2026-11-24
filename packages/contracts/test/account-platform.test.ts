@@ -6,9 +6,9 @@ import { describe, expect, it } from 'vitest';
 import {
   authMfaReenrolConfirm,
   authMfaReenrolStart,
-  CODE_MESSAGES,
   ClinicDetail,
   ClinicSummary,
+  CODE_MESSAGES,
   clinicUpdateSettings,
   ErrorCode,
   platformCreateClinic,

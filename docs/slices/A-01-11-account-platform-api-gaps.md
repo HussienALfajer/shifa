@@ -1,6 +1,6 @@
 # A-01-11 Account and platform API gaps: TOTP re-enrolment, pending owner's phone, owner card fields
 
-Status: Planned (approved by the owner 2026-11-24 with OD-101 and the error code `owner_account_exists`; second-session critique waived if `/build-slice` is started directly, as for A-01-09) · Tier: T0 · Branch: `feat/A-01-11-account-platform-api-gaps`
+Status: Built, in review (approved by the owner 2026-11-24 with OD-101 and the error code `owner_account_exists`; second-session critique waived by starting `/build-slice`, as for A-01-09) · Tier: T0 · Branch: `claude/dreamy-goldberg-xe9hg4` (the cloud session's branch; planned `feat/A-01-11-account-platform-api-gaps`)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 3, 11, 12, 13, 14 and the screens "My account" and "Clinic detail" (criteria to add or change: Plan 0 of this slice) · Requirements: PLT-01, PLT-10, PLT-19, PLT-47 · Decisions: ADR-0046, OD-93, OD-98, OD-99, OD-100
 
 After the approved drawings of [A-01-10](A-01-10-ui-account-settings-admin-web.md) checkpoint 1 (2026-11-24). Before A-01-10 checkpoint 2. It changes contracts, the auth path and the platform path: T0, with `reviewer` and `security-reviewer`.
@@ -86,7 +86,15 @@ Hand-written lines: ~3,300 (spec and docs ~200; contracts and error code ~250; m
 Critique: T0, a second session critiques this plan before building, unless the owner waives it as for A-01-01 to A-01-05 and A-01-09. Model and effort: Opus 5.5 at `high` (T0).
 
 ## Stopped at
-Not started.
+Built (spec → contracts → db → API); reviewed; PR open. Web: A-01-10 checkpoints 2 and 3 use the routes.
+
+## Build notes
+- **Migrations** (expand only): `20261124162309_a01_reenrol_and_owner_phone` (generated: `two_factor.pending_secret`, `two_factor.pending_last_used_step`, `setup_link_invited_phone_fk` re-created `ON UPDATE CASCADE`, validated under a short lock of two small tables) and `20261124162320_a01_owner_phone_policies` (custom: `GRANT UPDATE (phone_e164, updated_at) ON membership TO shifa_platform`, `membership_platform_phone_change` and the restrictive `membership_platform_phone_only`, the two `setup_link_platform_*` restrictive policies re-created with `owner.phone_changed`). The plan's one migration became two folders because the policies are hand-written SQL. Rollback: drop the columns (unused by older code), the two policies and the grant; re-create the FK without `ON UPDATE` and the setup_link policies as in `20261123205528`.
+- **DB helpers:** `changeOwnerPhone()` and `ownerLinkExpiry()` in `packages/db/src/clinic.ts` (setup_link rows are read under the clinic's tenant context, `expires_at` only).
+- `maskPhone` moved to `@shifa/contracts` (`phone.ts`), used by the setup page and the owner card.
+- `two_factor.pending_last_used_step` is always null today (the one accepted code moves its step to `last_used_step` as the secret is swapped); kept as the plan's own replay state of the new secret (reviewer finding 2).
+- The route matrix gained `ctx.ownedClinicId()` (reset MFA and end sessions now need an owner with an account) and the TOTP state `reenrolling`.
+- **Locked tests:** the owner allowed two timing-only fixes in `owner-card.test.ts` (2026-11-24): a 73 h clock jump outlived the super admin's 12 h session (the admin signs in again after it) and a 1 h jump its 15 min idle limit (now 60 s); no assertion changed. The formatter reordered one import in `packages/contracts/test/account-platform.test.ts` (Biome's import order; no assertion changed).
 
 ## Evidence
 - `verify` (full): —

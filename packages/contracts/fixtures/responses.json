@@ -444,6 +444,16 @@
       "body": { "error": { "code": "mfa_not_enrolled", "message": "Two-factor is not enrolled" } }
     },
     {
+      "name": "error owner_account_exists",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "owner_account_exists",
+          "message": "The clinic’s owner already has an account"
+        }
+      }
+    },
+    {
       "name": "error owner_role_protected",
       "schema": "ErrorEnvelope",
       "body": {
@@ -677,20 +687,31 @@
   ],
   "invalid": [
     {
-      "name": "clinic list without the owner status",
-      "schema": "ClinicList",
+      "name": "clinic owner card without the masked phone",
+      "schema": "ClinicCreated",
       "body": {
-        "clinics": [
-          {
-            "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
-            "name": "عيادة تجريبية",
-            "type": "solo",
-            "status": "trial",
-            "subscriptionEnd": null,
-            "ownerName": "مالك تجريبي",
-            "createdAt": "2026-11-23T08:00:00.000Z"
+        "clinic": {
+          "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+          "name": "عيادة تجريبية",
+          "type": "solo",
+          "status": "trial",
+          "subscriptionEnd": null,
+          "ownerName": "مالك تجريبي",
+          "ownerStatus": "pending",
+          "createdAt": "2026-11-23T08:00:00.000Z",
+          "owner": {
+            "membershipId": "3e9a5d7b-9f4a-4a0d-8e3b-5c7f8d9eab1c",
+            "name": "مالك تجريبي",
+            "status": "pending",
+            "linkExpiresAt": null
           }
-        ]
+        },
+        "ownerLink": {
+          "url": "https://clinic.shifa.invalid/setup#AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "whatsappUrl": "https://wa.me/?text=https%3A%2F%2Fclinic.shifa.invalid%2Fsetup%23AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          "purpose": "owner_setup",
+          "expiresAt": "2026-11-26T08:00:00.000Z"
+        }
       }
     },
     {
