@@ -23,6 +23,7 @@ import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
 import type { Tell } from './account-page.tsx';
 import { type SessionSummary, sessionsKey, useSessions, useSignedIn } from './data.ts';
+import { LoadFailed } from './load-failed.tsx';
 
 const DAY = 86_400_000;
 const startOfDay = (at: number) => new Date(at).setHours(0, 0, 0, 0);
@@ -35,7 +36,7 @@ export function DevicesCard({ tell }: { tell: Tell }) {
   const queryClient = useQueryClient();
   const session = useSignedIn();
   const userId = session?.userId ?? '';
-  const { data: listed } = useSessions(userId);
+  const { data: listed, isError, refetch } = useSessions(userId);
   // This device first, as drawn; the others in the server's order (latest activity first).
   const sessions = listed && [...listed].sort((a, b) => Number(b.current) - Number(a.current));
   const [ask, setAsk] = useState<Ask>(null);
@@ -113,7 +114,9 @@ export function DevicesCard({ tell }: { tell: Tell }) {
           </Button>
         )}
       </div>
-      {!sessions ? (
+      {!sessions && isError ? (
+        <LoadFailed retry={refetch} />
+      ) : !sessions ? (
         <SkeletonGroup label={text('devicesLoading')}>
           <SkeletonText lines={3} />
         </SkeletonGroup>

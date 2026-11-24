@@ -28,11 +28,14 @@ import type { Tell } from './account-page.tsx';
 import { sessionsKey, useProfile, useSessions, useSignedIn } from './data.ts';
 
 const MIN = 10;
+/** The contract's limit (`ChangePasswordRequest`): checked here, never a server error (review 5). */
+const MAX = 128;
 
 type Problem =
   | 'empty'
   | 'mismatch'
   | 'wrong'
+  | 'too_long'
   | 'password_too_short'
   | 'password_common'
   | 'password_contains_phone'
@@ -42,6 +45,7 @@ type Problem =
   | null;
 
 const NEW_ERRORS = {
+  too_long: 'pwTooLong',
   password_too_short: 'pwTooShort',
   password_common: 'pwCommon',
   password_contains_phone: 'pwContainsPhone',
@@ -118,13 +122,23 @@ export function PasswordDialog({
       setProblem('empty');
       return;
     }
+    if (next.length > MAX) {
+      setProblem('too_long');
+      return;
+    }
     if (next !== repeat) {
       setProblem('mismatch');
       return;
     }
+    if (current.length > MAX) {
+      // Longer than any password the server accepts: it cannot be the current one.
+      setProblem('wrong');
+      return;
+    }
     setBusy(true);
     setProblem(null);
-    const others = (sessions ?? []).filter((s) => !s.current).length;
+    // From the list on screen; unknown when it has not loaded (review 6): then the neutral words.
+    const others = sessions?.filter((s) => !s.current).length;
     try {
       const { data, error, response } = await shell.api.POST('/auth/password', {
         body: { currentPassword: current, newPassword: next },
@@ -137,7 +151,12 @@ export function PasswordDialog({
         tell({
           tone: 'success',
           title: text('pwDoneTitle'),
-          text: others > 0 ? text('pwDoneOthers', { count: others }) : text('pwDoneAlone'),
+          text:
+            others === undefined
+              ? text('pwDoneNeutral')
+              : others > 0
+                ? text('pwDoneOthers', { count: others })
+                : text('pwDoneAlone'),
         });
         return;
       }
@@ -208,7 +227,7 @@ export function PasswordDialog({
               disabled={locked}
               error={
                 isNewError(problem)
-                  ? text(NEW_ERRORS[problem], { min: MIN })
+                  ? text(NEW_ERRORS[problem], { min: MIN, max: MAX })
                   : problem === 'empty' && next === ''
                     ? text('pwEmpty')
                     : undefined

@@ -231,6 +231,14 @@ export function CodesDialog({
                 tone="danger"
                 icon={problem === 'network' ? 'wifi-slash' : 'warning'}
                 title={text(problem === 'network' ? 'unreachableTitle' : 'actionFailedTitle')}
+                action={
+                  // No key yet: the enrolment's start failed, and only a new start helps (review 4).
+                  kind === 'enrol' && !key ? (
+                    <Button size="sm" variant="secondary" onClick={() => void start()}>
+                      {text('retry')}
+                    </Button>
+                  ) : undefined
+                }
               >
                 {text(problem === 'network' ? 'enrolStartFailedText' : 'serverErrorText')}
               </Callout>

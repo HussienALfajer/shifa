@@ -1,6 +1,6 @@
 # A-01-10 UI batch 2: My account, automatic sign-out and admin-web clinics
 
-Status: In progress (checkpoint 1 approved 2026-11-24; waiting for A-01-11) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
+Status: In progress (checkpoint 1 approved 2026-11-24; checkpoint 2 built 2026-11-24) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screens "My account", "Clinic settings · automatic sign-out", "Clinics list", "Create clinic", "Clinic detail"; criteria 3, 4, 9, 10, 10a, 10b, 12a, 13 as seen by the user; verification rows "Flows" and "Screens" · Requirements: PLT-01, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) and [A-01-09](A-01-09-account-api-gaps.md) (merged). Split from the first A-01-07 plan in the 2026-11-24 re-plan.
@@ -101,10 +101,29 @@ Accepted by the owner 2026-11-24: all eight. Declined: none.
 ### Not done in this checkpoint
 Tests and code: the plan's tests are written after the approval (no code before it, OD-80).
 
+## Checkpoint 2 — built (2026-11-24)
+Clinic web, all in `packages/web-shell/src/account/`: `/account` and `/settings` (router), the app frame (`app-frame.tsx`), My account (`account-page.tsx`, `password-dialog.tsx`, `mfa-card.tsx`, `codes-dialog.tsx`, `devices-card.tsx`), the owner's automatic sign-out (`settings-page.tsx`); reads in `data.ts`. Improvements a–d built. The home placeholder links to «حسابي» until A-01-08 draws home in the frame.
+
+- **Own rotation:** a change of password (OD-92) and a staff enrolment from My account rotate the session. `session.ts` `expectOwnRotation(sessionId)` marks it; the router keeps the page and the cache through that one rotation (same person, clinic and branch); any other new session id still clears the cache and goes home.
+- **Owner decision 2026-11-24:** the self re-enrolment of TOTP (OD-98) was accepted after checkpoint 1 and was never drawn. It is drawn on `Account10` for the owner's approval and built after that (checkpoint 3 or 4), not in this checkpoint.
+- **Order changed:** CopyField and the copy and share icons are only used on admin web, so they move to the start of checkpoint 3.
+- **Locked tests:** with the owner's consent (2026-11-24), two locked tests were corrected: their 429 fixtures sent `until` as a number, but the contract sends an ISO date. No assertion changed.
+
+### Differences from the drawing (`Account10`)
+- The bar names the clinic as text; the switcher button and «الفريق» come with A-01-08.
+- The password dialog's submit button reads «حفظ كلمة المرور» rather than repeating its title «تغيير كلمة المرور», so the two buttons are not confused.
+- The sign-in phone is shown as stored (`+963990030294`), not grouped (`+963 99 003 0294`); grouping per country is left for a shared phone formatter.
+- The role line joins several roles in words («مالك العيادة وطبيب»), not with a comma.
+- This device is listed first whatever order the server answers in, as drawn.
+- Not drawn and added: «حفظ» shows the server error (not only no connection) and names the value still in force.
+
 ## Stopped at
-Checkpoint 1 approved by the owner (2026-11-24). Next: the API gaps in [A-01-11](A-01-11-account-platform-api-gaps.md) (T0), then CopyField with `/ui-component` and the copy and share icons, synced, then checkpoint 2 with its tests first.
+Checkpoint 2 built and verified; PR open. Next: draw the self re-enrolment of TOTP on `Account10` for the owner; then checkpoint 3 (CopyField with `/ui-component` and the copy and share icons, synced; admin web clinics).
 
 ## Evidence
-- `verify` (full): —
-- Screenshots: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- Red phase: the four locked test files failed for the expected reason (no `/account` or `/settings` route: «الصفحة غير موجودة.», no radios).
+- `@shifa/web-shell`: 22 files, 193 tests passed (31 new: 11 in `account.test.tsx`, 10 in `account-password.test.tsx`, 6 in `account-sessions.test.tsx`, 4 in `clinic-settings.test.tsx`).
+- `pnpm verify` (fast, affected): all green (format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e).
+- Real backend (`e2e` harness, a throwaway Playwright walk, not committed; synthetic seed): the first seeded owner through the setup link and enrolment, a second signed-in device (Android user agent), then My account desktop 1280 × 800 light and dark, password dialog with a wrong current password (401 shown under the field, still signed in), renewal code step and the ten codes, renewed notice, end-one confirmation, clinic settings and saved 15 minutes, My account on a phone 390 × 844 (full page and the menu), end-others confirmation and the only-this-device state; axe clean on My account, the password dialog, the codes and the settings page and the phone menu. 26 screenshots, compared with `Account10`: layout, card anatomy, badges, callout tones, dialogs and texts match, differences above. Two fixed on the way: this device first; the phone menu reached past the screen (it is now pinned under the bar with «خروج» in view).
+- Reviewer (checkpoint 2): no blocking finding. Fixed, with tests in `account-review.test.tsx` (6): 2 a staff enrolment's rotated session keeps the page and the codes; 3 a failed read of the MFA status, the devices or the setting shows «تعذّر التحميل» with a retry, not an endless skeleton; 4 a failed enrolment start is retried in the dialog; 5 a new password over the contract's 128 characters is refused before sending; 6 the neutral success words when the device list never loaded. Deferred to `docs/backlog.md`: 1 and 7 (a session read racing a rotation, the same pattern as the `/mfa` page of A-01-07), and the ungrouped phone. `@shifa/web-shell` 199 tests after the fixes; `pnpm verify` all green.
+- Drawing: the self re-enrolment of TOTP (OD-98) added to `Account10` on 2026-11-24 for the owner's approval: «نقل التحقق إلى هاتف جديد» on the MFA card; step 1 a code from the old phone, step 2 the new key (QR, key, code from the new phone), then the ten codes once; answers ok, 400 `invalid_code`, `clock_skew`, 429 `mfa_locked`, no connection; the notice says the other devices stay signed in (OD-101).

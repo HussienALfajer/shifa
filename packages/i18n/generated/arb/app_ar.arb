@@ -871,6 +871,14 @@
       }
     }
   },
+  "commonLoadFailedText": "لم نصل إلى الخادم. تأكّد من الاتصال ثم أعد المحاولة.",
+  "@commonLoadFailedText": {
+    "description": "common.loadFailedText"
+  },
+  "commonLoadFailedTitle": "تعذّر التحميل",
+  "@commonLoadFailedTitle": {
+    "description": "common.loadFailedTitle"
+  },
   "commonLoading": "جارٍ التحميل…",
   "@commonLoading": {
     "description": "common.loading"
@@ -1119,6 +1127,10 @@
   "@commonPwDoneAlone": {
     "description": "common.pwDoneAlone"
   },
+  "commonPwDoneNeutral": "أخرجنا أجهزتك الأخرى إن كانت داخلة. ادخل عليها بكلمة المرور الجديدة.",
+  "@commonPwDoneNeutral": {
+    "description": "common.pwDoneNeutral"
+  },
   "commonPwDoneOthers": "أخرجنا أجهزتك الأخرى ({count}). ادخل عليها بكلمة المرور الجديدة.",
   "@commonPwDoneOthers": {
     "description": "common.pwDoneOthers",
@@ -1187,6 +1199,15 @@
   "commonPwSubmit": "حفظ كلمة المرور",
   "@commonPwSubmit": {
     "description": "common.pwSubmit"
+  },
+  "commonPwTooLong": "أطول من {max} حرفاً. اختر أقصر منها.",
+  "@commonPwTooLong": {
+    "description": "common.pwTooLong",
+    "placeholders": {
+      "max": {
+        "type": "String"
+      }
+    }
   },
   "commonPwTooShort": "أقصر من {min} أحرف.",
   "@commonPwTooShort": {

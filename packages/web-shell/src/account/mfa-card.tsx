@@ -10,13 +10,14 @@ import type { Tell } from './account-page.tsx';
 import { LOW_CODES } from './app-frame.tsx';
 import { CodesDialog } from './codes-dialog.tsx';
 import { isOwner, useMfaStatus, useSignedIn } from './data.ts';
+import { LoadFailed } from './load-failed.tsx';
 
 const TOTAL = 10;
 
 export function MfaCard({ tell }: { tell: Tell }) {
   const text = useText();
   const session = useSignedIn();
-  const { data: status } = useMfaStatus(session?.userId ?? '');
+  const { data: status, isError, refetch } = useMfaStatus(session?.userId ?? '');
   const [dialog, setDialog] = useState<'renew' | 'enrol' | null>(null);
   const left = status?.recoveryCodesLeft ?? null;
   const low = left !== null && left <= LOW_CODES;
@@ -37,7 +38,8 @@ export function MfaCard({ tell }: { tell: Tell }) {
             </Badge>
           )}
         </div>
-        {!status && (
+        {!status && isError && <LoadFailed retry={refetch} />}
+        {!status && !isError && (
           <SkeletonGroup label={text('mfaLoading')}>
             <SkeletonText lines={2} />
           </SkeletonGroup>

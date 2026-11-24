@@ -14,6 +14,7 @@ import { useText } from '../text.ts';
 import type { Note } from './account-page.tsx';
 import { AppFrame } from './app-frame.tsx';
 import { isOwner, settingsKey, useActiveClinic, useClinicSettings, useSignedIn } from './data.ts';
+import { LoadFailed } from './load-failed.tsx';
 
 type Minutes = 15 | 30 | 60;
 const CHOICES = [
@@ -28,7 +29,7 @@ function IdleCard({ tenantId }: { tenantId: string }) {
   const text = useText();
   const { shell } = useShell();
   const queryClient = useQueryClient();
-  const { data } = useClinicSettings(tenantId, true);
+  const { data, isError, refetch } = useClinicSettings(tenantId, true);
   const [picked, setPicked] = useState<Minutes | null>(null);
   const [busy, setBusy] = useState(false);
   const [note, setNote] = useState<Note | null>(null);
@@ -81,7 +82,9 @@ function IdleCard({ tenantId }: { tenantId: string }) {
         <h2 className="m-0 text-heading-sm leading-heading font-semibold">
           {text('idleCardTitle')}
         </h2>
-        {value === undefined ? (
+        {value === undefined && isError ? (
+          <LoadFailed retry={refetch} />
+        ) : value === undefined ? (
           <SkeletonGroup label={text('idleLoading')}>
             <SkeletonText lines={3} />
           </SkeletonGroup>
