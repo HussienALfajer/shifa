@@ -160,7 +160,8 @@ export const teamUpdateMember = defineContract({
   path: '/team/members/:id',
   summary: 'Change a member’s roles and sensitive toggles',
   request: { params: MemberIdParams, body: UpdateMemberRequest },
-  // 400 `permission_not_sensitive`; 409 `last_owner`.
+  // 400 `permission_not_sensitive`; 409 `last_owner`, or `owner_role_protected` when another
+  // owner's owner role would be removed (OD-97: only they or the super admin may).
   responses: { 200: MemberDetail, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 

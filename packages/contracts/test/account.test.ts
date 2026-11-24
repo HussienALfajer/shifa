@@ -59,7 +59,7 @@ const allContracts = (Object.values(contracts) as unknown[]).filter(isContract);
 
 describe('account schemas (A-01-09)', () => {
   it('MyProfile: id, name and phone', () => {
-    expect(MyProfile.parse({ userId: UUID, name: 'شخص', phoneE164: '+963933000123' })).toBeTruthy();
+    expect(MyProfile.parse({ userId: UUID, name: 'شخص', phoneE164: '+963980039822' })).toBeTruthy();
     expect(() => MyProfile.parse({ userId: UUID, name: 'شخص' })).toThrow();
   });
 

@@ -57,6 +57,7 @@ export const ErrorCode = z
     'mfa_not_started',
     'mfa_not_owed',
     'mfa_not_enrolled',
+    'owner_role_protected',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -169,6 +170,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   mfa_not_started: 'Two-factor enrolment was not started',
   mfa_not_owed: 'No two-factor code is due for this session',
   mfa_not_enrolled: 'Two-factor is not enrolled',
+  owner_role_protected: 'Only the owner themselves or the platform removes an owner’s role',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

@@ -72,6 +72,7 @@ export type ErrorsKey =
   | 'not_acceptable'
   | 'not_found'
   | 'owner_mfa_platform'
+  | 'owner_role_protected'
   | 'owner_setup_pending'
   | 'password_common'
   | 'password_contains_phone'

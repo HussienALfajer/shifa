@@ -120,6 +120,11 @@ export class TeamService {
         const roles = await validRoles(tx, input.roles, { allowEmpty: true });
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
+        // OD-97: only the owner themselves (or the super admin) removes an owner's role, so a
+        // co-owner cannot demote, reset and take over another owner's account (security M1).
+        if (!stillOwner && row.userId !== scope.userId && (await holdsOwnerRole(tx, row.id))) {
+          throw new ApiError(409, 'owner_role_protected');
+        }
         await tx.delete(roleAssignment).where(eq(roleAssignment.membershipId, row.id));
         await writeRoles(tx, scope.tenantId, row.id, roles);
         await audit(tx, scope, 'member.roles_changed', row.id, requestId);
@@ -233,8 +238,13 @@ export class TeamService {
     }
     try {
       return await this.tenants.run(scope, async (tx) => {
-        await audit(tx, scope, 'member.mfa_reset', row.id, requestId);
+        // Under the owners' lock: a promotion since the first read is seen (security review M1).
+        await lockOwners(tx);
+        if (await holdsOwnerRole(tx, row.id)) throw new ApiError(409, 'owner_mfa_platform');
         await this.accounts.resetMfa(userId, scope.tenantId, by);
+        // After the auth step committed (with `auth.mfa_reset`): only this commit can still fail,
+        // leaving the reset without its clinic row (accepted, as for links; review L3).
+        await audit(tx, scope, 'member.mfa_reset', row.id, requestId);
         return this.#detail(tx, row);
       });
     } catch (err) {

@@ -307,6 +307,10 @@
   "@errorsOwnerMfaPlatform": {
     "description": "errors.owner_mfa_platform"
   },
+  "errorsOwnerRoleProtected": "لا يُزال دور المالك إلا بطلبه هو أو عبر إدارة المنصة.",
+  "@errorsOwnerRoleProtected": {
+    "description": "errors.owner_role_protected"
+  },
   "errorsOwnerSetupPending": "هذا الرقم مالكٌ لعيادة لم يُكمل إعدادها بعد. انتظر حتى يُكمل الإعداد ثم أعد المحاولة.",
   "@errorsOwnerSetupPending": {
     "description": "errors.owner_setup_pending"

@@ -17,6 +17,8 @@ A person manages their own account on clinic-web (password, MFA and recovery cod
 | Create clinic | `POST /platform/clinics` → `SetupLinkIssued` (url, `whatsappUrl`, `expiresAt`) once; 409 states |
 | Clinic detail | `GET /platform/clinics/:id`, `PATCH /platform/clinics/:id`, `POST …/owner/setup-link`, `POST …/owner/reset-mfa`, `POST …/owner/end-sessions` |
 
+A wrong current password on `POST /auth/password` answers 401 `invalid_credentials`: a field error on the form, never a sign-out (the web shell ends the session only on 401 `unauthorized` or `session_expired`, A-01-09). Its success rotates the cookie and ends the other sessions (OD-92); 429 `phone_locked` carries `until`.
+
 ## Plan
 ### Checkpoint 1 — draw, analyse, owner approval (ADR-0042, OD-80); no code before approval
 - Shifa Design System README read first; Shifa Guide rules kept. Clinic web on "Shifa Screens · Clinic web", page "A-01 Foundation"; admin web on a new "Shifa Screens · Admin web" canvas with the system installed.

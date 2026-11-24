@@ -98,7 +98,9 @@ enum ErrorCode {
   @JsonValue('mfa_not_owed')
   mfaNotOwed('mfa_not_owed'),
   @JsonValue('mfa_not_enrolled')
-  mfaNotEnrolled('mfa_not_enrolled');
+  mfaNotEnrolled('mfa_not_enrolled'),
+  @JsonValue('owner_role_protected')
+  ownerRoleProtected('owner_role_protected');
 
   const ErrorCode(this.json);
 

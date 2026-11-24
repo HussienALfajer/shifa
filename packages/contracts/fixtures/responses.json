@@ -444,6 +444,16 @@
       "body": { "error": { "code": "mfa_not_enrolled", "message": "Two-factor is not enrolled" } }
     },
     {
+      "name": "error owner_role_protected",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "owner_role_protected",
+          "message": "Only the owner themselves or the platform removes an owner’s role"
+        }
+      }
+    },
+    {
       "name": "own profile",
       "schema": "MyProfile",
       "body": {

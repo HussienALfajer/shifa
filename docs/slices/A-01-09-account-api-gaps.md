@@ -3,7 +3,7 @@
 Status: Built, in review (re-planned 2026-11-24 with the A-01-07 rows, OD-92, OD-93, OD-95; approved by the owner 2026-11-24, with the three new error codes; second-session critique waived by starting `/build-slice`, as for A-01-01 to A-01-05) · Tier: T0 · Branch: `claude/focused-darwin-t1505l` (the cloud session's branch; planned `feat/A-01-09-account-api-gaps`)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 8–12, 14 and the screens "My account", "TOTP challenge", "Setup link"; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 3, 10, 12 (criteria added or changed by this slice, see Plan 0) · Requirements: PLT-10, PLT-19, PLT-47, PLT-48 · Decisions: ADR-0042, ADR-0044, ADR-0045, ADR-0046; OD-86, OD-91, OD-92, OD-93, OD-95
 
-After [A-01-05](A-01-05-branches-and-switcher.md) (merged) and the approved drawings of [A-01-07](A-01-07-ui-sign-in-screens.md) checkpoint 1. Before A-01-07 checkpoint 2, [A-01-10](A-01-10-ui-account-settings-admin-web.md) and [A-01-08](A-01-08-ui-team-branches-switcher.md). Changes contracts: serialised with every other contract change. No schema change.
+After [A-01-05](A-01-05-branches-and-switcher.md) (merged) and the approved drawings of [A-01-07](A-01-07-ui-sign-in-screens.md) checkpoint 1. Before A-01-07 checkpoint 2, [A-01-10](A-01-10-ui-account-settings-admin-web.md) and [A-01-08](A-01-08-ui-team-branches-switcher.md). Changes contracts: serialised with every other contract change. One expand-only migration (`two_factor.enrolled_at`, OD-96; planned as no schema change).
 
 ## Goal
 The API gives the clinic-web screens everything the approved A-01-07 drawings and the A-01a inventory use, without client workarounds: who is signed in; change of one's own password (ending the other sessions); recovery codes left and a new set; the codes left after a recovery sign-in; the owner's reset of a member's TOTP; whether a clinic role is tenant-wide; why a session ended; named MFA conflicts; the masked phone on the setup page; and every status a route answers declared in its contract.
@@ -86,13 +86,18 @@ Critique: T0, a second session critiques this plan before building, unless the o
 - **Locked tests** (owner allowed both): a type-only cast in `packages/contracts/test/account.test.ts`; in `apps/api/test/identity/session-reason.test.ts` the super admin's end-sessions answers 204 (not 200), and the absolute-limit case starts a fresh world (the idle case before it runs every session out). No assertion weakened.
 - **1h**: `Contract.public` marks public contracts; `defineContract()` adds 401 to every other one; `ContractCheck` refuses `public: true` on a route that is not `@Public()`. One direction only: test-only `testContract()` routes are `@Public()` without the flag (they then declare an extra 401, harmless). The OpenAPI document already added 400/401/403; it changes only by the new routes and fields.
 - **1f sign-in**: a person whose only clinic needs a branch (roles in two or more branches, none tenant-wide) starts with no active clinic, so the chooser runs its branch step.
-- **Timing floor (3)**: the current password is always verified with scrypt (as at sign-in); no separate floor test, since the answer (401 or not) is explicit to the signed-in caller anyway.
+- **Timing floor (3)**: not built as a separate floor: the current password is always verified with scrypt (a dummy hash when none is stored, as at sign-in); no timing test, since the answer (401 or not) is explicit to the signed-in caller anyway. The tests-first item "timing floor on both answers" is dropped.
+- **Locked contracts test, third fix** (owner allowed): its phone literal moved into the synthetic range (`no-real-phones` check in `verify:full`).
+- **OD-97** (owner, after security review M1): only the owner themselves or the super admin removes an owner's owner role (409 `owner_role_protected`), so a co-owner cannot demote, reset the TOTP and take over another owner through a new link; `apps/api/test/team/owner-role.test.ts`. The reset also re-checks the owner role under the owners' lock in its write transaction.
+- **Web shell (review B1)**: `session-ended` fires only for 401 `unauthorized` and `session_expired`, so a wrong current password on `/auth/password` (401 `invalid_credentials`) stays a form error.
+- **Password change race (review N4)**: a per-person transaction lock; the second of two parallel changes finds its session ended and changes nothing.
 - **Audit**: new events `auth.password_changed`, `auth.password_change_failed`, `auth.recovery_codes_renewed`, `member.mfa_reset`; session-end reason `password_changed`. Ended sessions on the owner's TOTP reset audit as reason `member`.
 
 ## Stopped at
-All checkpoints built in one pass (contracts → db → API); `pnpm verify` green; reviews and the PR next.
+Built (contracts → db → API, plus the web shell's 401 rule); reviewed; PR open. Web and Flutter screens: A-01-07 checkpoint 2, A-01-10, A-01-08.
 
 ## Evidence
-- `verify` (full): —
-- Isolation suite: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- Red phase: the seven locked test files failed for the expected reasons first (404 for the missing routes, `conflict` for the named codes, missing fields), 38 API cases and 11 contract cases.
+- `pnpm verify:full` (2026-11-24, cloud session, Docker in the session, after the review fixes): all 15 steps PASS, `all green` (format, instructions, lint-root, scripts-test, file-length, pub-get, drift with `api-client-dart`, typecheck+lint+test 290 s, build, boot, ui-browser, ui-storybook, ui-storybook-build, ui-screenshots, e2e 5/5 journeys).
+- Isolation suite: in `@shifa/db`'s tests within typecheck+lint+test, green; the route matrix has the five new rows (`GET /me`, `POST /auth/password`, `GET /auth/mfa`, `POST /auth/mfa/recovery-codes`: signed in; `POST /team/members/:id/reset-mfa`: owner only).
+- Reviewer findings fixed: B1 (web shell signed the person out on a wrong current password), N1 (scrypt always runs), N4 (parallel password changes), N6 (docs); security M1 (OD-97 and the owner re-check under the lock), L3 in part (clinic row written after the auth step). Deferred to `docs/backlog.md`: N2/L2 (failure row on a lock refusal), L1 (sign-in racing a password change), N3/L3 (two pools), L4 (leak test on team routes), N5 (untested race branches).

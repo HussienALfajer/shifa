@@ -71,6 +71,7 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.mfaNotStarted: 'mfa_not_started',
   ErrorCode.mfaNotOwed: 'mfa_not_owed',
   ErrorCode.mfaNotEnrolled: 'mfa_not_enrolled',
+  ErrorCode.ownerRoleProtected: 'owner_role_protected',
 };
 
 const _$SessionEndReasonEnumMap = {

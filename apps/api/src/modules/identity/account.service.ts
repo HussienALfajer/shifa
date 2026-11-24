@@ -87,8 +87,6 @@ export class AccountService implements OnModuleInit {
     // Reserved before the password is checked, as at sign-in: parallel attempts cannot outrun it.
     const { refused, started } = await this.throttle.reserve(keys, this.clock.now());
     if (refused) {
-      // One row for the first refusal of a lock, as at sign-in (review N2).
-      if (refused.first) await this.audit.record({ event: 'auth.password_change_failed' }, ids);
       await this.#auditLocks(started, principal.userId, meta.requestId);
       throw lockError(refused);
     }
