@@ -1,6 +1,6 @@
 # A-01-09 Account API gaps: profile, password change, recovery codes, staff TOTP reset, contract fixes
 
-Status: Planned (re-planned 2026-11-24 with the A-01-07 rows, OD-92, OD-93, OD-95) · Tier: T0 · Branch: `feat/A-01-09-account-api-gaps`
+Status: Planned (re-planned 2026-11-24 with the A-01-07 rows, OD-92, OD-93, OD-95; approved by the owner 2026-11-24, with the three new error codes) · Tier: T0 · Branch: `feat/A-01-09-account-api-gaps`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 8–12, 14 and the screens "My account", "TOTP challenge", "Setup link"; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 3, 10, 12 (criteria added or changed by this slice, see Plan 0) · Requirements: PLT-10, PLT-19, PLT-47, PLT-48 · Decisions: ADR-0042, ADR-0044, ADR-0045, ADR-0046; OD-86, OD-91, OD-92, OD-93, OD-95
 
 After [A-01-05](A-01-05-branches-and-switcher.md) (merged) and the approved drawings of [A-01-07](A-01-07-ui-sign-in-screens.md) checkpoint 1. Before A-01-07 checkpoint 2, [A-01-10](A-01-10-ui-account-settings-admin-web.md) and [A-01-08](A-01-08-ui-team-branches-switcher.md). Changes contracts: serialised with every other contract change. No schema change.
@@ -82,7 +82,7 @@ Hand-written lines: ~3,050 (contracts and error codes ~350; spec and docs ~150; 
 Critique: T0, a second session critiques this plan before building, unless the owner waives it as for A-01-01 to A-01-05. Model and effort: Opus 5.5 at `high` (T0).
 
 ## Stopped at
-Re-planned 2026-11-24; awaiting the owner's approval. Not started.
+Plan approved by the owner 2026-11-24. Not started; the second-session critique is the owner's call before building.
 
 ## Evidence
 - `verify` (full): —
