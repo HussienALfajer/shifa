@@ -39,6 +39,7 @@ import { OwnerCard } from './owner-card.tsx';
 
 interface Note {
   tone: 'success' | 'danger';
+  icon?: 'warning' | 'wifi-slash';
   title: CommonKey;
   text?: string;
 }
@@ -66,7 +67,12 @@ function SubscriptionCard({ clinic }: { clinic: ClinicDetail }) {
         body: { status: nextStatus, subscriptionEnd: nextEnd },
       });
       if (!data) {
-        setNote({ tone: 'danger', title: 'clinicNotSavedTitle', text: text('serverErrorText') });
+        setNote({
+          tone: 'danger',
+          icon: 'warning',
+          title: 'clinicNotSavedTitle',
+          text: text('clinicNotSavedServer', { status: kept }),
+        });
         return;
       }
       queryClient.setQueryData(clinicKey(clinic.id), data);
@@ -75,10 +81,12 @@ function SubscriptionCard({ clinic }: { clinic: ClinicDetail }) {
       setEnd(undefined);
       setNote({ tone: 'success', title: 'clinicSaved' });
     } catch {
+      // The answer was lost: the change may or may not be saved; saving again is harmless.
       setNote({
         tone: 'danger',
+        icon: 'wifi-slash',
         title: 'clinicNotSavedTitle',
-        text: text('clinicNotSavedText', { status: kept }),
+        text: text('clinicUnknownText'),
       });
     } finally {
       setBusy(false);
@@ -122,7 +130,7 @@ function SubscriptionCard({ clinic }: { clinic: ClinicDetail }) {
       {note && (
         <Callout
           tone={note.tone}
-          {...(note.tone === 'danger' ? { icon: 'wifi-slash' as const } : {})}
+          {...(note.icon === undefined ? {} : { icon: note.icon })}
           title={text(note.title)}
         >
           {note.text}

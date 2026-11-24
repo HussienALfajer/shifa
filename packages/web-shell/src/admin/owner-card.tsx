@@ -47,6 +47,7 @@ export function OwnerCard({ clinic }: { clinic: ClinicDetail }) {
   const [ask, setAsk] = useState<Ask>(null);
   const [link, setLink] = useState<SetupLink | null>(null);
   const [note, setNote] = useState<Note | null>(null);
+  const [failure, setFailure] = useState<'network' | 'server' | null>(null);
   const { owner } = clinic;
   const path = { params: { path: { id: clinic.id } } };
   const reread = () => queryClient.invalidateQueries({ queryKey: clinicKey(clinic.id) });
@@ -57,22 +58,48 @@ export function OwnerCard({ clinic }: { clinic: ClinicDetail }) {
     void reread();
   };
 
+  /**
+   * Sends one owner action. A lost answer may hide an action the server did (the earlier link is
+   * already dead): the card is read again and the words say the result is unknown (review 3).
+   */
+  async function attempt<T>(call: () => Promise<T>): Promise<T> {
+    setFailure(null);
+    try {
+      return await call();
+    } catch (error) {
+      setFailure('network');
+      void reread();
+      throw error;
+    }
+  }
+
+  function refusedBy(response: Response): never {
+    setFailure('server');
+    void reread();
+    throw new Error(`owner action answered ${String(response.status)}`);
+  }
+
   async function newLink() {
-    const { data } = await shell.api.POST('/platform/clinics/{id}/owner/setup-link', path);
-    if (!data) throw new Error('setup-link failed');
+    const { data, response } = await attempt(() =>
+      shell.api.POST('/platform/clinics/{id}/owner/setup-link', path),
+    );
+    if (!data) refusedBy(response);
     showLink(data);
   }
 
   async function ownerAction(kind: 'mfa' | 'sessions') {
-    const { error, response } =
+    const { error, response } = await attempt(() =>
       kind === 'mfa'
-        ? await shell.api.POST('/platform/clinics/{id}/owner/reset-mfa', path)
-        : await shell.api.POST('/platform/clinics/{id}/owner/end-sessions', path);
+        ? shell.api.POST('/platform/clinics/{id}/owner/reset-mfa', path)
+        : shell.api.POST('/platform/clinics/{id}/owner/end-sessions', path),
+    );
     if (response.status === 409 && errorFacts(error).code === 'owner_setup_pending') {
+      // The owner has no account (a new link reset it meanwhile): say why nothing happened.
+      setNote({ tone: 'warning', title: 'ownerNotSetUpTitle', text: 'ownerNotSetUpText' });
       await reread();
       return;
     }
-    if (!response.ok) throw new Error('owner action failed');
+    if (!response.ok) refusedBy(response);
     setNote(
       kind === 'mfa'
         ? { tone: 'success', title: 'ownerResetMfaDone', text: 'ownerResetMfaDoneText' }
@@ -158,7 +185,8 @@ export function OwnerCard({ clinic }: { clinic: ClinicDetail }) {
         {link && (
           <div className="flex flex-col gap-3 border-t border-border-default pt-4">
             <h3 className="m-0 text-body leading-heading font-semibold">{text('linkNewTitle')}</h3>
-            <LinkShown link={link} />
+            {/* A replaced link starts uncopied (review A-01-10 checkpoint 3, 2). */}
+            <LinkShown key={link.url} link={link} />
           </div>
         )}
         <div className="flex flex-wrap gap-2">
@@ -214,7 +242,10 @@ export function OwnerCard({ clinic }: { clinic: ClinicDetail }) {
           {asked && (
             <AlertDialogContent tone="danger" title={asked.title} description={asked.body}>
               <AlertDialogCancel>{text('back')}</AlertDialogCancel>
-              <AlertDialogAction errorText={text('ownerActionFailed')} onAction={asked.run}>
+              <AlertDialogAction
+                errorText={text(failure === 'server' ? 'serverErrorText' : 'ownerActionUnknown')}
+                onAction={asked.run}
+              >
                 {asked.action}
               </AlertDialogAction>
             </AlertDialogContent>

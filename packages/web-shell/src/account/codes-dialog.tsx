@@ -154,8 +154,9 @@ export function CodesDialog({
     <Dialog
       open
       onOpenChange={(open) => {
-        // The codes are shown once: the dialog closes only through «تم» once they are on screen.
-        if (!open && codes === null) onClose();
+        // The codes are shown once: the dialog closes only through «تم» once they are on screen,
+        // and never while a code is with the server (review A-01-10 checkpoint 3, 1).
+        if (!open && codes === null && !inFlight.current) onClose();
       }}
     >
       <DialogContent

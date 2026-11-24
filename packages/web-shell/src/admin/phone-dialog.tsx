@@ -17,7 +17,7 @@ import { useRef, useState } from 'react';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
-import type { SetupLink } from './data.ts';
+import { PHONE_MAX, type SetupLink } from './data.ts';
 import { phoneRefused } from './phone.ts';
 
 type Problem = 'phone' | 'missing' | 'pending' | 'network' | 'server' | null;
@@ -90,6 +90,7 @@ export function PhoneDialog({
           <p className="m-0 text-body leading-body">{text('ownerFixPhoneText')}</p>
           <Input
             label={text('ownerFixPhoneField')}
+            maxLength={PHONE_MAX}
             type="tel"
             dir="ltr"
             hint={text('fieldOwnerPhoneHint')}
@@ -117,7 +118,7 @@ export function PhoneDialog({
               icon={problem === 'network' ? 'wifi-slash' : 'warning'}
               title={text(problem === 'network' ? 'unreachableTitle' : 'actionFailedTitle')}
             >
-              {text(problem === 'network' ? 'adminNetworkText' : 'serverErrorText')}
+              {text(problem === 'network' ? 'adminPhoneUnknownText' : 'serverErrorText')}
             </Callout>
           )}
           <DialogActions>

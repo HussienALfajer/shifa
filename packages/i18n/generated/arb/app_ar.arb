@@ -68,9 +68,13 @@
   "@commonAdminAppName": {
     "description": "common.adminAppName"
   },
-  "commonAdminNetworkText": "لم نصل إلى الخادم. لم يتغيّر شيء، وما كتبته باقٍ.",
+  "commonAdminNetworkText": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ ذلك، وما كتبته باقٍ. راجع قائمة العيادات قبل أن تعيد المحاولة.",
   "@commonAdminNetworkText": {
     "description": "common.adminNetworkText"
+  },
+  "commonAdminPhoneUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن تغيّر الرقم. أعد المحاولة: يُصدر ذلك رابطاً جديداً ويوقف السابق.",
+  "@commonAdminPhoneUnknownText": {
+    "description": "common.adminPhoneUnknownText"
   },
   "commonAdminWebBody": "يعمل حساب مدير المنصة في تطبيق إدارة المنصة، لا في تطبيق العيادة.",
   "@commonAdminWebBody": {
@@ -312,9 +316,9 @@
   "@commonClinicNotFoundTitle": {
     "description": "common.clinicNotFoundTitle"
   },
-  "commonClinicNotSavedText": "لم نصل إلى الخادم. ما زالت العيادة {status}.",
-  "@commonClinicNotSavedText": {
-    "description": "common.clinicNotSavedText",
+  "commonClinicNotSavedServer": "حدث خطأ في الخادم. ما زالت العيادة {status}.",
+  "@commonClinicNotSavedServer": {
+    "description": "common.clinicNotSavedServer",
     "placeholders": {
       "status": {
         "type": "String"
@@ -364,6 +368,10 @@
   "commonClinicTypeSolo": "عيادة فردية",
   "@commonClinicTypeSolo": {
     "description": "common.clinicTypeSolo"
+  },
+  "commonClinicUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن حُفظ التغيير. احفظ مرة أخرى؛ لا ضرر في التكرار.",
+  "@commonClinicUnknownText": {
+    "description": "common.clinicUnknownText"
   },
   "commonClinicsCreate": "إنشاء عيادة",
   "@commonClinicsCreate": {
@@ -428,6 +436,10 @@
   "commonClinicsNoMatchTitle": "لا عيادة بهذا الاسم",
   "@commonClinicsNoMatchTitle": {
     "description": "common.clinicsNoMatchTitle"
+  },
+  "commonClinicsNoneInStatus": "لا عيادة بهذه الحالة",
+  "@commonClinicsNoneInStatus": {
+    "description": "common.clinicsNoneInStatus"
   },
   "commonClinicsSearch": "بحث باسم العيادة",
   "@commonClinicsSearch": {
@@ -1475,9 +1487,9 @@
   "@commonOwnerAccountExistsTitle": {
     "description": "common.ownerAccountExistsTitle"
   },
-  "commonOwnerActionFailed": "لم نصل إلى الخادم. لم يتغيّر شيء. أعد المحاولة.",
-  "@commonOwnerActionFailed": {
-    "description": "common.ownerActionFailed"
+  "commonOwnerActionUnknown": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ ذلك. حدّثنا البطاقة؛ راجعها قبل أن تعيد.",
+  "@commonOwnerActionUnknown": {
+    "description": "common.ownerActionUnknown"
   },
   "commonOwnerActive": "أكمل الإعداد",
   "@commonOwnerActive": {
@@ -1567,6 +1579,14 @@
   "commonOwnerNone": "لا مالك لهذه العيادة.",
   "@commonOwnerNone": {
     "description": "common.ownerNone"
+  },
+  "commonOwnerNotSetUpText": "لا حساب له بعد، فلا جلسات تنتهي ولا تحقق يُعاد ضبطه. أرسل له رابط الإعداد.",
+  "@commonOwnerNotSetUpText": {
+    "description": "common.ownerNotSetUpText"
+  },
+  "commonOwnerNotSetUpTitle": "لم يُكمل المالك الإعداد بعد",
+  "@commonOwnerNotSetUpTitle": {
+    "description": "common.ownerNotSetUpTitle"
   },
   "commonOwnerPending": "بانتظار الإعداد",
   "@commonOwnerPending": {
@@ -1800,6 +1820,14 @@
   "@commonReenrolOpen": {
     "description": "common.reenrolOpen"
   },
+  "commonReenrolRestartText": "احذف ما أضفته في التطبيق على الهاتف الجديد، وابدأ من جديد بالرمز من الهاتف القديم.",
+  "@commonReenrolRestartText": {
+    "description": "common.reenrolRestartText"
+  },
+  "commonReenrolRestartTitle": "انتهى المفتاح الجديد أو استُبدل",
+  "@commonReenrolRestartTitle": {
+    "description": "common.reenrolRestartTitle"
+  },
   "commonReenrolStep1": "الخطوة الأولى من اثنتين · الهاتف القديم",
   "@commonReenrolStep1": {
     "description": "common.reenrolStep1"
@@ -1807,6 +1835,10 @@
   "commonReenrolStep2": "الخطوة الثانية من اثنتين · الهاتف الجديد",
   "@commonReenrolStep2": {
     "description": "common.reenrolStep2"
+  },
+  "commonReenrolUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ النقل. أعد المحاولة برمز جديد من الهاتف الجديد.",
+  "@commonReenrolUnknownText": {
+    "description": "common.reenrolUnknownText"
   },
   "commonResultsCount": "{count, plural, zero {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {{count} نتائج} many {{count} نتيجةً} other {{count} نتيجة}}",
   "@commonResultsCount": {

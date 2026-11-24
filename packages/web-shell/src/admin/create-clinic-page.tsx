@@ -16,6 +16,8 @@ import {
   type ClinicStatus,
   type ClinicType,
   clinicKey,
+  NAME_MAX,
+  PHONE_MAX,
   type SetupLink,
   STATUS_WORD,
   STATUSES,
@@ -140,6 +142,7 @@ export function CreateClinicPage() {
           </h2>
           <Input
             label={text('fieldClinicName')}
+            maxLength={NAME_MAX}
             value={form.name}
             onValueChange={(v) => {
               set('name', v);
@@ -194,6 +197,7 @@ export function CreateClinicPage() {
           </h2>
           <Input
             label={text('fieldOwnerName')}
+            maxLength={NAME_MAX}
             value={form.ownerName}
             onValueChange={(v) => {
               set('ownerName', v);
@@ -202,6 +206,7 @@ export function CreateClinicPage() {
           />
           <Input
             label={text('fieldOwnerPhone')}
+            maxLength={PHONE_MAX}
             type="tel"
             dir="ltr"
             hint={text('fieldOwnerPhoneHint')}

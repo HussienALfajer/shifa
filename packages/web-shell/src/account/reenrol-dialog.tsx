@@ -30,7 +30,7 @@ import { TotpKey } from './totp-key.tsx';
 
 const DIGITS = 6;
 
-type Problem = 'invalid' | 'skew' | 'network' | 'server' | null;
+type Problem = 'invalid' | 'skew' | 'restart' | 'network' | 'server' | null;
 
 export function ReenrolDialog({ tell, onClose }: { tell: Tell; onClose: () => void }) {
   const text = useText();
@@ -59,8 +59,9 @@ export function ReenrolDialog({ tell, onClose }: { tell: Tell; onClose: () => vo
     else if (answer === 'mfa_locked' && until !== undefined) {
       setLock(lockOf(answer, until, response));
     } else if (answer === 'mfa_not_started') {
-      // The new key was replaced or expired: start again with the old phone.
+      // The new key was replaced or expired: start again with the old phone, and say why.
       setKey(null);
+      setProblem('restart');
     } else if (answer === 'mfa_not_enrolled') {
       // Reset meanwhile by the owner or the super admin: nothing left to move.
       await queryClient.invalidateQueries({ queryKey: mfaKey(userId) });
@@ -113,8 +114,10 @@ export function ReenrolDialog({ tell, onClose }: { tell: Tell; onClose: () => vo
     <Dialog
       open
       onOpenChange={(open) => {
-        // The codes are shown once: the dialog closes only through «تم» once they are on screen.
-        if (!open && codes === null) onClose();
+        // The codes are shown once: the dialog closes only through «تم» once they are on screen,
+        // and never while a code is with the server: a confirm that commits after the dialog
+        // went would replace TOTP and the codes without showing them (review A-01-10 cp3, 1).
+        if (!open && codes === null && !inFlight.current) onClose();
       }}
     >
       <DialogContent title={text('reenrolOpen')} closeLabel={text('close')}>
@@ -140,13 +143,21 @@ export function ReenrolDialog({ tell, onClose }: { tell: Tell; onClose: () => vo
                 {text('clockSkewText')}
               </Callout>
             )}
+            {problem === 'restart' && (
+              <Callout tone="warning" icon="clock" title={text('reenrolRestartTitle')}>
+                {text('reenrolRestartText')}
+              </Callout>
+            )}
             {(problem === 'network' || problem === 'server') && (
               <Callout
                 tone="danger"
                 icon={problem === 'network' ? 'wifi-slash' : 'warning'}
                 title={text(problem === 'network' ? 'unreachableTitle' : 'actionFailedTitle')}
               >
-                {text(problem === 'network' ? 'reenrolNetworkText' : 'serverErrorText')}
+                {problem === 'server'
+                  ? text('serverErrorText')
+                  : // A lost answer to the confirm may hide a move that happened (review 3).
+                    text(key === null ? 'reenrolNetworkText' : 'reenrolUnknownText')}
               </Callout>
             )}
             <OtpInput

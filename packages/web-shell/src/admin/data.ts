@@ -92,6 +92,10 @@ export function daysUntil(date: string, now = Date.now()): number {
   return Math.round((end - start) / 86_400_000);
 }
 
+/** The contract's limits (`Name`, the phone as typed, the search), mirrored on the inputs. */
+export const NAME_MAX = 200;
+export const PHONE_MAX = 32;
+
 /** Improvement g: a subscription that ends within this many days says so. */
 export const ENDS_SOON_DAYS = 7;
 

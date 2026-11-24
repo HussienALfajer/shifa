@@ -205,7 +205,11 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
-    void router.navigate({ to: '/sign-in', search: searchFor(reason ?? otherTab ?? code) });
+    void router.navigate({
+      to: '/sign-in',
+      search: searchFor(reason ?? otherTab ?? code),
+      ignoreBlocker: true,
+    });
   });
   // Never on the message alone: the server's answer decides (tabs.ts).
   const offTabs = onOtherTabSignOut((tabReason) => {
@@ -251,7 +255,9 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     // stays theirs, and the MFA page shows the recovery codes before it goes on (A-01-07).
     if (!changed || rotated) return;
     queryClient.removeQueries({ predicate: (q) => q.queryHash !== SESSION_HASH });
-    void router.navigate({ to: '/' });
+    // Never held by a page's leave guard (admin web's one-time link): nothing of the previous
+    // session may stay on screen (A-01-10 checkpoint 3 review, 8).
+    void router.navigate({ to: '/', ignoreBlocker: true });
   });
   const dispose = () => {
     offEnded();

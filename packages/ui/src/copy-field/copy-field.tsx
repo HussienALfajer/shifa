@@ -74,6 +74,13 @@ export function CopyField({
   const expiryId = `${id}-expiry`;
   const [copied, setCopied] = useState(false);
   const [refused, setRefused] = useState(false);
+  // A new value was never copied: forget the last one's copied or refused state.
+  const [shownValue, setShownValue] = useState(value);
+  if (shownValue !== value) {
+    setShownValue(value);
+    setCopied(false);
+    setRefused(false);
+  }
   const input = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(
@@ -214,11 +221,10 @@ export function CopyField({
           {refusedText}
         </p>
       )}
-      {copied && (
-        <span role="status" className="sr-only">
-          {copiedLabel}
-        </span>
-      )}
+      {/* Always mounted: screen readers announce a change inside a live region that exists. */}
+      <span role="status" className="sr-only">
+        {copied ? copiedLabel : ''}
+      </span>
     </div>
   );
 }

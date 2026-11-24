@@ -29,6 +29,7 @@ import {
   clinicsQuery,
   daysUntil,
   ENDS_SOON_DAYS,
+  NAME_MAX,
   STATUS_TONE,
   STATUS_WORD,
   STATUSES,
@@ -171,16 +172,22 @@ export function ClinicsPage() {
           getRowId={(c) => c.id}
           loading={isPending}
           loadingRows={5}
-          empty={{
-            title: text('clinicsNoMatchTitle'),
-            description: text('clinicsNoMatchText'),
-            icon: 'magnifying-glass',
-          }}
+          empty={
+            // A search that matched nothing, or only a status with no clinic (review 6).
+            search === ''
+              ? { title: text('clinicsNoneInStatus'), icon: 'magnifying-glass' }
+              : {
+                  title: text('clinicsNoMatchTitle'),
+                  description: text('clinicsNoMatchText'),
+                  icon: 'magnifying-glass',
+                }
+          }
           toolbar={
             <div className="flex flex-1 flex-wrap items-center gap-3">
               <Input
                 type="search"
                 aria-label={text('clinicsSearch')}
+                maxLength={NAME_MAX}
                 placeholder={text('clinicsSearch')}
                 startIcon="magnifying-glass"
                 value={typed}
