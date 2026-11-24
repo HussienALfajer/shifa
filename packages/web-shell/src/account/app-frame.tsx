@@ -100,7 +100,8 @@ export function AppFrame({
             aria-label={text('navLabel')}
             className={cn(
               'flex w-(--shifa-width-60) shrink-0 flex-col gap-1 border-e border-border-default bg-bg-surface px-3 py-4',
-              phone && 'absolute inset-y-0 start-0 z-10 shadow-overlay',
+              // Over the page, from under the bar to the screen's bottom, «خروج» always in view.
+              phone && 'fixed start-0 top-(--shifa-size-row) bottom-0 z-10 shadow-overlay',
             )}
           >
             {ITEMS.filter((item) => item.place !== 'settings' || owner).map((item) => (

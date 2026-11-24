@@ -35,7 +35,9 @@ export function DevicesCard({ tell }: { tell: Tell }) {
   const queryClient = useQueryClient();
   const session = useSignedIn();
   const userId = session?.userId ?? '';
-  const { data: sessions } = useSessions(userId);
+  const { data: listed } = useSessions(userId);
+  // This device first, as drawn; the others in the server's order (latest activity first).
+  const sessions = listed && [...listed].sort((a, b) => Number(b.current) - Number(a.current));
   const [ask, setAsk] = useState<Ask>(null);
   const others = (sessions ?? []).filter((s) => !s.current);
   const now = Date.now();
