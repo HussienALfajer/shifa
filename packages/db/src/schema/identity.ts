@@ -122,7 +122,11 @@ export const twoFactor = pgTable(
      * in use until a code from the new app confirms it; null when none is pending.
      */
     pendingSecret: text('pending_secret'),
-    /** The pending secret's own replay state, until it replaces `secret`. */
+    /**
+     * The pending secret's own replay state, until it replaces `secret`. Null today: the one
+     * accepted code moves its step to `last_used_step` as the secret is swapped; kept so a later
+     * check of the new app (before the confirm) has its own state, never the old secret's.
+     */
     pendingLastUsedStep: bigint('pending_last_used_step', { mode: 'number' }),
   },
   (t) => [

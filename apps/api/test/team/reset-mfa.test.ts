@@ -4,9 +4,12 @@
 // resets those: `owner_mfa_platform`, the owner's own account too); a member without TOTP or
 // without an account → `mfa_not_enrolled`; a shared account → its sessions here end, then
 // `account_shared`, TOTP kept; another clinic's member → 404; a receptionist → 403.
+import { twoFactor } from '@shifa/db';
+import { superuserDb, workerDatabaseName } from '@shifa/db/testing';
+import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { PASSWORD, sessionCookie, signIn, testClock } from '../identity/support.ts';
-import { STEP_MS } from '../identity/totp.ts';
+import { STEP_MS, totpAt } from '../identity/totp.ts';
 import { enrolTotp, platformAuditRows } from '../platform/support.ts';
 import {
   activeMember,
@@ -131,5 +134,26 @@ describe('the owner resets a member’s TOTP (criterion 3, OD-95)', () => {
     ]);
     const target = await enrolledDoctor();
     expect((await reset(target.membershipId, receptionist.cookie)).statusCode).toBe(403);
+  });
+});
+
+describe('a reset during a pending re-enrolment (A-01a 11, OD-98, A-01-11)', () => {
+  it('removes the old and the pending secret', async () => {
+    const m = await activeMember(world, clinic, [{ role: 'doctor', branchId: null }]);
+    const enrolled = await enrolTotp(world.app, m.cookie, clock);
+    clock.advanceBy(2 * STEP_MS);
+    const start = await post(
+      world.app,
+      '/auth/mfa/re-enrol/start',
+      { code: totpAt(enrolled.manualKey, clock.now()) },
+      enrolled.cookie,
+    );
+    expect(start.statusCode, start.body).toBe(200);
+    expect((await reset(m.membershipId)).statusCode).toBe(200);
+    const rows = await superuserDb(workerDatabaseName())
+      .select({ id: twoFactor.id })
+      .from(twoFactor)
+      .where(eq(twoFactor.userId, m.userId));
+    expect(rows).toEqual([]);
   });
 });
