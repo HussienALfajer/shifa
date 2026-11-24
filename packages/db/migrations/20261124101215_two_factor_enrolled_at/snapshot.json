@@ -1,0 +1,47 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "0326bb3c-a9cf-404a-86ce-cbf7fe2fe1c1",
+  "prevIds": [
+    "06a7e3c2-768f-49e4-9557-6fe6828fff1a"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "two_factor",
+        "enrolled_at"
+      ],
+      "writes": [
+        "s|col|public.two_factor.enrolled_at",
+        "n|col|public.two_factor.enrolled_at",
+        "e|col|public.two_factor.enrolled_at"
+      ],
+      "reads": [
+        "n|tbl|public.two_factor",
+        "n|sch|public"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "two_factor",
+        "name": "enrolled_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    }
+  ]
+}

@@ -3,7 +3,7 @@
 // limits, and the principal built from the active tenant's memberships. Contract: access/auth.port.ts.
 import { HttpException, Inject, Injectable } from '@nestjs/common';
 import type { FastifyRequest } from 'fastify';
-import type { AuthPort, Principal } from '../../access/index.ts';
+import { type AuthPort, type Principal, SessionExpiredError } from '../../access/index.ts';
 import { errorClass } from '../../platform/errors.ts';
 import { parseCookies } from '../../platform/request-meta.ts';
 import { SESSION_COOKIE, verifySessionCookie } from './session-cookie.ts';
@@ -28,9 +28,14 @@ export class BetterAuthAdapter implements AuthPort {
   async authenticate(request: FastifyRequest): Promise<Principal | null> {
     const value = parseCookies(request.headers.cookie).get(SESSION_COOKIE);
     const token = verifySessionCookie(value, this.secrets.betterAuthSecret);
+    // A missing or forged cookie is anonymous: 401 `unauthorized`, no reason.
     if (token === null) return null;
     try {
-      return await this.sessions.authenticate(token, request.id);
+      const principal = await this.sessions.authenticate(token, request.id);
+      // A genuine cookie whose session is gone was ended elsewhere (another device, the owner,
+      // the super admin, a change of password) or cleaned after its limit: `ended` (A-01-09).
+      if (principal === null) throw new SessionExpiredError('ended');
+      return principal;
     } catch (err) {
       if (err instanceof HttpException) throw err;
       // Class and SQLSTATE only: an error's message or cause may quote the token.

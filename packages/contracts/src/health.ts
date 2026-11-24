@@ -12,6 +12,7 @@ export const healthLive = defineContract({
   method: 'GET',
   path: '/health/live',
   summary: 'Liveness probe',
+  public: true,
   responses: { 200: HealthStatus },
 });
 
@@ -21,5 +22,6 @@ export const healthReady = defineContract({
   method: 'GET',
   path: '/health/ready',
   summary: 'Readiness probe',
+  public: true,
   responses: { 200: HealthStatus, 503: ErrorEnvelope },
 });

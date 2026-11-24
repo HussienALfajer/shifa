@@ -20,6 +20,7 @@ import { listen, startTestTelemetry, type TestTelemetry } from './support.ts';
 
 const [ADMIN_PHONE = '', OWNER_PHONE = ''] = syntheticPhones(2026_11_26, 2);
 const REFUSED_PASSWORD = 'short7';
+const NEW_PASSWORD = 'amber window crane 77';
 
 let test: TestTelemetry;
 let errors: ErrorSink;
@@ -119,12 +120,31 @@ beforeAll(async () => {
   clock.advanceBy(2 * STEP_MS);
   const pending = await send('POST', '/auth/sign-in', { phone: OWNER_PHONE, password: PASSWORD });
   await send('POST', '/auth/mfa/challenge', { method: 'totp', code: '000000' }, pending.cookie);
-  await send(
+  const passed = await send(
     'POST',
     '/auth/mfa/challenge',
     { method: 'recovery', code: enrolled.recovery[0] },
     pending.cookie,
   );
+  // A-01-09: profile, MFA status, new recovery codes, change of password.
+  await send('GET', '/me', undefined, passed.cookie);
+  await send('GET', '/auth/mfa', undefined, passed.cookie);
+  await send('POST', '/auth/mfa/recovery-codes', { code: '000000' }, passed.cookie);
+  clock.advanceBy(STEP_MS);
+  const renewCode = totpAt(enrolled.manualKey, clock.now());
+  codes.push(renewCode);
+  const renewed = await send(
+    'POST',
+    '/auth/mfa/recovery-codes',
+    { code: renewCode },
+    passed.cookie,
+  );
+  secrets.push(...((renewed.json['recoveryCodes'] as string[] | undefined) ?? []));
+  const changePassword = (currentPassword: string, newPassword: string) =>
+    send('POST', '/auth/password', { currentPassword, newPassword }, passed.cookie);
+  await changePassword(REFUSED_PASSWORD, NEW_PASSWORD);
+  await changePassword(PASSWORD, REFUSED_PASSWORD);
+  await changePassword(PASSWORD, NEW_PASSWORD);
   const reissued = await send(
     'POST',
     `/platform/clinics/${clinic.id}/owner/setup-link`,
@@ -146,7 +166,7 @@ afterAll(async () => {
 
 describe('setup link and MFA leak test', () => {
   it('produced telemetry and audit rows to search', async () => {
-    expect(secrets.length).toBeGreaterThan(20);
+    expect(secrets.length).toBeGreaterThan(30);
     expect((await test.spans()).length).toBeGreaterThan(0);
     expect((await platformAuditRows()).length).toBeGreaterThan(5);
   });
@@ -171,6 +191,7 @@ describe('setup link and MFA leak test', () => {
       ...spellings(OWNER_PHONE),
       PASSWORD,
       REFUSED_PASSWORD,
+      NEW_PASSWORD,
       ...secrets,
     ];
     for (const [store, text] of Object.entries(stores)) {

@@ -35,6 +35,8 @@ export const SetupLinkView = z
     personName: z.string(),
     role: SetupLinkRole,
     purpose: SetupLinkPurpose,
+    /** Country code and last three digits (`+963 ••• ••• 123`); never the full number. */
+    phoneMasked: z.string(),
     expiresAt: z.iso.datetime(),
   })
   .meta({ id: 'SetupLinkView' });
@@ -65,6 +67,31 @@ export const MfaEnrolled = z
   .meta({ id: 'MfaEnrolled' });
 export type MfaEnrolled = z.infer<typeof MfaEnrolled>;
 
+/** The challenge passed: the rotated session and the recovery codes left (A-01a 12a). */
+export const MfaPassed = z
+  .object({ session: SessionView, recoveryCodesLeft: z.int().min(0) })
+  .meta({ id: 'MfaPassed' });
+export type MfaPassed = z.infer<typeof MfaPassed>;
+
+/** My account: whether TOTP is enrolled, since when, and recovery codes left. */
+export const MfaStatus = z
+  .object({
+    enrolled: z.boolean(),
+    enrolledAt: z.iso.datetime().nullable(),
+    recoveryCodesLeft: z.int().min(0).nullable(),
+  })
+  .meta({ id: 'MfaStatus' });
+export type MfaStatus = z.infer<typeof MfaStatus>;
+
+/** A new set of ten recovery codes, shown once. */
+export const RecoveryCodes = z
+  .object({ recoveryCodes: z.array(z.string()) })
+  .meta({ id: 'RecoveryCodes' });
+export type RecoveryCodes = z.infer<typeof RecoveryCodes>;
+
+export const RenewRecoveryCodes = z.object({ code: TotpCode }).meta({ id: 'RenewRecoveryCodes' });
+export type RenewRecoveryCodes = z.infer<typeof RenewRecoveryCodes>;
+
 export const TotpChallengeMethod = z.enum(['totp', 'recovery']).meta({ id: 'TotpChallengeMethod' });
 
 /** A six-digit code, or one recovery code (case and dashes ignored). */
@@ -79,6 +106,7 @@ export const authSetupLinkView = defineContract({
   method: 'POST',
   path: '/auth/setup-link/view',
   summary: 'What a setup link is for, before the password is set',
+  public: true,
   request: { body: SetupLinkRequest },
   responses: { 200: SetupLinkView, 404: ErrorEnvelope },
 });
@@ -89,8 +117,9 @@ export const authSetupLinkConsume = defineContract({
   method: 'POST',
   path: '/auth/setup-link/consume',
   summary: 'Set the password through a setup link and sign in',
+  public: true,
   request: { body: SetPasswordRequest },
-  responses: { 200: SessionView, 404: ErrorEnvelope, 409: ErrorEnvelope },
+  responses: { 200: SessionView, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 export const authMfaEnrolStart = defineContract({
@@ -98,25 +127,54 @@ export const authMfaEnrolStart = defineContract({
   method: 'POST',
   path: '/auth/mfa/enrol/start',
   summary: 'Start TOTP enrolment: a new key (replaces an unconfirmed one)',
+  // 409 `mfa_already_enrolled`; 429 `mfa_locked`.
   responses: { 200: TotpEnrolStart, 409: ErrorEnvelope, 429: ErrorEnvelope },
 });
 
-/** 400 `invalid_code` or `clock_skew`; 429 `mfa_locked`. Rotates the session cookie. */
+/**
+ * 400 `invalid_code` or `clock_skew`; 409 `mfa_already_enrolled` or `mfa_not_started`; 429
+ * `mfa_locked`. Rotates the session cookie.
+ */
 export const authMfaEnrolConfirm = defineContract({
   operationId: 'authMfaEnrolConfirm',
   method: 'POST',
   path: '/auth/mfa/enrol/confirm',
   summary: 'Confirm TOTP enrolment with one code; returns the recovery codes once',
   request: { body: TotpEnrolConfirm },
-  responses: { 200: MfaEnrolled, 409: ErrorEnvelope, 429: ErrorEnvelope },
+  responses: { 200: MfaEnrolled, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
 });
 
-/** 400 `invalid_code`; 429 `mfa_locked`; 409 when the session needs no challenge. */
+/**
+ * 400 `invalid_code`; 409 `mfa_not_owed` when the session needs no challenge; 429 `mfa_locked`.
+ * Rotates the session cookie and answers the recovery codes left.
+ */
 export const authMfaChallenge = defineContract({
   operationId: 'authMfaChallenge',
   method: 'POST',
   path: '/auth/mfa/challenge',
   summary: 'Pass the second factor for this session; rotates the session cookie',
   request: { body: TotpChallenge },
-  responses: { 200: SessionView, 409: ErrorEnvelope, 429: ErrorEnvelope },
+  responses: { 200: MfaPassed, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
+});
+
+export const authMfaStatus = defineContract({
+  operationId: 'authMfaStatus',
+  method: 'GET',
+  path: '/auth/mfa',
+  summary: 'Whether TOTP is enrolled, since when, and recovery codes left',
+  responses: { 200: MfaStatus },
+});
+
+/**
+ * A-01a criterion 12a: a current TOTP code (replay and lock rules of criterion 12) gives ten new
+ * recovery codes; the old set is gone. 400 `invalid_code`; 409 `mfa_not_enrolled`; 429
+ * `mfa_locked`.
+ */
+export const authMfaRecoveryCodes = defineContract({
+  operationId: 'authMfaRecoveryCodes',
+  method: 'POST',
+  path: '/auth/mfa/recovery-codes',
+  summary: 'Replace the recovery codes with a new set, confirmed with a TOTP code',
+  request: { body: RenewRecoveryCodes },
+  responses: { 200: RecoveryCodes, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
 });

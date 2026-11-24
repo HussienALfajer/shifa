@@ -5,18 +5,33 @@ import { Body, Controller, Get, HttpCode, Inject, Post } from '@nestjs/common';
 import {
   type ActiveClinic,
   type MyClinics,
+  type MyProfile,
   meClinics,
+  meProfile,
   meSwitch,
   type RequestBody,
 } from '@shifa/contracts';
-import { CurrentPrincipal, type Principal, SignedIn } from '../../access/index.ts';
+import { BeforeMfa, CurrentPrincipal, type Principal, SignedIn } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { AccountService } from './account.service.ts';
 import { SwitcherService } from './switcher.service.ts';
 
 @Controller('me')
 export class MeController {
-  constructor(@Inject(SwitcherService) private readonly switcher: SwitcherService) {}
+  constructor(
+    @Inject(SwitcherService) private readonly switcher: SwitcherService,
+    @Inject(AccountService) private readonly account: AccountService,
+  ) {}
+
+  /** Before MFA too: the challenge screen greets the person by name (A-01a 10a). */
+  @SignedIn()
+  @BeforeMfa()
+  @Contract(meProfile)
+  @Get()
+  profile(@CurrentPrincipal() principal: Principal): Promise<MyProfile> {
+    return this.account.profile(principal);
+  }
 
   @SignedIn()
   @Contract(meClinics)

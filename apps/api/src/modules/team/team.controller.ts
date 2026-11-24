@@ -12,6 +12,7 @@ import {
   teamDeactivateMember,
   teamMember,
   teamMemberLink,
+  teamMemberResetMfa,
   teamMembers,
   teamReactivateMember,
   teamUpdateMember,
@@ -99,5 +100,17 @@ export class TeamController {
     @ClientRequest() request: RequestMeta,
   ): Promise<MemberLinkIssued> {
     return this.team.newLink(scope, params.id, request.requestId);
+  }
+
+  @RequirePermission('members.manage')
+  @Contract(teamMemberResetMfa)
+  @HttpCode(200)
+  @Post(':id/reset-mfa')
+  resetMfa(
+    @Param() params: RequestParams<typeof teamMemberResetMfa>,
+    @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<MemberDetail> {
+    return this.team.resetMfa(scope, params.id, request.requestId);
   }
 }

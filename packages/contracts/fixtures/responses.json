@@ -317,6 +317,7 @@
             "status": "active",
             "selectable": true,
             "roles": ["doctor"],
+            "tenantWide": false,
             "lastActiveAt": "2026-11-24T09:00:00.000Z",
             "solo": false,
             "branches": [{ "id": "8e2d7a3b-4c5f-4d6e-9f7a-1b2c3d4e5f60", "name": "فرع تجريبي" }]
@@ -327,6 +328,7 @@
             "status": "suspended",
             "selectable": false,
             "roles": ["owner"],
+            "tenantWide": true,
             "lastActiveAt": null,
             "solo": false,
             "branches": []
@@ -371,7 +373,8 @@
             "overridden": false
           }
         ],
-        "isLastOwner": false
+        "isLastOwner": false,
+        "mfaEnrolled": false
       }
     },
     {
@@ -385,6 +388,115 @@
       }
     },
     { "name": "clinic settings", "schema": "ClinicSettings", "body": { "idleMinutes": 30 } },
+    {
+      "name": "error session_expired with its reason",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "session_expired", "message": "Session expired", "reason": "idle" }
+      }
+    },
+    {
+      "name": "error password_unchanged",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "password_unchanged", "message": "The new password is the current one" }
+      }
+    },
+    {
+      "name": "error branch_required",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "branch_required", "message": "Choose a branch" } }
+    },
+    {
+      "name": "error owner_mfa_platform",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "owner_mfa_platform",
+          "message": "An owner’s two-factor is reset through the platform"
+        }
+      }
+    },
+    {
+      "name": "error mfa_already_enrolled",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "mfa_already_enrolled", "message": "Two-factor is already enrolled" }
+      }
+    },
+    {
+      "name": "error mfa_not_started",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "mfa_not_started", "message": "Two-factor enrolment was not started" }
+      }
+    },
+    {
+      "name": "error mfa_not_owed",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "mfa_not_owed", "message": "No two-factor code is due for this session" }
+      }
+    },
+    {
+      "name": "error mfa_not_enrolled",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "mfa_not_enrolled", "message": "Two-factor is not enrolled" } }
+    },
+    {
+      "name": "error owner_role_protected",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "owner_role_protected",
+          "message": "Only the owner themselves or the platform removes an owner’s role"
+        }
+      }
+    },
+    {
+      "name": "own profile",
+      "schema": "MyProfile",
+      "body": {
+        "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+        "name": "شخص تجريبي",
+        "phoneE164": "+963980039822"
+      }
+    },
+    {
+      "name": "mfa status of an enrolled person",
+      "schema": "MfaStatus",
+      "body": { "enrolled": true, "enrolledAt": "2026-11-23T08:00:00.000Z", "recoveryCodesLeft": 9 }
+    },
+    {
+      "name": "mfa status before enrolment",
+      "schema": "MfaStatus",
+      "body": { "enrolled": false, "enrolledAt": null, "recoveryCodesLeft": null }
+    },
+    {
+      "name": "new recovery codes",
+      "schema": "RecoveryCodes",
+      "body": { "recoveryCodes": ["aaaa-bbbb-cccc", "dddd-eeee-ffff"] }
+    },
+    {
+      "name": "challenge passed with a recovery code",
+      "schema": "MfaPassed",
+      "body": {
+        "session": {
+          "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+          "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+          "platformAdmin": false,
+          "mfa": "verified",
+          "mfaRequired": true,
+          "tenantId": null,
+          "branchId": null,
+          "roles": [],
+          "idleMinutes": 15,
+          "idleExpiresAt": "2026-11-23T08:15:00.000Z",
+          "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+        },
+        "recoveryCodesLeft": 9
+      }
+    },
     {
       "name": "error clock_skew",
       "schema": "ErrorEnvelope",
@@ -461,6 +573,7 @@
         "personName": "مالك تجريبي",
         "role": "owner",
         "purpose": "owner_setup",
+        "phoneMasked": "+963 ••• ••• 822",
         "expiresAt": "2026-11-26T08:00:00.000Z"
       }
     },
@@ -472,6 +585,7 @@
         "personName": "مشرف تجريبي",
         "role": "platform_admin",
         "purpose": "admin_setup",
+        "phoneMasked": "+90 ••• ••• 417",
         "expiresAt": "2026-11-26T08:00:00.000Z"
       }
     },

@@ -31,6 +31,26 @@ describe('createShellClient', () => {
     expect(codes).toEqual(['unauthorized']);
   });
 
+  it('a 401 about the request (wrong current password) is not a session that ended (A-01-09)', async () => {
+    const shell = createShellClient({
+      baseUrl: 'http://shell.test/api',
+      fetch: () =>
+        Promise.resolve(
+          Response.json(
+            { error: { code: 'invalid_credentials', message: 'Invalid phone or password' } },
+            { status: 401 },
+          ),
+        ),
+    });
+    const codes: string[] = [];
+    shell.onSessionEnded((code) => codes.push(code));
+    const { response } = await shell.api.POST('/auth/password', {
+      body: { currentPassword: 'wrong one 12', newPassword: 'amber window crane 77' },
+    });
+    expect(response.status).toBe(401);
+    expect(codes).toEqual([]);
+  });
+
   it('defaults to the same-origin /api prefix', async () => {
     const seen: string[] = [];
     const shell = createShellClient({

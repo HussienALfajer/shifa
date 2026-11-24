@@ -27,21 +27,24 @@ Clinic and owner (OD-76)
 Sign-in
 6. Sign-in is phone + password. The phone is normalised to E.164 (+963, +90; Arabic-Indic digits, spaces and a leading 0 accepted); one account per phone. A wrong phone or password gives one message («رقم الهاتف أو كلمة المرور غير صحيحة»), with the same status and comparable timing whether or not the phone exists.
 7. Five failures for one phone within 15 min lock that phone for 15 min; 30 failures from one IP within 15 min block that IP for 15 min. Both answer 429 with the lock's end time.
-8. Passwords: at least 10 characters, refused when on the bundled common-password list or containing the phone's digits; no composition rules; hashed by Better Auth (scrypt).
+8. Passwords (set through a link or changed on My account): at least 10 characters, refused when on the bundled common-password list or containing the phone's digits; no composition rules; hashed by Better Auth (scrypt).
 
 Sessions (OD-77)
-9. Sessions are server-side; the cookie is `__Host-` prefixed, `Secure`, `HttpOnly`, `SameSite=Lax`, rotated at sign-in and after MFA. Idle limit: the active clinic's setting (15, 30 or 60 min, default 30; set by the owner); super admins 15 min; absolute limit 12 h. A warning dialog appears one minute before the idle limit; any request after a limit is 401 and the client returns to sign-in.
+9. Sessions are server-side; the cookie is `__Host-` prefixed, `Secure`, `HttpOnly`, `SameSite=Lax`, rotated at sign-in and after MFA. Idle limit: the active clinic's setting (15, 30 or 60 min, default 30; set by the owner); super admins 15 min; absolute limit 12 h. A warning dialog appears one minute before the idle limit; any request after a limit is 401 `session_expired` with the reason (`idle`, `absolute`, or `ended`: the session was ended elsewhere, on another device, by the owner, by the super admin or by a change of password) and the client returns to sign-in; a missing or forged cookie is 401 `unauthorized` without a reason (A-01-09).
 10. A person lists their own sessions (device, browser, last active) and ends one or all others.
+10a. A signed-in person reads their own profile (name, phone), before the second factor too (the challenge greets by name); the phone goes to that person only and never into logs, spans or errors (A-01-09).
+10b. A person changes their own password with the current one: a wrong current password is 401 `invalid_credentials`, counted toward the phone lock of criterion 7 (429 `phone_locked` with the end time; the lock also blocks sign-in); the new one follows criterion 8 and differs from the current one (`password_unchanged`); on success every other session of the person ends, this one is rotated, and it is audited (OD-92, A-01-09).
 
 MFA (OD-77)
-11. Owners and super admins reach no route other than enrolment until TOTP is enrolled (QR + manual key, one code to confirm, 10 single-use recovery codes shown once). Other staff may enrol from their account page.
+11. Owners and super admins reach no route other than enrolment until TOTP is enrolled (QR + manual key, one code to confirm, 10 single-use recovery codes shown once). Other staff may enrol from their account page. No one turns their own TOTP off: the owner resets a member's (A-01b criterion 3), the super admin an owner's (criterion 13; OD-93).
 12. A TOTP code is accepted within ±1 step and never twice; five wrong codes lock MFA for 15 min; a used recovery code is gone.
+12a. A person with TOTP sees how many recovery codes are left (in the answer of a recovery sign-in and on My account) and gets a new set of ten, shown once, by confirming a current TOTP code (the replay and lock rules of criterion 12 apply); the old set is gone; audited (A-01-09).
 
 Recovery and support (PLT-19)
 13. The super admin can, for an owner: issue a new setup link (resets the password), reset MFA (enrol again at next sign-in) and end all sessions. Each ends the owner's sessions. Super admins see no clinic data (support access is A-02). Super admin accounts are created by a seed command only.
 
 Audit (PLT-47)
-14. `audit_event` is append-only (`shifa_app` has no UPDATE or DELETE, `appendOnly` class in the isolation suite). It records sign-in success and failure, lockouts, MFA enrol and reset, recovery-code use, link issued and used, clinic created and status changes, session ends and every super-admin action: actor id, tenant, target id, event, time, request id. Platform events have a null tenant and are invisible to `shifa_app` tenant queries.
+14. `audit_event` is append-only (`shifa_app` has no UPDATE or DELETE, `appendOnly` class in the isolation suite). It records sign-in success and failure, lockouts, MFA enrol and reset, recovery-code use, link issued and used, clinic created and status changes, session ends, change of password and its failures, renewal of recovery codes, the owner's reset of a member's TOTP, and every super-admin action: actor id, tenant, target id, event, time, request id. Platform events have a null tenant and are invisible to `shifa_app` tenant queries.
 
 Guard and harness (backlog, "before Phase A routes")
 15. A Better Auth adapter replaces `NoAuthAdapter`; the `AuthPort` contract is documented and the principal validated with Zod; adapter errors never carry tokens or phones.
@@ -70,6 +73,7 @@ No money. Abuse: credential stuffing (7), link guessing (4), account enumeration
 | 6–8 | API tests: normaliser vectors (TS unit), same status for unknown phone, lockouts with a fake clock, password rules |
 | 9, 10 | API tests with a fake clock: idle and absolute expiry, cookie attributes, rotation, ending sessions → 401 next request |
 | 11, 12 | API tests on the real Better Auth flow: gate before enrolment, ±1 step window, replay refused, lockout, recovery code single use |
+| 10a, 10b, 12a | API tests (A-01-09): profile of self only, before MFA; change of password rules, lock, other sessions ended and this one rotated, audit; codes left after enrolment and a recovery sign-in, renewal with a current code, old set refused, replay and lock |
 | 15, 16 | Contract and Zod tests; the named route, sampling, request-id, meta-schema and matrix tests |
 | Privacy | Leak test with synthetic phones and passwords through sign-in, failure, link and MFA flows: absent from logs, spans, error events and audit rows |
 | Flows | Playwright against the real backend: super admin creates a clinic → owner opens the link → password → TOTP → signed in; idle warning and sign-out |
@@ -78,11 +82,11 @@ No money. Abuse: credential stuffing (7), link guessing (4), account enumeration
 ## Screens (inventory, ADR-0042)
 Clinic web, Arabic RTL, light and dark:
 - **Sign in** (desktop, tablet, phone): phone, password, «دخول», recovery hint. States: default; wrong credentials (one message under the password); phone locked (end time, inputs disabled); IP blocked; server unreachable.
-- **Setup link** (phone, desktop): clinic name, person's name and role, link expiry; new password twice with the rules as a hint. States: valid; password refused (rule named); link invalid (one message, no clinic name).
+- **Setup link** (phone, desktop): clinic name, person's name and role, the masked phone (country code and last three digits), link expiry; new password twice with the rules as a hint. States: valid; password refused (rule named); link invalid (one message, no clinic name).
 - **TOTP enrol** (desktop, phone): why, app hint, QR + manual key, one code, then 10 recovery codes with print and copy, confirm before continuing. States: wrong code; clock-skew hint.
-- **TOTP challenge** (desktop, phone): six-digit code, «استخدام رمز استرداد». States: wrong or replayed code; MFA locked (end time).
+- **TOTP challenge** (desktop, phone): greeting by name, six-digit code, «استخدام رمز استرداد». States: wrong or replayed code; MFA locked (end time).
 - **Idle warning** (all sizes): countdown from 1:00, «متابعة العمل», «خروج الآن».
-- **My account** (desktop, phone): phone (read-only), change password, MFA status and actions, sessions (device, browser, last active, this device) with end one and end all others.
+- **My account** (desktop, phone): phone (read-only), change password, MFA status (enrolled since, recovery codes left) and actions (enrol; new recovery codes), sessions (device, browser, last active, this device) with end one and end all others.
 - **Clinic settings · automatic sign-out** (desktop): 15 / 30 / 60 minutes, owner only.
 Admin web, light and dark:
 - **Clinics list** (desktop): name, type, status, end date, owner name; search; «إنشاء عيادة». States: empty, loading.

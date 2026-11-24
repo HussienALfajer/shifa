@@ -4,6 +4,7 @@
 import { type DynamicModule, Inject, Module, type OnApplicationShutdown } from '@nestjs/common';
 import type { AuthDb } from '@shifa/db';
 import { CLOCK, type Clock, systemClock } from '../../platform/clock.ts';
+import { AccountService } from './account.service.ts';
 import { BetterAuthAdapter } from './better-auth.adapter.ts';
 import { createShifaAuth } from './better-auth.ts';
 import { IdentityController } from './identity.controller.ts';
@@ -81,6 +82,7 @@ export class IdentityModule implements OnApplicationShutdown {
         InvitationsService,
         MyInvitations,
         SwitcherService,
+        AccountService,
         BetterAuthAdapter,
       ],
       exports: [BetterAuthAdapter, OwnerAccounts, MemberAccounts, CLOCK],

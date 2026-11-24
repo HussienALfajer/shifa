@@ -110,7 +110,7 @@ export class SessionsService {
     const reason = this.#expiry(row, view.idleMinutes, now);
     if (reason) {
       await this.end(row.userId, [row.id], reason, requestId);
-      throw new SessionExpiredError();
+      throw new SessionExpiredError(reason === 'idle' ? 'idle' : 'absolute');
     }
     const factors = await this.authDb.withUser(row.userId, async (tx) => {
       await tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id));

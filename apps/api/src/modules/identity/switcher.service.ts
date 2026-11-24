@@ -2,7 +2,8 @@
 // from the auth path (clinicChoices); a switch is checked against them on the server, whatever
 // the client sends: a clinic without an active membership and role is not found, a suspended one
 // answers 403 `clinic_suspended`, an archived branch 409 `branch_archived`, a branch without a
-// role 403 `branch_not_held`. The session keeps its token; only its active clinic and branch
+// role 403 `branch_not_held`, no branch for roles in several branches and none tenant-wide 400
+// `branch_required` (A-01-09). The session keeps its token; only its active clinic and branch
 // change, and the clinic switched to records `clinic.switched`.
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { ActiveClinic, MyClinics, SwitchRequest } from '@shifa/contracts';
@@ -12,7 +13,7 @@ import { type Principal, SessionExpiredError } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { ApiError } from '../../platform/errors.ts';
-import { type ClinicChoice, clinicChoices, defaultBranch } from './clinic-choices.ts';
+import { type ClinicChoice, clinicChoices, defaultBranch, needsBranch } from './clinic-choices.ts';
 import { MyInvitations } from './my-invitations.service.ts';
 import { AUTH_DB } from './tokens.ts';
 
@@ -37,6 +38,7 @@ export class SwitcherService {
         status: c.status,
         selectable: c.selectable,
         roles: c.roles,
+        tenantWide: c.tenantWide,
         lastActiveAt: c.lastActiveAt?.toISOString() ?? null,
         solo: c.solo,
         branches: c.branches,
@@ -97,7 +99,10 @@ export class SwitcherService {
     choice: ClinicChoice,
     wanted: string | null,
   ): Promise<string | null> {
-    if (wanted === null) return defaultBranch(choice);
+    if (wanted === null) {
+      if (needsBranch(choice)) throw new ApiError(400, 'branch_required');
+      return defaultBranch(choice);
+    }
     if (choice.branches.some((b) => b.id === wanted)) return wanted;
     const [row] = await this.db.withTenant({ tenantId: choice.tenantId, userId }, (tx) =>
       tx.select({ archivedAt: branch.archivedAt }).from(branch).where(eq(branch.id, wanted)),

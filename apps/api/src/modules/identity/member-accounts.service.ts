@@ -2,10 +2,19 @@
 // member link (token shown once, hash stored by the caller in the clinic's transaction), whether
 // a phone has an account (invitation or setup link; the owner never learns which), whether an
 // account works in another clinic (a new link resets a password only for a one-clinic account),
-// ending a member's sessions in one clinic, and the password reset of a one-clinic account.
+// ending a member's sessions in one clinic, the password reset of a one-clinic account, and
+// whether a member has TOTP and its reset by the owner (OD-95, A-01-09).
 import { Inject, Injectable } from '@nestjs/common';
 import type { MemberLinkIssued } from '@shifa/contracts';
-import { type AuthDb, membership, platformAdmin, session, type Tx } from '@shifa/db';
+import {
+  type AuthDb,
+  membership,
+  platformAdmin,
+  session,
+  type Tx,
+  twoFactor,
+  user,
+} from '@shifa/db';
 import { and, eq } from 'drizzle-orm';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -78,6 +87,55 @@ export class MemberAccounts {
         );
       }
       return ended.length;
+    });
+  }
+
+  /** Whether the person has a confirmed TOTP enrolment (the member drawer, OD-95). */
+  async mfaEnrolled(userId: string): Promise<boolean> {
+    const [row] = await this.authDb.withAuth((tx) =>
+      tx
+        .select({ id: twoFactor.id })
+        .from(twoFactor)
+        .where(and(eq(twoFactor.userId, userId), eq(twoFactor.verified, true))),
+    );
+    return row !== undefined;
+  }
+
+  /**
+   * Staff TOTP reset by the owner (A-01b criterion 3, OD-95): TOTP and recovery codes gone,
+   * every session of the person ended, audited; they enrol again from My account. Checked again
+   * in the same transaction (a race, as security review N4 of A-01-04): an account that joined
+   * another clinic is refused (409 `account_shared`), one without TOTP 409 `mfa_not_enrolled`.
+   */
+  resetMfa(userId: string, tenantId: string, by: ActionBy): Promise<void> {
+    const now = this.clock.now();
+    return this.authDb.withUser(userId, async (tx) => {
+      if (await sharedIn(tx, userId, tenantId)) throw new ApiError(409, 'account_shared');
+      const removed = await tx
+        .delete(twoFactor)
+        .where(eq(twoFactor.userId, userId))
+        .returning({ verified: twoFactor.verified });
+      if (!removed.some((r) => r.verified)) throw new ApiError(409, 'mfa_not_enrolled');
+      await tx
+        .update(user)
+        .set({ twoFactorEnabled: false, updatedAt: now })
+        .where(eq(user.id, userId));
+      const ended = await tx
+        .delete(session)
+        .where(eq(session.userId, userId))
+        .returning({ id: session.id });
+      for (const row of ended) {
+        await this.audit.record(
+          { event: 'auth.session_ended', data: { reason: 'member' } },
+          { actorId: by.actorId, targetId: row.id, requestId: by.requestId },
+          tx,
+        );
+      }
+      await this.audit.record(
+        { event: 'auth.mfa_reset' },
+        { actorId: by.actorId, targetId: userId, requestId: by.requestId },
+        tx,
+      );
     });
   }
 

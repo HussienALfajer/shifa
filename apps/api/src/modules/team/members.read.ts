@@ -91,6 +91,18 @@ export async function activeOwners(tx: Tx): Promise<string[]> {
 export interface DetailContext {
   catalogue: PermissionCatalogue;
   grants: Grants;
+  /** Whether a person has TOTP, read on the auth path (identity's MemberAccounts). */
+  mfaEnrolled(userId: string): Promise<boolean>;
+}
+
+/** Whether the member holds the owner role in this clinic. */
+export async function holdsOwnerRole(tx: Tx, membershipId: string): Promise<boolean> {
+  const [row] = await tx
+    .select({ id: roleAssignment.id })
+    .from(roleAssignment)
+    .where(and(eq(roleAssignment.membershipId, membershipId), eq(roleAssignment.role, 'owner')))
+    .limit(1);
+  return row !== undefined;
 }
 
 export async function memberDetail(
@@ -118,5 +130,6 @@ export async function memberDetail(
     ...summary(row, roles),
     permissions,
     isLastOwner: owners.length === 1 && owners[0] === row.id,
+    mfaEnrolled: row.userId ? await ctx.mfaEnrolled(row.userId) : false,
   };
 }

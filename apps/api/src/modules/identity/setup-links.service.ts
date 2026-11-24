@@ -66,6 +66,15 @@ const PASSWORD_ERRORS: Record<PasswordProblem, ApiError> = {
 
 export const linkInvalid = () => new ApiError(404, 'link_invalid');
 
+/**
+ * The phone as the setup page shows it (A-01-09): the country code and the last three digits,
+ * e.g. `+963 ••• ••• 123`. Never the full number before the password is set.
+ */
+export function maskPhone(phoneE164: string): string {
+  const code = phoneE164.startsWith('+963') ? '+963' : phoneE164.startsWith('+90') ? '+90' : '+';
+  return `${code} ••• ••• ${phoneE164.slice(-3)}`;
+}
+
 export type ClinicLink = Extract<Found, { kind: 'clinic' }>;
 
 export interface LinkRole {
@@ -103,6 +112,7 @@ export class SetupLinksService {
         personName: found.personName,
         role: 'platform_admin',
         purpose: 'admin_setup',
+        phoneMasked: maskPhone(found.phoneE164),
         expiresAt: found.expiresAt.toISOString(),
       };
     }
@@ -114,6 +124,7 @@ export class SetupLinksService {
       personName: found.personName,
       role,
       purpose: found.purpose,
+      phoneMasked: maskPhone(found.phoneE164),
       expiresAt: found.expiresAt.toISOString(),
     };
   }

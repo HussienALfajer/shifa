@@ -34,7 +34,13 @@ import {
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { MemberAccounts, type NewMemberLink } from '../identity/index.ts';
-import { activeOwners, findMember, listMembers, memberDetail } from './members.read.ts';
+import {
+  activeOwners,
+  findMember,
+  holdsOwnerRole,
+  listMembers,
+  memberDetail,
+} from './members.read.ts';
 
 type MembershipRow = typeof membership.$inferSelect;
 type AuditData = Record<string, string | number | boolean | null>;
@@ -114,6 +120,11 @@ export class TeamService {
         const roles = await validRoles(tx, input.roles, { allowEmpty: true });
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
+        // OD-97: only the owner themselves (or the super admin) removes an owner's role, so a
+        // co-owner cannot demote, reset and take over another owner's account (security M1).
+        if (!stillOwner && row.userId !== scope.userId && (await holdsOwnerRole(tx, row.id))) {
+          throw new ApiError(409, 'owner_role_protected');
+        }
         await tx.delete(roleAssignment).where(eq(roleAssignment.membershipId, row.id));
         await writeRoles(tx, scope.tenantId, row.id, roles);
         await audit(tx, scope, 'member.roles_changed', row.id, requestId);
@@ -203,6 +214,48 @@ export class TeamService {
     }
   }
 
+  /**
+   * Staff TOTP reset (criterion 3, OD-95): never an owner's (the super admin resets it, A-01a
+   * criterion 13: `owner_mfa_platform`, the caller's own included); a member without an account
+   * or TOTP → `mfa_not_enrolled`; a shared account → its sessions here end, then
+   * `account_shared` (OD-86). Else TOTP gone, every session of the member ended, audited here
+   * (`member.mfa_reset`) and on the auth path (`auth.mfa_reset`).
+   */
+  async resetMfa(scope: RequestScope, id: string, requestId: string): Promise<MemberDetail> {
+    const row = await this.tenants.run(scope, async (tx) => {
+      const found = await this.#member(tx, id);
+      if (await holdsOwnerRole(tx, found.id)) throw new ApiError(409, 'owner_mfa_platform');
+      return found;
+    });
+    const userId = row.userId;
+    if (!userId || !(await this.accounts.mfaEnrolled(userId))) {
+      throw new ApiError(409, 'mfa_not_enrolled');
+    }
+    const by = { actorId: scope.userId, requestId };
+    if (await this.accounts.isShared(userId, scope.tenantId)) {
+      await this.accounts.endSessionsInClinic(userId, scope.tenantId, by);
+      throw new ApiError(409, 'account_shared');
+    }
+    try {
+      return await this.tenants.run(scope, async (tx) => {
+        // Under the owners' lock: a promotion since the first read is seen (security review M1).
+        await lockOwners(tx);
+        if (await holdsOwnerRole(tx, row.id)) throw new ApiError(409, 'owner_mfa_platform');
+        await this.accounts.resetMfa(userId, scope.tenantId, by);
+        // After the auth step committed (with `auth.mfa_reset`): only this commit can still fail,
+        // leaving the reset without its clinic row (accepted, as for links; review L3).
+        await audit(tx, scope, 'member.mfa_reset', row.id, requestId);
+        return this.#detail(tx, row);
+      });
+    } catch (err) {
+      // Shared since the check above (a race): the same answer and effect (security review N4).
+      if (err instanceof ApiError && err.code === 'account_shared') {
+        await this.accounts.endSessionsInClinic(userId, scope.tenantId, by);
+      }
+      throw err;
+    }
+  }
+
   #issueLink(
     scope: RequestScope,
     row: MembershipRow,
@@ -245,7 +298,11 @@ export class TeamService {
   }
 
   #detail(tx: Tx, row: MembershipRow): Promise<MemberDetail> {
-    return memberDetail(tx, row, { catalogue: this.catalogue, grants: PRODUCTION_GRANTS });
+    return memberDetail(tx, row, {
+      catalogue: this.catalogue,
+      grants: PRODUCTION_GRANTS,
+      mfaEnrolled: (userId) => this.accounts.mfaEnrolled(userId),
+    });
   }
 
   async #endSessions(row: MembershipRow, scope: RequestScope, requestId: string): Promise<void> {

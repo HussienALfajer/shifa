@@ -12,6 +12,7 @@ MemberDetail _$MemberDetailFromJson(Map<String, dynamic> json) => MemberDetail(
   lastActiveAt: json['lastActiveAt'] == null
       ? null
       : DateTime.parse(json['lastActiveAt'] as String),
+  mfaEnrolled: json['mfaEnrolled'] as bool,
   name: json['name'] as String,
   permissions: (json['permissions'] as List<dynamic>)
       .map((e) => MemberPermission.fromJson(e as Map<String, dynamic>))
@@ -28,6 +29,7 @@ Map<String, dynamic> _$MemberDetailToJson(MemberDetail instance) =>
       'id': instance.id,
       'isLastOwner': instance.isLastOwner,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'mfaEnrolled': instance.mfaEnrolled,
       'name': instance.name,
       'permissions': instance.permissions,
       'phone': instance.phone,

@@ -112,6 +112,24 @@ class PrincipalController {
   }
 }
 
+@Controller('__public-contract')
+class PublicContractController {
+  /** A public contract declares no 401: on an authenticated route it would hide one (A-01-09). */
+  @SignedIn()
+  @Contract({ ...testContract('GET', '/__public-contract/signed-in'), public: true })
+  @Get('signed-in')
+  signedIn(): string {
+    return 'never';
+  }
+
+  @Public()
+  @Contract({ ...testContract('GET', '/__public-contract/public'), public: true })
+  @Get('public')
+  open(): string {
+    return 'ok';
+  }
+}
+
 let current: TestApp | undefined;
 
 afterEach(async () => {
@@ -155,6 +173,14 @@ describe('contract check at start', () => {
       /PrincipalController\.open: @CurrentPrincipal\(\) on a @Public route/,
     );
     await expect(start).rejects.not.toThrow(/PrincipalController\.mine/);
+  });
+
+  it('refuses a public contract on a route that is not @Public, accepts it on @Public', async () => {
+    const start = buildTestApp({ db: offlineDb(), controllers: [PublicContractController] });
+    await expect(start).rejects.toThrow(
+      /PublicContractController\.signedIn: a public contract on a route that is not @Public/,
+    );
+    await expect(start).rejects.not.toThrow(/PublicContractController\.open/);
   });
 
   it('starts when every handler has a matching contract', async () => {

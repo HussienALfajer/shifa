@@ -97,6 +97,10 @@ function routeShapeProblems(route: RouteHandler, contract: Contract): string[] {
   if (route.public && route.args.includes('PRINCIPAL')) {
     problems.push('@CurrentPrincipal() on a @Public route');
   }
+  // A public contract declares no 401: only a @Public route may use one (A-01-09).
+  if (!route.public && contract.public === true) {
+    problems.push('a public contract on a route that is not @Public (it would not declare 401)');
+  }
   // Only a permission check binds a tenant scope (A-01b criterion 8).
   if (route.permission === undefined && route.args.includes('SCOPE')) {
     problems.push('@CurrentScope() on a route without @RequirePermission');

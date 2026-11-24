@@ -21,6 +21,7 @@ class MyClinic {
     required this.solo,
     required this.status,
     required this.tenantId,
+    required this.tenantWide,
   });
 
   factory MyClinic.fromJson(Map<String, Object?> json) =>
@@ -35,6 +36,7 @@ class MyClinic {
   final bool solo;
   final ClinicStatus status;
   final String tenantId;
+  final bool tenantWide;
 
   Map<String, Object?> toJson() => _$MyClinicToJson(this);
 }

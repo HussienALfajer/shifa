@@ -16,6 +16,7 @@ class MemberDetail {
     required this.id,
     required this.isLastOwner,
     required this.lastActiveAt,
+    required this.mfaEnrolled,
     required this.name,
     required this.permissions,
     required this.phone,
@@ -30,6 +31,7 @@ class MemberDetail {
   final bool isLastOwner;
   @JsonKey(includeIfNull: true)
   final DateTime? lastActiveAt;
+  final bool mfaEnrolled;
   final String name;
   final List<MemberPermission> permissions;
   final String phone;

@@ -17,9 +17,9 @@ Requirements: PLT-03, PLT-04 (branch entity and switcher; hours, prices, cash bo
 Members and invitations (OD-76)
 1. Tables `membership`, `role_assignment`, `permission_override` with `tenant_id`, FORCE RLS and isolation cases (parent rows through `prepare()`).
 2. The owner adds a member (name, phone, one or more role assignments) and gets a setup link as in A-01a criterion 4. A new phone sets a password; a phone with an account signs in and accepts. Until accepted the clinic is absent from that person's switcher; the owner sees «بانتظار القبول» in both cases and cannot tell which.
-3. The owner edits roles and toggles, deactivates and reactivates a member, and issues a new link (staff recovery, ends the member's sessions).
+3. The owner edits roles and toggles, deactivates and reactivates a member, and issues a new link (staff recovery, ends the member's sessions). The owner also resets a member's TOTP (OD-95): the member's sessions end, they enrol again at their next sign-in, audited; not for a holder of the owner role (`owner_mfa_platform`: the super admin resets an owner's, A-01a criterion 13), nor for a member without TOTP (`mfa_not_enrolled`); an account that works in another clinic too gets its sessions here ended and `account_shared` (the super admin resets it, as OD-86).
 4. Deactivating a member, removing their last role, or archiving the only branch of their roles ends their sessions in that tenant at the next request (401/403).
-5. A tenant keeps at least one active owner: removing, demoting or deactivating the last owner is refused with a message.
+5. A tenant keeps at least one active owner: removing, demoting or deactivating the last owner is refused with a message. Only the owner themselves (or the super admin) removes an owner's owner role; a co-owner is refused (`owner_role_protected`, OD-97).
 
 Roles and permissions (OD-78)
 6. Roles: owner, doctor, receptionist, assistant, accountant (PLT-42); each assignment is tenant-wide or for one branch (PLT-45). Default grants in `PRODUCTION_GRANTS`; A-01 keys: `members.view`, `members.manage`, `branches.manage`, `clinic.settings.manage` (owner) and the sensitive key `clinical.notes.view` (doctor and assistant on, receptionist and accountant off; PLT-43).
@@ -28,9 +28,9 @@ Roles and permissions (OD-78)
 
 Branches and switcher
 9. The owner creates, renames and archives branches (name, address, phone). An archived branch leaves switchers and role pickers; the last active branch cannot be archived. A solo clinic with one active branch shows no branch screens or branch switcher (PLT-03).
-10. After sign-in: one clinic → straight in; several → the clinic chooser, last used first. The header switcher lists the person's clinics, then the branches they hold a role in (all, for a tenant-wide role). Switching is checked on the server, changes the session's scope and reloads the page data.
+10. After sign-in: one clinic → straight in; several → the clinic chooser, last used first. The header switcher lists the person's clinics, then the branches they hold a role in (all, for a tenant-wide role). Switching is checked on the server, changes the session's scope and reloads the page data. A person holding roles in two or more branches and no tenant-wide role picks a branch: a switch without one answers 400 `branch_required`, and a sign-in straight into that clinic starts without a branch (the chooser's branch step); the chooser learns from `tenantWide` whether a person's role covers the whole clinic (A-01-09).
 11. A suspended clinic cannot be chosen («حساب العيادة موقوف، تواصل مع الإدارة»); signed-in members get 403 on the next request; data stays. A person with no active clinic sees «لا توجد عيادة متاحة لحسابك».
-12. Audit (A-01a criterion 14) also records member added, invitation accepted, role and toggle changes, deactivation, link re-issued, branch created, renamed and archived, and clinic switches.
+12. Audit (A-01a criterion 14) also records member added, invitation accepted, role and toggle changes, deactivation, link re-issued, TOTP reset (`member.mfa_reset`), branch created, renamed and archived, and clinic switches.
 
 Harness debts (backlog)
 13. `routeList()` keeps an explicit HEAD before GET; the matrix test asserts `app.get(AUTH_PORT)` is the Better Auth adapter; policy coverage counts only policies for PUBLIC or `shifa_app`.
@@ -61,6 +61,7 @@ No money. Abuse: an owner linking any phone to their clinic (acceptance, criteri
 | 6, 7 | Route permission matrix with every role and with the toggle on and off; catalogue start-up and unknown-key tests |
 | 8 | Scope-binding test; module table-access test |
 | 9–11 | API tests (archive rules, switch refusal for an unheld branch, suspended clinic) + Playwright against the real backend: sign-in → chooser → switch clinic and branch |
+| 3 (TOTP reset) | API tests (A-01-09): sessions ended, next sign-in at `mfa: none`, both audit rows, owner and self refused, member without TOTP refused, shared account's sessions here ended and refused, another clinic 404, receptionist 403 |
 | 12 | API tests assert one audit row per event, without phones |
 | 13 | The named route-matrix and policy tests |
 | Screens | UI batch slice: drawings and analysis approved by the owner at its first checkpoint (ADR-0042); browser screenshots against the real backend compared with them, light and dark, at the listed sizes |
@@ -71,7 +72,7 @@ Clinic web, Arabic RTL, light and dark:
 - **Header switcher** (desktop, tablet as a menu; phone as a bottom sheet): clinics, then the current clinic's branches the person holds a role in, current ones checked. Hidden for one clinic with one branch.
 - **Accept invitation** (phone, desktop): clinic, role and scope; sign in to accept; decline. State: invalid link.
 - **Team** (desktop, tablet): name, phone, roles with scope, status in words (active, pending acceptance, deactivated), last activity; search; «إضافة موظف». States: empty, loading.
-- **Member drawer** (desktop; bottom sheet on tablet): name, phone, role assignments (role + scope, add, remove), sensitive toggles with the role default named; after save the setup link shown once with copy and WhatsApp share; for a member: new link, deactivate or reactivate (confirmed). States: last owner (role and deactivate disabled, reason shown); phone already in the team.
+- **Member drawer** (desktop; bottom sheet on tablet): name, phone, role assignments (role + scope, add, remove), sensitive toggles with the role default named; after save the setup link shown once with copy and WhatsApp share; for a member: new link, deactivate or reactivate (confirmed); «التحقق بخطوتين» on or off, and «إعادة ضبط التحقق بخطوتين» when on (confirmed, not for an owner). States: last owner (role and deactivate disabled, reason shown); phone already in the team.
 - **Branches** (desktop): cards with name, address, phone, people with a role; add, edit, archive (confirmed, naming members whose sessions end); archived list. States: last active branch (archive disabled, reason).
 
 ## Out of scope

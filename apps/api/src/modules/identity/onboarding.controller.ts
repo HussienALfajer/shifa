@@ -1,14 +1,19 @@
 // Setup links and TOTP (A-01a criteria 4, 5, 11, 12). The link routes are public: the token in
 // the body is the credential, checked by its hash alone, with one answer for every invalid link.
 // The MFA routes need a session and are reachable before the second factor (@BeforeMfa).
-import { Body, Controller, HttpCode, Inject, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Inject, Post } from '@nestjs/common';
 import {
   authMfaChallenge,
   authMfaEnrolConfirm,
   authMfaEnrolStart,
+  authMfaRecoveryCodes,
+  authMfaStatus,
   authSetupLinkConsume,
   authSetupLinkView,
   type MfaEnrolled,
+  type MfaPassed,
+  type MfaStatus,
+  type RecoveryCodes,
   type RequestBody,
   type SessionView,
   type SetupLinkView,
@@ -94,11 +99,31 @@ export class OnboardingController {
     @Body() body: RequestBody<typeof authMfaChallenge>,
     @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
-  ): Promise<SessionView> {
-    const { view, cookie } = await this.mfa.challenge(principal, body, {
+  ): Promise<MfaPassed> {
+    const result = await this.mfa.challenge(principal, body, {
       requestId: request.requestId,
     });
-    request.setCookie(cookie);
-    return view;
+    request.setCookie(result.cookie);
+    return result.body;
+  }
+
+  /** My account (A-01a 12a): after MFA, like every account action. */
+  @SignedIn()
+  @Contract(authMfaStatus)
+  @Get('mfa')
+  status(@CurrentPrincipal() principal: Principal): Promise<MfaStatus> {
+    return this.mfa.status(principal);
+  }
+
+  @SignedIn()
+  @Contract(authMfaRecoveryCodes)
+  @HttpCode(200)
+  @Post('mfa/recovery-codes')
+  renewRecoveryCodes(
+    @Body() body: RequestBody<typeof authMfaRecoveryCodes>,
+    @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<RecoveryCodes> {
+    return this.mfa.renewRecoveryCodes(principal, body.code, { requestId: request.requestId });
   }
 }

@@ -21,6 +21,7 @@ MyClinic _$MyClinicFromJson(Map<String, dynamic> json) => MyClinic(
   solo: json['solo'] as bool,
   status: $enumDecode(_$ClinicStatusEnumMap, json['status']),
   tenantId: json['tenantId'] as String,
+  tenantWide: json['tenantWide'] as bool,
 );
 
 Map<String, dynamic> _$MyClinicToJson(MyClinic instance) => <String, dynamic>{
@@ -32,6 +33,7 @@ Map<String, dynamic> _$MyClinicToJson(MyClinic instance) => <String, dynamic>{
   'solo': instance.solo,
   'status': instance.status,
   'tenantId': instance.tenantId,
+  'tenantWide': instance.tenantWide,
 };
 
 const _$SessionRoleEnumMap = {

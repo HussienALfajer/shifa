@@ -28,6 +28,10 @@ export const AUTH_EVENTS = [
   'auth.recovery_code_used',
   'auth.link_used',
   'auth.session_ended',
+  // A-01-09: change of password, its failures, renewal of recovery codes
+  'auth.password_changed',
+  'auth.password_change_failed',
+  'auth.recovery_codes_renewed',
 ] as const;
 
 /** Team, branch and switcher events, written inside a tenant. */
@@ -40,6 +44,7 @@ export const TENANT_EVENTS = [
   'member.deactivated',
   'member.reactivated',
   'member.link_issued',
+  'member.mfa_reset',
   'branch.created',
   'branch.renamed',
   'branch.archived',
