@@ -6,6 +6,8 @@ import type { CommonKey } from '@shifa/i18n';
 import { Button, Card, CardBody, SegmentedControl } from '@shifa/ui';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { AccountPage } from './account/account-page.tsx';
+import { SettingsPage } from './account/settings-page.tsx';
 import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
 import { MfaPage } from './auth/mfa.tsx';
 import { SetupLinkPage } from './auth/setup-link.tsx';
@@ -102,6 +104,13 @@ function CurrentSession() {
   return state?.kind === 'signed-in' ? <SessionSummary session={state.session} /> : null;
 }
 
+/** Until A-01-08 draws home with the frame: the way to My account on clinic web. */
+function AccountLink() {
+  const text = useText();
+  const { app } = useShell();
+  return app === 'clinic' ? <Link to="/account">{text('navAccount')}</Link> : null;
+}
+
 function HomePage() {
   const text = useText();
   return (
@@ -110,6 +119,7 @@ function HomePage() {
       <CodesLeftNotice />
       <p className="text-text-muted">{text('homePending')}</p>
       <CurrentSession />
+      <AccountLink />
       <Link to="/about">{text('aboutTitle')}</Link>
     </Page>
   );
@@ -160,5 +170,7 @@ export const shellPages: ShellPages = {
   setup: SetupLinkPage,
   choose: ClinicChooserPage,
   adminWeb: AdminWebPage,
+  account: AccountPage,
+  settings: SettingsPage,
   notFound: NotFoundPage,
 };

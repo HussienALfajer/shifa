@@ -32,6 +32,38 @@
       }
     }
   },
+  "commonAccountChangeHintMember": "لتغيير الاسم أو رقم الدخول تواصل مع مالك العيادة.",
+  "@commonAccountChangeHintMember": {
+    "description": "common.accountChangeHintMember"
+  },
+  "commonAccountChangeHintOwner": "لتغيير الاسم أو رقم الدخول تواصل مع إدارة شفاء.",
+  "@commonAccountChangeHintOwner": {
+    "description": "common.accountChangeHintOwner"
+  },
+  "commonAccountMe": "بياناتي",
+  "@commonAccountMe": {
+    "description": "common.accountMe"
+  },
+  "commonAccountMeLoading": "جارٍ تحميل بياناتك",
+  "@commonAccountMeLoading": {
+    "description": "common.accountMeLoading"
+  },
+  "commonAccountPhoneLabel": "رقم الدخول",
+  "@commonAccountPhoneLabel": {
+    "description": "common.accountPhoneLabel"
+  },
+  "commonAccountText": "دخولك وأمانه والأجهزة التي دخلت منها. لا يراها غيرك.",
+  "@commonAccountText": {
+    "description": "common.accountText"
+  },
+  "commonAccountTitle": "حسابي",
+  "@commonAccountTitle": {
+    "description": "common.accountTitle"
+  },
+  "commonActionFailedTitle": "لم يتمّ ذلك",
+  "@commonActionFailedTitle": {
+    "description": "common.actionFailedTitle"
+  },
   "commonAdminWebBody": "يعمل حساب مدير المنصة في تطبيق إدارة المنصة، لا في تطبيق العيادة.",
   "@commonAdminWebBody": {
     "description": "common.adminWebBody"
@@ -264,6 +296,10 @@
   "@commonCodesBadge": {
     "description": "common.codesBadge"
   },
+  "commonCodesContinue": "متابعة",
+  "@commonCodesContinue": {
+    "description": "common.codesContinue"
+  },
   "commonCodesCopied": "نُسخت الرموز العشرة",
   "@commonCodesCopied": {
     "description": "common.codesCopied"
@@ -271,6 +307,51 @@
   "commonCodesCopy": "نسخ الكل",
   "@commonCodesCopy": {
     "description": "common.codesCopy"
+  },
+  "commonCodesDone": "تم",
+  "@commonCodesDone": {
+    "description": "common.codesDone"
+  },
+  "commonCodesEnrolAsk": "امسح الرمز بتطبيق مصادقة (Google Authenticator أو Microsoft Authenticator) ثم اكتب الرمز المكوّن من {digits} أرقام.",
+  "@commonCodesEnrolAsk": {
+    "description": "common.codesEnrolAsk",
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      }
+    }
+  },
+  "commonCodesEnrolDoneText": "سنطلب رمز التطبيق بعد كلمة المرور في كل دخول.",
+  "@commonCodesEnrolDoneText": {
+    "description": "common.codesEnrolDoneText"
+  },
+  "commonCodesEnrolKey": "أو اكتب هذا المفتاح في التطبيق",
+  "@commonCodesEnrolKey": {
+    "description": "common.codesEnrolKey"
+  },
+  "commonCodesLeftInfo": "لكل رمز استعمال واحد، إن لم يكن هاتفك معك.",
+  "@commonCodesLeftInfo": {
+    "description": "common.codesLeftInfo"
+  },
+  "commonCodesLeftLine": "{count, plural, zero {رموز الاسترداد: لم يبقَ أي رمز} one {رموز الاسترداد: بقي رمز واحد فقط} two {رموز الاسترداد: بقي رمزان فقط} few {رموز الاسترداد: بقيت {count} رموز من {total}} many {رموز الاسترداد: بقي {count} رمزاً} other {رموز الاسترداد: بقي {count} رمز}}",
+  "@commonCodesLeftLine": {
+    "description": "common.codesLeftLine",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "commonCodesLeftLowText": "أنشئ رموزاً جديدة قبل أن تنفد.",
+  "@commonCodesLeftLowText": {
+    "description": "common.codesLeftLowText"
+  },
+  "commonCodesLeftNoneText": "إن ضاع هاتفك فلن تدخل حسابك. أنشئ رموزاً جديدة الآن.",
+  "@commonCodesLeftNoneText": {
+    "description": "common.codesLeftNoneText"
   },
   "commonCodesLeftText": "الرمز الذي استعملته أُلغي. إن ضاع هاتفك فأعد ربط التطبيق من «حسابي».",
   "@commonCodesLeftText": {
@@ -302,6 +383,22 @@
       }
     }
   },
+  "commonCodesOldStillWork": "رموزك القديمة ما زالت تعمل.",
+  "@commonCodesOldStillWork": {
+    "description": "common.codesOldStillWork"
+  },
+  "commonCodesOnceEnrol": "إن ضاع هاتفك فهي طريقك الوحيد إلى حسابك. احفظها أو اطبعها.",
+  "@commonCodesOnceEnrol": {
+    "description": "common.codesOnceEnrol"
+  },
+  "commonCodesOnceRenew": "رموزك القديمة لم تعد تعمل. احفظ هذه أو اطبعها.",
+  "@commonCodesOnceRenew": {
+    "description": "common.codesOnceRenew"
+  },
+  "commonCodesOnceTitle": "تظهر هذه الرموز مرة واحدة",
+  "@commonCodesOnceTitle": {
+    "description": "common.codesOnceTitle"
+  },
   "commonCodesPrint": "طباعة",
   "@commonCodesPrint": {
     "description": "common.codesPrint"
@@ -322,6 +419,22 @@
   "commonCodesPrintTitle": "رموز الاسترداد لحساب شفاء",
   "@commonCodesPrintTitle": {
     "description": "common.codesPrintTitle"
+  },
+  "commonCodesRenew": "رموز استرداد جديدة",
+  "@commonCodesRenew": {
+    "description": "common.codesRenew"
+  },
+  "commonCodesRenewAsk": "للتأكد أنه أنت: اكتب الرمز الظاهر الآن في تطبيق المصادقة. ستُلغى رموزك القديمة كلها.",
+  "@commonCodesRenewAsk": {
+    "description": "common.codesRenewAsk"
+  },
+  "commonCodesRenewDoneText": "أُلغيت الرموز القديمة، ولا يعمل إلا الجديد.",
+  "@commonCodesRenewDoneText": {
+    "description": "common.codesRenewDoneText"
+  },
+  "commonCodesRenewDoneTitle": "رموز جديدة جاهزة",
+  "@commonCodesRenewDoneTitle": {
+    "description": "common.codesRenewDoneTitle"
   },
   "commonCodesSaved": "حفظتُ الرموز في مكان آمن بعيداً عن الهاتف",
   "@commonCodesSaved": {
@@ -350,6 +463,139 @@
   "commonConfirm": "تأكيد",
   "@commonConfirm": {
     "description": "common.confirm"
+  },
+  "commonDevicesActiveNow": "نشط الآن",
+  "@commonDevicesActiveNow": {
+    "description": "common.devicesActiveNow"
+  },
+  "commonDevicesEnd": "إخراج",
+  "@commonDevicesEnd": {
+    "description": "common.devicesEnd"
+  },
+  "commonDevicesEndFailed": "لم نصل إلى الخادم. لم يخرج أي جهاز. أعد المحاولة.",
+  "@commonDevicesEndFailed": {
+    "description": "common.devicesEndFailed"
+  },
+  "commonDevicesEndOneAction": "إخراجه",
+  "@commonDevicesEndOneAction": {
+    "description": "common.devicesEndOneAction"
+  },
+  "commonDevicesEndOneDoneText": "سيُطلب منه الدخول من جديد.",
+  "@commonDevicesEndOneDoneText": {
+    "description": "common.devicesEndOneDoneText"
+  },
+  "commonDevicesEndOneDoneTitle": "خرج الجهاز",
+  "@commonDevicesEndOneDoneTitle": {
+    "description": "common.devicesEndOneDoneTitle"
+  },
+  "commonDevicesEndOneGoneText": "حدّثنا القائمة.",
+  "@commonDevicesEndOneGoneText": {
+    "description": "common.devicesEndOneGoneText"
+  },
+  "commonDevicesEndOneGoneTitle": "كان هذا الجهاز قد خرج",
+  "@commonDevicesEndOneGoneTitle": {
+    "description": "common.devicesEndOneGoneTitle"
+  },
+  "commonDevicesEndOneText": "سيُطلب منه الدخول من جديد. ما لم يُحفظ عليه يضيع.",
+  "@commonDevicesEndOneText": {
+    "description": "common.devicesEndOneText"
+  },
+  "commonDevicesEndOneTitle": "إخراج {device}؟",
+  "@commonDevicesEndOneTitle": {
+    "description": "common.devicesEndOneTitle",
+    "placeholders": {
+      "device": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDevicesEndOthers": "إخراج كل الأجهزة الأخرى",
+  "@commonDevicesEndOthers": {
+    "description": "common.devicesEndOthers"
+  },
+  "commonDevicesEndOthersAction": "إخراجها",
+  "@commonDevicesEndOthersAction": {
+    "description": "common.devicesEndOthersAction"
+  },
+  "commonDevicesEndOthersDoneText": "بقيت داخلاً على هذا الجهاز وحده.",
+  "@commonDevicesEndOthersDoneText": {
+    "description": "common.devicesEndOthersDoneText"
+  },
+  "commonDevicesEndOthersDoneTitle": "{count, plural, zero {لم يكن جهاز آخر داخلاً} one {أخرجنا جهازاً واحداً} two {أخرجنا جهازين} few {أخرجنا {count} أجهزة} many {أخرجنا {count} جهازاً} other {أخرجنا {count} جهاز}}",
+  "@commonDevicesEndOthersDoneTitle": {
+    "description": "common.devicesEndOthersDoneTitle",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonDevicesEndOthersText": "سيُطلب منها كلها الدخول من جديد. تبقى داخلاً على هذا الجهاز.",
+  "@commonDevicesEndOthersText": {
+    "description": "common.devicesEndOthersText"
+  },
+  "commonDevicesEndOthersTitle": "{count, plural, zero {لا أجهزة أخرى} one {إخراج جهاز آخر؟} two {إخراج جهازين آخرين؟} few {إخراج {count} أجهزة أخرى؟} many {إخراج {count} جهازاً آخر؟} other {إخراج {count} جهاز آخر؟}}",
+  "@commonDevicesEndOthersTitle": {
+    "description": "common.devicesEndOthersTitle",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonDevicesHint": "لا تعرف جهازاً؟ أخرجه ثم غيّر كلمة المرور.",
+  "@commonDevicesHint": {
+    "description": "common.devicesHint"
+  },
+  "commonDevicesLoading": "جارٍ تحميل أجهزتك",
+  "@commonDevicesLoading": {
+    "description": "common.devicesLoading"
+  },
+  "commonDevicesNoOther": "لا جهاز آخر داخل بحسابك الآن.",
+  "@commonDevicesNoOther": {
+    "description": "common.devicesNoOther"
+  },
+  "commonDevicesSinceOn": "دخل {date} {time}",
+  "@commonDevicesSinceOn": {
+    "description": "common.devicesSinceOn",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDevicesSinceToday": "دخل اليوم {time}",
+  "@commonDevicesSinceToday": {
+    "description": "common.devicesSinceToday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDevicesSinceYesterday": "دخل أمس {time}",
+  "@commonDevicesSinceYesterday": {
+    "description": "common.devicesSinceYesterday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonDevicesThis": "هذا الجهاز",
+  "@commonDevicesThis": {
+    "description": "common.devicesThis"
+  },
+  "commonDevicesTitle": "أجهزتي",
+  "@commonDevicesTitle": {
+    "description": "common.devicesTitle"
+  },
+  "commonDevicesUnknown": "جهاز غير معروف",
+  "@commonDevicesUnknown": {
+    "description": "common.devicesUnknown"
   },
   "commonEnrolAdded": "أضفت الحساب، التالي",
   "@commonEnrolAdded": {
@@ -467,6 +713,15 @@
   "@commonEnrolWhyOwner": {
     "description": "common.enrolWhyOwner"
   },
+  "commonHeaderCodesLeft": "{count, plural, zero {لا رموز استرداد} one {بقي رمز استرداد واحد} two {بقي رمزا استرداد} few {بقيت {count} رموز استرداد} many {بقي {count} رمز استرداد} other {بقي {count} رمز استرداد}}",
+  "@commonHeaderCodesLeft": {
+    "description": "common.headerCodesLeft",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
   "commonHomePending": "تُرسم الشاشة الرئيسية في شريحة لاحقة.",
   "@commonHomePending": {
     "description": "common.homePending"
@@ -474,6 +729,19 @@
   "commonHomeTitle": "الرئيسية",
   "@commonHomeTitle": {
     "description": "common.homeTitle"
+  },
+  "commonIdleAdmins": "مشرفو شفاء يخرجون بعد {minutes} دقيقة دائماً، ولا يغيّر هذا الإعداد ذلك.",
+  "@commonIdleAdmins": {
+    "description": "common.idleAdmins",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleCardTitle": "الخروج التلقائي",
+  "@commonIdleCardTitle": {
+    "description": "common.idleCardTitle"
   },
   "commonIdleContinue": "متابعة العمل",
   "@commonIdleContinue": {
@@ -492,9 +760,65 @@
       }
     }
   },
+  "commonIdleFailedText": "حدث خطأ في الخادم. ما زالت المدة {minutes} دقيقة.",
+  "@commonIdleFailedText": {
+    "description": "common.idleFailedText",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleHint": "يسري على كل من في العيادة من طلبه التالي. قبل الخروج بدقيقة تظهر رسالة «هل ما زلت تعمل؟».",
+  "@commonIdleHint": {
+    "description": "common.idleHint"
+  },
+  "commonIdleLabel": "يخرج الجهاز بعد خمول مدته",
+  "@commonIdleLabel": {
+    "description": "common.idleLabel"
+  },
+  "commonIdleLoading": "جارٍ تحميل الإعداد",
+  "@commonIdleLoading": {
+    "description": "common.idleLoading"
+  },
+  "commonIdleNotSavedText": "لم نصل إلى الخادم. ما زالت المدة {minutes} دقيقة.",
+  "@commonIdleNotSavedText": {
+    "description": "common.idleNotSavedText",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleNotSavedTitle": "لم يُحفظ",
+  "@commonIdleNotSavedTitle": {
+    "description": "common.idleNotSavedTitle"
+  },
+  "commonIdleOption": "{minutes} دقيقة",
+  "@commonIdleOption": {
+    "description": "common.idleOption",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
   "commonIdleSafety": "الإغلاق يحمي بيانات المرضى إن تُرك الجهاز. ما لم يُحفظ بعد قد يضيع.",
   "@commonIdleSafety": {
     "description": "common.idleSafety"
+  },
+  "commonIdleSavedText": "يسري على كل من في العيادة من طلبه التالي.",
+  "@commonIdleSavedText": {
+    "description": "common.idleSavedText"
+  },
+  "commonIdleSavedTitle": "حُفظ: {minutes} دقيقة",
+  "@commonIdleSavedTitle": {
+    "description": "common.idleSavedTitle",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
   },
   "commonIdleSignOutNow": "خروج الآن",
   "@commonIdleSignOutNow": {
@@ -512,6 +836,18 @@
   "commonIdleTitle": "هل ما زلت تعمل؟",
   "@commonIdleTitle": {
     "description": "common.idleTitle"
+  },
+  "commonIdleUse15": "لأجهزة الاستقبال المشتركة",
+  "@commonIdleUse15": {
+    "description": "common.idleUse15"
+  },
+  "commonIdleUse30": "الافتراضي",
+  "@commonIdleUse30": {
+    "description": "common.idleUse30"
+  },
+  "commonIdleUse60": "لغرفة طبيب لا يدخلها غيره",
+  "@commonIdleUse60": {
+    "description": "common.idleUse60"
   },
   "commonIdleWarning": "{count, plural, zero {تنتهي الجلسة الآن} one {تنتهي الجلسة بعد ثانية واحدة} two {تنتهي الجلسة بعد ثانيتين} few {تنتهي الجلسة بعد {count} ثوانٍ} many {تنتهي الجلسة بعد {count} ثانيةً} other {تنتهي الجلسة بعد {count} ثانية}}",
   "@commonIdleWarning": {
@@ -584,9 +920,33 @@
       }
     }
   },
+  "commonMfaCardTitle": "التحقق بخطوتين",
+  "@commonMfaCardTitle": {
+    "description": "common.mfaCardTitle"
+  },
   "commonMfaCodeWrong": "الرمز غير صحيح أو استُعمل من قبل. اكتب الرمز الجديد من التطبيق.",
   "@commonMfaCodeWrong": {
     "description": "common.mfaCodeWrong"
+  },
+  "commonMfaEnrolOpen": "تفعيل التحقق بخطوتين",
+  "@commonMfaEnrolOpen": {
+    "description": "common.mfaEnrolOpen"
+  },
+  "commonMfaLoading": "جارٍ تحميل حالة التحقق",
+  "@commonMfaLoading": {
+    "description": "common.mfaLoading"
+  },
+  "commonMfaOff": "غير مفعّل",
+  "@commonMfaOff": {
+    "description": "common.mfaOff"
+  },
+  "commonMfaOffText": "اختياري لك. يطلب رمزاً من تطبيق على هاتفك بعد كلمة المرور، فلا يدخل أحد حسابك بكلمة المرور وحدها.",
+  "@commonMfaOffText": {
+    "description": "common.mfaOffText"
+  },
+  "commonMfaOn": "مفعّل",
+  "@commonMfaOn": {
+    "description": "common.mfaOn"
   },
   "commonMfaPending": "تُرسم شاشة التحقق بخطوتين في الشريحة التالية.",
   "@commonMfaPending": {
@@ -599,6 +959,24 @@
   "commonMfaRequiredNote": "يجب تفعيل التحقق بخطوتين قبل المتابعة.",
   "@commonMfaRequiredNote": {
     "description": "common.mfaRequiredNote"
+  },
+  "commonMfaSince": "مفعّل منذ {date}.",
+  "@commonMfaSince": {
+    "description": "common.mfaSince",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMfaSinceRequired": "مفعّل منذ {date} · إلزامي لمالك العيادة.",
+  "@commonMfaSinceRequired": {
+    "description": "common.mfaSinceRequired",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   },
   "commonMfaStateNone": "التحقق بخطوتين غير مفعّل.",
   "@commonMfaStateNone": {
@@ -615,6 +993,26 @@
   "commonMfaTitle": "التحقق بخطوتين",
   "@commonMfaTitle": {
     "description": "common.mfaTitle"
+  },
+  "commonNavAccount": "حسابي",
+  "@commonNavAccount": {
+    "description": "common.navAccount"
+  },
+  "commonNavClinicSettings": "إعدادات العيادة",
+  "@commonNavClinicSettings": {
+    "description": "common.navClinicSettings"
+  },
+  "commonNavHome": "الرئيسية",
+  "@commonNavHome": {
+    "description": "common.navHome"
+  },
+  "commonNavLabel": "القائمة الرئيسية",
+  "@commonNavLabel": {
+    "description": "common.navLabel"
+  },
+  "commonNavMenu": "القائمة",
+  "@commonNavMenu": {
+    "description": "common.navMenu"
   },
   "commonNoClinicText": "لم يعد لك دور في أي عيادة، ولا دعوة بانتظارك. اطلب من مالك العيادة رابط دعوة، أو تواصل مع إدارة شفاء.",
   "@commonNoClinicText": {
@@ -697,6 +1095,124 @@
   "@commonNoticeSignedOutTitle": {
     "description": "common.noticeSignedOutTitle"
   },
+  "commonPwCardText": "بعد تغييرها تبقى داخلاً على هذا الجهاز، ونُخرج أجهزتك الأخرى كلها.",
+  "@commonPwCardText": {
+    "description": "common.pwCardText"
+  },
+  "commonPwCardTitle": "كلمة المرور",
+  "@commonPwCardTitle": {
+    "description": "common.pwCardTitle"
+  },
+  "commonPwCommon": "شائعة جداً ويسهل تخمينها. اختر جملة تتذكرها.",
+  "@commonPwCommon": {
+    "description": "common.pwCommon"
+  },
+  "commonPwContainsPhone": "فيها رقم هاتفك. اختر غيرها.",
+  "@commonPwContainsPhone": {
+    "description": "common.pwContainsPhone"
+  },
+  "commonPwCurrent": "كلمة المرور الحالية",
+  "@commonPwCurrent": {
+    "description": "common.pwCurrent"
+  },
+  "commonPwDoneAlone": "لم يكن جهاز آخر داخلاً.",
+  "@commonPwDoneAlone": {
+    "description": "common.pwDoneAlone"
+  },
+  "commonPwDoneOthers": "أخرجنا أجهزتك الأخرى ({count}). ادخل عليها بكلمة المرور الجديدة.",
+  "@commonPwDoneOthers": {
+    "description": "common.pwDoneOthers",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPwDoneTitle": "تغيّرت كلمة المرور",
+  "@commonPwDoneTitle": {
+    "description": "common.pwDoneTitle"
+  },
+  "commonPwEmpty": "اكتب كلمة المرور.",
+  "@commonPwEmpty": {
+    "description": "common.pwEmpty"
+  },
+  "commonPwFootnote": "ستُخرج كل أجهزتك الأخرى، وتبقى داخلاً هنا.",
+  "@commonPwFootnote": {
+    "description": "common.pwFootnote"
+  },
+  "commonPwLockText": "أنت ما زلت داخلاً.",
+  "@commonPwLockText": {
+    "description": "common.pwLockText"
+  },
+  "commonPwLockTitle": "محاولات كثيرة",
+  "@commonPwLockTitle": {
+    "description": "common.pwLockTitle"
+  },
+  "commonPwMismatch": "الكلمتان الجديدتان غير متطابقتين.",
+  "@commonPwMismatch": {
+    "description": "common.pwMismatch"
+  },
+  "commonPwNew": "كلمة المرور الجديدة",
+  "@commonPwNew": {
+    "description": "common.pwNew"
+  },
+  "commonPwOpen": "تغيير كلمة المرور",
+  "@commonPwOpen": {
+    "description": "common.pwOpen"
+  },
+  "commonPwRepeat": "أعد كتابة كلمة المرور الجديدة",
+  "@commonPwRepeat": {
+    "description": "common.pwRepeat"
+  },
+  "commonPwRuleChanged": "غير كلمة المرور الحالية",
+  "@commonPwRuleChanged": {
+    "description": "common.pwRuleChanged"
+  },
+  "commonPwRuleLength": "{min} أحرف على الأقل · {count}",
+  "@commonPwRuleLength": {
+    "description": "common.pwRuleLength",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPwRulePhone": "لا تحتوي رقم هاتفك",
+  "@commonPwRulePhone": {
+    "description": "common.pwRulePhone"
+  },
+  "commonPwSubmit": "حفظ كلمة المرور",
+  "@commonPwSubmit": {
+    "description": "common.pwSubmit"
+  },
+  "commonPwTooShort": "أقصر من {min} أحرف.",
+  "@commonPwTooShort": {
+    "description": "common.pwTooShort",
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPwUnchanged": "هي نفسها كلمة المرور الحالية.",
+  "@commonPwUnchanged": {
+    "description": "common.pwUnchanged"
+  },
+  "commonPwUnreachableText": "لم تتغيّر كلمة المرور. تأكّد من الاتصال وأعد المحاولة.",
+  "@commonPwUnreachableText": {
+    "description": "common.pwUnreachableText"
+  },
+  "commonPwUnreachableTitle": "لم نصل إلى الخادم",
+  "@commonPwUnreachableTitle": {
+    "description": "common.pwUnreachableTitle"
+  },
+  "commonPwWrongCurrent": "كلمة المرور الحالية غير صحيحة.",
+  "@commonPwWrongCurrent": {
+    "description": "common.pwWrongCurrent"
+  },
   "commonReasonIdle": "انتهت الجلسة لعدم النشاط. سجّل الدخول من جديد.",
   "@commonReasonIdle": {
     "description": "common.reasonIdle"
@@ -763,6 +1279,23 @@
         "type": "String"
       }
     }
+  },
+  "commonSettingsText": "{clinic} · يغيّرها المالك فقط.",
+  "@commonSettingsText": {
+    "description": "common.settingsText",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSettingsTextPlain": "يغيّرها المالك فقط.",
+  "@commonSettingsTextPlain": {
+    "description": "common.settingsTextPlain"
+  },
+  "commonSettingsTitle": "إعدادات العيادة",
+  "@commonSettingsTitle": {
+    "description": "common.settingsTitle"
   },
   "commonSetupAccountExistsText": "ادخل برقمك وكلمة مرورك. إن نسيت كلمة المرور فاطلب رابط إعداد جديداً ممن أرسل إليك هذا الرابط.",
   "@commonSetupAccountExistsText": {
