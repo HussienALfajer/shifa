@@ -1,6 +1,6 @@
 # A-01-12 Team and branch API gaps: toggles on add, member corrections, invitation for another number, branch restore
 
-Status: Planned (approved by the owner 2026-11-24 with the three proposals; second-session critique waived by starting `/build-slice`, as for A-01-09 and A-01-11) · Tier: T0 · Branch: `feat/A-01-12-team-branch-api-gaps` (a cloud session builds on its own branch and names it here)
+Status: Built, in review (approved by the owner 2026-11-24 with the three proposals; second-session critique waived by starting `/build-slice`, as for A-01-09 and A-01-11) · Tier: T0 · Branch: `claude/serene-gates-0m7f1l` (cloud session)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 2, 3, 4, 7, 9, 12 and the screens "Accept invitation", "Team", "Member drawer" and "Branches" (criteria to add or change: Plan 0 of this slice) · Requirements: PLT-03, PLT-04, PLT-05, PLT-43, PLT-45, PLT-47 · Decisions: ADR-0046, OD-76, OD-78, OD-86, OD-91, OD-99, OD-102, OD-103, OD-104, OD-105, OD-106
 
 After the approved drawings of [A-01-08](A-01-08-ui-team-branches-switcher.md) checkpoint 1 (2026-11-24). Before A-01-08 checkpoint 2. It changes contracts, the team and branch modules, the invitation path on the auth pool and possibly the schema (a member's phone edit, branch restore): T0, with `reviewer` and `security-reviewer`.
@@ -98,8 +98,21 @@ Critique: T0, a second session critiques this plan before building, unless the o
 - **Phone edit to the same phone:** answers a new link, as a resend; the earlier one stops.
 
 ## Stopped at
-Planned and approved; next `/build-slice A-01-12` in a fresh session.
+Checkpoints 1–5 built and committed; `pnpm verify` green; `reviewer` and `security-reviewer` run (findings below); PR open.
+
+## As built
+- **Routes:** `GET /team/permissions` (`members.view`, `TeamPermissionsController`), `PATCH /team/members/:id/phone` (`members.manage`), `POST /branches/:id/restore` (`branches.manage`); matrix rows owner-only for all three. `ctx.branchId('archived')` added to the matrix sample context.
+- **Files:** `team.writes.ts` (shared helpers moved out of `team.service.ts`), `member-corrections.ts` (`rename()` used by `update`, `MemberCorrections.changePhone`), `members.read.ts` (`isSelf`, `linkExpiresAt` in one grouped query per list), `invitations.service.ts` (admin → link open → phone order), `branches.service.ts` (`restore`).
+- **Order of checks:** deactivate `self_action` → `member_deactivated` → `last_owner`; new link `self_action` → `member_deactivated` → `account_shared`; TOTP reset `self_action` → `owner_mfa_platform` → `mfa_not_enrolled`.
+- **Migration** `20261124211632_a01_member_phone_guard` (expand only, hand-written): `GRANT UPDATE (phone_e164) ON membership TO shifa_app`; function and trigger `membership_phone_unbound_only` (`BEFORE UPDATE OF phone_e164 … WHEN (OLD.phone_e164 IS DISTINCT FROM NEW.phone_e164)`, raises 42501 unless the old row is unbound and pending). Rollback: `DROP TRIGGER membership_phone_unbound_only ON membership; DROP FUNCTION public.membership_phone_unbound_only(); REVOKE UPDATE (phone_e164) ON membership FROM shifa_app;`. `classification.ts` needed no change (no new policy or table); the privileges pins gained the column.
+- **Audit events:** `member.renamed`, `member.phone_changed` (`{ linkPurpose }`), `branch.restored` in `TENANT_EVENTS`.
+- **Changed existing tests (spec change, not weakened):** `lifecycle` (self-deactivation → `self_action`; stepping down is now a role change, then 403), `reset-mfa` (own → `self_action`, another owner's → `owner_mfa_platform`), `review` (`member_deactivated`), `invitations` (other number → 403 `invitation_other_phone`; the view's `phoneMasked`), `openapi` (route list).
+- **Locked tests, owner-approved fixes (2026-11-24):** `member-phone-guard.test.ts` case 5 runs as the superuser (FORCE RLS hid the row from the owner, so the trigger never fired); `team-branch-gaps.test.ts` three lint-only lines (unused destructured names), assertions unchanged.
 
 ## Evidence
-- `verify` (full): —
-- Reviewer findings fixed: —; deferred to backlog: —
+- Red phase: the six locked files failed for the expected reasons (30 API cases, 8 database cases, 15 contract cases); the already-passing cases were the dead-link answers that hold before and after.
+- `pnpm --filter @shifa/db test`: 49 files, 360 tests pass (Docker in the session).
+- `apps/api` vitest: 89 files, 595 tests pass, then the leak test `team-corrections-leak.test.ts`.
+- `pnpm verify` (fast, affected): format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e: **all green**. A first run failed `web-shell` `idle-dialog` once on a timing assertion (`00:55`) under load; it passed alone and in the next full run (untouched by this slice).
+- Dart client size: 149 files, 5,604 lines (budget 185 / 6,900).
+- Reviewer findings fixed: REVIEW_FIXED; deferred to backlog: REVIEW_DEFERRED
