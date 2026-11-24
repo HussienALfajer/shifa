@@ -1,6 +1,6 @@
 # A-01-12 Team and branch API gaps: toggles on add, member corrections, invitation for another number, branch restore
 
-Status: Planned (2026-11-24; waiting for the owner's approval of this plan) · Tier: T0 · Branch: `feat/A-01-12-team-branch-api-gaps` (a cloud session builds on its own branch and names it here)
+Status: Planned (approved by the owner 2026-11-24 with the three proposals; second-session critique waived by starting `/build-slice`, as for A-01-09 and A-01-11) · Tier: T0 · Branch: `feat/A-01-12-team-branch-api-gaps` (a cloud session builds on its own branch and names it here)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 2, 3, 4, 7, 9, 12 and the screens "Accept invitation", "Team", "Member drawer" and "Branches" (criteria to add or change: Plan 0 of this slice) · Requirements: PLT-03, PLT-04, PLT-05, PLT-43, PLT-45, PLT-47 · Decisions: ADR-0046, OD-76, OD-78, OD-86, OD-91, OD-99, OD-102, OD-103, OD-104, OD-105, OD-106
 
 After the approved drawings of [A-01-08](A-01-08-ui-team-branches-switcher.md) checkpoint 1 (2026-11-24). Before A-01-08 checkpoint 2. It changes contracts, the team and branch modules, the invitation path on the auth pool and possibly the schema (a member's phone edit, branch restore): T0, with `reviewer` and `security-reviewer`.
@@ -92,13 +92,13 @@ Hand-written lines: ~3,000 (spec and docs ~200; contracts and error codes ~300; 
 
 Critique: T0, a second session critiques this plan before building, unless the owner waives it as for A-01-09 and A-01-11. Model and effort: Opus 5.5 at `high` (T0).
 
-## Proposals in this plan for the owner
+## Proposals in this plan (approved by the owner 2026-11-24)
 - **Status of `invitation_other_phone`:** 403 (the link is valid, the person is not the one it was sent to), not 404, so the client tells it apart without reading the code.
 - **Toggles on add:** only the switches that differ from the role default are stored, so a later role change still moves the untouched ones.
 - **Phone edit to the same phone:** answers a new link, as a resend; the earlier one stops.
 
 ## Stopped at
-Planned; waiting for the owner's approval.
+Planned and approved; next `/build-slice A-01-12` in a fresh session.
 
 ## Evidence
 - `verify` (full): —
