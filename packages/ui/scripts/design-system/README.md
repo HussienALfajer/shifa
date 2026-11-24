@@ -90,6 +90,8 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **Card**: a white surface with header, body and footer; a link card opens its record from anywhere on it.
 - **EmptyState**: the jasmine or star line drawing (or an icon for search and errors), a title, a description, up to two buttons.
 - **Callout**: a message inside the page that stays while its cause holds (a lock, no connection, a session that ended, a suspended clinic); locked status colours with an icon, an optional title, one or two sentences, at most one button at the end of the line, no close button.
+- **QrCode**: the authenticator's `otpauth://` link as a code a camera reads, drawn in the page; a white plate with ink modules in both themes, never mirrored; a spinner in its place while it loads; folded on phones behind the app link.
+- **CodeList**: the ten recovery codes, shown once: numbered, monospaced, two columns left to right in both directions, «نسخ الكل» and «طباعة» (a light sheet with the person, the clinic and the date).
 - **Toolbar**: light buttons in a bordered strip with one Tab stop; what does not fit goes into «المزيد».
 - **Pagination**: previous at the logical start, numbers with ellipses, the current one green, the page-size select and «عرض 51–75 من 312».
 - **DataTable**: a dense grid of 48 px rows (32 compact) with a sticky header, the first column pinned at the logical start, sorting, selection and column visibility, fast with thousands of rows; one Tab stop and arrows in the reading direction.

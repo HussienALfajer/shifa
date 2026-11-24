@@ -61,6 +61,7 @@ const optimizeDeps = {
       'zod',
       '@tanstack/react-table',
       '@tanstack/react-virtual',
+      'uqr',
     ]),
 };
 

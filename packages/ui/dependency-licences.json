@@ -11,5 +11,6 @@
   "react-hook-form": "MIT",
   "tailwind-merge": "MIT",
   "tailwindcss": "MIT",
+  "uqr": "MIT",
   "zod": "MIT"
 }

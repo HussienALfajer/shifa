@@ -2,19 +2,29 @@
 // desktop the night-green brand panel at the start of the line (the logo, what the app is, the
 // safety line) and the form beside it; on tablets and phones the logo above the form. Sign-in,
 // the setup link and the MFA steps share it, in both apps.
+import { cn } from '@shifa/ui';
 import type { ReactNode } from 'react';
 import logoColour from '../../../../docs/brand/logo/shifa-logo-horizontal-color.svg';
 import logoReverse from '../../../../docs/brand/logo/shifa-logo-horizontal-reverse.svg';
 import { useText } from '../pages.tsx';
 import { useShell } from '../providers.tsx';
 
-export function AuthLayout({ children }: { children: ReactNode }) {
+/**
+ * `brand` (default) shows the brand panel on desktops: sign-in and the setup link. The MFA steps
+ * pass false and keep the logo above the form at every size, as drawn.
+ */
+export function AuthLayout({ children, brand = true }: { children: ReactNode; brand?: boolean }) {
   const text = useText();
   const { app } = useShell();
   const appName = text('appName');
   return (
     <main className="flex min-h-dvh bg-bg-app font-ui text-text-default">
-      <aside className="hidden w-(--shifa-width-120) shrink-0 flex-col justify-between bg-nav-bg p-13 text-nav-text lg:flex">
+      <aside
+        className={cn(
+          'hidden w-(--shifa-width-120) shrink-0 flex-col justify-between bg-nav-bg p-13 text-nav-text',
+          brand && 'lg:flex',
+        )}
+      >
         <img src={logoReverse} alt={appName} className="h-auto w-(--shifa-width-37-5) self-start" />
         <div className="flex flex-col gap-2">
           <p className="m-0 text-heading-md leading-heading font-semibold">
@@ -31,12 +41,18 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           <img
             src={logoColour}
             alt={appName}
-            className="h-auto w-(--shifa-width-37-5) self-center lg:hidden dark:hidden"
+            className={cn(
+              'h-auto w-(--shifa-width-37-5) self-center dark:hidden',
+              brand && 'lg:hidden',
+            )}
           />
           <img
             src={logoReverse}
             alt={appName}
-            className="hidden h-auto w-(--shifa-width-37-5) self-center dark:block lg:dark:hidden"
+            className={cn(
+              'hidden h-auto w-(--shifa-width-37-5) self-center dark:block',
+              brand && 'lg:dark:hidden',
+            )}
           />
           {children}
         </div>

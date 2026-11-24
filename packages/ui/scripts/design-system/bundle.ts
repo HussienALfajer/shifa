@@ -69,6 +69,8 @@ export const BUNDLE_COMPONENTS = [
   'Card',
   'EmptyState',
   'Callout',
+  'QrCode',
+  'CodeList',
   'Avatar',
   'Toolbar',
   'Pagination',

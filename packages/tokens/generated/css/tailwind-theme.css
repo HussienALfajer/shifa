@@ -27,6 +27,8 @@
   --color-selection-strong: var(--shifa-color-selection-strong);
   --color-nav-bg: var(--shifa-color-nav-bg);
   --color-nav-text: var(--shifa-color-nav-text);
+  --color-scan-bg: var(--shifa-color-scan-bg);
+  --color-scan-fg: var(--shifa-color-scan-fg);
   --color-avatar-green-bg: var(--shifa-color-avatar-green-bg);
   --color-avatar-green-fg: var(--shifa-color-avatar-green-fg);
   --color-avatar-gold-bg: var(--shifa-color-avatar-gold-bg);
