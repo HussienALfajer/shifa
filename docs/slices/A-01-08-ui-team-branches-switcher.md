@@ -1,7 +1,7 @@
 # A-01-08 UI batch 3: team, branches and switcher screens
 
 Status: Planned · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher`
-Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, OD-79, OD-80
+Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) (merged); may run beside [A-01-10](A-01-10-ui-account-settings-admin-web.md). The clinic chooser moved to A-01-07 in the 2026-11-24 re-plan. Last A-01 slice with A-01-10; A-01a and A-01b are done when it merges and the owner accepts.
 
@@ -14,7 +14,8 @@ The owner manages the team and branches from clinic-web; a person in several cli
 - Screens: Header switcher (menu on desktop and tablet, bottom sheet on phone), Accept invitation (phone, desktop), Team (desktop, tablet), Member drawer (desktop; bottom sheet on tablet), Branches (desktop).
 - Working prototype in Play: flows clinic → switch branch → switch clinic; owner adds a receptionist for one branch → link shown once → shares; owner turns off «رؤية الملاحظات السريرية» for an assistant; deactivates a member (confirm); archives a branch (confirm naming the members whose sessions end); accepts and declines an invitation. Every state reachable: suspended clinic in the switcher, invalid link, last owner (disabled with the reason), phone already in the team, last active branch, empty and loading, solo clinic (no branch screens, no branch switcher), one clinic with one branch (switcher hidden). Light and dark, the sizes switchable, Arabic RTL, synthetic data from `@shifa/testing` only.
 - Checked before showing (literal colours, unknown `--shifa-` names, look-alike components); result written here.
-- Analysis written here: API gaps (the A-01-04 and A-01-05 contracts against every state), spec gaps, creative improvements with costs (owner accepts or declines each), design-system gaps through `/ui-component` first (likely: a scope chip "role · branch", a member row with status, a switcher menu with two groups).
+- Analysis written here (ADR-0046): the route, field and error table for the team, branch, switcher and invitation routes (A-01-04, A-01-05 contracts) against every state, API gaps and anything unprofessional in the API, spec gaps, creative improvements with costs.
+- Missing components drawn in this checkpoint on their own sheet with every state and at once on their screens (likely: a scope chip "role · branch", a member row with status, a switcher menu with two groups); approved or changed by the owner, then built with `/ui-component` and synced before checkpoint 2.
 
 ### Checkpoint 2 — header switcher, invitation
 Switching calls `POST /me/switch` and reloads the page data (Query cache cleared per scope); phone layout uses the bottom sheet.
