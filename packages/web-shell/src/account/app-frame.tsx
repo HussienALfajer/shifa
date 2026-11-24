@@ -2,8 +2,8 @@
 // approved 2026-11-24): the top bar (the logo, the clinic, the recovery-codes badge when two or
 // fewer are left — improvement b — and the person's avatar) and the navigation at the start of
 // the line (الرئيسية, the owner's «إعدادات العيادة», حسابي, خروج). On a phone the navigation
-// opens over the page from a menu button. The clinic switcher in the bar and «الفريق» arrive with
-// A-01-08; until then the bar names the clinic.
+// opens over the page from a menu button. The bar's clinic is the header switcher (A-01-08
+// checkpoint 2, `switcher/clinic-switcher.tsx`); «الفريق» and «الفروع» arrive with checkpoints 3–4.
 import type { CommonKey } from '@shifa/i18n';
 import { Avatar, Badge, Button, cn, Icon, IconButton, type IconName } from '@shifa/ui';
 import { Link } from '@tanstack/react-router';
@@ -11,9 +11,10 @@ import { type ReactNode, useState } from 'react';
 import logoColour from '../../../../docs/brand/logo/shifa-logo-horizontal-color.svg';
 import logoReverse from '../../../../docs/brand/logo/shifa-logo-horizontal-reverse.svg';
 import { useIsPhone } from '../auth/media.ts';
+import { ClinicSwitcher } from '../switcher/clinic-switcher.tsx';
 import { useText } from '../text.ts';
 import { useSignOut } from '../use-sign-out.ts';
-import { isOwner, useActiveClinic, useMfaStatus, useProfile, useSignedIn } from './data.ts';
+import { isOwner, useMfaStatus, useProfile, useSignedIn } from './data.ts';
 
 export const LOW_CODES = 2;
 
@@ -62,7 +63,6 @@ export function AppFrame({
   const signOut = useSignOut();
   const userId = session?.userId ?? '';
   const { data: profile } = useProfile(userId);
-  const clinic = useActiveClinic(session);
   const owner = isOwner(session);
   const showNav = !phone || menu;
   return (
@@ -89,7 +89,7 @@ export function AppFrame({
           alt={text('appName')}
           className="hidden h-auto w-(--shifa-width-24) dark:block"
         />
-        {!phone && clinic && <span className="text-data font-medium">{clinic.name}</span>}
+        {session && <ClinicSwitcher session={session} />}
         <span className="flex-1" />
         {session && <CodesBadge userId={userId} />}
         <Avatar name={profile?.name ?? ''} size="sm" />

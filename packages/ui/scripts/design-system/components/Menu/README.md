@@ -17,10 +17,17 @@ Coded from the sheet the owner approved on 2026-11-20 (Shifa Components (proposa
 - Enter runs the item and closes the menu; Escape closes it. Focus returns to the button.
 - A disabled item is reached and announced, but never runs.
 
-## What you provide (design system)
-`triggerLabel` (or `triggerIcon` with `aria-label` for an icon-only button) and `items`: actions (`value`, `label`, `icon`, `danger`, `disabled`, `hint`), `{ separator: true }`, and submenus (`label`, `icon`, `items`).
+## Groups (A-01-08)
+Added from the sheet `MenuGroupsSheet` the owner approved on 2026-11-24 ("Shifa Screens · Clinic web", page "A-01-08 Team batch"), for the clinic and branch switcher:
+- A group of rows under a small muted label that names it, a separator between groups.
+- A radio row: an avatar (a clinic) or an icon (a branch), the name, a second line (role, scope, last activity, or why it is disabled), a warning badge («موقوفة»), the check of the current row at the logical end in the brand colour and heavier text; while busy a spinner in its place. Choosing a row keeps the menu open until the caller closes it (a switch waits for the server).
+- A note row: information only (an invitation answered on its own link), dashed outline; a disabled item, read aloud, never run.
+- On a phone (`presentation: 'sheet'`): the same rows rising from the bottom under a grabber, the `title` and a close button; the title names the menu.
 
-In code: `Menu` (`onAction`), `MenuTrigger`, `MenuContent`, `MenuItem`, `MenuSeparator`, `Submenu`.
+## What you provide (design system)
+`triggerLabel` (or `triggerIcon` with `aria-label` for an icon-only button), `presentation` and `title` for a sheet, and `items`: actions (`value`, `label`, `icon`, `danger`, `disabled`, `hint`), `{ separator: true }`, submenus (`label`, `icon`, `items`), radio groups (`group`, `value`, `radios`: `value`, `label`, `avatar`, `icon`, `description`, `badge`, `disabled`, `busy`) and note groups (`group`, `notes`).
+
+In code: `Menu` (`onAction`, `presentation`), `MenuTrigger`, `MenuContent` (`title`), `MenuItem` (`closeOnSelect`), `MenuSeparator`, `Submenu`, `MenuGroup`, `MenuRadioGroup`, `MenuRadioItem`, `MenuNote`.
 
 ## Tokens
 `shifa-size-row`, `shifa-color-selection-subtle`, `shifa-color-status-danger-fg`, `shifa-color-text-disabled`, `shifa-shadow-dropdown`, `shifa-shape-radius-surface`.

@@ -15,9 +15,13 @@ export interface SolarSource {
 
 /** Interface glyphs. Control glyphs (check, x, plus, minus) stay plain, not circled. */
 export const SOLAR_UI = {
+  // A-01-08: archiving a branch.
+  archive: { solar: 'archive' },
   'arrow-back': { solar: 'arrow-left' },
   'arrow-forward': { solar: 'arrow-right' },
   bell: { solar: 'bell' },
+  // A-01-08: branches (the switcher's branch rows, the branches page).
+  buildings: { solar: 'buildings' },
   calendar: { solar: 'calendar' },
   'calendar-plus': { solar: 'calendar-add' },
   'caret-back': { solar: 'alt-arrow-left' },

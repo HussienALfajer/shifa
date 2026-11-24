@@ -5,8 +5,8 @@
 // POST /auth/setup-link/view → the person, the clinic, the role, the masked phone (improvement h)
 // and the expiry; the new password twice, its length rule ticked while typing (a); POST
 // /auth/setup-link/consume → the session goes into the cache and the guard routes it (an owner or
-// a super admin to enrolment, a member into the clinic). An invitation hands over to its page
-// (A-01-08). 404 `link_invalid`, or a fragment that is no token, is one message with no clinic name.
+// a super admin to enrolment, a member into the clinic). An invitation is answered here, in
+// `invitation.tsx` (A-01-08 checkpoint 2). 404 `link_invalid`, or a fragment that is no token, is one message with no clinic name.
 import type { Schemas } from '@shifa/api-client-ts';
 import type { CommonKey } from '@shifa/i18n';
 import { Avatar, Button, Callout, EmptyState, Icon, PasswordInput, SkeletonText } from '@shifa/ui';
@@ -19,6 +19,8 @@ import { sessionQueryKey } from '../session.ts';
 import { useText } from '../text.ts';
 import { AuthLayout } from './auth-layout.tsx';
 import { clockTime, dayDate, fromNow } from './dates.ts';
+import { takeHeldInvitation } from './held-invitation.ts';
+import { InvitationAnswer } from './invitation.tsx';
 import { rememberSetupView } from './setup-view.ts';
 
 type SetupLinkView = Schemas['SetupLinkView'];
@@ -83,7 +85,9 @@ function useFragmentToken(): { token: string | null; generation: number } {
 
 export function SetupLinkPage() {
   const { token, generation } = useFragmentToken();
-  return <SetupLink key={generation} token={token} />;
+  // Back from sign-in to answer an invitation: its token was held in memory (A-01-08).
+  const [held] = useState(() => (token === null ? takeHeldInvitation() : null));
+  return <SetupLink key={generation} token={token ?? held} />;
 }
 
 function SetupLink({ token }: { token: string | null }) {
@@ -137,7 +141,7 @@ function SetupLink({ token }: { token: string | null }) {
         </Callout>
       )}
       {shown.kind === 'view' && token !== null && shown.view.purpose === 'invitation' && (
-        <Invitation view={shown.view} />
+        <InvitationAnswer token={token} />
       )}
       {shown.kind === 'view' && token !== null && shown.view.purpose !== 'invitation' && (
         <SetPassword
@@ -168,19 +172,6 @@ function InvalidLink() {
         {text('setupToSignIn')}
       </Button>
     </>
-  );
-}
-
-/** An invitation is answered on its own page (A-01-08, OD-91); this link only names it. */
-function Invitation({ view }: { view: SetupLinkView }) {
-  const text = useText();
-  return (
-    <div className="flex flex-col gap-2">
-      <h1 className="m-0 text-heading-md leading-heading font-semibold">
-        {text('invitationTitle', { clinic: view.clinicName ?? '' })}
-      </h1>
-      <p className="m-0 text-body leading-body text-text-muted">{text('invitationText')}</p>
-    </div>
   );
 }
 

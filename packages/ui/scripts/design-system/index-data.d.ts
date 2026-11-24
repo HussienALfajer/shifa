@@ -1,4 +1,5 @@
-// The data-display components of the Shifa Design System (slice 0.4-07), as documentation;
+// The data-display components of the Shifa Design System (slice 0.4-07), and Menu since its
+// groups (A-01-08) outgrew index.d.ts, as documentation;
 // bundle.ts appends this file to index.d.ts. The source of truth is packages/ui/src.
 import type { IconName } from './index.d.ts';
 
@@ -168,3 +169,43 @@ export declare const Avatar: (props: AvatarProps) => unknown;
 export declare const Toolbar: (props: ToolbarProps) => unknown;
 export declare const Pagination: (props: PaginationProps) => unknown;
 export declare const DataTable: (props: DataTableProps) => unknown;
+
+/** A button that opens a list of actions, or a choice among groups (A-01-08). */
+export interface MenuProps {
+  triggerLabel?: string;
+  triggerIcon?: IconName;
+  'aria-label'?: string;
+  /** `sheet`: the rows rising from the bottom, as on a phone, under `title`. */
+  presentation?: 'popover' | 'sheet';
+  title?: string;
+  items: (
+    | {
+        value: string;
+        label: string;
+        icon?: IconName;
+        danger?: boolean;
+        disabled?: boolean;
+        hint?: string;
+      }
+    | { separator: true }
+    | { label: string; icon?: IconName; items: { value: string; label: string }[] }
+    | {
+        /** A radio group: the label, the current value, its rows. */
+        group: string;
+        value: string | null;
+        radios: {
+          value: string;
+          label: string;
+          avatar?: string;
+          icon?: IconName;
+          description?: string;
+          badge?: string;
+          disabled?: boolean;
+          busy?: boolean;
+        }[];
+      }
+    | { group: string; notes: { label: string; icon?: IconName; description?: string }[] }
+  )[];
+}
+
+export declare const Menu: (props: MenuProps) => unknown;

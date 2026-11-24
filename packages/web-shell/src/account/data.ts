@@ -77,11 +77,14 @@ export function useSessions(userId: string) {
   });
 }
 
-/** The active clinic's name and the person's roles there, from GET /me/clinics. */
-export function useActiveClinic(session: SessionView | undefined): MyClinic | undefined {
+/**
+ * GET /me/clinics for the signed-in person: their clinics and pending invitations (the header
+ * switcher, A-01-08). Null when the server answered without a list.
+ */
+export function useMyClinics(session: SessionView | undefined) {
   const { shell } = useShell();
   const userId = session?.userId ?? '';
-  const { data } = useQuery({
+  return useQuery({
     queryKey: clinicsKey(userId),
     queryFn: async () => {
       const { data: clinics } = await shell.api.GET('/me/clinics');
@@ -91,6 +94,11 @@ export function useActiveClinic(session: SessionView | undefined): MyClinic | un
     staleTime: 60_000,
     ...QUIET,
   });
+}
+
+/** The active clinic's name and the person's roles there, from GET /me/clinics. */
+export function useActiveClinic(session: SessionView | undefined): MyClinic | undefined {
+  const { data } = useMyClinics(session);
   return data?.clinics.find((c) => c.tenantId === session?.tenantId);
 }
 
