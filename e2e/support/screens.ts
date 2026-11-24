@@ -13,6 +13,30 @@ export async function tabTo(page: Page, target: Locator, max = 15): Promise<void
   await expect(target).toBeFocused();
 }
 
+/**
+ * True when the page's address carries no fragment. Asserted as a boolean everywhere: a failed
+ * `toHaveURL` would print the address, and with it the token it failed to remove.
+ */
+export const fragmentGone = (page: Page): boolean => new URL(page.url()).hash === '';
+
+/**
+ * Opens a link whose fragment is a one-time token, without the token reaching a failure message
+ * (`page.goto` names its URL when it fails): the app's own origin first, then `location.assign`
+ * in the page. Waits until the token has left the address (history.replaceState, at once).
+ */
+export async function openSecretLink(page: Page, url: string): Promise<void> {
+  const link = new URL(url);
+  await page.goto(`${link.origin}/sign-in`);
+  await page.evaluate((target) => {
+    window.location.assign(target);
+  }, url);
+  await expect
+    .poll(() => new URL(page.url()).pathname === link.pathname && fragmentGone(page), {
+      message: 'the token left the address',
+    })
+    .toBe(true);
+}
+
 /** Opens a setup link in the page and sets the password; `save` names the button. */
 export async function setPasswordFromLink(
   page: Page,
@@ -20,9 +44,7 @@ export async function setPasswordFromLink(
   password: string,
   save: 'حفظ والمتابعة إلى التحقق' | 'حفظ والدخول',
 ): Promise<void> {
-  await page.goto(url);
-  // The token leaves the address at once (history.replaceState), before any typing.
-  await expect(page).toHaveURL(/\/setup$/);
+  await openSecretLink(page, url);
   await page.getByLabel('كلمة مرور جديدة', { exact: true }).fill(password);
   await page.getByLabel('أعد كتابة كلمة المرور', { exact: true }).fill(password);
   await page.getByRole('button', { name: save }).click();
@@ -45,7 +67,8 @@ export async function enrolThroughScreens(
     page.getByRole('img', { name: 'رمز QR لإضافة حساب شفاء إلى تطبيق المصادقة' }),
   ).toBeVisible();
   const key = (await page.locator('bdi[translate="no"]').innerText()).replace(/\s+/g, '');
-  expect(key).toMatch(/^[A-Z2-7]{32}$/);
+  // Booleans only: a failed match would print the key.
+  expect(/^[A-Z2-7]{32}$/.test(key), 'a 32-character base32 key is shown').toBe(true);
   await page.getByRole('button', { name: 'أضفت الحساب، التالي' }).click();
   await expect(page.getByRole('heading', { name: 'اكتب الرمز من التطبيق' })).toBeVisible();
   // A complete code sends itself (improvement d): no button press.
@@ -54,7 +77,7 @@ export async function enrolThroughScreens(
   await expect(page.getByRole('heading', { name: 'احفظ رموز الاسترداد' })).toBeVisible();
   const list = page.getByRole('list', { name: 'رموز الاسترداد العشرة' });
   const codes = await list.locator('[data-slot="code"]').allInnerTexts();
-  expect(codes).toHaveLength(10);
+  expect(codes.length, 'ten recovery codes are shown').toBe(10);
   const onward = page.getByRole('button', { name: next });
   // «حفظتُ الرموز» is required before going on.
   await expect(onward).toBeDisabled();

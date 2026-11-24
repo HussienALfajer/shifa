@@ -15,8 +15,23 @@ interface Violation {
 
 /** Fails, naming each rule and element, when axe finds a violation on the page as shown. */
 export async function expectPageAxeClean(page: Page, what: string): Promise<void> {
-  // Let fades and transitions end first: axe reads colours (as in @shifa/ui's helper).
+  // After emulateMedia the theme flips a frame or two later (the matchMedia change, then React's
+  // render of data-theme): wait until the page shows the scheme it is given (review 3), and two
+  // frames more so the colour transitions it starts are running. The pages keep the device's
+  // theme (no stored choice in a fresh context).
+  await page.waitForFunction(() => {
+    const want = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    const themed = document.querySelector('[data-theme]');
+    return themed === null || themed.getAttribute('data-theme') === want;
+  });
+  // Then let fades and transitions end: axe reads colours (as in @shifa/ui's helper).
   await page.evaluate(async () => {
+    const frame = () =>
+      new Promise((resolve) => {
+        requestAnimationFrame(resolve);
+      });
+    await frame();
+    await frame();
     const ending = document
       .getAnimations()
       .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);

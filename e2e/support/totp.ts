@@ -47,9 +47,3 @@ export async function nextCode(key: string): Promise<string> {
     await new Promise((resolve) => setTimeout(resolve, STEP_MS - (Date.now() % STEP_MS) + 50));
   }
 }
-
-/** A code of `key` far from now (an hour ahead): always refused, never a clock-skew hint. */
-export function wrongCode(key: string): string {
-  const step = Math.floor(Date.now() / STEP_MS) + 120;
-  return codeAt(base32Decode(key), step);
-}

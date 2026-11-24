@@ -44,8 +44,14 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
     });
     const journeyToken = new URL(journey.setupUrl).hash.slice(1);
     const clinics: Seeded['clinics'] = [];
-    // The third clinic's owner walks the screens by keyboard (A-01-07 checkpoint 5).
-    for (const name of ['عيادة الرحلات الأولى', 'عيادة الرحلات الثانية', 'عيادة الرحلات الثالثة']) {
+    // A-01-07 checkpoint 5: the third clinic's owner walks the screens by keyboard; the fourth's
+    // link checks the browser history and the used-link page (refusals.spec.ts).
+    for (const name of [
+      'عيادة الرحلات الأولى',
+      'عيادة الرحلات الثانية',
+      'عيادة الرحلات الثالثة',
+      'عيادة الرحلات الرابعة',
+    ]) {
       const phone = generatePhone(random, 'SY');
       const { token, hash } = newLinkToken();
       const created = await platformDb.withPlatformAdmin(
