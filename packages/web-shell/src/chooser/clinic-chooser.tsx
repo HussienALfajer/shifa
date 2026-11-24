@@ -25,7 +25,7 @@ import {
   type MyClinic,
   type MyInvitation,
 } from './chooser-cards.tsx';
-import { listOf, ROLE_TEXT } from './chooser-text.ts';
+import { ROLE_TEXT } from './chooser-text.ts';
 import { type SwitchProblem, useClinicSwitch } from './use-clinic-switch.ts';
 
 type Loaded = { kind: 'list'; clinics: MyClinic[]; invitations: MyInvitation[] } | { kind: 'none' };
@@ -70,6 +70,7 @@ const PROBLEM: Record<
     body: 'switchBranchArchivedText',
   },
   gone: { tone: 'warning', title: 'switchGoneTitle', body: 'switchGoneText' },
+  refused: { tone: 'warning', title: 'switchRefusedTitle', body: 'switchRefusedText' },
   network: { tone: 'danger', title: 'unreachableTitle', body: 'unreachableText', retry: true },
   server: { tone: 'danger', title: 'serverErrorTitle', body: 'serverErrorText', retry: true },
 };
@@ -221,7 +222,10 @@ function Chooser({ userId }: { userId: string }) {
 
   if (choosing) {
     const branches = choosing.branches.filter((b) => !flow.gone.has(b.id));
-    const roles = listOf(choosing.roles.map((r) => text(ROLE_TEXT[r])));
+    // `MyBranch` carries no roles: the clinic's one role is true of every branch, several are not
+    // (review finding 4; per-branch roles are an API gap in docs/backlog.md).
+    const [only, ...more] = choosing.roles;
+    const roles = only !== undefined && more.length === 0 ? text(ROLE_TEXT[only]) : undefined;
     return (
       <ChooserFrame name={name}>
         <div>

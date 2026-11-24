@@ -27,7 +27,14 @@ import {
   type SessionExpiry,
 } from './idle-timer.ts';
 import { useShell } from './providers.tsx';
-import { fetchSession, type SessionView, sessionQueryKey, signOut, useSession } from './session.ts';
+import {
+  fetchSession,
+  type SessionView,
+  sessionQueryKey,
+  signOut,
+  signOutCount,
+  useSession,
+} from './session.ts';
 import { TAB_CHANNEL } from './tabs.ts';
 
 const ACTIVITY = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const;
@@ -87,7 +94,13 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
     cause: 'idle',
     absoluteEndsAt: undefined,
   });
-  const live = useRef<{ tracker: IdleTracker; now: () => number; end: () => void } | null>(null);
+  const live = useRef<{
+    tracker: IdleTracker;
+    now: () => number;
+    end: () => void;
+    /** A newer answer for the same session (a switch, a page's request): its limits and clock. */
+    take: (session: SessionView) => void;
+  } | null>(null);
   // One tracker per session: later refreshes reach it through `refresh`, not a new tracker.
   const sessionId = session?.sessionId;
   // Read at sign-out only: a new idle setting (a switch, the owner's change) must not re-create
@@ -114,8 +127,11 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       expiry: start.expiry,
       now,
       refresh: async () => {
+        const asked = signOutCount();
         const next = await fetchSession(shell);
-        if (next.kind !== 'signed-in') return null;
+        // A sign-out started meanwhile (the press that fired this refresh): its answer is stale
+        // and must not put the ended session back in the cache (review finding 2).
+        if (next.kind !== 'signed-in' || signOutCount() !== asked) return null;
         offset = clockOffset(next.session, Date.now());
         queryClient.setQueryData(sessionQueryKey, next);
         return expiryOf(next.session);
@@ -137,6 +153,10 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       now,
       end: () => {
         ended = true;
+      },
+      take: (next) => {
+        offset = clockOffset(next, Date.now());
+        tracker.answer(expiryOf(next));
       },
     };
     const tick = setInterval(() => {
@@ -165,6 +185,12 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       channel?.close();
     };
   }, [start, shell, queryClient, navigate]);
+
+  // Every newer answer for this session reaches the tracker: after a switch the clinic's idle
+  // setting applies at once, not from the next activity (only a later limit is taken).
+  useEffect(() => {
+    if (session) live.current?.take(session);
+  }, [session]);
 
   return useMemo<IdleView>(
     () => ({

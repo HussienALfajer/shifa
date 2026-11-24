@@ -20,6 +20,7 @@ import {
   sessionQuery,
   sessionQueryKey,
   signOut,
+  signOutCount,
 } from './session.ts';
 import { onOtherTabSignOut } from './tabs.ts';
 import { IdleBoundary } from './use-idle.tsx';
@@ -174,9 +175,12 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     otherTab = tabReason;
+    const asked = signOutCount();
     void fetchSession(shell)
       .then((state) => {
-        if (state.kind === 'signed-in') queryClient.setQueryData(sessionQueryKey, state);
+        if (state.kind === 'signed-in' && signOutCount() === asked) {
+          queryClient.setQueryData(sessionQueryKey, state);
+        }
       })
       .catch(() => undefined)
       .finally(() => {
@@ -198,8 +202,10 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     if (event.type !== 'updated') return;
     const state = event.query.state.data as SessionState | undefined;
     if (state?.kind !== 'signed-in') return;
-    const { userId, sessionId, tenantId } = state.session;
-    const next = `${userId}|${sessionId}|${tenantId ?? ''}`;
+    // The branch too: a switch to another branch of the same clinic keeps nothing cached for the
+    // previous one (A-01-07 checkpoint 4 review finding 1).
+    const { userId, sessionId, tenantId, branchId } = state.session;
+    const next = `${userId}|${sessionId}|${tenantId ?? ''}|${branchId ?? ''}`;
     const changed = identity !== undefined && identity !== next;
     const rotated = changed && isMfaRotation(before, state);
     identity = next;

@@ -122,7 +122,8 @@ export function BranchCard({
   onPick,
 }: {
   branch: MyBranch;
-  roles: string;
+  /** The person's role there, when it is known for every branch. */
+  roles: string | undefined;
   busy: boolean;
   onPick: () => void;
 }) {
@@ -131,7 +132,9 @@ export function BranchCard({
       <Icon name="house" size="md" />
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="text-heading-sm leading-heading font-semibold">{branch.name}</span>
-        <span className="text-data leading-body text-text-muted">{roles}</span>
+        {roles !== undefined && (
+          <span className="text-data leading-body text-text-muted">{roles}</span>
+        )}
       </span>
       <Icon name="caret-forward" size="md" />
     </Pick>

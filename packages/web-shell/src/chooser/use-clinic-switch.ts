@@ -12,7 +12,14 @@ import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
 import { fetchSession, sessionQueryKey } from '../session.ts';
 
-export type SwitchProblem = 'suspended' | 'notHeld' | 'archived' | 'gone' | 'network' | 'server';
+export type SwitchProblem =
+  | 'suspended'
+  | 'notHeld'
+  | 'archived'
+  | 'gone'
+  | 'refused'
+  | 'network'
+  | 'server';
 
 interface Choice {
   tenantId: string;
@@ -75,7 +82,14 @@ export function useClinicSwitch({ reload, askBranch, backToClinics }: ClinicSwit
         backToClinics();
         reload();
       } else {
-        setProblem(response.status >= 500 ? 'server' : 'network');
+        // Any other refusal (a 4xx no row of the table names) is not a lost connection: no retry
+        // of the same request, the list reloaded (review finding 5).
+        if (response.status >= 500) {
+          setProblem('server');
+        } else {
+          setProblem('refused');
+          reload();
+        }
       }
     } catch {
       setProblem('network');

@@ -211,6 +211,8 @@ export type CommonKey =
   | 'switchBranchNotHeldTitle'
   | 'switchGoneText'
   | 'switchGoneTitle'
+  | 'switchRefusedText'
+  | 'switchRefusedTitle'
   | 'switchSuspendedText'
   | 'switchSuspendedTitle'
   | 'theme'

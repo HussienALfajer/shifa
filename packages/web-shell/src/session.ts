@@ -67,6 +67,16 @@ export function watchFocus(queryClient: QueryClient): () => void {
   };
 }
 
+let signOuts = 0;
+
+/**
+ * How many sign-outs this page started. A session read that began before one must not write its
+ * answer into the cache: the press on «خروج» also fires the activity refresh (review finding 2).
+ */
+export function signOutCount(): number {
+  return signOuts;
+}
+
 /**
  * Ends the session on the server and forgets everything cached for it. Never throws: true when
  * the server answered 204, false when the request failed (network, 5xx), so the caller can say
@@ -78,6 +88,7 @@ export async function signOut(
   queryClient: QueryClient,
   announce?: SignInReason,
 ): Promise<boolean> {
+  signOuts += 1;
   try {
     const { response } = await shell.api.POST('/auth/sign-out');
     return response.ok;

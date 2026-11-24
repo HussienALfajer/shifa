@@ -1031,6 +1031,14 @@
   "@commonSwitchGoneTitle": {
     "description": "common.switchGoneTitle"
   },
+  "commonSwitchRefusedText": "حدّثنا القائمة. إن تكرر ذلك فاخرج وادخل من جديد.",
+  "@commonSwitchRefusedText": {
+    "description": "common.switchRefusedText"
+  },
+  "commonSwitchRefusedTitle": "تعذّر فتح هذه العيادة الآن",
+  "@commonSwitchRefusedTitle": {
+    "description": "common.switchRefusedTitle"
+  },
   "commonSwitchSuspendedText": "أوقفته إدارة شفاء للتو. بياناتها محفوظة. اختر عيادة أخرى أو تواصل مع الإدارة.",
   "@commonSwitchSuspendedText": {
     "description": "common.switchSuspendedText"
