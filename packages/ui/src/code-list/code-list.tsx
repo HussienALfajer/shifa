@@ -79,7 +79,8 @@ export function CodeList({
   return (
     <div data-slot="code-list" className={cn('flex flex-col gap-4 font-ui', className)}>
       {/* Codes read left to right in Arabic too; the list is isolated from the page's direction. */}
-      <ol aria-label={label} dir="ltr" className={CODES}>
+      {/* translate="no": page translation would send the codes to a vendor's service. */}
+      <ol aria-label={label} dir="ltr" translate="no" className={CODES}>
         {codes.map((code, i) => (
           <li
             key={code}
@@ -155,7 +156,7 @@ function PrintSheet({ codes, print }: { codes: readonly string[]; print: CodeLis
         <p className="m-0 text-heading-sm leading-heading font-semibold">{print.title}</p>
         <p className="m-0 text-data leading-body">{print.who}</p>
       </div>
-      <ol dir="ltr" className={CODES}>
+      <ol dir="ltr" translate="no" className={CODES}>
         {codes.map((code, i) => (
           <li key={code} className="flex items-center gap-2">
             <span className="size-4 shrink-0 rounded-mark border border-scan-fg" />

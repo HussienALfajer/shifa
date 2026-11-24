@@ -230,6 +230,8 @@ export function MfaEnrol({ session }: { session: SessionView }) {
                     size="lg"
                     startIcon="arrow-forward"
                     onClick={() => {
+                      // Only an authenticator link is ever followed (security review I1).
+                      if (!ready.otpauthUri.startsWith('otpauth://totp/')) return;
                       setOpened(true);
                       globalThis.location.assign(ready.otpauthUri);
                     }}
@@ -256,8 +258,10 @@ export function MfaEnrol({ session }: { session: SessionView }) {
                   <p className="m-0 text-caption leading-body font-medium">
                     {text(phone ? 'enrolKeyLabelPhone' : 'enrolKeyLabelDesk')}
                   </p>
+                  {/* Never sent to a page-translation service (security review L5). */}
                   <bdi
                     dir="ltr"
+                    translate="no"
                     className="rounded-input border border-border-default bg-bg-surface-raised px-3 py-2 font-mono text-data leading-body font-medium break-all"
                   >
                     {grouped(ready.manualKey)}

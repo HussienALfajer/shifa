@@ -13,7 +13,7 @@ import {
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import type { ShellClient } from './client.ts';
-import { decideRoute, type RouteKind, type ShellApp } from './guard.ts';
+import { decideRoute, owesMfa, type RouteKind, type ShellApp } from './guard.ts';
 import { type SessionState, sessionQuery, sessionQueryKey, signOut } from './session.ts';
 import { IdleBoundary } from './use-idle.tsx';
 
@@ -131,7 +131,9 @@ function isMfaRotation(
   // Before the second factor no clinic route answers, so nothing cached belongs to a clinic: a
   // session that had none may name one now.
   const sameClinic = a.tenantId === b.tenantId || a.tenantId === null;
-  return a.userId === b.userId && sameClinic && a.mfa !== 'verified' && b.mfa === 'verified';
+  // `owesMfa`, not "not verified": a staff session without TOTP is complete and reads clinic
+  // routes; its successor gets no exception (security review L3).
+  return a.userId === b.userId && sameClinic && owesMfa(a) && b.mfa === 'verified';
 }
 
 export interface ShellRouterOptions extends ShellRouterContext {

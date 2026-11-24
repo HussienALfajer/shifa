@@ -10,7 +10,8 @@ export function useMyName(userId: string): string | undefined {
     queryKey: ['me', userId],
     queryFn: async () => {
       const { data: me } = await shell.api.GET('/me');
-      return me ?? null;
+      // The cookie may belong to someone else by now (another tab): only this person's name.
+      return me?.userId === userId ? me : null;
     },
     retry: false,
     staleTime: Number.POSITIVE_INFINITY,

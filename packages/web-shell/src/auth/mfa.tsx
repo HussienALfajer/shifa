@@ -16,6 +16,11 @@ export function MfaPage() {
   const state = useSession(shell);
   const session = state?.kind === 'signed-in' ? state.session : null;
   const mode = useRef<'enrol' | 'challenge' | null>(null);
+  const person = useRef<string | null>(null);
+  if (session && session.userId !== person.current) {
+    person.current = session.userId;
+    mode.current = null;
+  }
   if (session?.mfa === 'pending') mode.current = 'challenge';
   else if (session?.mfa === 'none') mode.current = 'enrol';
 
@@ -26,9 +31,11 @@ export function MfaPage() {
   }, [passedElsewhere, navigate]);
 
   if (session === null || mode.current === null) return null;
+  // Keyed by the person: if the browser's session becomes someone else's (another tab), nothing
+  // of the previous person's enrolment (key, codes) stays mounted (security review L1).
   return mode.current === 'challenge' ? (
-    <MfaChallenge session={session} />
+    <MfaChallenge key={session.userId} session={session} />
   ) : (
-    <MfaEnrol session={session} />
+    <MfaEnrol key={session.userId} session={session} />
   );
 }

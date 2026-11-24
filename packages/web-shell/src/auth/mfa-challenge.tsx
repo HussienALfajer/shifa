@@ -38,6 +38,7 @@ export function MfaChallenge({ session }: { session: SessionView }) {
   const [lockState, setLock] = useState<Lock | null>(null);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
+  const refused = useRef<string | null>(null);
   const clear = useCallback(() => {
     setLock(null);
   }, []);
@@ -48,6 +49,11 @@ export function MfaChallenge({ session }: { session: SessionView }) {
     if (chosen === 'totp' && typed.length !== DIGITS) return;
     if (chosen === 'recovery' && typed.trim() === '') {
       setProblem('empty');
+      return;
+    }
+    // The code just refused, sent again: it would only count toward the lock (security review I5).
+    if (chosen === 'recovery' && typed.trim() === refused.current) {
+      setProblem('invalid');
       return;
     }
     inFlight.current = true;
@@ -65,8 +71,10 @@ export function MfaChallenge({ session }: { session: SessionView }) {
       }
       const { code: answer, until } = errorFacts(error);
       if (chosen === 'totp') setCode('');
-      if (answer === 'invalid_code') setProblem('invalid');
-      else if (answer === 'mfa_locked' && until !== undefined) {
+      if (answer === 'invalid_code') {
+        if (chosen === 'recovery') refused.current = typed.trim();
+        setProblem('invalid');
+      } else if (answer === 'mfa_locked' && until !== undefined) {
         setLock(lockOf(answer, until, response));
       } else if (answer === 'mfa_not_owed') {
         await queryClient.invalidateQueries({ queryKey: sessionQueryKey });
