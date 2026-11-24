@@ -12,13 +12,13 @@ Playwright journeys against the real backend (slice A-01-06): the built API on a
 - Clinic web runs on `localhost`, admin web on `127.0.0.1`: cookies ignore ports, so two hosts keep two jars.
 
 ## Rules
-- Synthetic data only. Never log a setup token, a password or a seed value; never write them to a file. Accepted exceptions, throwaway backend and synthetic data only: with `E2E_TRACE=1` (CI) a failed journey's trace keeps `page.evaluate` arguments and cookies, uploaded for 7 days; and Playwright writes `test-results/<test>/error-context.md` for every failure with the page's text (a TOTP key or recovery codes when a journey fails on those screens; no setting turns a failed matcher's snapshot off), uploaded with the traces. Assert on secrets as booleans, and open token links with `openSecretLink()`, never `page.goto`, so no failure message names them.
+- Synthetic data only. Never log a setup token, a password or a seed value; never write them to a file. Accepted exceptions, throwaway backend and synthetic data only: with `E2E_TRACE=1` (CI) a failed journey's trace keeps `page.evaluate` arguments and cookies, uploaded for 7 days; and Playwright writes `test-results/<test>/error-context.md` for every failure with the page's text (a TOTP key, recovery codes or admin web's setup link when a journey fails on those screens; no setting turns a failed matcher's snapshot off), uploaded with the traces. Assert on secrets as booleans, and open token links with `openSecretLink()`, never `page.goto`, so no failure message names them.
 - Journeys run serially and in order: the setup links are one-time, and (d) signs in with the password (b) set. Running one journey alone with `--grep` fails for that reason.
 - Service workers are blocked except in `tests/offline-shell.spec.ts`.
 - A journey checks what a person sees (headings, `data-testid` hooks of the pages); A-01-07 replaces the placeholder pages one checkpoint at a time, keep the hooks or update the journeys with them. Sign-in (checkpoint 2) keeps `sign-in-reason` with `data-reason` and adds `sign-in-error` with `data-code`. Checkpoint 3 replaced the `/mfa` placeholder (no more `mfa-state`): enrolment opens on «ثبّت تطبيق المصادقة»; locks there carry `data-testid="lock"` with `data-code`.
 
 ## Commands
 - `pnpm exec turbo run build --filter=@shifa/e2e...` then `pnpm --filter @shifa/e2e e2e` (Docker and Chromium: `pnpm --filter @shifa/e2e exec playwright install chromium`).
-- `E2E_SHOTS=<folder outside the repo>` keeps `look()`'s screens for the drawings.
+- `E2E_SHOTS=<folder outside the repo; refused inside>` keeps `look()`'s screens for the drawings.
 - `E2E_TRACE=1` keeps a trace of each failed journey in `test-results/`.
 - To look at the apps by hand on the real backend: `tail -f /dev/null | node e2e/scripts/backend.ts` (stdin must stay open).

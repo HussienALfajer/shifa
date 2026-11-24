@@ -4,25 +4,34 @@
 // masked in every screenshot: `mask` names them, and the known places are always added. Nothing
 // is written without `E2E_SHOTS`; CI does not set it.
 import { mkdirSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import type { Locator, Page } from '@playwright/test';
 import { expectPageAxeClean } from './axe.ts';
 
+// By component slot, so a reworded label or another page's CopyField stays masked (security
+// review L1). The TOTP key has no slot of its own yet: its `bdi translate="no"`.
 const SECRETS = [
-  '[data-testid="link-shown"] input',
-  '[data-testid="link-shown"] textarea',
+  '[data-slot="copy-field-value"]',
+  '[data-slot="qr-code"]',
   '[data-slot="code-list"]',
+  '[data-slot="code-list-print"]',
   'bdi[translate="no"]',
-  '[role="img"][aria-label*="QR"]',
 ];
+const REPO = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 
 async function shot(page: Page, name: string, mask: Locator[]): Promise<void> {
   const folder = process.env['E2E_SHOTS'];
   if (!folder) return;
-  mkdirSync(folder, { recursive: true });
+  // Never inside the repository, which is public (security review L2).
+  const dir = resolve(folder);
+  if (dir === REPO || dir.startsWith(`${REPO}${sep}`)) {
+    throw new Error('E2E_SHOTS must name a folder outside the repository');
+  }
+  mkdirSync(dir, { recursive: true });
   const always = SECRETS.map((selector) => page.locator(selector));
   await page.screenshot({
-    path: join(folder, `${name}.png`),
+    path: join(dir, `${name}.png`),
     fullPage: true,
     animations: 'disabled',
     mask: [...always, ...mask],
