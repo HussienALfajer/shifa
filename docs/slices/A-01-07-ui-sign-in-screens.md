@@ -1,6 +1,6 @@
 # A-01-07 UI batch 1: sign-in, MFA, setup link and clinic chooser screens
 
-Status: Planned (re-planned 2026-11-24) · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens`
+Status: Checkpoint 1 drawn, awaiting owner approval (re-planned 2026-11-24) · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screen inventory (Sign in, Setup link, TOTP enrol, TOTP challenge, Idle warning), verification rows "Flows" and "Screens"; criteria 4–7, 9, 11, 12 as seen by the user; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen "Clinic chooser", criterion 10 (after sign-in) · Requirements: PLT-01, PLT-05, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-91, OD-94
 
 After [A-01-06](A-01-06-web-shells-and-e2e-harness.md) (merged). Checkpoint 1 (drawing and analysis) starts now; its approved API gaps are built in [A-01-09](A-01-09-account-api-gaps.md), and checkpoint 2 (code) starts after A-01-09 merges, so the batch codes against the whole API (ADR-0042). Re-planned 2026-11-24 against the merged API (A-01-02 to A-01-05): the entry path from the first link to the first clinic is one batch; the clinic chooser moved here from A-01-08 (it is the last step of signing in); My account, the automatic sign-out setting and the admin-web screens moved to [A-01-10](A-01-10-ui-account-settings-admin-web.md), after the account API gaps found in this re-plan are closed by [A-01-09](A-01-09-account-api-gaps.md).
@@ -63,10 +63,74 @@ Tests written first: component tests per screen state (mocks typed from contract
 Estimated hand-written lines: ~3,600 (sign-in ~450, setup link ~400, enrol and recovery codes ~650, challenge ~300, chooser ~550, idle and notices ~250, i18n texts ~400, journeys ~600); the approved new components are `/ui-component` work, not counted here.
 
 ## Drawings and analysis
-Not drawn.
+Drawn 2026-11-24 in "Shifa Screens · Clinic web", page "A-01-07 Sign-in batch" (link not committed, ADR-0040): one interactive prototype (`Main`, marked interactive, Play), the analysis board (`Analysis`, Arabic, for the owner) and three component sheets (`CalloutSheet`, `QrCodeSheet`, `CodeListSheet`). The Shifa Design System installed on the canvas is current (its `tokens.json`, `tokens.css` and bundle hashes equal the system's version `1795473355-da6b`). The 2026-11-23 drafts of sign-in, setup link, MFA and switcher on page "A-01 Foundation" are kept there, marked superseded; the desktop sign-in draft (`Main`) became the prototype. **Awaiting the owner's approval; no code before it.**
+
+### The prototype
+One artboard keeps the whole entry path in one state (ADR-0042). A control panel outside the device frame switches theme (light, dark), size (desktop 1280 × 800, tablet 768 × 1024, phone 390 × 844) and app (clinic web, admin web); where to start (sign-in page; owner, member, admin, invitation or expired setup link); the account signing in (doctor with TOTP, owner not yet enrolled, staff without TOTP, super admin); the person's clinics (one, several, none); and the server's answer to the next press (per screen, every error code of the table below; it falls back to success after each press). Fields take typing (the password rules, Caps Lock and Arabic-letter hints read what is typed), a six-digit code submits itself, lock and idle countdowns run in real time (the idle limit is shortened to 75 s, with buttons to jump to the warning, to the 12-hour notice and to a session ended elsewhere), and a "go to" list reaches every screen directly. Each creative improvement has a checkbox, so the owner sees the screens with and without it.
+
+Flows that run end to end: owner link → password → enrol (app, key, code) → recovery codes → clinic; member link → password → clinic; admin link → password → enrol → codes → admin home; sign-in → challenge → recovery code → «بقي لديك 9 رموز» (or the two-left warning) → chooser or clinic; sign-in → several clinics → clinic with two branches → branch → clinic; a suspended clinic not selectable, and suspended during the switch; idle warning → continue, → sign out now, → signed out by the timer with the notice; a non-admin on admin web → sign-in with «هذه صفحة إدارة شفاء».
+
+### Route, field and error table (ADR-0046)
+| Route | Fields: shown, driving a state, or not shown (why) | Errors and states drawn |
+|---|---|---|
+| `POST /auth/sign-in` | `SessionView` → routing (next row) | 401 `invalid_credentials`: one message under the password; 429 `phone_locked`, `ip_blocked` with `until`: Callout with countdown, inputs disabled; network/5xx: Callout with retry; 400 `validation_failed`: not reachable (both fields required before sending) |
+| `GET /auth/session` | `platformAdmin` admin web or the not-admin notice; `mfa`, `mfaRequired` challenge or forced enrolment; `tenantId` straight in or chooser; `branchId` branch name in the bar (name from `/me/clinics`); `idleMinutes` text of the idle dialog and sign-out notice; `idleExpiresAt` when the warning opens and its countdown; `absoluteExpiresAt` 12-hour notice (improvement f). Not shown: `userId`, `sessionId` (ids; cross-tab sync and "this device" in A-01-10), `roles` (navigation and permissions, A-01-08) | 401 → sign-in with the reason |
+| `POST /auth/sign-out` | 204 | sign-in with «خرجت من حسابك» |
+| `POST /auth/setup-link/view` | `clinicName` title (null: «إدارة شفاء»); `personName` person card and print sheet; `role` role line; `purpose` variant (owner, member, admin), `invitation` hands over to the invitation page (A-01-08); `expiresAt` «صالح حتى … (بعد يومين)» | loading: Skeleton; 404 `link_invalid`: one message, no clinic name; a malformed fragment: the same message without a request |
+| `POST /auth/setup-link/consume` | `SessionView` → owner and admin to enrolment, member to the clinic | 400 `password_too_short`, `password_common`, `password_contains_phone` under the field, rule named; 404 `link_invalid` (expired while typing); 409 `owner_setup_pending`: Callout; mismatch: checked before sending |
+| `POST /auth/mfa/enrol/start` | `otpauthUri` QR code and «فتح في تطبيق المصادقة»; `manualKey` grouped by four, with copy | 429 `mfa_locked`; 409 already enrolled: re-read the session and route; network: Callout in the QR's place |
+| `POST /auth/mfa/enrol/confirm` | `recoveryCodes` Code list, once; `session` routing after the codes | 400 `invalid_code`, `clock_skew` (set-the-clock hint); 429 `mfa_locked`; 409: restart enrolment |
+| `POST /auth/mfa/challenge` | `SessionView` routing; `method` totp or recovery | 400 `invalid_code` (wrong or replayed, one message); 429 `mfa_locked`; 409 none owed: route by the session |
+| `GET /me/clinics` | `name`; `roles` chips; `status` «تجريبية», «موقوفة»; `selectable` disabled card; `lastActiveAt` «آخر نشاط قبل 3 ساعات», «آخر استعمال» on the first; `solo` no branch step or branch line; `branches` branch line and branch step. Invitations: `clinicName`, `roles[].role` and `branchName`, `expiresAt`. Not shown: `tenantId`, invitation `id` (ids; an invitation is answered on its link, OD-91) | loading: Skeleton; 404 `no_clinic`: page with sign-out |
+| `POST /me/switch` | `ActiveClinic`, then the session re-read and the query cache cleared | 403 `clinic_suspended` (card turns suspended); 403 `branch_not_held`; 409 `branch_archived` (branch leaves the list); 404: list reloaded |
+
+Feature routes no screen of this batch uses: `/auth/sessions*`, `/clinic/settings`, `/platform/clinics/*` (A-01-10); team, branches and invitations (A-01-08); `/health/*` (operations, no screen).
+
+### API gaps (confirmed and extended; closed in A-01-09, never worked around in the client)
+1. **Signed-in person's name** (confirmed): chooser greeting, bar avatar, print sheet on the sign-in path → `GET /me`.
+2. **Recovery codes left** (confirmed): «بقي لديك 9 رموز» and the two-left warning → `GET /auth/mfa`, `POST /auth/mfa/recovery-codes`; proposed: the recovery-code challenge answers the count too.
+3. **Change of password** (confirmed; used in A-01-10).
+4. **Undeclared statuses** (extended): `authSetupLinkConsume` 400; `authMfaEnrolConfirm` and `authMfaChallenge` 400 (`invalid_code`, `clock_skew`); `meSwitch` 403 (`clinic_suspended`, `branch_not_held`); no authenticated route declares 401. The client types errors from the contract.
+5. **New · role scope unknown in `MyClinic`:** the client cannot tell a tenant-wide role from roles in branches, so it cannot decide on the branch step; a switch without `branchId` for a person holding roles in two branches lands on `branchId: null` (all branches) though they hold no tenant-wide role (`defaultBranch()`). → `tenantWide: boolean` on `MyClinic`; 400 `branch_required` for that switch.
+6. **New · reason of an expired session:** one 401 `session_expired` for idle, the 12-hour limit and a session ended elsewhere (another device, the owner, the super admin); only the tab whose own timer fired knows it was idle. → `reason: idle | absolute | ended` on that error, so the sign-in notice names it.
+7. **New · staff MFA recovery:** a member who lost phone and recovery codes has no way back: the owner's new link resets the password only, and MFA reset exists for owners only (super admin). → an owner action "reset this member's TOTP" (as OD-86's link), or the owner decides it stays with Shifa support.
+8. **New · generic 409 `conflict` on the MFA routes** for three different states. → named codes (`mfa_already_enrolled`, `mfa_not_started`, `mfa_not_owed`). Not blocking: the screens re-read the session in all three.
+9. **Optional, with improvement h:** `SetupLinkView` carries no phone, so the person does not learn which number they will sign in with → `phoneMasked`.
+10. **Follow-up, not blocking:** every authenticated request extends the idle limit (`SessionsService.authenticate`), so the client never polls the session; the countdown comes from the last `idleExpiresAt` with cross-tab sync. Screens that refresh themselves later (the queue) need a background request that does not count as activity (backlog).
+
+### Spec gaps (to add to A-01a and A-01b)
+1. Phone-only setup: on phones «فتح في تطبيق المصادقة» and the key with copy lead, the QR is folded (drawn).
+2. Chooser invitations are listed and answered on their link (OD-91; drawn).
+3. Branch step after the clinic for a person with roles in two branches (drawn; needs gap 5).
+4. New: the sign-in notices (signed out for inactivity, session ended, not an admin, signed out) and the codes-left notice after a recovery sign-in.
+5. New: a lock's end time is shown in the device's time zone (the sign-in page knows no clinic; Syria and Türkiye are UTC+3 all year), `HH:mm`, Western digits.
+
+### Creative improvements (each toggled in the prototype; the owner accepts or declines each)
+| | Improvement | Cost |
+|---|---|---|
+| a (أ) | Password rules ticked while typing; server refusals named in words | ~60 lines |
+| b (ب) | Lock countdowns that re-enable the form by themselves | ~80 lines |
+| c (ج) | Recovery codes: copy all, print sheet with the person, clinic and date; «حفظتُ الرموز» required (the confirm is spec'd) | ~120 lines with Code list |
+| d (د) | A complete six-digit code submits itself | ~40 lines |
+| e (هـ) | Rich chooser cards: initials, role chips, trial and suspended badges, last activity in words, last-used mark | ~150 lines |
+| f (و) | Quiet notice ten minutes before the 12-hour limit | ~70 lines |
+| g (ز) | Caps Lock and Arabic-letters hint on the sign-in password | ~50 lines |
+| h (ح) | Masked phone on the setup page | API field (A-01-09) + ~20 lines |
+| i (ط) | Remember the last phone on this device, with «ليس رقمك؟» | ~40 lines; the owner may decline it for shared reception computers |
+| j (ي) | Retry by itself when the connection returns | ~30 lines |
+
+Declined: — (none decided yet).
+
+### Design-system gaps
+- **Callout** (inline page message: info, success, warning, danger; optional title and one action; `role` alert or status), **QrCode** (white plate in both themes, folded on phones; proposes semantic `color.scan.bg` and `color.scan.fg`), **CodeList** (ten codes, numbered, mono, LTR, copy all, print sheet): each drawn on its own sheet (every state, light and dark, RTL and LTR, both densities) and on its screens. After approval each is built with `/ui-component` and synced before checkpoint 2 uses it.
+- **Selectable card:** Card is a link card only; the clinic and branch cards are frames from Card's tokens with the real Avatar and Badge. In code a `CardLink` (router link); no new component.
+- **Idle dialog:** the system's AlertDialog draws with its own trigger and takes no live countdown, so its frame is built from the dialog tokens with real Buttons; in code the AlertDialog parts, opened by the timer.
+
+### Checked before showing
+The five artboards hold no literal colour (`#…`, `rgb()`, `hsl()`), every `--shifa-` name exists in the installed `tokens.css`, and no existing component is drawn by hand (buttons, fields, OTP, checkbox, badges, avatars, skeletons, spinner, empty states and icons are mounted from the bundle). The only px values are device and artboard sizes.
 
 ## Stopped at
-Re-plan approved by the owner 2026-11-24 (with ADR-0046); next: checkpoint 1, drawing and analysis.
+Checkpoint 1 drawn and analysed 2026-11-24 (see above); waiting for the owner's approval of the screens, the three components, the gaps (A-01-09 rows) and each improvement. No code before it.
 
 ## Evidence
 - `verify` (full): —
