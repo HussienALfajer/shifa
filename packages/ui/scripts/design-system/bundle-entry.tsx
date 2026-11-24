@@ -29,7 +29,15 @@ import {
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 import { CommandPalette } from './compound-command.tsx';
-import { Avatar, Card, EmptyState, Pagination, Skeleton, Toolbar } from './compound-data.tsx';
+import {
+  Avatar,
+  Callout,
+  Card,
+  EmptyState,
+  Pagination,
+  Skeleton,
+  Toolbar,
+} from './compound-data.tsx';
 import { Field, Form, RadioGroup } from './compound-forms.tsx';
 import { Accordion, AlertDialog, Drawer, Tooltip } from './compound-overlays.tsx';
 import { DataTable } from './compound-table.tsx';
@@ -71,6 +79,7 @@ const COMPONENTS = {
   Skeleton,
   Card,
   EmptyState,
+  Callout,
   Avatar,
   Toolbar,
   Pagination,

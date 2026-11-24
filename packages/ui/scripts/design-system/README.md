@@ -89,11 +89,12 @@ Each component is coded from a sheet the owner approved, tested in Arabic RTL an
 - **Skeleton**: blocks, lines and circles on the raised surface for content of a known shape; a soft pulse, still under reduced motion.
 - **Card**: a white surface with header, body and footer; a link card opens its record from anywhere on it.
 - **EmptyState**: the jasmine or star line drawing (or an icon for search and errors), a title, a description, up to two buttons.
+- **Callout**: a message inside the page that stays while its cause holds (a lock, no connection, a session that ended, a suspended clinic); locked status colours with an icon, an optional title, one or two sentences, at most one button at the end of the line, no close button.
 - **Toolbar**: light buttons in a bordered strip with one Tab stop; what does not fit goes into «المزيد».
 - **Pagination**: previous at the logical start, numbers with ellipses, the current one green, the page-size select and «عرض 51–75 من 312».
 - **DataTable**: a dense grid of 48 px rows (32 compact) with a sticky header, the first column pinned at the logical start, sorting, selection and column visibility, fast with thousands of rows; one Tab stop and arrows in the reading direction.
 
-Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer, Toast, CommandPalette, Card, Skeleton, EmptyState, Toolbar, Pagination and DataTable take their content as data here (`items`, `fields`…); in code they are composed from parts.
+Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertDialog, Drawer, Toast, CommandPalette, Card, Skeleton, EmptyState, Callout, Toolbar, Pagination and DataTable take their content as data here (`items`, `fields`…); in code they are composed from parts.
 
 ## Logo
 

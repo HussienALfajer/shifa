@@ -1,0 +1,42 @@
+<!-- @dsCard group="Feedback" height=520 subtitle="Four tones, a lock, no connection · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var STATES = {
+    ar: [
+      { tone: 'info', icon: 'clock', title: 'خرجت تلقائياً', text: 'مرّت 30 دقيقة دون نشاط فأغلقنا الجلسة. ادخل من جديد لتتابع.' },
+      { tone: 'success', title: 'دخلت برمز استرداد · بقي لديك 9 رموز', text: 'الرمز الذي استعملته أُلغي.' },
+      { tone: 'warning', icon: 'clock', title: 'توقّف الدخول بهذا الرقم مؤقتاً', text: 'بعد 5 محاولات خاطئة. يمكنك المحاولة بعد 14:59 (الساعة 10:42).' },
+      { tone: 'danger', icon: 'wifi-slash', title: 'تعذّر الوصول إلى الخادم', text: 'تأكد من الاتصال بالإنترنت.', action: 'إعادة المحاولة' }
+    ],
+    en: [
+      { tone: 'info', icon: 'clock', title: 'You were signed out', text: 'No activity for 30 minutes, so the session was closed. Sign in again to continue.' },
+      { tone: 'success', title: 'Signed in with a recovery code · 9 left', text: 'The code you used is now void.' },
+      { tone: 'warning', icon: 'clock', title: 'Sign-in paused for this phone', text: 'After 5 wrong attempts. Try again in 14:59 (at 10:42).' },
+      { tone: 'danger', icon: 'wifi-slash', title: 'Cannot reach the server', text: 'Check the internet connection.', action: 'Try again' }
+    ]
+  };
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    STATES[panel.lang].forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'Callout', props);
+    });
+  });
+</script>
+</body>
+</html>
