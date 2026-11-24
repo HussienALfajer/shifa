@@ -4,19 +4,20 @@
 // A-01-07's next checkpoint and A-01-08 replace them with the approved drawings.
 import type { CommonKey } from '@shifa/i18n';
 import { Button, Card, CardBody, SegmentedControl } from '@shifa/ui';
-import { useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from '@tanstack/react-router';
+import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
 import { MfaPage } from './auth/mfa.tsx';
 import { SetupLinkPage } from './auth/setup-link.tsx';
 import { SignInPage } from './auth/sign-in.tsx';
+import { ClinicChooserPage } from './chooser/clinic-chooser.tsx';
+import { SessionEndsNotice } from './idle-dialog.tsx';
 import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
-import { type SessionView, signOut, useSession } from './session.ts';
+import { type SessionView, useSession } from './session.ts';
 import { useText } from './text.ts';
 import { type ThemePreference, useThemePreference } from './theme.ts';
-import { useIdleState } from './use-idle.tsx';
+import { useSignOut } from './use-sign-out.ts';
 
 export { useText };
 
@@ -70,30 +71,17 @@ function ThemeChoice() {
 
 function SignOutButton() {
   const text = useText();
-  const { shell } = useShell();
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const signOutNow = useSignOut();
   return (
-    <Button
-      variant="secondary"
-      onClick={async () => {
-        // Always back to sign-in; say so when the server did not end the session.
-        const ended = await signOut(shell, queryClient);
-        await navigate({
-          to: '/sign-in',
-          search: { reason: ended ? 'signed_out' : 'sign_out_failed' },
-        });
-      }}
-    >
+    <Button variant="secondary" onClick={signOutNow}>
       {text('signOut')}
     </Button>
   );
 }
 
-/** Who is signed in and what the session still needs. */
+/** Who is signed in and what the session still needs. The idle warning is the root's dialog. */
 function SessionSummary({ session }: { session: SessionView }) {
   const text = useText();
-  const idle = useIdleState();
   return (
     <div data-testid="signed-in" className="flex flex-col gap-2">
       <p>{text('signedInAs', { userId: session.userId })}</p>
@@ -101,11 +89,6 @@ function SessionSummary({ session }: { session: SessionView }) {
         {text(MFA_TEXT[session.mfa])}
         {session.mfaRequired && session.mfa !== 'verified' ? ` ${text('mfaRequiredNote')}` : ''}
       </p>
-      {idle.kind === 'warning' ? (
-        <p data-testid="idle-warning" role="status" className="text-text-muted">
-          {text('idleWarning', { count: idle.secondsLeft })}
-        </p>
-      ) : null}
       <div>
         <SignOutButton />
       </div>
@@ -123,6 +106,7 @@ function HomePage() {
   const text = useText();
   return (
     <Page title="homeTitle">
+      <SessionEndsNotice />
       <CodesLeftNotice />
       <p className="text-text-muted">{text('homePending')}</p>
       <CurrentSession />
@@ -174,6 +158,7 @@ export const shellPages: ShellPages = {
   home: HomePage,
   about: AboutPage,
   setup: SetupLinkPage,
+  choose: ClinicChooserPage,
   adminWeb: AdminWebPage,
   notFound: NotFoundPage,
 };

@@ -65,6 +65,11 @@ export interface IdleTracker {
   gone(): boolean;
   /** Another tab refreshed. */
   receive(message: unknown): void;
+  /**
+   * «متابعة العمل»: asks the server now, whatever the once-a-minute limit. True when the session
+   * is still there (its new limits taken), false when it is gone; rejects when the request failed.
+   */
+  extend(): Promise<boolean>;
 }
 
 export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
@@ -114,6 +119,22 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
     gone: () => ended,
     receive(message) {
       if (isIdleMessage(message)) take(message.idleExpiresAt);
+    },
+    async extend() {
+      if (ended) return false;
+      lastRefresh = options.now();
+      try {
+        const next = await options.refresh();
+        if (next === null) {
+          ended = true;
+          return false;
+        }
+        if (take(next.idleExpiresAt)) options.post({ type: 'session', ...current });
+        return true;
+      } catch (error) {
+        lastRefresh = Number.NEGATIVE_INFINITY;
+        throw error;
+      }
     },
   };
 }

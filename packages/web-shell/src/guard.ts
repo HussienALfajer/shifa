@@ -11,9 +11,10 @@ export type ShellApp = 'clinic' | 'admin';
  * - `open`: anyone (about, the setup link page).
  * - `mfa`: a session that owes MFA; any other goes home.
  * - `admin-web`: clinic web's page for a super admin.
- * - `signed-in`: everything else.
+ * - `choose`: clinic web's chooser, for a finished session (with or without a clinic).
+ * - `signed-in`: everything else; on clinic web it needs a clinic, else the chooser.
  */
-export type RouteKind = 'signed-out' | 'open' | 'mfa' | 'admin-web' | 'signed-in';
+export type RouteKind = 'signed-out' | 'open' | 'mfa' | 'admin-web' | 'choose' | 'signed-in';
 
 /**
  * Why sign-in was shown; `?reason=` on /sign-in. `idle`, `absolute` and `ended` are the server's
@@ -32,7 +33,11 @@ export type SignInReason =
 
 export type GuardOutcome =
   | { action: 'stay' }
-  | { action: 'redirect'; to: '/' | '/sign-in' | '/mfa' | '/admin-web'; reason?: SignInReason }
+  | {
+      action: 'redirect';
+      to: '/' | '/sign-in' | '/mfa' | '/admin-web' | '/choose';
+      reason?: SignInReason;
+    }
   | { action: 'sign-out'; reason: 'not_admin' };
 
 const STAY: GuardOutcome = { action: 'stay' };
@@ -61,6 +66,10 @@ export function decideRoute(app: ShellApp, kind: RouteKind, state: SessionState)
   }
   if (kind === 'admin-web') return { action: 'redirect', to: '/' };
   if (owesMfa(session)) return kind === 'mfa' ? STAY : { action: 'redirect', to: '/mfa' };
+  // Admin web has no chooser: a super admin works in no clinic.
+  if (kind === 'choose') return app === 'clinic' ? STAY : { action: 'redirect', to: '/' };
+  // Several clinics, or roles in several branches of one: the server chose none (A-01-05).
+  if (app === 'clinic' && session.tenantId === null) return { action: 'redirect', to: '/choose' };
   if (kind === 'signed-out' || kind === 'mfa') return { action: 'redirect', to: '/' };
   return STAY;
 }

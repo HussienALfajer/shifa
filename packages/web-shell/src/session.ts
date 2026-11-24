@@ -4,6 +4,8 @@
 import type { Schemas } from '@shifa/api-client-ts';
 import { type QueryClient, queryOptions, useQuery } from '@tanstack/react-query';
 import { errorFacts, type ShellClient } from './client.ts';
+import type { SignInReason } from './guard.ts';
+import { announceSignOut } from './tabs.ts';
 
 export type SessionView = Schemas['SessionView'];
 
@@ -68,9 +70,14 @@ export function watchFocus(queryClient: QueryClient): () => void {
 /**
  * Ends the session on the server and forgets everything cached for it. Never throws: true when
  * the server answered 204, false when the request failed (network, 5xx), so the caller can say
- * the session may still be open on the server.
+ * the session may still be open on the server. With `announce`, the app's other tabs are told
+ * (they check with the server before they leave, `tabs.ts`).
  */
-export async function signOut(shell: ShellClient, queryClient: QueryClient): Promise<boolean> {
+export async function signOut(
+  shell: ShellClient,
+  queryClient: QueryClient,
+  announce?: SignInReason,
+): Promise<boolean> {
   try {
     const { response } = await shell.api.POST('/auth/sign-out');
     return response.ok;
@@ -78,5 +85,6 @@ export async function signOut(shell: ShellClient, queryClient: QueryClient): Pro
     return false;
   } finally {
     queryClient.clear();
+    if (announce !== undefined) announceSignOut(announce);
   }
 }
