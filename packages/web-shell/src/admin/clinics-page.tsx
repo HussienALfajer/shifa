@@ -61,10 +61,11 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
         </Link>
       ),
     },
-    { id: 'type', header: text('colType'), value: (c) => text(TYPE_WORD[c.type]) },
+    { id: 'type', header: text('colType'), width: 'sm', value: (c) => text(TYPE_WORD[c.type]) },
     {
       id: 'status',
       header: text('colStatus'),
+      width: 'sm',
       value: (c) => text(STATUS_WORD[c.status]),
       cell: (c) => (
         <Badge tone={STATUS_TONE[c.status]} size="sm">
@@ -112,6 +113,7 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
     {
       id: 'created',
       header: text('colCreated'),
+      width: 'sm',
       value: (c) => c.createdAt,
       cell: (c) => <span className="tabular-nums">{dayDate(Date.parse(c.createdAt))}</span>,
     },
@@ -170,6 +172,9 @@ export function ClinicsPage() {
           columns={columns}
           rows={rows}
           getRowId={(c) => c.id}
+          // Six columns pass the card at 1280 px; the list is newest first, so the creation
+          // date waits in «الأعمدة».
+          defaultHiddenColumns={['created']}
           loading={isPending}
           loadingRows={5}
           empty={
