@@ -1,12 +1,14 @@
 // Invitations (A-01b criterion 2, OD-76): a phone that already has an account is invited, not
 // given a password. The page shows the clinic, the name the owner typed and the roles with scope.
-// Only the signed-in person whose phone was invited accepts or declines; anyone else, and any
-// used, replaced or expired link, gets one answer (404 link_invalid). Acceptance binds the
+// Only the signed-in person whose phone was invited accepts or declines. A valid link opened by a
+// person signed in with another number answers 403 invitation_other_phone (OD-104), checked only
+// after the link is known valid, so it says nothing about a dead link; any used, replaced or
+// expired link, and a super admin, get one answer (404 link_invalid). Acceptance binds the
 // membership on the auth path (withUserLink; the database checks person and phone too); the
 // clinic's audit row is written in the link's clinic (linkScope, the documented exception to
 // scope binding) around it, so a failed binding leaves no row.
 import { Inject, Injectable } from '@nestjs/common';
-import type { InvitationView } from '@shifa/contracts';
+import { type InvitationView, maskPhone } from '@shifa/contracts';
 import {
   type AuthDb,
   auditEvent,
@@ -20,6 +22,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import { linkScope, type Principal, withScope } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
+import { ApiError } from '../../platform/errors.ts';
 import { IdentityAudit } from './identity-audit.ts';
 import { linkTokenHash } from './links.ts';
 import { type ClinicLink, linkInvalid, SetupLinksService } from './setup-links.service.ts';
@@ -44,6 +47,7 @@ export class InvitationsService {
       personName: found.personName,
       roles: await this.links.rolesOf(found),
       expiresAt: found.expiresAt.toISOString(),
+      phoneMasked: maskPhone(found.phoneE164),
     };
   }
 
@@ -88,18 +92,32 @@ export class InvitationsService {
   ): Promise<void> {
     const now = this.clock.now();
     return this.authDb.withUserLink(userId, linkTokenHash(token), async (tx) => {
-      const [person] = await tx
-        .select({ phone: user.phoneNumber })
-        .from(user)
-        .where(eq(user.id, userId));
-      // Someone else signed in: the same answer as for any invalid link.
-      if (person?.phone !== found.phoneE164) throw linkInvalid();
       // A super admin's account never joins a clinic (OD-89; the database refuses it too).
       const [admin] = await tx
         .select({ id: platformAdmin.userId })
         .from(platformAdmin)
         .where(eq(platformAdmin.userId, userId));
       if (admin) throw linkInvalid();
+      // The link first (unused, unreplaced, unexpired), then the person: a dead link never
+      // answers anything but link_invalid (OD-104).
+      const [open] = await tx
+        .select({ id: setupLink.id })
+        .from(setupLink)
+        .where(
+          and(
+            eq(setupLink.id, found.linkId),
+            isNull(setupLink.usedAt),
+            isNull(setupLink.replacedAt),
+            gt(setupLink.expiresAt, now),
+          ),
+        );
+      if (!open) throw linkInvalid();
+      const [person] = await tx
+        .select({ phone: user.phoneNumber })
+        .from(user)
+        .where(eq(user.id, userId));
+      // Someone else signed in: told so, nothing written; the link stays usable (OD-104).
+      if (person?.phone !== found.phoneE164) throw new ApiError(403, 'invitation_other_phone');
       const used = await tx
         .update(setupLink)
         .set({ usedAt: now })

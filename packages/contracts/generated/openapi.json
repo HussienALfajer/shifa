@@ -839,6 +839,19 @@
         ],
         "type": "object"
       },
+      "MemberPhoneRequest": {
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "type": "object"
+      },
       "MemberRole": {
         "properties": {
           "branchId": {
@@ -1179,6 +1192,38 @@
         },
         "required": [
           "phone"
+        ],
+        "type": "object"
+      },
+      "PermissionDefault": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/PermissionKeyName"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "roles"
+        ],
+        "type": "object"
+      },
+      "PermissionDefaults": {
+        "properties": {
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionDefault"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
         ],
         "type": "object"
       },
@@ -3041,6 +3086,87 @@
         "x-permission": "branches.manage"
       }
     },
+    "/branches/{id}/restore": {
+      "post": {
+        "operationId": "branchesRestore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Branch"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Restore an archived branch",
+        "x-permission": "branches.manage"
+      }
+    },
     "/clinic/settings": {
       "get": {
         "operationId": "clinicSettings",
@@ -4450,6 +4576,97 @@
         "x-permission": "members.manage"
       }
     },
+    "/team/members/{id}/phone": {
+      "patch": {
+        "operationId": "teamMemberPhone",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberPhoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberLinkIssued"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Correct a pending member’s phone; returns their new link once",
+        "x-permission": "members.manage"
+      }
+    },
     "/team/members/{id}/reactivate": {
       "post": {
         "operationId": "teamReactivateMember",
@@ -4691,6 +4908,45 @@
         },
         "summary": "Issue a new link (staff recovery); ends the member’s sessions",
         "x-permission": "members.manage"
+      }
+    },
+    "/team/permissions": {
+      "get": {
+        "operationId": "teamPermissions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionDefaults"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The sensitive keys with the roles that grant each by default",
+        "x-permission": "members.view"
       }
     }
   }

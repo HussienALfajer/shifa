@@ -2,7 +2,7 @@
 // the guard checked (TenantDb) and writes its audit rows in the same transaction. Work on the
 // person (sessions, password) runs on the auth path inside that transaction: a failure there
 // rolls back the change and its row here; the auth step commits with its own audit row.
-import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type AddMemberRequest,
   type MemberAdded,
@@ -10,20 +10,13 @@ import {
   type MemberLinkIssued,
   type MemberList,
   normalisePhone,
+  type PermissionDefaults,
   type RoleScopeInput,
+  type SessionRole,
   type UpdateMemberRequest,
 } from '@shifa/contracts';
-import {
-  type AuditEventName,
-  auditEvent,
-  branch,
-  membership,
-  permissionOverride,
-  roleAssignment,
-  setupLink,
-  type Tx,
-} from '@shifa/db';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { membership, permissionOverride, roleAssignment, setupLink, type Tx } from '@shifa/db';
+import { and, eq } from 'drizzle-orm';
 import {
   PERMISSION_CATALOGUE,
   PermissionCatalogue,
@@ -34,18 +27,33 @@ import {
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { MemberAccounts, type NewMemberLink } from '../identity/index.ts';
+import { rename } from './member-corrections.ts';
+import { findMember, holdsOwnerRole, listMembers, memberDetail } from './members.read.ts';
 import {
-  activeOwners,
-  findMember,
-  holdsOwnerRole,
-  listMembers,
-  memberDetail,
-} from './members.read.ts';
-
-type MembershipRow = typeof membership.$inferSelect;
-type AuditData = Record<string, string | number | boolean | null>;
+  audit,
+  isLastOwner,
+  lockMemberPhone,
+  lockOwners,
+  type MembershipRow,
+  replaceLinks,
+  setStatus,
+  validRoles,
+  writeRoles,
+} from './team.writes.ts';
 
 const lastOwner = () => new ApiError(409, 'last_owner');
+const ROLES: readonly SessionRole[] = [
+  'owner',
+  'doctor',
+  'assistant',
+  'receptionist',
+  'accountant',
+];
+
+/** Deactivate, a new link and TOTP reset on oneself would lock the owner out (A-01-12). */
+function refuseSelf(scope: RequestScope, row: MembershipRow): void {
+  if (row.userId !== null && row.userId === scope.userId) throw new ApiError(409, 'self_action');
+}
 
 @Injectable()
 export class TeamService {
@@ -56,26 +64,39 @@ export class TeamService {
   ) {}
 
   list(scope: RequestScope): Promise<MemberList> {
-    return this.tenants.run(scope, async (tx) => ({ members: await listMembers(tx) }));
+    return this.tenants.run(scope, async (tx) => ({ members: await listMembers(tx, scope) }));
+  }
+
+  /** Every sensitive key with the roles that grant it by default (OD-102). */
+  permissionDefaults(): PermissionDefaults {
+    return {
+      keys: this.catalogue.sensitiveKeys().map((key) => ({
+        key,
+        roles: ROLES.filter((role) => PRODUCTION_GRANTS[role].includes(key)),
+      })),
+    };
   }
 
   detail(scope: RequestScope, id: string): Promise<MemberDetail> {
-    return this.tenants.run(scope, async (tx) => this.#detail(tx, await this.#member(tx, id)));
+    return this.tenants.run(scope, async (tx) =>
+      this.#detail(tx, scope, await this.#member(tx, id)),
+    );
   }
 
   async add(scope: RequestScope, input: AddMemberRequest, requestId: string): Promise<MemberAdded> {
     const phone = normalisePhone(input.phone);
     if (!phone.ok)
       throw new RequestValidationError([{ path: 'body.phone', code: 'invalid_format' }]);
+    // Before any write: a refused switch refuses the whole add (OD-102).
+    const switches = new Map((input.permissions ?? []).map((p) => [p.key, p.granted]));
+    this.#checkSwitches((input.permissions ?? []).map((p) => p.key));
     // An account: an invitation to accept; none: a setup link. The owner sees the same (OD-76).
     const purpose = (await this.accounts.hasAccount(phone.e164)) ? 'invitation' : 'member_setup';
     const link = this.accounts.newLink();
     return this.tenants.run(scope, async (tx) => {
       const roles = await validRoles(tx, input.roles);
       // Two adds of one phone at once: the second waits, then sees the first (409, never 500).
-      await tx.execute(
-        sql`select pg_advisory_xact_lock(hashtextextended('shifa.member-phone:' || current_tenant_id()::text || ${phone.e164}, 0))`,
-      );
+      await lockMemberPhone(tx, phone.e164);
       const [taken] = await tx
         .select({ id: membership.id })
         .from(membership)
@@ -102,7 +123,8 @@ export class TeamService {
         invitedPhone: purpose === 'invitation' ? phone.e164 : null,
       });
       await audit(tx, scope, 'member.added', row.id, requestId);
-      return { member: await this.#detail(tx, row), link: link.issued };
+      await this.#writeSwitches(tx, scope, row.id, roles, switches, requestId);
+      return { member: await this.#detail(tx, scope, row), link: link.issued };
     });
   }
 
@@ -113,8 +135,9 @@ export class TeamService {
     requestId: string,
   ): Promise<MemberDetail> {
     return this.tenants.run(scope, async (tx) => {
-      const row = await this.#member(tx, id);
+      let row = await this.#member(tx, id);
       if (input.permissions) this.#checkSwitches(input.permissions.map((p) => p.key));
+      if (input.name !== undefined) row = await rename(tx, scope, row, input.name, requestId);
       if (input.roles) {
         await lockOwners(tx);
         const roles = await validRoles(tx, input.roles, { allowEmpty: true });
@@ -154,7 +177,7 @@ export class TeamService {
         }
         await audit(tx, scope, 'member.permissions_changed', row.id, requestId, { key, granted });
       }
-      return this.#detail(tx, row);
+      return this.#detail(tx, scope, row);
     });
   }
 
@@ -162,23 +185,24 @@ export class TeamService {
     return this.tenants.run(scope, async (tx) => {
       await lockOwners(tx);
       const row = await this.#member(tx, id);
-      if (row.status === 'deactivated') throw new ConflictException();
+      refuseSelf(scope, row);
+      if (row.status === 'deactivated') throw new ApiError(409, 'member_deactivated');
       if (await isLastOwner(tx, row)) throw lastOwner();
       const changed = await setStatus(tx, row.id, 'deactivated');
       await replaceLinks(tx, row.id);
       await audit(tx, scope, 'member.deactivated', row.id, requestId);
       await this.#endSessions(row, scope, requestId);
-      return this.#detail(tx, changed);
+      return this.#detail(tx, scope, changed);
     });
   }
 
   reactivate(scope: RequestScope, id: string, requestId: string): Promise<MemberDetail> {
     return this.tenants.run(scope, async (tx) => {
       const row = await this.#member(tx, id);
-      if (row.status !== 'deactivated') throw new ConflictException();
+      if (row.status !== 'deactivated') throw new ApiError(409, 'member_not_deactivated');
       const changed = await setStatus(tx, row.id, row.userId ? 'active' : 'pending');
       await audit(tx, scope, 'member.reactivated', row.id, requestId);
-      return this.#detail(tx, changed);
+      return this.#detail(tx, scope, changed);
     });
   }
 
@@ -190,9 +214,10 @@ export class TeamService {
    */
   async newLink(scope: RequestScope, id: string, requestId: string): Promise<MemberLinkIssued> {
     const row = await this.tenants.run(scope, (tx) => this.#member(tx, id));
+    refuseSelf(scope, row);
     // A deactivated member's link could never be used (the database binds pending members
     // only): reactivate first.
-    if (row.status === 'deactivated') throw new ConflictException();
+    if (row.status === 'deactivated') throw new ApiError(409, 'member_deactivated');
     const by = { actorId: scope.userId, requestId };
     if (row.userId && (await this.accounts.isShared(row.userId, scope.tenantId))) {
       await this.accounts.endSessionsInClinic(row.userId, scope.tenantId, by);
@@ -224,6 +249,7 @@ export class TeamService {
   async resetMfa(scope: RequestScope, id: string, requestId: string): Promise<MemberDetail> {
     const row = await this.tenants.run(scope, async (tx) => {
       const found = await this.#member(tx, id);
+      refuseSelf(scope, found);
       if (await holdsOwnerRole(tx, found.id)) throw new ApiError(409, 'owner_mfa_platform');
       return found;
     });
@@ -245,7 +271,7 @@ export class TeamService {
         // After the auth step committed (with `auth.mfa_reset`): only this commit can still fail,
         // leaving the reset without its clinic row (accepted, as for links; review L3).
         await audit(tx, scope, 'member.mfa_reset', row.id, requestId);
-        return this.#detail(tx, row);
+        return this.#detail(tx, scope, row);
       });
     } catch (err) {
       // Shared since the check above (a race): the same answer and effect (security review N4).
@@ -297,8 +323,36 @@ export class TeamService {
     return row;
   }
 
-  #detail(tx: Tx, row: MembershipRow): Promise<MemberDetail> {
+  /**
+   * Toggles set on add (OD-102): only a switch that differs from the default of `roles` is
+   * stored, each audited as on edit.
+   */
+  async #writeSwitches(
+    tx: Tx,
+    scope: RequestScope,
+    membershipId: string,
+    roles: readonly RoleScopeInput[],
+    switches: ReadonlyMap<string, boolean>,
+    requestId: string,
+  ): Promise<void> {
+    for (const [key, granted] of switches) {
+      const roleDefault = roles.some((r) =>
+        PRODUCTION_GRANTS[r.role].some((granting) => granting === key),
+      );
+      if (granted === roleDefault) continue;
+      await tx
+        .insert(permissionOverride)
+        .values({ tenantId: scope.tenantId, membershipId, key, granted });
+      await audit(tx, scope, 'member.permissions_changed', membershipId, requestId, {
+        key,
+        granted,
+      });
+    }
+  }
+
+  #detail(tx: Tx, scope: RequestScope, row: MembershipRow): Promise<MemberDetail> {
     return memberDetail(tx, row, {
+      viewer: scope,
       catalogue: this.catalogue,
       grants: PRODUCTION_GRANTS,
       mfaEnrolled: (userId) => this.accounts.mfaEnrolled(userId),
@@ -312,111 +366,4 @@ export class TeamService {
       requestId,
     });
   }
-}
-
-/**
- * Serialises the clinic's owner changes (review 1): two owners demoting or deactivating each
- * other at once would both see two owners under READ COMMITTED. Transaction-scoped, so safe
- * behind PgBouncer.
- */
-async function lockOwners(tx: Tx): Promise<void> {
-  await tx.execute(
-    sql`select pg_advisory_xact_lock(hashtextextended('shifa.owners:' || current_tenant_id()::text, 0))`,
-  );
-}
-
-/** The clinic's only active owner is this member. */
-async function isLastOwner(tx: Tx, row: MembershipRow): Promise<boolean> {
-  const owners = await activeOwners(tx);
-  return owners.length === 1 && owners[0] === row.id;
-}
-
-/** Distinct assignments; owners tenant-wide; branches active and of this clinic → else 400. */
-async function validRoles(
-  tx: Tx,
-  input: readonly RoleScopeInput[],
-  { allowEmpty = false } = {},
-): Promise<RoleScopeInput[]> {
-  if (input.length === 0 && !allowEmpty) {
-    throw new RequestValidationError([{ path: 'body.roles', code: 'too_small' }]);
-  }
-  const seen = new Map<string, RoleScopeInput>();
-  for (const r of input) seen.set(`${r.role}:${r.branchId ?? ''}`, r);
-  const roles = [...seen.values()];
-  const ownerInBranch = roles.findIndex((r) => r.role === 'owner' && r.branchId !== null);
-  if (ownerInBranch >= 0) {
-    throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
-  }
-  const branchIds = [...new Set(roles.flatMap((r) => (r.branchId ? [r.branchId] : [])))];
-  if (branchIds.length > 0) {
-    const found = await tx
-      .select({ id: branch.id, archivedAt: branch.archivedAt })
-      .from(branch)
-      .where(inArray(branch.id, branchIds));
-    if (found.length !== branchIds.length) {
-      throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
-    }
-    // An archived branch leaves the role picker (A-01b criterion 9).
-    if (found.some((b) => b.archivedAt !== null)) throw new ApiError(409, 'branch_archived');
-  }
-  return roles;
-}
-
-async function writeRoles(
-  tx: Tx,
-  tenantId: string,
-  membershipId: string,
-  roles: readonly RoleScopeInput[],
-): Promise<void> {
-  if (roles.length === 0) return;
-  await tx
-    .insert(roleAssignment)
-    .values(roles.map((r) => ({ tenantId, membershipId, role: r.role, branchId: r.branchId })));
-}
-
-async function setStatus(
-  tx: Tx,
-  id: string,
-  status: MembershipRow['status'],
-): Promise<MembershipRow> {
-  const [row] = await tx
-    .update(membership)
-    .set({ status, updatedAt: new Date() })
-    .where(eq(membership.id, id))
-    .returning();
-  if (!row) throw new NotFoundException();
-  return row;
-}
-
-/** The member's unused links stop working. */
-async function replaceLinks(tx: Tx, membershipId: string): Promise<void> {
-  await tx
-    .update(setupLink)
-    .set({ replacedAt: new Date() })
-    .where(
-      and(
-        eq(setupLink.membershipId, membershipId),
-        isNull(setupLink.usedAt),
-        isNull(setupLink.replacedAt),
-      ),
-    );
-}
-
-/** One row in the clinic: actor, member, request; `data` only ids and enum words, never a phone. */
-async function audit(
-  tx: Tx,
-  scope: RequestScope,
-  event: AuditEventName,
-  targetId: string,
-  requestId: string,
-  data: AuditData = {},
-): Promise<void> {
-  await tx.insert(auditEvent).values({
-    tenantId: scope.tenantId,
-    actorId: scope.userId,
-    targetId,
-    event,
-    requestId,
-    data,
-  });
 }

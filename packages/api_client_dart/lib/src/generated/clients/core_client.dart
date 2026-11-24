@@ -25,12 +25,14 @@ import '../models/member_added.dart';
 import '../models/member_detail.dart';
 import '../models/member_link_issued.dart';
 import '../models/member_list.dart';
+import '../models/member_phone_request.dart';
 import '../models/mfa_enrolled.dart';
 import '../models/mfa_passed.dart';
 import '../models/mfa_status.dart';
 import '../models/my_clinics.dart';
 import '../models/my_profile.dart';
 import '../models/owner_phone_request.dart';
+import '../models/permission_defaults.dart';
 import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
@@ -159,6 +161,10 @@ abstract class CoreClient {
     @Path('id') required String id,
   });
 
+  /// Restore an archived branch
+  @POST('/branches/{id}/restore')
+  Future<Branch> branchesRestore({@Path('id') required String id});
+
   /// The clinic’s settings (automatic sign-out)
   @GET('/clinic/settings')
   Future<ClinicSettings> clinicSettings();
@@ -268,6 +274,13 @@ abstract class CoreClient {
   @POST('/team/members/{id}/deactivate')
   Future<MemberDetail> teamDeactivateMember({@Path('id') required String id});
 
+  /// Correct a pending member’s phone; returns their new link once
+  @PATCH('/team/members/{id}/phone')
+  Future<MemberLinkIssued> teamMemberPhone({
+    @Path('id') required String id,
+    @Body() required MemberPhoneRequest body,
+  });
+
   /// Reactivate a deactivated member
   @POST('/team/members/{id}/reactivate')
   Future<MemberDetail> teamReactivateMember({@Path('id') required String id});
@@ -279,4 +292,8 @@ abstract class CoreClient {
   /// Issue a new link (staff recovery); ends the member’s sessions
   @POST('/team/members/{id}/setup-link')
   Future<MemberLinkIssued> teamMemberLink({@Path('id') required String id});
+
+  /// The sensitive keys with the roles that grant each by default
+  @GET('/team/permissions')
+  Future<PermissionDefaults> teamPermissions();
 }

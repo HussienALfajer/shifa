@@ -54,6 +54,10 @@ export const TENANT_EVENTS = [
   'branch.archived',
   'clinic.switched',
   'clinic.settings_changed',
+  // A-01-12: name and pending phone corrected (OD-103), branch restored (OD-105)
+  'member.renamed',
+  'member.phone_changed',
+  'branch.restored',
 ] as const;
 
 export type AuditEventName =

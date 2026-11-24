@@ -12,6 +12,7 @@ import {
   teamDeactivateMember,
   teamMember,
   teamMemberLink,
+  teamMemberPhone,
   teamMemberResetMfa,
   teamMembers,
   teamReactivateMember,
@@ -20,11 +21,15 @@ import {
 import { CurrentScope, type RequestScope, RequirePermission } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { MemberCorrections } from './member-corrections.ts';
 import { TeamService } from './team.service.ts';
 
 @Controller('team/members')
 export class TeamController {
-  constructor(@Inject(TeamService) private readonly team: TeamService) {}
+  constructor(
+    @Inject(TeamService) private readonly team: TeamService,
+    @Inject(MemberCorrections) private readonly corrections: MemberCorrections,
+  ) {}
 
   @RequirePermission('members.view')
   @Contract(teamMembers)
@@ -64,6 +69,18 @@ export class TeamController {
     @ClientRequest() request: RequestMeta,
   ): Promise<MemberDetail> {
     return this.team.update(scope, params.id, body, request.requestId);
+  }
+
+  @RequirePermission('members.manage')
+  @Contract(teamMemberPhone)
+  @Patch(':id/phone')
+  changePhone(
+    @Param() params: RequestParams<typeof teamMemberPhone>,
+    @Body() body: RequestBody<typeof teamMemberPhone>,
+    @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<MemberLinkIssued> {
+    return this.corrections.changePhone(scope, params.id, body.phone, request.requestId);
   }
 
   @RequirePermission('members.manage')

@@ -933,6 +933,56 @@
           "message": "This invitation was sent to another phone number"
         }
       }
+    },
+    {
+      "name": "error member_deactivated",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "member_deactivated",
+          "message": "This member is deactivated"
+        }
+      }
+    },
+    {
+      "name": "error member_not_deactivated",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "member_not_deactivated",
+          "message": "This member is not deactivated"
+        }
+      }
+    },
+    {
+      "name": "error member_account_exists",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "member_account_exists",
+          "message": "This member has already accepted; their phone cannot change"
+        }
+      }
+    },
+    {
+      "name": "error self_action",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "self_action",
+          "message": "Not allowed on your own membership"
+        }
+      }
+    },
+    {
+      "name": "error branch_not_archived",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "branch_not_archived",
+          "message": "This branch is not archived"
+        }
+      }
     }
   ],
   "invalid": [

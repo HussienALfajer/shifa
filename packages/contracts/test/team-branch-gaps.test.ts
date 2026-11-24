@@ -81,9 +81,9 @@ describe('the team list: link expiry and the owner’s own row', () => {
   it('MemberSummary.linkExpiresAt (null without an open link) and isSelf; MemberDetail too', () => {
     expect(MemberSummary.parse(member)).toMatchObject({ linkExpiresAt: NOW, isSelf: false });
     expect(MemberSummary.parse({ ...member, linkExpiresAt: null }).linkExpiresAt).toBeNull();
-    const { linkExpiresAt: _l, ...noLink } = member;
+    const noLink = { ...member, linkExpiresAt: undefined };
     expect(() => MemberSummary.parse(noLink)).toThrow();
-    const { isSelf: _s, ...noSelf } = member;
+    const noSelf = { ...member, isSelf: undefined };
     expect(() => MemberSummary.parse(noSelf)).toThrow();
     const detail = { ...member, permissions: [], isLastOwner: false, mfaEnrolled: false };
     expect(MemberDetail.parse({ ...detail, isSelf: true }).isSelf).toBe(true);
@@ -122,7 +122,7 @@ describe('the invitation for another number (OD-104)', () => {
       phoneMasked: '+963 ••• ••• 822',
     };
     expect(InvitationView.parse(view).phoneMasked).toBe('+963 ••• ••• 822');
-    const { phoneMasked: _p, ...without } = view;
+    const without = { ...view, phoneMasked: undefined };
     expect(() => InvitationView.parse(without)).toThrow();
   });
 
