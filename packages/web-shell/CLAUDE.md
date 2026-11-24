@@ -3,7 +3,7 @@
 What `apps/clinic-web` and `apps/admin-web` share (slice A-01-06), so neither duplicates session code.
 
 ## Layout
-- `src/client.ts` — `createShellClient()`: the typed client on the app's own `/api`; every 401 (but a failed sign-in) emits one `session-ended` event with its code; nothing retries.
+- `src/client.ts` — `createShellClient()`: the typed client on the app's own `/api`; every 401 `unauthorized` or `session_expired` (but a failed sign-in) emits one `session-ended` event with its code; any other 401 code answers the request (e.g. `invalid_credentials` on `/auth/password`); nothing retries.
 - `src/session.ts` — the `['session']` query (GET /auth/session; a 401 is "signed out", never cached), `watchFocus()`, `signOut()`.
 - `src/guard.ts` — `decideRoute()`, the one pure decision of every route's `beforeLoad`; `src/router.tsx` builds the routes and the mid-session rule (401 with a known session → cache cleared → `/sign-in?reason=<code>`).
 - `src/idle-timer.ts` (pure, fake-clock tests; `clockOffset()` compares with the server's clock) and `src/use-idle.tsx` (`IdleBoundary` at the router's root runs it once for every page: activity, tick, trailing refresh, `BroadcastChannel`, sign-out with `reason=idle`; pages read `useIdleState()`).

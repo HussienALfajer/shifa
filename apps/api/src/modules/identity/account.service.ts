@@ -4,11 +4,12 @@
 // toward the phone lock of criterion 7 and a lock blocks both. On success, in one transaction:
 // the hash replaced, every other session ended (`password_changed`) and the change audited; then
 // this session is rotated, keeping its clinic, its absolute limit and its second factor.
-import { Inject, Injectable } from '@nestjs/common';
+import { randomUUID } from 'node:crypto';
+import { Inject, Injectable, type OnModuleInit } from '@nestjs/common';
 import type { MyProfile, SessionView } from '@shifa/contracts';
 import { type AuthDb, account, session, user } from '@shifa/db';
 import { hashPassword, verifyPassword } from 'better-auth/crypto';
-import { and, eq, ne } from 'drizzle-orm';
+import { and, eq, ne, sql } from 'drizzle-orm';
 import { type Principal, SessionExpiredError } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -34,7 +35,14 @@ export interface PasswordChangeMeta {
 }
 
 @Injectable()
-export class AccountService {
+export class AccountService implements OnModuleInit {
+  /** A scrypt hash of a random value: verified when no hash is stored, so scrypt always runs. */
+  #dummyHash = '';
+
+  async onModuleInit(): Promise<void> {
+    this.#dummyHash = await hashPassword(randomUUID());
+  }
+
   constructor(
     @Inject(AUTH_DB) private readonly authDb: AuthDb,
     @Inject(CLOCK) private readonly clock: Clock,
@@ -79,12 +87,16 @@ export class AccountService {
     // Reserved before the password is checked, as at sign-in: parallel attempts cannot outrun it.
     const { refused, started } = await this.throttle.reserve(keys, this.clock.now());
     if (refused) {
+      // One row for the first refusal of a lock, as at sign-in (review N2).
+      if (refused.first) await this.audit.record({ event: 'auth.password_change_failed' }, ids);
       await this.#auditLocks(started, principal.userId, meta.requestId);
       throw lockError(refused);
     }
-    const valid = person.hash
-      ? await verifyPassword({ hash: person.hash, password: currentPassword })
-      : false;
+    // Every signed-in person has a password (set through their link); scrypt runs either way.
+    const valid = await verifyPassword({
+      hash: person.hash ?? this.#dummyHash,
+      password: currentPassword,
+    });
     if (!valid) {
       await this.audit.record({ event: 'auth.password_change_failed' }, ids);
       await this.#auditLocks(started, principal.userId, meta.requestId);
@@ -102,6 +114,15 @@ export class AccountService {
     const now = this.clock.now();
     const current = principal.sessionId;
     await this.authDb.withAuth(async (tx) => {
+      // Two changes by one person at once run one after the other; the second finds its
+      // session ended by the first and changes nothing (review N4).
+      await tx.execute(
+        sql`select pg_advisory_xact_lock(hashtextextended('shifa.password:' || ${principal.userId}, 0))`,
+      );
+      const [own] = current
+        ? await tx.select({ id: session.id }).from(session).where(eq(session.id, current))
+        : [];
+      if (!own) throw new SessionExpiredError();
       await setPassword(tx, principal.userId, hash, now);
       const ended = await tx
         .delete(session)
