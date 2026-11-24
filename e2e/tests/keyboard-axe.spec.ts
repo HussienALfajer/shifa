@@ -5,7 +5,7 @@
 import { expect, type Page, test } from '@playwright/test';
 import { expectPageAxeClean } from '../support/axe.ts';
 import { seeded, urls } from '../support/run.ts';
-import { tabTo } from '../support/screens.ts';
+import { openSecretLink, tabTo } from '../support/screens.ts';
 import { nextCode } from '../support/totp.ts';
 
 const PASSWORD = 'جملة-سرية-للوحة-المفاتيح';
@@ -24,7 +24,8 @@ test('setup, enrolment, codes, sign-in and challenge by keyboard, axe clean', as
   const owner = seeded().clinics[2]?.owner;
   if (!owner) throw new Error('no third seeded clinic');
 
-  await page.goto(`${base}/setup#${owner.token}`);
+  // Opened without page.goto, which would name the token in a failure (security review L4).
+  await openSecretLink(page, `${base}/setup#${owner.token}`);
   await expect(page.getByLabel('كلمة مرور جديدة', { exact: true })).toBeVisible();
   await expectPageAxeClean(page, 'setup link');
   await tabTo(page, page.getByLabel('كلمة مرور جديدة', { exact: true }));

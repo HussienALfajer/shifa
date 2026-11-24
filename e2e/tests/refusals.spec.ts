@@ -1,5 +1,6 @@
 // Slice A-01-07 checkpoint 5, review 1 and 5: the refusals of the entry path on the real backend
-// that the journeys do not reach. (a) A setup link leaves no token in the browser's history, and a
+// that the journeys do not reach. (a) A setup link leaves no token in the address bar nor in the
+// back/forward entries (the browser's global history still keeps the visited URL: backlog), and a
 // used link shows one message without the clinic's name (A-01a criterion 4); (b) a phone with no
 // account gets the same one message as a wrong password (criterion 6), and the fifth wrong attempt
 // locks the phone with a countdown, the form off (criterion 7). Independent of the other files:
@@ -17,7 +18,10 @@ const WRONG = 'رقم الهاتف أو كلمة المرور غير صحيحة'
 
 test.describe.configure({ mode: 'serial' });
 
-test('(a) no token in the history; a used link names no clinic', async ({ page, context }) => {
+test('(a) no token in the address or back/forward history; a used link names no clinic', async ({
+  page,
+  context,
+}) => {
   const owner = seeded().clinics[3]?.owner;
   if (!owner) throw new Error('no fourth seeded clinic');
   const link = `${urls().clinic}/setup#${owner.token}`;

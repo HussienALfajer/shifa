@@ -1,5 +1,8 @@
 // Slice A-01-07 checkpoint 5: the entry path through the real screens, against the built API, a
-// real database and the built apps (A-01a "Flows", criteria 4, 5, 6, 7, 9, 11, 12; A-01b 10).
+// real database and the built apps (A-01a "Flows"; as a person sees them: criteria 4 and 5 for
+// setup links, 9 the idle limit, 11 enrolment owed before any page, 12 the challenge and a
+// recovery code used once; A-01b 10). The used link (4), the one wrong-phone message (6) and the
+// phone lock (7) are in refusals.spec.ts; the rest of 6, 7, 11 and 12 is proven by the API tests.
 // Run in this order, each journey building on the last: (5) the super admin's first sign-in on
 // admin web, through the setup link to enrolment and the recovery codes; (1) that super admin
 // creates a clinic through the API, and its owner opens the link in the page, sets the password,
@@ -223,7 +226,12 @@ test('(3) a doctor in two clinics: chooser, clinic, branch; a suspended clinic n
   const suspended = doctorPage.getByTestId('clinic-card').filter({ hasText: clinicB.name });
   await expect(suspended).toHaveAttribute('aria-disabled', 'true');
   await expect(suspended).toContainText('موقوفة');
-  await expect(suspended.getByRole('link')).toHaveCount(0);
+  // Not a link, and a press does nothing: still the chooser, still no clinic (review 2).
+  expect(await suspended.evaluate((el) => el.tagName)).not.toBe('A');
+  await suspended.click({ force: true });
+  await doctorPage.waitForTimeout(500);
+  await expect(doctorPage).toHaveURL(`${urls().clinic}/choose`);
+  expect((await sessionOf(doctorPage)).tenantId).toBeNull();
   await expectPageAxeClean(doctorPage, 'chooser with a suspended clinic');
 
   // The keyboard path: Tab reaches clinic A's card (the suspended card takes no focus), Enter
@@ -245,7 +253,8 @@ test('(4) the idle warning with a 15-minute limit: continue, sign out now, then 
   const base = urls().clinic;
   await expectCall(ownerPage, 200, 'PATCH', '/clinic/settings', { idleMinutes: 15 });
   // The page's clock moves; the server's does not, so the server's session stays valid and only
-  // the page's timer decides. Installed before the page loads, so every timer is the fake one.
+  // the page's timer decides. Installed here, it takes over every timer from the next page load
+  // (the sign-in below), so all of the session's timers are the fake ones.
   await doctorPage.clock.install();
   await signOutFromHome(doctorPage, base);
   await signInThroughScreen(doctorPage, base, doctor.phone, PASSWORD);
@@ -254,7 +263,14 @@ test('(4) the idle warning with a 15-minute limit: continue, sign out now, then 
   expect(view.idleMinutes).toBe(15);
 
   const dialog = doctorPage.getByRole('alertdialog', { name: 'هل ما زلت تعمل؟' });
-  await doctorPage.clock.fastForward('14:10');
+  // Not before the last minute (review 6), then at it. runFor runs every one-second tick, as real
+  // time does. The choice's last events are activity the tracker reports once, a minute later
+  // (one session read a minute at most): let that read land, then count 15 minutes from it.
+  await doctorPage.clock.runFor('01:10');
+  await doctorPage.waitForTimeout(500);
+  await doctorPage.clock.runFor('13:30');
+  await expect(dialog).toBeHidden();
+  await doctorPage.clock.runFor('00:40');
   await expect(dialog).toBeVisible();
   await expect(dialog).toContainText('لم نرَ نشاطاً منذ 14 دقيقة');
   await dialog.getByRole('button', { name: 'متابعة العمل' }).click();

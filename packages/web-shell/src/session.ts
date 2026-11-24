@@ -3,6 +3,7 @@
 // it is never retried; other failures retry twice. Refetched whenever the window regains focus.
 import type { Schemas } from '@shifa/api-client-ts';
 import { type QueryClient, queryOptions, useQuery } from '@tanstack/react-query';
+import { forgetRememberedPhone } from './auth/remembered-phone.ts';
 import { errorFacts, type ShellClient } from './client.ts';
 import type { SignInReason } from './guard.ts';
 import { announceSignOut } from './tabs.ts';
@@ -79,7 +80,8 @@ export function signOutCount(): number {
 
 /**
  * Ends the session on the server and forgets everything cached for it. Never throws: true when
- * the server answered 204, false when the request failed (network, 5xx), so the caller can say
+ * the server answered 204 or 401 (already ended), false when the request failed (network, 5xx,
+ * another refusal), so the caller can say
  * the session may still be open on the server. With `announce`, the app's other tabs are told
  * (they check with the server before they leave, `tabs.ts`).
  */
@@ -89,9 +91,13 @@ export async function signOut(
   announce?: SignInReason,
 ): Promise<boolean> {
   signOuts += 1;
+  // The person is leaving this computer: the remembered phone goes before the request, whatever
+  // the answer (checkpoint 5 security review L2).
+  if (announce === 'signed_out') forgetRememberedPhone();
   try {
     const { response } = await shell.api.POST('/auth/sign-out');
-    return response.ok;
+    // 401: the session had already ended on the server, which is what was asked.
+    return response.ok || response.status === 401;
   } catch {
     return false;
   } finally {
