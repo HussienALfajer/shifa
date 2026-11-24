@@ -66,7 +66,7 @@ Estimated hand-written lines: ~3,600 (sign-in ~450, setup link ~400, enrol and r
 Not drawn.
 
 ## Stopped at
-Re-planned 2026-11-24; waiting for the owner's approval of the plan.
+Re-plan approved by the owner 2026-11-24 (with ADR-0046); next: checkpoint 1, drawing and analysis.
 
 ## Evidence
 - `verify` (full): —
