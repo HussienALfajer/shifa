@@ -1,6 +1,6 @@
 # A-01-07 UI batch 1: sign-in, MFA, setup link and clinic chooser screens
 
-Status: Checkpoint 1 approved by the owner 2026-11-24; code after A-01-09 (re-planned 2026-11-24) · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens`
+Status: Checkpoint 1 approved by the owner 2026-11-24; checkpoint 2 PR open 2026-11-24 · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens` (checkpoint 2 on the cloud session's branch `claude/zealous-goldberg-tcd580`, docs/process/cloud-sessions.md §4)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screen inventory (Sign in, Setup link, TOTP enrol, TOTP challenge, Idle warning), verification rows "Flows" and "Screens"; criteria 4–7, 9, 11, 12 as seen by the user; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen "Clinic chooser", criterion 10 (after sign-in) · Requirements: PLT-01, PLT-05, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-91, OD-94
 
 After [A-01-06](A-01-06-web-shells-and-e2e-harness.md) (merged). Checkpoint 1 (drawing and analysis) starts now; its approved API gaps are built in [A-01-09](A-01-09-account-api-gaps.md), and checkpoint 2 (code) starts after A-01-09 merges, so the batch codes against the whole API (ADR-0042). Re-planned 2026-11-24 against the merged API (A-01-02 to A-01-05): the entry path from the first link to the first clinic is one batch; the clinic chooser moved here from A-01-08 (it is the last step of signing in); My account, the automatic sign-out setting and the admin-web screens moved to [A-01-10](A-01-10-ui-account-settings-admin-web.md), after the account API gaps found in this re-plan are closed by [A-01-09](A-01-09-account-api-gaps.md).
@@ -129,10 +129,27 @@ Accepted by the owner 2026-11-24: all ten. Declined: none.
 ### Checked before showing
 The five artboards hold no literal colour (`#…`, `rgb()`, `hsl()`), every `--shifa-` name exists in the installed `tokens.css`, and no existing component is drawn by hand (buttons, fields, OTP, checkbox, badges, avatars, skeletons, spinner, empty states and icons are mounted from the bundle). The only px values are device and artboard sizes.
 
+## Checkpoint 2 — built 2026-11-24
+**Callout** (`packages/ui/src/callout`), from `CalloutSheet` with `/ui-component`: four tones on the status tokens, icon per tone (replaceable), optional title, one action at the end of the line, no close button, `role` alert (warning, danger) or status (info, success), compact density tighter; `data-*` hooks pass through. Stories (eight combinations), five screenshot baselines, design-system bundle entry (README, preview, types); the sync to the Shifa Design System waits for the owner (docs/process/ui-screenshots.md).
+
+**Sign-in** (`packages/web-shell/src/auth`), shared by both apps (`shellPages.signIn`): brand panel on desktop, logo above the form on tablets and phones (`auth-layout.tsx`, reused by checkpoints 3 and 4); the phone sent as typed (Arabic-Indic digits included); improvements b (lock countdown, form off until `until`, on the server's clock from the `Date` header), g (Caps Lock and Arabic-letter hints), i (remembered phone, clinic web only), j (retry when the connection returns); notices for `?reason=` idle (with `minutes` from the page's own timer), absolute, ended, session_expired, not_admin, signed_out, sign_out_failed. The server's `reason` on 401 `session_expired` (A-01-09) now reaches `?reason=` through the guard and the mid-session rule; a deliberate sign-out lands on `?reason=signed_out`.
+
+Differences from the drawing, explained:
+- Lock text: the drawing's «بعد 5 محاولات خاطئة خلال 15 دقيقة» names the server's policy, which the answer does not carry; the page says «محاولات خاطئة كثيرة بهذا الرقم» and keeps the countdown and the end time.
+- Notices for `absolute` and `ended` are new (gap 6, closed by A-01-09); the drawing had one «انتهت جلستك». The idle notice names the minutes only when this page's timer signed out; the server's idle reason has no minutes.
+- A 5xx answer reads «تعذّر الدخول الآن · حدث خطأ في الخادم» (the drawing had the unreachable text for both); only a request with no answer says the connection is down. A 400 `validation_failed` (a phone the server cannot read) shows the one wrong-phone-or-password message.
+- The top logo is the reverse lockup in dark on tablets and phones.
+- Security review changes to the accepted improvements: j sends what the fields hold now, only within two minutes of the failure and on a visible page (never at an empty desk); i is not kept on admin web, is forgotten after 14 days and on a deliberate sign-out; the password field empties when a lock answers; the ticking countdown is hidden from screen readers, which hear the end time once.
+- The locked test `sign-in.test.tsx` lost one `?? ''` for lint, with the owner's consent (2026-11-24).
+
+Reviews: `reviewer` (blocking: a change of `idleMinutes` within a session re-created the idle tracker from the session's first expiry and signed an active person out; fixed with a ref, regression test `session-reasons.test.tsx`) and `security-reviewer` (M1 unattended replay of the stored attempt; L1 double sends; L2 remembered phone; L3 password kept through a lock; L4 the same idle finding): all fixed, tests in `sign-in-safety.test.tsx`. Non-blocking left: two items in `docs/backlog.md`.
+
 ## Stopped at
-Checkpoint 1 approved by the owner 2026-11-24 (everything accepted). Next: A-01-09 with the approved rows; then the three components with `/ui-component` from their sheets and synced; then checkpoint 2 here.
+Checkpoint 2 built and reviewed (PR open). Next: checkpoint 3 — QrCode and CodeList with `/ui-component` from their sheets, then the setup link and TOTP screens.
 
 ## Evidence
-- `verify` (full): —
-- Screenshots: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- `pnpm verify` (fast, final tree): format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e: all green.
+- `@shifa/ui` Callout: `vitest --project browser src/callout` 34 passed (RTL and LTR, roles, token colours, icon, action side, density, axe light and dark); `--project storybook src/callout` 5 passed; `@shifa/ui` node tests 310 passed; `pnpm ui:screenshots --update` (Docker) wrote the five Callout baselines (other rewritten baselines restored, backlog item on `--update` noise).
+- `@shifa/web-shell`: 73 tests passed (23 locked sign-in tests, 10 security-review tests, 2 session-reason tests, the A-01-06 suites).
+- Real backend: `pnpm --filter @shifa/e2e e2e` 5 passed, (c) now `?reason=idle` with «خرجت تلقائياً». Browser screenshots against the real backend (desktop 1280, tablet 768, phone 390; light and dark; Arabic RTL): default, admin web, notices idle, signed out and not admin, remembered phone, invalid credentials, Arabic-letter hint, unreachable with retry, phone lock (reached by wrong passwords on the real API) on desktop and phone dark; compared with the prototype `Main`: layout, brand panel, widths, Callout placement and texts match, differences above. The `+` of the international example measured left of its digits in the page.
+- `verify:full`: not needed (no build, boot, DB harness, drift generator, CI or verify change); CI runs it.

@@ -125,6 +125,15 @@
       }
     }
   },
+  "commonLockWaitAt": "يمكنك المحاولة بعد الساعة {time}.",
+  "@commonLockWaitAt": {
+    "description": "common.lockWaitAt",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "commonMfaPending": "تُرسم شاشة التحقق بخطوتين في الشريحة التالية.",
   "@commonMfaPending": {
     "description": "common.mfaPending"
@@ -262,6 +271,14 @@
   "commonSearch": "بحث",
   "@commonSearch": {
     "description": "common.search"
+  },
+  "commonServerErrorText": "حدث خطأ في الخادم. أعد المحاولة بعد قليل.",
+  "@commonServerErrorText": {
+    "description": "common.serverErrorText"
+  },
+  "commonServerErrorTitle": "تعذّر الدخول الآن",
+  "@commonServerErrorTitle": {
+    "description": "common.serverErrorTitle"
   },
   "commonSetupPending": "تُرسم شاشة إعداد الحساب في الشريحة التالية.",
   "@commonSetupPending": {

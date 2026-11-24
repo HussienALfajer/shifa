@@ -38,7 +38,10 @@ export interface CalloutProps {
   tone?: CalloutTone;
   /** A one-line title in weight 500. */
   title?: ReactNode;
-  /** One or two sentences. A countdown inside them is not announced each second. */
+  /**
+   * One or two sentences. The message is a live region: a ticking countdown goes in an
+   * `aria-hidden` span beside a fixed `sr-only` sentence, or it is announced each second.
+   */
   children: ReactNode;
   /** Replaces the tone's icon (`clock` for a lock, `wifi-slash` for the network). */
   icon?: IconName;

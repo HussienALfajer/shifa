@@ -12,7 +12,7 @@ Coded from the sheet the owner approved on 2026-11-24 (Shifa Screens · Clinic w
 A row on the tone's background with its border, radius 8 like the fields beside it: the icon in the tone's colour at the start, an optional title in weight 500, one or two sentences in the default text colour, and at most one small secondary button at the end of the line. No close button: it goes when its cause does. Comfortable padding 12 × 16 with a 12 gap; compact 8 × 12 with an 8 gap.
 
 ## Behaviour
-warning and danger are announced once as an alert, info and success as a status. The icon is decoration; the words carry the meaning, never the colour alone. A countdown inside the text uses tabular Western digits and is not announced each second.
+warning and danger are announced once as an alert, info and success as a status. The icon is decoration; the words carry the meaning, never the colour alone. A countdown inside the text uses tabular Western digits; in code it is hidden from screen readers, which hear the end time once instead.
 
 ## What you provide (design system)
 `tone` (info, success, warning, danger), `title`, `text`, `icon` (replaces the tone's: clock for a lock, wifi-slash for the network), `action` (the button's label).

@@ -19,12 +19,24 @@ import { AuthLayout } from './auth-layout.tsx';
 import { clockTime, remaining } from './lock.ts';
 import { SignInNotice } from './sign-in-notice.tsx';
 
-/** The last phone that signed in on this device (improvement i): a convenience, never relied on. */
+/**
+ * The last phone that signed in to clinic web on this device (improvement i): a convenience,
+ * never relied on. Forgotten after 14 days, on «ليس رقمك؟» and on a deliberate sign-out (the
+ * person is leaving this computer); never kept on admin web (security review L2).
+ */
 const REMEMBERED = 'shifa.signIn.phone';
+const REMEMBERED_AT = 'shifa.signIn.phoneAt';
+const REMEMBER_FOR_MS = 14 * 24 * 60 * 60_000;
 
 function readRemembered(): string {
   try {
-    return localStorage.getItem(REMEMBERED) ?? '';
+    const phone = localStorage.getItem(REMEMBERED) ?? '';
+    const at = Number(localStorage.getItem(REMEMBERED_AT));
+    if (phone !== '' && Number.isFinite(at) && at > 0 && Date.now() - at > REMEMBER_FOR_MS) {
+      writeRemembered(null);
+      return '';
+    }
+    return phone;
   } catch {
     return '';
   }
@@ -32,11 +44,22 @@ function readRemembered(): string {
 
 function writeRemembered(phone: string | null): void {
   try {
-    if (phone === null) localStorage.removeItem(REMEMBERED);
-    else localStorage.setItem(REMEMBERED, phone);
+    if (phone === null) {
+      localStorage.removeItem(REMEMBERED);
+      localStorage.removeItem(REMEMBERED_AT);
+    } else {
+      localStorage.setItem(REMEMBERED, phone);
+      localStorage.setItem(REMEMBERED_AT, String(Date.now()));
+    }
   } catch {
     // Storage blocked: nothing is remembered.
   }
+}
+
+/** A deliberate sign-out forgets the phone before the page reads it. */
+function rememberedFor(reason: string | undefined): string {
+  if (reason === 'signed_out') writeRemembered(null);
+  return readRemembered();
 }
 
 /**
@@ -47,24 +70,39 @@ const EXAMPLES = { local: '⁦0930012345⁩', international: '⁦+905300012345�
 
 type Failure =
   | { kind: 'invalid' }
-  | { kind: 'lock'; code: 'phone_locked' | 'ip_blocked'; until: number }
-  | { kind: 'network' };
+  /** `until` on the server's clock (shown); `endsAt` the same moment on this device's clock. */
+  | { kind: 'lock'; code: 'phone_locked' | 'ip_blocked'; until: number; endsAt: number }
+  /** No answer (offline, the request failed) or a server error; `at` is when. */
+  | { kind: 'network' | 'server'; at: number };
 
-const ARABIC_LETTER = /[؀-ۿ]/;
+/** How long after a failed attempt the returning connection may send the form by itself. */
+const RETRY_WINDOW_MS = 2 * 60_000;
 
+/** Arabic letters only: Arabic-Indic digits and Arabic punctuation (، ؟) are not a keyboard sign. */
+const ARABIC_LETTER = /[ء-يٱ-ۓ]/;
+
+/** The time now, read on every render; while `active`, a render each second. */
 function useNow(active: boolean): number {
-  const [now, setNow] = useState(() => Date.now());
+  const [, setTick] = useState(0);
   useEffect(() => {
     if (!active) return undefined;
-    setNow(Date.now());
     const timer = setInterval(() => {
-      setNow(Date.now());
+      setTick((n) => n + 1);
     }, 1000);
     return () => {
       clearInterval(timer);
     };
   }, [active]);
-  return now;
+  return Date.now();
+}
+
+/**
+ * The server's clock minus this device's, from the answer's `Date` header (0 without one): a lock
+ * counts down to the server's `until` even on a clinic computer whose clock is off.
+ */
+function serverOffset(response: Response): number {
+  const date = Date.parse(response.headers.get('date') ?? '');
+  return Number.isFinite(date) ? date - Date.now() : 0;
 }
 
 export function SignInPage() {
@@ -75,51 +113,78 @@ export function SignInPage() {
   const navigate = useNavigate();
   const search: { reason?: string; minutes?: number } = useSearch({ strict: false });
 
-  const [remembered, setRemembered] = useState(readRemembered);
+  const [remembered, setRemembered] = useState(() =>
+    app === 'clinic' ? rememberedFor(search.reason) : '',
+  );
   const [phone, setPhone] = useState(remembered);
   const [password, setPassword] = useState('');
   const [empty, setEmpty] = useState({ phone: false, password: false });
   const [busy, setBusy] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [capsLock, setCapsLock] = useState(false);
-  const sent = useRef<{ phone: string; password: string } | null>(null);
+  // One request at a time: a double press or a flapping connection never sends two (each wrong
+  // attempt costs the phone and the clinic's address an attempt on the server).
+  const inFlight = useRef(false);
 
   const locked = failure?.kind === 'lock';
   const now = useNow(locked);
-  const lockEnded = locked && now >= failure.until;
+  const lockEnded = locked && now >= failure.endsAt;
   useEffect(() => {
     if (lockEnded) setFailure(null);
   }, [lockEnded]);
 
   async function send(values: { phone: string; password: string }) {
-    sent.current = values;
+    if (inFlight.current) return;
+    inFlight.current = true;
     setBusy(true);
     try {
-      const { data, error } = await shell.api.POST('/auth/sign-in', { body: values });
+      const { data, error, response } = await shell.api.POST('/auth/sign-in', { body: values });
       if (data) {
-        writeRemembered(values.phone);
+        if (app === 'clinic') writeRemembered(values.phone);
         queryClient.setQueryData(sessionQueryKey, { kind: 'signed-in', session: data });
         await navigate({ to: '/' });
         return;
       }
       const { code, until } = errorFacts(error);
-      if (code === 'invalid_credentials') setFailure({ kind: 'invalid' });
-      else if ((code === 'phone_locked' || code === 'ip_blocked') && until !== undefined) {
-        setFailure({ kind: 'lock', code, until });
-      } else setFailure({ kind: 'network' });
+      // A phone the server cannot read is a wrong phone: the same one message (no hint).
+      if (code === 'invalid_credentials' || code === 'validation_failed') {
+        setFailure({ kind: 'invalid' });
+      } else if ((code === 'phone_locked' || code === 'ip_blocked') && until !== undefined) {
+        // The attempt that hit the lock was wrong: it does not wait in the field for the lock.
+        setPassword('');
+        setFailure({ kind: 'lock', code, until, endsAt: until - serverOffset(response) });
+      } else setFailure({ kind: 'server', at: Date.now() });
     } catch {
-      setFailure({ kind: 'network' });
+      setFailure({ kind: 'network', at: Date.now() });
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }
 
-  // Improvement j: the connection came back after a failed attempt → the same attempt again.
-  const network = failure?.kind === 'network';
+  /** What the fields hold now; null (and the empty field named) when one is empty. */
+  function values(): { phone: string; password: string } | null {
+    const missing = { phone: phone.trim() === '', password: password === '' };
+    setEmpty(missing);
+    return missing.phone || missing.password ? null : { phone: phone.trim(), password };
+  }
+
+  function retry() {
+    if (locked) return;
+    const now = values();
+    if (now) void send(now);
+  }
+
+  // Improvement j: the connection came back soon after a failed attempt, on a page someone is
+  // looking at → what the fields hold is sent again. Later, or on a hidden page, nothing is sent
+  // by itself: a sign-in never happens at an empty desk (security review M1).
+  const network = failure?.kind === 'network' ? failure.at : null;
   useEffect(() => {
-    if (!network) return undefined;
+    if (network === null) return undefined;
     const again = () => {
-      if (sent.current) void send(sent.current);
+      if (Date.now() - network > RETRY_WINDOW_MS) return;
+      if (document.visibilityState === 'hidden') return;
+      retry();
     };
     globalThis.addEventListener('online', again);
     return () => {
@@ -130,10 +195,8 @@ export function SignInPage() {
   function submit(event: SyntheticEvent<HTMLFormElement>) {
     event.preventDefault();
     if (busy || locked) return;
-    const missing = { phone: phone.trim() === '', password: password === '' };
-    setEmpty(missing);
-    if (missing.phone || missing.password) return;
-    void send({ phone: phone.trim(), password });
+    const now = values();
+    if (now) void send(now);
   }
 
   // A Latin letter tells the state for sure (upper case without Shift, or lower case with it,
@@ -176,34 +239,31 @@ export function SignInPage() {
           title={text(failure.code === 'phone_locked' ? 'lockPhoneTitle' : 'lockIpTitle')}
         >
           {text(failure.code === 'phone_locked' ? 'lockPhoneText' : 'lockIpText')}{' '}
-          <span className="tabular-nums">
+          {/* The ticking m:ss is for the eyes; screen readers hear the end time once (the
+              alert re-reads a changed region, so the countdown would be announced each second). */}
+          <span aria-hidden="true" className="tabular-nums">
             {text('lockWait', {
-              wait: remaining(failure.until - now),
+              wait: remaining(failure.endsAt - now),
               time: clockTime(failure.until),
             })}
           </span>
+          <span className="sr-only">{text('lockWaitAt', { time: clockTime(failure.until) })}</span>
         </Callout>
       )}
-      {failure?.kind === 'network' && (
+      {(failure?.kind === 'network' || failure?.kind === 'server') && (
         <Callout
           data-testid="sign-in-error"
           data-code="network"
           tone="danger"
-          icon="wifi-slash"
-          title={text('unreachableTitle')}
+          icon={failure.kind === 'network' ? 'wifi-slash' : 'warning'}
+          title={text(failure.kind === 'network' ? 'unreachableTitle' : 'serverErrorTitle')}
           action={
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => {
-                if (sent.current) void send(sent.current);
-              }}
-            >
+            <Button size="sm" variant="secondary" loading={busy} onClick={retry}>
               {text('retry')}
             </Button>
           }
         >
-          {text('unreachableText')}
+          {text(failure.kind === 'network' ? 'unreachableText' : 'serverErrorText')}
         </Callout>
       )}
       <form noValidate onSubmit={submit} className="flex flex-col gap-5">
@@ -213,6 +273,7 @@ export function SignInPage() {
             type="tel"
             dir="ltr"
             startIcon="phone"
+            maxLength={32}
             value={phone}
             onValueChange={(value) => {
               setPhone(value);
