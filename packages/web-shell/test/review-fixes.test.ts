@@ -153,10 +153,8 @@ describe('another person, session or clinic behind the page', () => {
     });
     disposers.push(dispose);
     await router.load();
-    await queryClient.fetchQuery({
-      queryKey: sessionQueryKey,
-      queryFn: () => ({ kind: 'signed-in', session: SESSION }),
-    });
+    queryClient.setQueryData(sessionQueryKey, { kind: 'signed-in', session: SESSION });
+    await flush();
     queryClient.setQueryData(['clinic', SESSION.tenantId, 'patients'], ['synthetic']);
 
     // The same session switched clinic in another tab: the focus refresh sees tenant B.
