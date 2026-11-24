@@ -74,6 +74,19 @@ export interface EmptyStateProps {
   actions?: ActionData[];
 }
 
+export interface CalloutProps {
+  /** info (default), success, warning, danger: locked status colours with their icon. */
+  tone?: 'info' | 'success' | 'warning' | 'danger';
+  /** A one-line title in weight 500. */
+  title?: string;
+  /** The message: one or two sentences. */
+  text: string;
+  /** Replaces the tone's icon (clock for a lock, wifi-slash for the network). */
+  icon?: IconName;
+  /** The label of at most one button at the end of the line. */
+  action?: string;
+}
+
 export interface AvatarProps {
   /** One person: the name gives the initials, the colour and the accessible name. */
   name?: string;
@@ -127,6 +140,7 @@ export declare const CountBadge: (props: CountBadgeProps) => unknown;
 export declare const Skeleton: (props: SkeletonProps) => unknown;
 export declare const Card: (props: CardProps) => unknown;
 export declare const EmptyState: (props: EmptyStateProps) => unknown;
+export declare const Callout: (props: CalloutProps) => unknown;
 export declare const Avatar: (props: AvatarProps) => unknown;
 export declare const Toolbar: (props: ToolbarProps) => unknown;
 export declare const Pagination: (props: PaginationProps) => unknown;

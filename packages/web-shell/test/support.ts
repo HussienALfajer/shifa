@@ -10,7 +10,11 @@ export interface FakeApi {
   /** Method and path of every request, in order. */
   calls: string[];
   /** Makes every request after this one answer 401 with this code. */
-  endSession(code: string): void;
+  endSession(code: string, reason?: string): void;
+  /** Answers by path (`/api/auth/sign-in`), given the parsed JSON body; checked first. */
+  answers: Record<string, (body: unknown) => Response | Promise<Response>>;
+  /** The JSON body of every request that had one, by path, in order. */
+  bodies: Record<string, unknown[]>;
 }
 
 export const SESSION: SessionView = {
@@ -27,32 +31,48 @@ export const SESSION: SessionView = {
   absoluteExpiresAt: '2026-11-24T22:00:00.000Z',
 };
 
-const json = (status: number, body: unknown) =>
+export const json = (status: number, body: unknown) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 
-const error = (code: string) => json(401, { error: { code, message: 'Unauthorized' } });
+const error = (code: string, reason?: string) =>
+  json(401, { error: { code, message: 'Unauthorized', ...(reason ? { reason } : {}) } });
+
+/** An error envelope with any status and extra fields (`until`, `reason`). */
+export const errorAnswer = (status: number, code: string, extra: Record<string, unknown> = {}) =>
+  json(status, { error: { code, message: 'Error', ...extra } });
 
 export function fakeApi(session: SessionView | null = null): FakeApi {
   let ended: string | null = null;
+  let endedReason: string | undefined;
   const api: FakeApi = {
     session,
     signedOutCode: 'unauthorized',
     calls: [],
-    endSession: (code) => {
+    answers: {},
+    bodies: {},
+    endSession: (code, reason) => {
       ended = code;
+      endedReason = reason;
       api.session = null;
       api.signedOutCode = code;
     },
-    fetch: (request) => {
+    fetch: async (request) => {
       const path = new URL(request.url).pathname;
       api.calls.push(`${request.method} ${path}`);
+      const text = request.method === 'GET' ? '' : await request.clone().text();
+      const body: unknown = text ? JSON.parse(text) : undefined;
+      if (body !== undefined) (api.bodies[path] ??= []).push(body);
+      const answer = api.answers[path];
+      if (answer) return answer(body);
       if (path === '/api/auth/sign-out') {
         api.session = null;
         return Promise.resolve(new Response(null, { status: 204 }));
       }
-      if (ended !== null) return Promise.resolve(error(ended));
+      if (ended !== null) return Promise.resolve(error(ended, endedReason));
       if (path === '/api/auth/session') {
-        return Promise.resolve(api.session ? json(200, api.session) : error(api.signedOutCode));
+        return Promise.resolve(
+          api.session ? json(200, api.session) : error(api.signedOutCode, endedReason),
+        );
       }
       return Promise.resolve(json(200, { clinics: [] }));
     },

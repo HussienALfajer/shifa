@@ -6,7 +6,15 @@
 // refresh already found the session gone: then the 401 rule names the real reason.
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { createContext, type ReactNode, useContext, useEffect, useMemo, useState } from 'react';
+import {
+  createContext,
+  type ReactNode,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import type { ShellClient } from './client.ts';
 import {
   clockOffset,
@@ -32,6 +40,10 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
   const [state, setState] = useState<IdleState>({ kind: 'active' });
   // One tracker per session: later refreshes reach it through `refresh`, not a new tracker.
   const sessionId = session?.sessionId;
+  // Read at sign-out only: a new idle setting (a switch, the owner's change) must not re-create
+  // the tracker from the session's first expiry (security review L4).
+  const minutes = useRef(session?.idleMinutes);
+  minutes.current = session?.idleMinutes;
   const start = useMemo(
     () =>
       session ? { expiry: expiryOf(session), offset: clockOffset(session, Date.now()) } : undefined,
@@ -73,8 +85,12 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       const action = idleAction(next, { gone: tracker.gone(), ended });
       if (action === 'none') return;
       ended = true;
+      const ran = minutes.current;
       void signOut(shell, queryClient).finally(() =>
-        navigate({ to: '/sign-in', search: { reason: 'idle' } }),
+        navigate({
+          to: '/sign-in',
+          search: ran === undefined ? { reason: 'idle' } : { reason: 'idle', minutes: ran },
+        }),
       );
     }, 1000);
     return () => {

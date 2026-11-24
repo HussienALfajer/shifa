@@ -7,7 +7,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { createShellClient } from './client.ts';
 import type { ShellApp } from './guard.ts';
-import { placeholderPages } from './pages.tsx';
+import { shellPages } from './pages.tsx';
 import { ShellProviders } from './providers.tsx';
 import { createShellRouter, type ShellPages } from './router.tsx';
 import { watchFocus } from './session.ts';
@@ -28,7 +28,7 @@ export function mountShellApp({ app, element, version, pages, serviceWorker }: M
     app,
     shell,
     queryClient,
-    pages: pages ?? placeholderPages,
+    pages: pages ?? shellPages,
   });
   watchFocus(queryClient);
   if (serviceWorker && 'serviceWorker' in navigator) {

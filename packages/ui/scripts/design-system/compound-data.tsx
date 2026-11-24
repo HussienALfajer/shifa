@@ -6,11 +6,13 @@ import {
   AvatarGroup,
   type AvatarSize,
   Button,
+  type CalloutTone,
   CardBody,
   CardFooter,
   CardHeader,
   CardLink,
   Avatar as CodeAvatar,
+  Callout as CodeCallout,
   Card as CodeCard,
   EmptyState as CodeEmptyState,
   Pagination as CodePagination,
@@ -127,6 +129,29 @@ export function EmptyState({ actions, ...rest }: EmptyStateData) {
       {...rest}
       {...(actions === undefined ? {} : { actions: <Actions actions={actions} /> })}
     />
+  );
+}
+
+export interface CalloutData {
+  tone?: CalloutTone;
+  title?: string;
+  /** The message: one or two sentences. */
+  text: string;
+  icon?: IconName;
+  /** The label of at most one button at the end of the line (sm, secondary). */
+  action?: string;
+}
+
+export function Callout({ text, action, ...rest }: CalloutData) {
+  return (
+    <CodeCallout
+      {...rest}
+      {...(action === undefined
+        ? {}
+        : { action: <Actions actions={[{ label: action }]} size="sm" /> })}
+    >
+      {text}
+    </CodeCallout>
   );
 }
 

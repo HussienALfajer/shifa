@@ -42,6 +42,7 @@ export {
   type ButtonSize,
   type ButtonVariant,
 } from './button/button.tsx';
+export { Callout, type CalloutProps, type CalloutTone } from './callout/callout.tsx';
 export {
   Card,
   CardBody,

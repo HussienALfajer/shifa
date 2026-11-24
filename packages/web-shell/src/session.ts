@@ -3,13 +3,13 @@
 // it is never retried; other failures retry twice. Refetched whenever the window regains focus.
 import type { Schemas } from '@shifa/api-client-ts';
 import { type QueryClient, queryOptions, useQuery } from '@tanstack/react-query';
-import type { ShellClient } from './client.ts';
+import { errorFacts, type ShellClient } from './client.ts';
 
 export type SessionView = Schemas['SessionView'];
 
 export type SessionState =
   | { kind: 'signed-in'; session: SessionView }
-  | { kind: 'signed-out'; code: string };
+  | { kind: 'signed-out'; code: string; reason?: string };
 
 export const sessionQueryKey = ['session'] as const;
 
@@ -21,8 +21,10 @@ export async function fetchSession(shell: ShellClient): Promise<SessionState> {
   const { data, error, response } = await shell.api.GET('/auth/session');
   if (data) return { kind: 'signed-in', session: data };
   if (response.status === 401) {
-    const code = (error as { error?: { code?: string } } | undefined)?.error?.code;
-    return { kind: 'signed-out', code: code ?? 'unauthorized' };
+    const { code, reason } = errorFacts(error);
+    return reason === undefined
+      ? { kind: 'signed-out', code }
+      : { kind: 'signed-out', code, reason };
   }
   throw new SessionLoadError(`GET /auth/session answered ${String(response.status)}`);
 }

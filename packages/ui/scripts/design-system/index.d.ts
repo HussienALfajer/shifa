@@ -416,6 +416,7 @@ type Name =
   | 'Skeleton'
   | 'Card'
   | 'EmptyState'
+  | 'Callout'
   | 'Avatar'
   | 'Toolbar'
   | 'Pagination'

@@ -22,7 +22,7 @@ export {
   WARNING_MS,
 } from './idle-timer.ts';
 export { type MountOptions, mountShellApp } from './mount.tsx';
-export { ICON_CREDIT, placeholderPages, useText } from './pages.tsx';
+export { ICON_CREDIT, shellPages, useText } from './pages.tsx';
 export { type ShellContextValue, ShellProviders, useShell } from './providers.tsx';
 export {
   buildRouteTree,

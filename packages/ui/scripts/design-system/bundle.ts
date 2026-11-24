@@ -68,6 +68,7 @@ export const BUNDLE_COMPONENTS = [
   'Skeleton',
   'Card',
   'EmptyState',
+  'Callout',
   'Avatar',
   'Toolbar',
   'Pagination',

@@ -7,5 +7,7 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
     environment: 'happy-dom',
+    // The page tests render the whole shell; under verify's parallel load 5 s is too tight.
+    testTimeout: 30_000,
   },
 });

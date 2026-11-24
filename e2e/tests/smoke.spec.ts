@@ -56,11 +56,10 @@ test('(c) a session that ran out sends the next request to sign-in with the reas
     document.dispatchEvent(new Event('visibilitychange'));
     window.dispatchEvent(new Event('focus'));
   });
-  await expect(page).toHaveURL(`${urls().clinic}/sign-in?reason=session_expired`);
-  await expect(page.getByTestId('sign-in-reason')).toHaveAttribute(
-    'data-reason',
-    'session_expired',
-  );
+  // The server names why (A-01-09): the session's last activity is past its idle limit.
+  await expect(page).toHaveURL(`${urls().clinic}/sign-in?reason=idle`);
+  await expect(page.getByTestId('sign-in-reason')).toHaveAttribute('data-reason', 'idle');
+  await expect(page.getByTestId('sign-in-reason')).toContainText('خرجت تلقائياً');
 });
 
 test('(d) clinic web refuses to be admin web, and the reverse', async ({ page, context }) => {

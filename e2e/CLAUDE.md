@@ -12,7 +12,7 @@ Playwright journeys against the real backend (slice A-01-06): the built API on a
 - Synthetic data only. Never log a setup token, a password or a seed value; never write them to a file. One accepted exception: with `E2E_TRACE=1` (CI) a failed journey's trace keeps `page.evaluate` arguments and cookies of the throwaway backend, uploaded for 7 days.
 - Journeys run serially and in order: the setup links are one-time, and (d) signs in with the password (b) set. Running one journey alone with `--grep` fails for that reason.
 - Service workers are blocked except in `tests/offline-shell.spec.ts`.
-- A journey checks what a person sees (headings, `data-testid` hooks of the placeholder pages); A-01-07 replaces the pages, keep the hooks or update the journeys with them.
+- A journey checks what a person sees (headings, `data-testid` hooks of the pages); A-01-07 replaces the placeholder pages one checkpoint at a time, keep the hooks or update the journeys with them. Sign-in (checkpoint 2) keeps `sign-in-reason` with `data-reason` and adds `sign-in-error` with `data-code`.
 
 ## Commands
 - `pnpm exec turbo run build --filter=@shifa/e2e...` then `pnpm --filter @shifa/e2e e2e` (Docker and Chromium: `pnpm --filter @shifa/e2e exec playwright install chromium`).
