@@ -17,49 +17,16 @@ import { sessionQueryKey } from '../session.ts';
 import { useErrorText, useText } from '../text.ts';
 import { AuthLayout } from './auth-layout.tsx';
 import { clockTime, remaining, serverOffset, useNow } from './lock.ts';
+import { readRememberedPhone, writeRememberedPhone } from './remembered-phone.ts';
 import { SignInNotice } from './sign-in-notice.tsx';
 
 /**
- * The last phone that signed in to clinic web on this device (improvement i): a convenience,
- * never relied on. Forgotten after 14 days, on «ليس رقمك؟» and on a deliberate sign-out (the
- * person is leaving this computer); never kept on admin web (security review L2).
+ * A deliberate sign-out forgets the phone before the page reads it (`signOut()` already did;
+ * this covers a page opened at `?reason=signed_out` by another tab).
  */
-const REMEMBERED = 'shifa.signIn.phone';
-const REMEMBERED_AT = 'shifa.signIn.phoneAt';
-const REMEMBER_FOR_MS = 14 * 24 * 60 * 60_000;
-
-function readRemembered(): string {
-  try {
-    const phone = localStorage.getItem(REMEMBERED) ?? '';
-    const at = Number(localStorage.getItem(REMEMBERED_AT));
-    if (phone !== '' && Number.isFinite(at) && at > 0 && Date.now() - at > REMEMBER_FOR_MS) {
-      writeRemembered(null);
-      return '';
-    }
-    return phone;
-  } catch {
-    return '';
-  }
-}
-
-function writeRemembered(phone: string | null): void {
-  try {
-    if (phone === null) {
-      localStorage.removeItem(REMEMBERED);
-      localStorage.removeItem(REMEMBERED_AT);
-    } else {
-      localStorage.setItem(REMEMBERED, phone);
-      localStorage.setItem(REMEMBERED_AT, String(Date.now()));
-    }
-  } catch {
-    // Storage blocked: nothing is remembered.
-  }
-}
-
-/** A deliberate sign-out forgets the phone before the page reads it. */
 function rememberedFor(reason: string | undefined): string {
-  if (reason === 'signed_out') writeRemembered(null);
-  return readRemembered();
+  if (reason === 'signed_out') writeRememberedPhone(null);
+  return readRememberedPhone();
 }
 
 /**
@@ -116,7 +83,8 @@ export function SignInPage() {
     try {
       const { data, error, response } = await shell.api.POST('/auth/sign-in', { body: values });
       if (data) {
-        if (app === 'clinic') writeRemembered(values.phone);
+        // Never a super admin's phone, on clinic web either (checkpoint 5 security review L2).
+        if (app === 'clinic' && !data.platformAdmin) writeRememberedPhone(values.phone);
         queryClient.setQueryData(sessionQueryKey, { kind: 'signed-in', session: data });
         await navigate({ to: '/' });
         return;
@@ -265,7 +233,7 @@ export function SignInPage() {
                 size="sm"
                 variant="ghost"
                 onClick={() => {
-                  writeRemembered(null);
+                  writeRememberedPhone(null);
                   setRemembered('');
                   setPhone('');
                 }}

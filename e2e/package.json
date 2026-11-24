@@ -23,6 +23,7 @@
     "@shifa/tsconfig": "workspace:*",
     "@types/node": "24.19.2",
     "@types/pg": "8.23.1",
+    "axe-core": "4.14.1",
     "drizzle-orm": "1.0.0-rc.5",
     "eslint": "10.14.0",
     "pg": "8.23.1",

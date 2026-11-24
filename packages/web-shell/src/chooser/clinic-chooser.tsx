@@ -234,9 +234,9 @@ function Chooser({ userId }: { userId: string }) {
           </Button>
         </div>
         <div className="flex flex-col gap-1">
-          <h2 className="m-0 text-heading-md leading-heading font-semibold">
+          <h1 className="m-0 text-heading-md leading-heading font-semibold">
             {text('branchTitle')}
-          </h2>
+          </h1>
           <p className="m-0 text-body leading-body text-text-muted">
             {text('branchText', { clinic: choosing.name })}
           </p>
@@ -262,9 +262,9 @@ function Chooser({ userId }: { userId: string }) {
       <SessionEndsNotice />
       <CodesLeftNotice />
       <div className="flex flex-col gap-1">
-        <h2 className="m-0 text-heading-md leading-heading font-semibold">
+        <h1 className="m-0 text-heading-md leading-heading font-semibold">
           {name === undefined ? text('chooserTitlePlain') : text('chooserTitle', { name })}
-        </h2>
+        </h1>
         <p className="m-0 text-body leading-body text-text-muted">
           {text(list.length === 0 ? 'chooserNoClinicYet' : 'chooserText')}
         </p>

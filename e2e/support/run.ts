@@ -9,6 +9,8 @@ export interface SeededPerson {
 
 export interface Seeded {
   superAdmin: SeededPerson;
+  /** A second super admin, for the A-01-07 journeys: enrols through the screens, then seeds. */
+  journeyAdmin: SeededPerson;
   clinics: { tenantId: string; owner: SeededPerson }[];
 }
 
