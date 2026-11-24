@@ -2,7 +2,7 @@
   "name": "@shifa/admin-web",
   "version": "0.0.0",
   "private": true,
-  "description": "The super admin web app: the signed-out-safe shell of slice A-01-06; screens from A-01-08.",
+  "description": "The super admin web app: the shell of slice A-01-06 and the clinics of A-01-10.",
   "type": "module",
   "scripts": {
     "dev": "vite",
