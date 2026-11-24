@@ -50,6 +50,7 @@ export 'models/my_invitation.dart';
 export 'models/my_profile.dart';
 export 'models/owner_phone_request.dart';
 export 'models/permission_key_name.dart';
+export 'models/permission_setting.dart';
 export 'models/permission_switch.dart';
 export 'models/recovery_codes.dart';
 export 'models/renew_recovery_codes.dart';

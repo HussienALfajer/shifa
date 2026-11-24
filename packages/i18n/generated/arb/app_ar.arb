@@ -2223,6 +2223,10 @@
   "@errorsBranchArchived": {
     "description": "errors.branch_archived"
   },
+  "errorsBranchNotArchived": "هذا الفرع غير مؤرشف.",
+  "@errorsBranchNotArchived": {
+    "description": "errors.branch_not_archived"
+  },
   "errorsBranchNotHeld": "ليس لديك دور في هذا الفرع.",
   "@errorsBranchNotHeld": {
     "description": "errors.branch_not_held"
@@ -2259,6 +2263,10 @@
   "@errorsInvalidCredentials": {
     "description": "errors.invalid_credentials"
   },
+  "errorsInvitationOtherPhone": "هذه الدعوة مرسلة إلى رقم آخر. اخرج وادخل برقم الدعوة.",
+  "@errorsInvitationOtherPhone": {
+    "description": "errors.invitation_other_phone"
+  },
   "errorsIpBlocked": "محاولات دخول خاطئة كثيرة من هذا الجهاز أو الشبكة. أُوقف الدخول مؤقتًا.",
   "@errorsIpBlocked": {
     "description": "errors.ip_blocked"
@@ -2274,6 +2282,18 @@
   "errorsLinkInvalid": "هذا الرابط لم يعد صالحًا. اطلب رابطًا جديدًا.",
   "@errorsLinkInvalid": {
     "description": "errors.link_invalid"
+  },
+  "errorsMemberAccountExists": "قبِل الموظف الدعوة وأنشأ حسابه، فلا يُعدَّل رقمه من هنا.",
+  "@errorsMemberAccountExists": {
+    "description": "errors.member_account_exists"
+  },
+  "errorsMemberDeactivated": "هذا الموظف معطَّل. أعد تفعيله أولًا.",
+  "@errorsMemberDeactivated": {
+    "description": "errors.member_deactivated"
+  },
+  "errorsMemberNotDeactivated": "هذا الموظف غير معطَّل.",
+  "@errorsMemberNotDeactivated": {
+    "description": "errors.member_not_deactivated"
   },
   "errorsMethodNotAllowed": "هذا الإجراء غير مدعوم.",
   "@errorsMethodNotAllowed": {
@@ -2370,6 +2390,10 @@
   "errorsRequestTimeout": "استغرق الطلب وقتًا طويلًا. حاول مرة أخرى.",
   "@errorsRequestTimeout": {
     "description": "errors.request_timeout"
+  },
+  "errorsSelfAction": "لا يمكنك تنفيذ هذا الإجراء على حسابك أنت.",
+  "@errorsSelfAction": {
+    "description": "errors.self_action"
   },
   "errorsServiceUnavailable": "الخدمة غير متاحة الآن. حاول مرة أخرى بعد قليل.",
   "@errorsServiceUnavailable": {

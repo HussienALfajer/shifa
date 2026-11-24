@@ -17,6 +17,8 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_app account.user_id SELECT',
   'shifa_app membership.display_name UPDATE',
   'shifa_app membership.last_active_at UPDATE',
+  // A-01-12: a pending member's phone corrected (OD-103; guarded by a trigger)
+  'shifa_app membership.phone_e164 UPDATE',
   'shifa_app membership.status UPDATE',
   'shifa_app membership.updated_at UPDATE',
   'shifa_app session.active_branch_id SELECT',

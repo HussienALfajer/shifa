@@ -73,6 +73,12 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.mfaNotEnrolled: 'mfa_not_enrolled',
   ErrorCode.ownerRoleProtected: 'owner_role_protected',
   ErrorCode.ownerAccountExists: 'owner_account_exists',
+  ErrorCode.memberDeactivated: 'member_deactivated',
+  ErrorCode.memberNotDeactivated: 'member_not_deactivated',
+  ErrorCode.memberAccountExists: 'member_account_exists',
+  ErrorCode.selfAction: 'self_action',
+  ErrorCode.invitationOtherPhone: 'invitation_other_phone',
+  ErrorCode.branchNotArchived: 'branch_not_archived',
 };
 
 const _$SessionEndReasonEnumMap = {

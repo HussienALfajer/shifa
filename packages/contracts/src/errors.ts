@@ -60,6 +60,13 @@ export const ErrorCode = z
     'owner_role_protected',
     // account and platform API gaps (A-01-11)
     'owner_account_exists',
+    // team and branch API gaps (A-01-12)
+    'member_deactivated',
+    'member_not_deactivated',
+    'member_account_exists',
+    'self_action',
+    'invitation_other_phone',
+    'branch_not_archived',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -174,6 +181,12 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   mfa_not_enrolled: 'Two-factor is not enrolled',
   owner_role_protected: 'Only the owner themselves or the platform removes an owner’s role',
   owner_account_exists: 'The clinic’s owner already has an account',
+  member_deactivated: 'This member is deactivated',
+  member_not_deactivated: 'This member is not deactivated',
+  member_account_exists: 'This member has already accepted; their phone cannot change',
+  self_action: 'Not allowed on your own membership',
+  invitation_other_phone: 'This invitation was sent to another phone number',
+  branch_not_archived: 'This branch is not archived',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

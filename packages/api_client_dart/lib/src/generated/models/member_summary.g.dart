@@ -9,9 +9,13 @@ part of 'member_summary.dart';
 MemberSummary _$MemberSummaryFromJson(Map<String, dynamic> json) =>
     MemberSummary(
       id: json['id'] as String,
+      isSelf: json['isSelf'] as bool,
       lastActiveAt: json['lastActiveAt'] == null
           ? null
           : DateTime.parse(json['lastActiveAt'] as String),
+      linkExpiresAt: json['linkExpiresAt'] == null
+          ? null
+          : DateTime.parse(json['linkExpiresAt'] as String),
       name: json['name'] as String,
       phone: json['phone'] as String,
       roles: (json['roles'] as List<dynamic>)
@@ -23,7 +27,9 @@ MemberSummary _$MemberSummaryFromJson(Map<String, dynamic> json) =>
 Map<String, dynamic> _$MemberSummaryToJson(MemberSummary instance) =>
     <String, dynamic>{
       'id': instance.id,
+      'isSelf': instance.isSelf,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'linkExpiresAt': instance.linkExpiresAt?.toIso8601String(),
       'name': instance.name,
       'phone': instance.phone,
       'roles': instance.roles,

@@ -9,9 +9,13 @@ part of 'member_detail.dart';
 MemberDetail _$MemberDetailFromJson(Map<String, dynamic> json) => MemberDetail(
   id: json['id'] as String,
   isLastOwner: json['isLastOwner'] as bool,
+  isSelf: json['isSelf'] as bool,
   lastActiveAt: json['lastActiveAt'] == null
       ? null
       : DateTime.parse(json['lastActiveAt'] as String),
+  linkExpiresAt: json['linkExpiresAt'] == null
+      ? null
+      : DateTime.parse(json['linkExpiresAt'] as String),
   mfaEnrolled: json['mfaEnrolled'] as bool,
   name: json['name'] as String,
   permissions: (json['permissions'] as List<dynamic>)
@@ -28,7 +32,9 @@ Map<String, dynamic> _$MemberDetailToJson(MemberDetail instance) =>
     <String, dynamic>{
       'id': instance.id,
       'isLastOwner': instance.isLastOwner,
+      'isSelf': instance.isSelf,
       'lastActiveAt': instance.lastActiveAt?.toIso8601String(),
+      'linkExpiresAt': instance.linkExpiresAt?.toIso8601String(),
       'mfaEnrolled': instance.mfaEnrolled,
       'name': instance.name,
       'permissions': instance.permissions,

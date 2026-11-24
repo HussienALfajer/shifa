@@ -75,7 +75,8 @@ export const branchesCreate = defineContract({
   path: '/branches',
   summary: 'Add a branch',
   request: { body: CreateBranchRequest },
-  responses: { 201: Branch },
+  // 400 `validation_failed`: an empty name or an invalid phone.
+  responses: { 201: Branch, 400: ErrorEnvelope },
 });
 
 export const branchesUpdate = defineContract({
@@ -84,8 +85,8 @@ export const branchesUpdate = defineContract({
   path: '/branches/:id',
   summary: 'Rename a branch or change its address and phone',
   request: { params: BranchIdParams, body: UpdateBranchRequest },
-  // 409 `branch_archived`.
-  responses: { 200: Branch, 404: ErrorEnvelope, 409: ErrorEnvelope },
+  // 400 `validation_failed`; 409 `branch_archived`.
+  responses: { 200: Branch, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 export const branchesArchivePreview = defineContract({
@@ -104,5 +105,18 @@ export const branchesArchive = defineContract({
   summary: 'Archive a branch; members left without an active branch are signed out here',
   request: { params: BranchIdParams },
   // 409 `last_branch` or `branch_archived`.
+  responses: { 200: Branch, 404: ErrorEnvelope, 409: ErrorEnvelope },
+});
+
+/**
+ * OD-105: the branch returns to switchers and role pickers; the roles that pointed at it stand
+ * again (sessions the archive ended stay ended). 409 `branch_not_archived`.
+ */
+export const branchesRestore = defineContract({
+  operationId: 'branchesRestore',
+  method: 'POST',
+  path: '/branches/:id/restore',
+  summary: 'Restore an archived branch',
+  request: { params: BranchIdParams },
   responses: { 200: Branch, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });

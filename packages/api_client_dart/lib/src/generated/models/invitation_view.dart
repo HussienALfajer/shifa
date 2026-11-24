@@ -14,6 +14,7 @@ class InvitationView {
     required this.clinicName,
     required this.expiresAt,
     required this.personName,
+    required this.phoneMasked,
     required this.roles,
   });
 
@@ -23,6 +24,7 @@ class InvitationView {
   final String clinicName;
   final DateTime expiresAt;
   final String personName;
+  final String phoneMasked;
   final List<InvitationRole> roles;
 
   Map<String, Object?> toJson() => _$InvitationViewToJson(this);

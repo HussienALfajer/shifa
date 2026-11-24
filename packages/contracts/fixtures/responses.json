@@ -1,16 +1,30 @@
 {
   "valid": [
-    { "name": "health ok", "schema": "HealthStatus", "body": { "status": "ok" } },
+    {
+      "name": "health ok",
+      "schema": "HealthStatus",
+      "body": {
+        "status": "ok"
+      }
+    },
     {
       "name": "health ok with a field added later",
       "schema": "HealthStatus",
       "extraFields": true,
-      "body": { "status": "ok", "uptimeSeconds": 12 }
+      "body": {
+        "status": "ok",
+        "uptimeSeconds": 12
+      }
     },
     {
       "name": "error bad_request",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "bad_request", "message": "Bad request" } }
+      "body": {
+        "error": {
+          "code": "bad_request",
+          "message": "Bad request"
+        }
+      }
     },
     {
       "name": "error validation_failed with details",
@@ -20,8 +34,14 @@
           "code": "validation_failed",
           "message": "Validation failed",
           "details": [
-            { "path": "body.phone", "code": "invalid_format" },
-            { "path": "query.limit", "code": "too_big" }
+            {
+              "path": "body.phone",
+              "code": "invalid_format"
+            },
+            {
+              "path": "query.limit",
+              "code": "too_big"
+            }
           ]
         }
       }
@@ -29,77 +49,152 @@
     {
       "name": "error validation_failed with no details",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "validation_failed", "message": "Validation failed" } }
+      "body": {
+        "error": {
+          "code": "validation_failed",
+          "message": "Validation failed"
+        }
+      }
     },
     {
       "name": "error unauthorized",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "unauthorized", "message": "Unauthorized" } }
+      "body": {
+        "error": {
+          "code": "unauthorized",
+          "message": "Unauthorized"
+        }
+      }
     },
     {
       "name": "error forbidden",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "forbidden", "message": "Forbidden" } }
+      "body": {
+        "error": {
+          "code": "forbidden",
+          "message": "Forbidden"
+        }
+      }
     },
     {
       "name": "error not_found",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "not_found", "message": "Not found" } }
+      "body": {
+        "error": {
+          "code": "not_found",
+          "message": "Not found"
+        }
+      }
     },
     {
       "name": "error method_not_allowed",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "method_not_allowed", "message": "Method not allowed" } }
+      "body": {
+        "error": {
+          "code": "method_not_allowed",
+          "message": "Method not allowed"
+        }
+      }
     },
     {
       "name": "error not_acceptable",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "not_acceptable", "message": "Not acceptable" } }
+      "body": {
+        "error": {
+          "code": "not_acceptable",
+          "message": "Not acceptable"
+        }
+      }
     },
     {
       "name": "error request_timeout",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "request_timeout", "message": "Request timeout" } }
+      "body": {
+        "error": {
+          "code": "request_timeout",
+          "message": "Request timeout"
+        }
+      }
     },
     {
       "name": "error conflict",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "conflict", "message": "Conflict" } }
+      "body": {
+        "error": {
+          "code": "conflict",
+          "message": "Conflict"
+        }
+      }
     },
     {
       "name": "error payload_too_large",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "payload_too_large", "message": "Payload too large" } }
+      "body": {
+        "error": {
+          "code": "payload_too_large",
+          "message": "Payload too large"
+        }
+      }
     },
     {
       "name": "error uri_too_long",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "uri_too_long", "message": "URI too long" } }
+      "body": {
+        "error": {
+          "code": "uri_too_long",
+          "message": "URI too long"
+        }
+      }
     },
     {
       "name": "error unsupported_media_type",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "unsupported_media_type", "message": "Unsupported media type" } }
+      "body": {
+        "error": {
+          "code": "unsupported_media_type",
+          "message": "Unsupported media type"
+        }
+      }
     },
     {
       "name": "error unprocessable_entity",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "unprocessable_entity", "message": "Unprocessable entity" } }
+      "body": {
+        "error": {
+          "code": "unprocessable_entity",
+          "message": "Unprocessable entity"
+        }
+      }
     },
     {
       "name": "error too_many_requests",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "too_many_requests", "message": "Too many requests" } }
+      "body": {
+        "error": {
+          "code": "too_many_requests",
+          "message": "Too many requests"
+        }
+      }
     },
     {
       "name": "error internal_error",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "internal_error", "message": "Internal error" } }
+      "body": {
+        "error": {
+          "code": "internal_error",
+          "message": "Internal error"
+        }
+      }
     },
     {
       "name": "error service_unavailable",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "service_unavailable", "message": "Service unavailable" } }
+      "body": {
+        "error": {
+          "code": "service_unavailable",
+          "message": "Service unavailable"
+        }
+      }
     },
     {
       "name": "error phone_locked with its end",
@@ -115,7 +210,12 @@
     {
       "name": "error invalid_credentials",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "invalid_credentials", "message": "Invalid phone or password" } }
+      "body": {
+        "error": {
+          "code": "invalid_credentials",
+          "message": "Invalid phone or password"
+        }
+      }
     },
     {
       "name": "error ip_blocked with its end",
@@ -131,22 +231,42 @@
     {
       "name": "error session_expired",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "session_expired", "message": "Session expired" } }
+      "body": {
+        "error": {
+          "code": "session_expired",
+          "message": "Session expired"
+        }
+      }
     },
     {
       "name": "error link_invalid",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "link_invalid", "message": "This link is no longer valid" } }
+      "body": {
+        "error": {
+          "code": "link_invalid",
+          "message": "This link is no longer valid"
+        }
+      }
     },
     {
       "name": "error password_too_short",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "password_too_short", "message": "Password too short" } }
+      "body": {
+        "error": {
+          "code": "password_too_short",
+          "message": "Password too short"
+        }
+      }
     },
     {
       "name": "error password_common",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "password_common", "message": "Password too common" } }
+      "body": {
+        "error": {
+          "code": "password_common",
+          "message": "Password too common"
+        }
+      }
     },
     {
       "name": "error password_contains_phone",
@@ -162,14 +282,20 @@
       "name": "error mfa_enrolment_required",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "mfa_enrolment_required", "message": "Two-factor enrolment required" }
+        "error": {
+          "code": "mfa_enrolment_required",
+          "message": "Two-factor enrolment required"
+        }
       }
     },
     {
       "name": "error mfa_challenge_required",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "mfa_challenge_required", "message": "Two-factor code required" }
+        "error": {
+          "code": "mfa_challenge_required",
+          "message": "Two-factor code required"
+        }
       }
     },
     {
@@ -186,7 +312,12 @@
     {
       "name": "error invalid_code",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "invalid_code", "message": "Invalid code" } }
+      "body": {
+        "error": {
+          "code": "invalid_code",
+          "message": "Invalid code"
+        }
+      }
     },
     {
       "name": "error owner_setup_pending",
@@ -251,7 +382,12 @@
     {
       "name": "error branch_archived",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "branch_archived", "message": "This branch is archived" } }
+      "body": {
+        "error": {
+          "code": "branch_archived",
+          "message": "This branch is archived"
+        }
+      }
     },
     {
       "name": "branch list with an archived branch",
@@ -284,27 +420,43 @@
       "schema": "ArchiveBranchPreview",
       "body": {
         "lastBranch": false,
-        "members": [{ "id": "7d1c6f2a-3b4e-4c5d-8e6f-0a1b2c3d4e5f", "name": "موظف تجريبي" }]
+        "members": [
+          {
+            "id": "7d1c6f2a-3b4e-4c5d-8e6f-0a1b2c3d4e5f",
+            "name": "موظف تجريبي"
+          }
+        ]
       }
     },
     {
       "name": "error clinic_suspended",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "clinic_suspended", "message": "This clinic account is suspended" }
+        "error": {
+          "code": "clinic_suspended",
+          "message": "This clinic account is suspended"
+        }
       }
     },
     {
       "name": "error no_clinic",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "no_clinic", "message": "No clinic is available for this account" }
+        "error": {
+          "code": "no_clinic",
+          "message": "No clinic is available for this account"
+        }
       }
     },
     {
       "name": "error branch_not_held",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "branch_not_held", "message": "No role in this branch" } }
+      "body": {
+        "error": {
+          "code": "branch_not_held",
+          "message": "No role in this branch"
+        }
+      }
     },
     {
       "name": "clinic chooser with a suspended clinic and an invitation",
@@ -320,7 +472,12 @@
             "tenantWide": false,
             "lastActiveAt": "2026-11-24T09:00:00.000Z",
             "solo": false,
-            "branches": [{ "id": "8e2d7a3b-4c5f-4d6e-9f7a-1b2c3d4e5f60", "name": "فرع تجريبي" }]
+            "branches": [
+              {
+                "id": "8e2d7a3b-4c5f-4d6e-9f7a-1b2c3d4e5f60",
+                "name": "فرع تجريبي"
+              }
+            ]
           },
           {
             "tenantId": "3e9a5d7b-9f4a-4a0d-8e3b-5c7f8d9eab1c",
@@ -338,7 +495,12 @@
           {
             "id": "7d1c6f2a-3b4e-4c5d-8e6f-0a1b2c3d4e5f",
             "clinicName": "عيادة داعية",
-            "roles": [{ "role": "assistant", "branchName": null }],
+            "roles": [
+              {
+                "role": "assistant",
+                "branchName": null
+              }
+            ],
             "expiresAt": "2026-11-27T09:00:00.000Z"
           }
         ]
@@ -347,7 +509,10 @@
     {
       "name": "active clinic after a switch",
       "schema": "ActiveClinic",
-      "body": { "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0", "branchId": null }
+      "body": {
+        "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+        "branchId": null
+      }
     },
     {
       "name": "member detail of a pending receptionist",
@@ -374,7 +539,21 @@
           }
         ],
         "isLastOwner": false,
-        "mfaEnrolled": false
+        "mfaEnrolled": false,
+        "linkExpiresAt": null,
+        "isSelf": false
+      }
+    },
+    {
+      "name": "permission defaults",
+      "schema": "PermissionDefaults",
+      "body": {
+        "keys": [
+          {
+            "key": "clinical.notes.view",
+            "roles": ["doctor", "assistant"]
+          }
+        ]
       }
     },
     {
@@ -383,29 +562,53 @@
       "body": {
         "clinicName": "عيادة تجريبية",
         "personName": "موظف تجريبي",
-        "roles": [{ "role": "doctor", "branchName": null }],
-        "expiresAt": "2026-11-26T10:00:00.000Z"
+        "roles": [
+          {
+            "role": "doctor",
+            "branchName": null
+          }
+        ],
+        "expiresAt": "2026-11-26T10:00:00.000Z",
+        "phoneMasked": "+963 ••• ••• 822"
       }
     },
-    { "name": "clinic settings", "schema": "ClinicSettings", "body": { "idleMinutes": 30 } },
+    {
+      "name": "clinic settings",
+      "schema": "ClinicSettings",
+      "body": {
+        "idleMinutes": 30
+      }
+    },
     {
       "name": "error session_expired with its reason",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "session_expired", "message": "Session expired", "reason": "idle" }
+        "error": {
+          "code": "session_expired",
+          "message": "Session expired",
+          "reason": "idle"
+        }
       }
     },
     {
       "name": "error password_unchanged",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "password_unchanged", "message": "The new password is the current one" }
+        "error": {
+          "code": "password_unchanged",
+          "message": "The new password is the current one"
+        }
       }
     },
     {
       "name": "error branch_required",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "branch_required", "message": "Choose a branch" } }
+      "body": {
+        "error": {
+          "code": "branch_required",
+          "message": "Choose a branch"
+        }
+      }
     },
     {
       "name": "error owner_mfa_platform",
@@ -421,27 +624,41 @@
       "name": "error mfa_already_enrolled",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "mfa_already_enrolled", "message": "Two-factor is already enrolled" }
+        "error": {
+          "code": "mfa_already_enrolled",
+          "message": "Two-factor is already enrolled"
+        }
       }
     },
     {
       "name": "error mfa_not_started",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "mfa_not_started", "message": "Two-factor enrolment was not started" }
+        "error": {
+          "code": "mfa_not_started",
+          "message": "Two-factor enrolment was not started"
+        }
       }
     },
     {
       "name": "error mfa_not_owed",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "mfa_not_owed", "message": "No two-factor code is due for this session" }
+        "error": {
+          "code": "mfa_not_owed",
+          "message": "No two-factor code is due for this session"
+        }
       }
     },
     {
       "name": "error mfa_not_enrolled",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "mfa_not_enrolled", "message": "Two-factor is not enrolled" } }
+      "body": {
+        "error": {
+          "code": "mfa_not_enrolled",
+          "message": "Two-factor is not enrolled"
+        }
+      }
     },
     {
       "name": "error owner_account_exists",
@@ -475,17 +692,27 @@
     {
       "name": "mfa status of an enrolled person",
       "schema": "MfaStatus",
-      "body": { "enrolled": true, "enrolledAt": "2026-11-23T08:00:00.000Z", "recoveryCodesLeft": 9 }
+      "body": {
+        "enrolled": true,
+        "enrolledAt": "2026-11-23T08:00:00.000Z",
+        "recoveryCodesLeft": 9
+      }
     },
     {
       "name": "mfa status before enrolment",
       "schema": "MfaStatus",
-      "body": { "enrolled": false, "enrolledAt": null, "recoveryCodesLeft": null }
+      "body": {
+        "enrolled": false,
+        "enrolledAt": null,
+        "recoveryCodesLeft": null
+      }
     },
     {
       "name": "new recovery codes",
       "schema": "RecoveryCodes",
-      "body": { "recoveryCodes": ["aaaa-bbbb-cccc", "dddd-eeee-ffff"] }
+      "body": {
+        "recoveryCodes": ["aaaa-bbbb-cccc", "dddd-eeee-ffff"]
+      }
     },
     {
       "name": "challenge passed with a recovery code",
@@ -511,7 +738,10 @@
       "name": "error clock_skew",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "clock_skew", "message": "Code from a device whose clock is off" }
+        "error": {
+          "code": "clock_skew",
+          "message": "Code from a device whose clock is off"
+        }
       }
     },
     {
@@ -526,7 +756,11 @@
         "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
         "branchId": "4fab6e8c-a05b-4b1e-9f4c-6d8a9eafbc2d",
         "roles": [
-          { "role": "owner", "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0", "branchId": null }
+          {
+            "role": "owner",
+            "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+            "branchId": null
+          }
         ],
         "idleMinutes": 30,
         "idleExpiresAt": "2026-11-23T08:30:00.000Z",
@@ -574,7 +808,13 @@
         ]
       }
     },
-    { "name": "sessions ended", "schema": "EndedSessions", "body": { "ended": 2 } },
+    {
+      "name": "sessions ended",
+      "schema": "EndedSessions",
+      "body": {
+        "ended": 2
+      }
+    },
     {
       "name": "owner setup link view",
       "schema": "SetupLinkView",
@@ -683,6 +923,16 @@
           "expiresAt": "2026-11-26T08:00:00.000Z"
         }
       }
+    },
+    {
+      "name": "error invitation_other_phone",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "invitation_other_phone",
+          "message": "This invitation was sent to another phone number"
+        }
+      }
     }
   ],
   "invalid": [
@@ -717,7 +967,9 @@
     {
       "name": "idle minutes outside 15, 30, 60",
       "schema": "ClinicSettings",
-      "body": { "idleMinutes": 20 }
+      "body": {
+        "idleMinutes": 20
+      }
     },
     {
       "name": "session without a session id",
@@ -747,21 +999,39 @@
         ]
       }
     },
-    { "name": "health with no status", "schema": "HealthStatus", "body": {} },
+    {
+      "name": "health with no status",
+      "schema": "HealthStatus",
+      "body": {}
+    },
     {
       "name": "unknown error code",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "im_a_teapot", "message": "Teapot" } }
+      "body": {
+        "error": {
+          "code": "im_a_teapot",
+          "message": "Teapot"
+        }
+      }
     },
     {
       "name": "error with no message",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "not_found" } }
+      "body": {
+        "error": {
+          "code": "not_found"
+        }
+      }
     },
     {
       "name": "error with a null message",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "not_found", "message": null } }
+      "body": {
+        "error": {
+          "code": "not_found",
+          "message": null
+        }
+      }
     },
     {
       "name": "unknown validation issue code",
@@ -770,14 +1040,21 @@
         "error": {
           "code": "validation_failed",
           "message": "Validation failed",
-          "details": [{ "path": "body.phone", "code": "too_pretty" }]
+          "details": [
+            {
+              "path": "body.phone",
+              "code": "too_pretty"
+            }
+          ]
         }
       }
     },
     {
       "name": "envelope with no error",
       "schema": "ErrorEnvelope",
-      "body": { "message": "Not found" }
+      "body": {
+        "message": "Not found"
+      }
     }
   ]
 }

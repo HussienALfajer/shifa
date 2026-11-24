@@ -257,7 +257,7 @@ abstract class CoreClient {
   @GET('/team/members/{id}')
   Future<MemberDetail> teamMember({@Path('id') required String id});
 
-  /// Change a member’s roles and sensitive toggles
+  /// Change a member’s name, roles and sensitive toggles
   @PATCH('/team/members/{id}')
   Future<MemberDetail> teamUpdateMember({
     @Path('id') required String id,

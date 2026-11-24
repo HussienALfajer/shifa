@@ -74,7 +74,7 @@ describe('deactivation and reactivation', () => {
     expect((await get(world.app, '/auth/session', m.cookie)).statusCode).toBe(401);
   });
 
-  it('refuses reactivating a member who is not deactivated (409)', async () => {
+  it('refuses reactivating a member who is not deactivated (409 member_not_deactivated)', async () => {
     const m = await activeMember(world, clinic, [{ role: 'doctor', branchId: null }]);
     const res = await post(
       world.app,
@@ -83,6 +83,7 @@ describe('deactivation and reactivation', () => {
       clinic.owner.cookie,
     );
     expect(res.statusCode).toBe(409);
+    expect(errorCode(res)).toBe('member_not_deactivated');
   });
 });
 
@@ -155,7 +156,7 @@ describe('a new link (staff recovery)', () => {
 });
 
 describe('the last owner', () => {
-  it('cannot be removed, demoted or deactivated (409 last_owner); nothing changes', async () => {
+  it('cannot be removed or demoted (409 last_owner), nor deactivate themselves (409 self_action); nothing changes', async () => {
     const url = member(clinic.ownerMembershipId);
     const removed = await patch(world.app, url, { roles: [] }, clinic.owner.cookie);
     expect(removed.statusCode).toBe(409);
@@ -169,8 +170,9 @@ describe('the last owner', () => {
     );
     expect(errorCode(demoted)).toBe('last_owner');
 
+    // Deactivating oneself is refused before the last-owner rule (A-01-12, gap 7).
     const deactivated = await post(world.app, `${url}/deactivate`, {}, clinic.owner.cookie);
-    expect(errorCode(deactivated)).toBe('last_owner');
+    expect(errorCode(deactivated)).toBe('self_action');
 
     const [row] = await membershipRow(clinic.ownerMembershipId);
     expect(row?.status).toBe('active');
@@ -180,24 +182,24 @@ describe('the last owner', () => {
     });
   });
 
-  it('can step down once a second owner is active', async () => {
+  it('can step down from the owner role once a second owner is active', async () => {
     const own = await world.clinic();
     const second = await activeMember(world, own, [{ role: 'owner', branchId: null }]);
-    const res = await post(
+    const res = await patch(
       world.app,
-      member(own.ownerMembershipId, '/deactivate'),
-      {},
+      member(own.ownerMembershipId),
+      { roles: [{ role: 'doctor', branchId: null }] },
       own.owner.cookie,
     );
     expect(res.statusCode).toBe(200);
-    // The owner who stepped down: their own session ended with the deactivation.
+    // No longer an owner: the team routes are refused on the next request.
     const last = await post(
       world.app,
       member(second.membershipId, '/deactivate'),
       {},
       own.owner.cookie,
     );
-    expect(last.statusCode).toBe(401);
+    expect(last.statusCode).toBe(403);
   });
 
   it('a pending owner does not keep the clinic owned', async () => {

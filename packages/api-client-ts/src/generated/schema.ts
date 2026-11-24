@@ -635,7 +635,7 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Change a member’s roles and sensitive toggles */
+        /** Change a member’s name, roles and sensitive toggles */
         patch: operations["teamUpdateMember"];
         trace?: never;
     };
@@ -718,6 +718,7 @@ export interface components {
         };
         AddMemberRequest: {
             name: string;
+            permissions?: components["schemas"]["PermissionSetting"][];
             phone: string;
             roles: components["schemas"]["RoleScopeInput"][];
         };
@@ -822,7 +823,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -844,6 +845,7 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
             personName: string;
+            phoneMasked: string;
             roles: components["schemas"]["InvitationRole"][];
         };
         MemberAdded: {
@@ -854,7 +856,9 @@ export interface components {
             /** Format: uuid */
             id: string;
             isLastOwner: boolean;
+            isSelf: boolean;
             lastActiveAt: string | null;
+            linkExpiresAt: string | null;
             mfaEnrolled: boolean;
             name: string;
             permissions: components["schemas"]["MemberPermission"][];
@@ -885,7 +889,9 @@ export interface components {
         MemberSummary: {
             /** Format: uuid */
             id: string;
+            isSelf: boolean;
             lastActiveAt: string | null;
+            linkExpiresAt: string | null;
             name: string;
             phone: string;
             roles: components["schemas"]["MemberRole"][];
@@ -947,6 +953,10 @@ export interface components {
             phone: string;
         };
         PermissionKeyName: string;
+        PermissionSetting: {
+            granted: boolean;
+            key: components["schemas"]["PermissionKeyName"];
+        };
         PermissionSwitch: {
             granted: boolean | null;
             key: components["schemas"]["PermissionKeyName"];
@@ -1069,6 +1079,7 @@ export interface components {
             subscriptionEnd?: string | null;
         };
         UpdateMemberRequest: {
+            name?: string;
             permissions?: components["schemas"]["PermissionSwitch"][];
             roles?: components["schemas"]["RoleScopeInput"][];
         };

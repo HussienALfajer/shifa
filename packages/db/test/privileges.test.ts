@@ -83,7 +83,13 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ],
   ['shifa_app', 'account', 'SELECT', ['id', 'user_id', 'account_id', 'provider_id', 'created_at']],
   ['shifa_app', 'two_factor', 'SELECT', ['id', 'user_id', 'verified']],
-  ['shifa_app', 'membership', 'UPDATE', ['display_name', 'status', 'last_active_at', 'updated_at']],
+  // A-01-12: phone_e164 for a pending member's phone (OD-103; a trigger refuses any other row)
+  [
+    'shifa_app',
+    'membership',
+    'UPDATE',
+    ['display_name', 'status', 'last_active_at', 'updated_at', 'phone_e164'],
+  ],
   ['shifa_app', 'setup_link', 'UPDATE', ['replaced_at']],
   ['shifa_app', 'tenant', 'UPDATE', ['idle_minutes', 'updated_at']],
   [
