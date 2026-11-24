@@ -212,7 +212,10 @@ export const setupLink = pgTable(
       name: 'setup_link_invited_phone_fk',
       columns: [t.tenantId, t.membershipId, t.invitedPhone],
       foreignColumns: [membership.tenantId, membership.id, membership.phoneE164],
-    }).onDelete('cascade'),
+    })
+      .onDelete('cascade')
+      // A pending owner's phone corrected (OD-99, A-01-11): the owner's links follow it.
+      .onUpdate('cascade'),
     check(
       'setup_link_invited_phone_check',
       sql`${t.invitedPhone} is null or ${t.purpose} = 'invitation'`,

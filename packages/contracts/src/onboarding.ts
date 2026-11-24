@@ -92,6 +92,14 @@ export type RecoveryCodes = z.infer<typeof RecoveryCodes>;
 export const RenewRecoveryCodes = z.object({ code: TotpCode }).meta({ id: 'RenewRecoveryCodes' });
 export type RenewRecoveryCodes = z.infer<typeof RenewRecoveryCodes>;
 
+/** OD-98: a current code from the app in use, to start moving TOTP to a new phone. */
+export const TotpReenrolStart = z.object({ code: TotpCode }).meta({ id: 'TotpReenrolStart' });
+export type TotpReenrolStart = z.infer<typeof TotpReenrolStart>;
+
+/** OD-98: a code from the new app, to confirm the move. */
+export const TotpReenrolConfirm = z.object({ code: TotpCode }).meta({ id: 'TotpReenrolConfirm' });
+export type TotpReenrolConfirm = z.infer<typeof TotpReenrolConfirm>;
+
 export const TotpChallengeMethod = z.enum(['totp', 'recovery']).meta({ id: 'TotpChallengeMethod' });
 
 /** A six-digit code, or one recovery code (case and dashes ignored). */
@@ -176,5 +184,35 @@ export const authMfaRecoveryCodes = defineContract({
   path: '/auth/mfa/recovery-codes',
   summary: 'Replace the recovery codes with a new set, confirmed with a TOTP code',
   request: { body: RenewRecoveryCodes },
+  responses: { 200: RecoveryCodes, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
+});
+
+/**
+ * OD-98 (A-01-11): a current code from the old app (replay and lock rules of criterion 12)
+ * starts moving TOTP to a new phone; answers a new key and replaces an earlier unconfirmed one.
+ * The old secret keeps working until the confirm. 400 `invalid_code`; 409 `mfa_not_enrolled`;
+ * 429 `mfa_locked`.
+ */
+export const authMfaReenrolStart = defineContract({
+  operationId: 'authMfaReenrolStart',
+  method: 'POST',
+  path: '/auth/mfa/re-enrol/start',
+  summary: 'Start moving TOTP to a new phone, confirmed by a current code from the old app',
+  request: { body: TotpReenrolStart },
+  responses: { 200: TotpEnrolStart, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
+});
+
+/**
+ * OD-98, OD-101 (A-01-11): a code from the new app makes its key the person's TOTP and answers
+ * ten new recovery codes, shown once; the old set is gone; other sessions are kept. 400
+ * `invalid_code` or `clock_skew`; 409 `mfa_not_enrolled` or `mfa_not_started`; 429 `mfa_locked`.
+ * Wrong codes here and at the start count toward the one MFA lock.
+ */
+export const authMfaReenrolConfirm = defineContract({
+  operationId: 'authMfaReenrolConfirm',
+  method: 'POST',
+  path: '/auth/mfa/re-enrol/confirm',
+  summary: 'Confirm the new TOTP with a code from the new app; returns new recovery codes once',
+  request: { body: TotpReenrolConfirm },
   responses: { 200: RecoveryCodes, 400: ErrorEnvelope, 409: ErrorEnvelope, 429: ErrorEnvelope },
 });

@@ -1,16 +1,7 @@
 // Calls every registered route as every caller and compares the status class with the committed
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
 import { randomBytes, randomUUID } from 'node:crypto';
-import {
-  account,
-  branch,
-  createClinic,
-  membership,
-  roleAssignment,
-  session,
-  setupLink,
-  twoFactor,
-} from '@shifa/db';
+import { account, branch, membership, roleAssignment, session, setupLink } from '@shifa/db';
 import {
   createTestTenants,
   fixtureId,
@@ -27,8 +18,6 @@ import { AUTH_PORT } from '../../src/access/auth.port.ts';
 import { ROLES, type Role } from '../../src/access/roles.ts';
 import { BetterAuthAdapter } from '../../src/modules/identity/index.ts';
 import { newLinkToken } from '../../src/modules/identity/links.ts';
-import { sealSecret } from '../../src/modules/identity/secret-box.ts';
-import { base32Encode } from '../../src/modules/identity/totp.ts';
 import { ContractCheck } from '../../src/platform/contract/contract-check.ts';
 import {
   HeaderAuthAdapter,
@@ -41,8 +30,7 @@ import {
   TEST_PERMISSIONS,
 } from '../access/probe.ts';
 import { PASSWORD, seedPerson } from '../identity/support.ts';
-import { totpAt } from '../identity/totp.ts';
-import { buildTestApp, TEST_SECRETS, type TestApp } from '../support.ts';
+import { buildTestApp, type TestApp } from '../support.ts';
 import {
   type Caller,
   EXPECTED_MATRIX,
@@ -52,6 +40,12 @@ import {
   type SampleContext,
   TEST_ONLY_ROUTES,
 } from './route-matrix.expected.ts';
+import {
+  clinicWithAccountOwner,
+  clinicWithLink,
+  nextPhone,
+  totpState,
+} from './route-matrix.fixtures.ts';
 
 const CALLERS: readonly Caller[] = ['anonymous', ...ROLES];
 
@@ -67,63 +61,6 @@ function statusClass(status: number): number {
 const people = new Map<Caller, string>();
 let signInPerson: SampleContext['signIn'];
 let clinicId: string;
-
-/** Fresh phones for clinic owners and links (a used link's phone has an account). */
-const spare = syntheticPhones(2026_11_28, 400);
-let spareIndex = 0;
-const nextPhone = () => {
-  const phone = spare[spareIndex];
-  spareIndex += 1;
-  if (!phone) throw new Error('out of spare phones');
-  return phone;
-};
-
-/** A clinic with a pending owner and a fresh link; returns the link's token. */
-async function clinicWithLink(): Promise<{ clinicId: string; token: string }> {
-  const { token, hash } = newLinkToken();
-  const created = await testPlatformDb().withPlatformAdmin(
-    { actorId: fixtureId('matrix super admin'), event: 'clinic.created' },
-    (tx) =>
-      createClinic(tx, {
-        name: 'عيادة المصفوفة',
-        type: 'solo',
-        owner: {
-          displayName: 'مالك المصفوفة',
-          phoneE164: nextPhone(),
-          link: {
-            purpose: 'owner_setup',
-            tokenHash: hash,
-            expiresAt: new Date(Date.now() + 3_600_000),
-          },
-        },
-      }),
-  );
-  return { clinicId: created.tenantId, token };
-}
-
-/** A known TOTP key, so the matrix can send a valid code. */
-const TOTP_KEY = Buffer.alloc(20, 7);
-
-/** Puts `userId`'s TOTP in `state` and returns the current code. */
-async function totpState(
-  userId: string | undefined,
-  state: 'none' | 'unconfirmed' | 'enrolled',
-): Promise<string> {
-  const code = totpAt(base32Encode(TOTP_KEY), new Date());
-  if (userId === undefined) return code;
-  await testAuthDb().withAuth(async (tx) => {
-    await tx.delete(twoFactor).where(eq(twoFactor.userId, userId));
-    if (state === 'none') return;
-    await tx.insert(twoFactor).values({
-      userId,
-      secret: sealSecret(TOTP_KEY, TEST_SECRETS.betterAuthSecret),
-      backupCodes: '[]',
-      verified: state === 'enrolled',
-      failedVerificationCount: 0,
-    });
-  });
-  return code;
-}
 
 /** The phone of each seeded caller (invitations are for the caller's own phone). */
 const phonesOf = new Map<Caller, string>();
@@ -281,6 +218,7 @@ async function observe(app: TestApp): Promise<Observed> {
         signIn: signInPerson,
         otherSessionId,
         clinicId,
+        ownedClinicId: () => clinicWithAccountOwner(),
         nextPhone,
         newLinkToken: async () => (await clinicWithLink()).token,
         totp: (state) => totpState(userId, state),

@@ -2,6 +2,8 @@
 // codes, recovery codes and passwords go through clinic creation, the link view and use, a refused
 // password, TOTP enrolment, wrong and right codes, a recovery code and the owner resets, and then
 // appear nowhere: not in local logs, exported spans or log records, error events, or audit rows.
+// A-01-11 adds the TOTP re-enrolment (keys, codes, recovery codes) and the pending owner's phone
+// edit (phones, links), with their refusals.
 import { JsonLogsSerializer, JsonTraceSerializer } from '@opentelemetry/otlp-transformer';
 import { syntheticPhones, testAuthDb, testDb, testPlatformDb } from '@shifa/db/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -18,7 +20,8 @@ import { buildTestApp, type TestApp } from '../support.ts';
 import { type ErrorSink, errorSink, TEST_DSN } from './error-sink.ts';
 import { listen, startTestTelemetry, type TestTelemetry } from './support.ts';
 
-const [ADMIN_PHONE = '', OWNER_PHONE = ''] = syntheticPhones(2026_11_26, 2);
+const [ADMIN_PHONE = '', OWNER_PHONE = '', PENDING_PHONE = '', CORRECTED_PHONE = ''] =
+  syntheticPhones(2026_11_26, 4);
 const REFUSED_PASSWORD = 'short7';
 const NEW_PASSWORD = 'amber window crane 77';
 
@@ -140,6 +143,20 @@ beforeAll(async () => {
     passed.cookie,
   );
   secrets.push(...((renewed.json['recoveryCodes'] as string[] | undefined) ?? []));
+  // A-01-11 (OD-98): TOTP moved to a new phone: wrong and right codes on both steps.
+  await send('POST', '/auth/mfa/re-enrol/start', { code: '000000' }, passed.cookie);
+  clock.advanceBy(STEP_MS);
+  const oldCode = totpAt(enrolled.manualKey, clock.now());
+  codes.push(oldCode);
+  const reenrol = await send('POST', '/auth/mfa/re-enrol/start', { code: oldCode }, passed.cookie);
+  const newKey = String(reenrol.json['manualKey']);
+  secrets.push(newKey);
+  await send('POST', '/auth/mfa/re-enrol/confirm', { code: '000000' }, passed.cookie);
+  const newCode = totpAt(newKey, clock.now());
+  codes.push(newCode);
+  const moved = await send('POST', '/auth/mfa/re-enrol/confirm', { code: newCode }, passed.cookie);
+  if (moved.status !== 200) throw new Error(`re-enrolment: ${String(moved.status)}`);
+  secrets.push(...((moved.json['recoveryCodes'] as string[] | undefined) ?? []));
   const changePassword = (currentPassword: string, newPassword: string) =>
     send('POST', '/auth/password', { currentPassword, newPassword }, passed.cookie);
   await changePassword(REFUSED_PASSWORD, NEW_PASSWORD);
@@ -154,6 +171,31 @@ beforeAll(async () => {
   secrets.push(tokenOf(String(reissued.json['url'])));
   await send('POST', `/platform/clinics/${clinic.id}/owner/reset-mfa`, undefined, admin.cookie);
   await send('POST', `/platform/clinics/${clinic.id}/owner/end-sessions`, undefined, admin.cookie);
+  // A-01-11 (OD-99): a pending owner's phone corrected; refused for the set-up owner, an
+  // invalid phone, then the change and its new link; the owner card with the masked phone.
+  const second = await send(
+    'POST',
+    '/platform/clinics',
+    {
+      name: 'عيادة ثانية',
+      type: 'solo',
+      status: 'trial',
+      ownerName: 'مالك',
+      ownerPhone: PENDING_PHONE,
+    },
+    admin.cookie,
+  );
+  const secondId = (second.json['clinic'] as { id: string }).id;
+  secrets.push(tokenOf((second.json['ownerLink'] as { url: string }).url));
+  const ownerPhone = (id: string, phone: string) =>
+    send('PATCH', `/platform/clinics/${id}/owner`, { phone }, admin.cookie);
+  await ownerPhone(clinic.id, CORRECTED_PHONE);
+  await ownerPhone(secondId, `${CORRECTED_PHONE}99`);
+  const corrected = await ownerPhone(secondId, CORRECTED_PHONE);
+  if (corrected.status !== 200) throw new Error(`owner phone: ${String(corrected.status)}`);
+  secrets.push(tokenOf(String(corrected.json['url'])));
+  await send('GET', `/platform/clinics/${secondId}`, undefined, admin.cookie);
+  await send('GET', '/platform/clinics', undefined, admin.cookie);
   await new Promise((resolve) => setTimeout(resolve, 100));
   await flushErrors(2000);
 });
@@ -189,6 +231,8 @@ describe('setup link and MFA leak test', () => {
     const all = [
       ...spellings(ADMIN_PHONE),
       ...spellings(OWNER_PHONE),
+      ...spellings(PENDING_PHONE),
+      ...spellings(CORRECTED_PHONE),
       PASSWORD,
       REFUSED_PASSWORD,
       NEW_PASSWORD,

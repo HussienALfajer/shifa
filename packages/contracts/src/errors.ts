@@ -58,6 +58,8 @@ export const ErrorCode = z
     'mfa_not_owed',
     'mfa_not_enrolled',
     'owner_role_protected',
+    // account and platform API gaps (A-01-11)
+    'owner_account_exists',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -153,7 +155,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   mfa_locked: 'Too many wrong codes',
   invalid_code: 'Invalid code',
   clock_skew: 'Code from a device whose clock is off',
-  owner_setup_pending: 'This phone is the owner of a clinic that is not set up yet',
+  owner_setup_pending: 'The clinic’s owner has not set up their account yet',
   last_owner: 'The clinic must keep at least one active owner',
   phone_in_team: 'This phone is already a member of this clinic',
   account_shared: 'This account works in another clinic; recovery goes through the platform',
@@ -171,6 +173,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   mfa_not_owed: 'No two-factor code is due for this session',
   mfa_not_enrolled: 'Two-factor is not enrolled',
   owner_role_protected: 'Only the owner themselves or the platform removes an owner’s role',
+  owner_account_exists: 'The clinic’s owner already has an account',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

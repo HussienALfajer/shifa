@@ -11,6 +11,8 @@ export const PLATFORM_EVENTS = [
   'owner.link_issued',
   'owner.mfa_reset',
   'owner.sessions_ended',
+  // A-01-11: a pending owner's phone corrected (OD-99)
+  'owner.phone_changed',
   'platform.admin_created',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
@@ -32,6 +34,8 @@ export const AUTH_EVENTS = [
   'auth.password_changed',
   'auth.password_change_failed',
   'auth.recovery_codes_renewed',
+  // A-01-11: TOTP moved to a new phone (OD-98)
+  'auth.mfa_reenrolled',
 ] as const;
 
 /** Team, branch and switcher events, written inside a tenant. */

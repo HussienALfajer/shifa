@@ -6,6 +6,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'clinic_status.dart';
 import 'clinic_type.dart';
+import 'membership_status.dart';
 
 part 'clinic_summary.g.dart';
 
@@ -16,6 +17,7 @@ class ClinicSummary {
     required this.id,
     required this.name,
     required this.ownerName,
+    required this.ownerStatus,
     required this.status,
     required this.subscriptionEnd,
     required this.type,
@@ -29,6 +31,8 @@ class ClinicSummary {
   final String name;
   @JsonKey(includeIfNull: true)
   final String? ownerName;
+  @JsonKey(includeIfNull: true)
+  final MembershipStatus? ownerStatus;
   final ClinicStatus status;
   @JsonKey(includeIfNull: true)
   final String? subscriptionEnd;

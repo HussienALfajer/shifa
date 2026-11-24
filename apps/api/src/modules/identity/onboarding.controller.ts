@@ -7,6 +7,8 @@ import {
   authMfaEnrolConfirm,
   authMfaEnrolStart,
   authMfaRecoveryCodes,
+  authMfaReenrolConfirm,
+  authMfaReenrolStart,
   authMfaStatus,
   authSetupLinkConsume,
   authSetupLinkView,
@@ -125,5 +127,31 @@ export class OnboardingController {
     @ClientRequest() request: RequestMeta,
   ): Promise<RecoveryCodes> {
     return this.mfa.renewRecoveryCodes(principal, body.code, { requestId: request.requestId });
+  }
+
+  /** My account (OD-98): after MFA; a code from the old app, a new key. */
+  @SignedIn()
+  @Contract(authMfaReenrolStart)
+  @HttpCode(200)
+  @Post('mfa/re-enrol/start')
+  reenrolStart(
+    @Body() body: RequestBody<typeof authMfaReenrolStart>,
+    @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<TotpEnrolStart> {
+    return this.mfa.reenrolStart(principal, body.code, { requestId: request.requestId });
+  }
+
+  /** OD-98, OD-101: a code from the new app; ten new recovery codes; no cookie change. */
+  @SignedIn()
+  @Contract(authMfaReenrolConfirm)
+  @HttpCode(200)
+  @Post('mfa/re-enrol/confirm')
+  reenrolConfirm(
+    @Body() body: RequestBody<typeof authMfaReenrolConfirm>,
+    @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<RecoveryCodes> {
+    return this.mfa.reenrolConfirm(principal, body.code, { requestId: request.requestId });
   }
 }

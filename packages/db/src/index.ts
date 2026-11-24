@@ -9,6 +9,7 @@ export { type AuthDb, createAuthDb } from './auth.ts';
 export { type CreateDbOptions, createDb, type ShifaDb } from './client.ts';
 export {
   type CreatedClinic,
+  changeOwnerPhone,
   createClinic,
   issueOwnerLink,
   MAIN_BRANCH_NAME,
@@ -16,6 +17,8 @@ export {
   type NewLink,
   type NewOwner,
   type OwnerLink,
+  type OwnerPhone,
+  ownerLinkExpiry,
   registerPlatformAdmin,
 } from './clinic.ts';
 export { MIGRATIONS_DIR, migrate, ROLES_SQL } from './migrate.ts';

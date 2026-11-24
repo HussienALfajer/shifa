@@ -43,7 +43,9 @@ export type IdentityEvent =
   // A-01-09: own password and recovery codes (actor and target: the person).
   | { event: 'auth.password_changed' }
   | { event: 'auth.password_change_failed' }
-  | { event: 'auth.recovery_codes_renewed' };
+  | { event: 'auth.recovery_codes_renewed' }
+  // A-01-11: TOTP moved to a new phone (OD-98; actor and target: the person).
+  | { event: 'auth.mfa_reenrolled' };
 
 export interface AuditIds {
   actorId: string | null;

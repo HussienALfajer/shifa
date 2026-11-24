@@ -249,6 +249,7 @@ export type ErrorsKey =
   | 'no_clinic'
   | 'not_acceptable'
   | 'not_found'
+  | 'owner_account_exists'
   | 'owner_mfa_platform'
   | 'owner_role_protected'
   | 'owner_setup_pending'

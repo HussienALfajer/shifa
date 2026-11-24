@@ -65,11 +65,14 @@ export interface SampleContext {
   nextPhone(): string;
   /** A fresh owner setup link's token (a new clinic each call). */
   newLinkToken(): Promise<string>;
+  /** A clinic whose owner has an account (A-01-11: actions on a pending owner answer 409). */
+  ownedClinicId(): Promise<string>;
   /**
-   * Puts the calling person's TOTP in `state` ('none': removed; 'unconfirmed' or 'enrolled'
-   * with a known key) and returns the current code. Anonymous callers: no-op.
+   * Puts the calling person's TOTP in `state` ('none': removed; 'unconfirmed', 'enrolled' or
+   * 'reenrolling' (enrolled, with a pending re-enrolment, OD-98) with a known key) and returns
+   * the current code. Anonymous callers: no-op.
    */
-  totp(state: 'none' | 'unconfirmed' | 'enrolled'): Promise<string>;
+  totp(state: 'none' | 'unconfirmed' | 'enrolled' | 'reenrolling'): Promise<string>;
   /** A fresh member of the callers' clinic (TENANT_A), pending or deactivated (A-01-04). */
   memberId(status?: 'pending' | 'deactivated'): Promise<string>;
   /** A fresh active branch of the callers' clinic (TENANT_A), never its last one (A-01-05). */
@@ -131,11 +134,15 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'POST /platform/clinics/:id/owner/setup-link': (ctx) => ({
     url: `/platform/clinics/${ctx.clinicId}/owner/setup-link`,
   }),
-  'POST /platform/clinics/:id/owner/reset-mfa': (ctx) => ({
-    url: `/platform/clinics/${ctx.clinicId}/owner/reset-mfa`,
+  'POST /platform/clinics/:id/owner/reset-mfa': async (ctx) => ({
+    url: `/platform/clinics/${await ctx.ownedClinicId()}/owner/reset-mfa`,
   }),
-  'POST /platform/clinics/:id/owner/end-sessions': (ctx) => ({
-    url: `/platform/clinics/${ctx.clinicId}/owner/end-sessions`,
+  'POST /platform/clinics/:id/owner/end-sessions': async (ctx) => ({
+    url: `/platform/clinics/${await ctx.ownedClinicId()}/owner/end-sessions`,
+  }),
+  'PATCH /platform/clinics/:id/owner': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/owner`,
+    body: { phone: ctx.nextPhone() },
   }),
   'GET /team/members/:id': async (ctx) => ({ url: `/team/members/${await ctx.memberId()}` }),
   'POST /team/members': (ctx) => ({
@@ -167,6 +174,12 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   }),
   'POST /auth/mfa/recovery-codes': async (ctx) => ({
     body: { code: await ctx.totp('enrolled') },
+  }),
+  'POST /auth/mfa/re-enrol/start': async (ctx) => ({
+    body: { code: await ctx.totp('enrolled') },
+  }),
+  'POST /auth/mfa/re-enrol/confirm': async (ctx) => ({
+    body: { code: await ctx.totp('reenrolling') },
   }),
   'PATCH /clinic/settings': () => ({ body: { idleMinutes: 30 } }),
   'POST /branches': () => ({ body: { name: 'فرع المصفوفة' } }),
@@ -222,6 +235,9 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /auth/password': signedIn,
   'GET /auth/mfa': signedIn,
   'POST /auth/mfa/recovery-codes': signedIn,
+  // A-01-11: TOTP moved to a new phone (OD-98), after MFA
+  'POST /auth/mfa/re-enrol/start': signedIn,
+  'POST /auth/mfa/re-enrol/confirm': signedIn,
   // setup links and MFA (A-01-03): a link's token is the credential; enrolment and the
   // challenge need a session (and are reachable before MFA)
   'POST /auth/setup-link/view': everyone,
@@ -237,6 +253,8 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /platform/clinics/:id/owner/setup-link': platformAdmin,
   'POST /platform/clinics/:id/owner/reset-mfa': platformAdmin,
   'POST /platform/clinics/:id/owner/end-sessions': platformAdmin,
+  // A-01-11: a pending owner's phone corrected (OD-99)
+  'PATCH /platform/clinics/:id/owner': platformAdmin,
   // team (A-01-04): members.view / members.manage, owner only
   'GET /team/members': ownerOnly,
   'GET /team/members/:id': ownerOnly,

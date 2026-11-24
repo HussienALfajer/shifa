@@ -45,7 +45,18 @@ export const UpdateClinicRequest = z
 export type UpdateClinicRequest = z.infer<typeof UpdateClinicRequest>;
 
 export const ClinicOwner = z
-  .object({ membershipId: z.uuid(), name: z.string(), status: MembershipStatus })
+  .object({
+    membershipId: z.uuid(),
+    name: z.string(),
+    status: MembershipStatus,
+    /** The country code and the last three digits, e.g. `+963 ••• ••• 123` (A-01-11). */
+    phoneMasked: z.string(),
+    /**
+     * Expiry of the owner's open link (unused and not replaced), past or future, so the page can
+     * say it expired; null when none is open (A-01-11).
+     */
+    linkExpiresAt: z.iso.datetime().nullable(),
+  })
   .meta({ id: 'ClinicOwner' });
 
 export const ClinicSummary = z
@@ -56,6 +67,8 @@ export const ClinicSummary = z
     status: ClinicStatus,
     subscriptionEnd: CalendarDate.nullable(),
     ownerName: z.string().nullable(),
+    /** The owner membership's status; null when the clinic has no owner row (A-01-11). */
+    ownerStatus: MembershipStatus.nullable(),
     createdAt: z.iso.datetime(),
   })
   .meta({ id: 'ClinicSummary' });
@@ -107,8 +120,9 @@ export const platformCreateClinic = defineContract({
   path: '/platform/clinics',
   summary: 'Create a clinic and its owner; returns the owner’s setup link once',
   request: { body: CreateClinicRequest },
-  // 409 `owner_setup_pending`: the phone owns another clinic not yet set up (OD-85).
-  responses: { 201: ClinicCreated, 409: ErrorEnvelope },
+  // 400 `validation_failed` (body.ownerPhone when it is no phone); 409 `owner_setup_pending`: the
+  // phone owns another clinic not yet set up (OD-85).
+  responses: { 201: ClinicCreated, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 export const platformClinic = defineContract({
@@ -126,7 +140,28 @@ export const platformUpdateClinic = defineContract({
   path: '/platform/clinics/:id',
   summary: 'Change a clinic’s status or subscription end date',
   request: { params: ClinicIdParams, body: UpdateClinicRequest },
-  responses: { 200: ClinicDetail, 404: ErrorEnvelope },
+  responses: { 200: ClinicDetail, 400: ErrorEnvelope, 404: ErrorEnvelope },
+});
+
+/** As typed; normalised to E.164 by the server (400 on body.phone when invalid). */
+export const OwnerPhoneRequest = z
+  .object({ phone: z.string().min(1).max(32) })
+  .meta({ id: 'OwnerPhoneRequest' });
+export type OwnerPhoneRequest = z.infer<typeof OwnerPhoneRequest>;
+
+/**
+ * OD-99: corrects a pending owner's phone; the earlier link stops working and a new one is shown
+ * once (`invitation` when the new phone has an account). 409 `owner_account_exists`: the owner
+ * has set up their account; 409 `owner_setup_pending`: the new phone owns another clinic not set
+ * up (OD-85).
+ */
+export const platformOwnerPhone = defineContract({
+  operationId: 'platformOwnerPhone',
+  method: 'PATCH',
+  path: '/platform/clinics/:id/owner',
+  summary: 'Correct a pending owner’s phone; returns the new setup link once',
+  request: { params: ClinicIdParams, body: OwnerPhoneRequest },
+  responses: { 200: SetupLinkIssued, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 /** Replaces the owner's earlier link; for a set-up owner it also resets the password. */
@@ -145,7 +180,8 @@ export const platformOwnerResetMfa = defineContract({
   path: '/platform/clinics/:id/owner/reset-mfa',
   summary: 'Reset the owner’s TOTP: enrol again at next sign-in (ends the owner’s sessions)',
   request: { params: ClinicIdParams },
-  responses: { 204: null, 404: ErrorEnvelope },
+  // 409 `owner_setup_pending`: the owner has no account yet (A-01-11).
+  responses: { 204: null, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 export const platformOwnerEndSessions = defineContract({
@@ -154,5 +190,6 @@ export const platformOwnerEndSessions = defineContract({
   path: '/platform/clinics/:id/owner/end-sessions',
   summary: 'End every session of the owner',
   request: { params: ClinicIdParams },
-  responses: { 204: null, 404: ErrorEnvelope },
+  // 409 `owner_setup_pending`: the owner has no account yet (A-01-11).
+  responses: { 204: null, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
