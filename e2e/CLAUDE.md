@@ -4,8 +4,10 @@ Playwright journeys against the real backend (slice A-01-06): the built API on a
 
 ## Layout
 - `support/global-setup.ts` starts `scripts/backend.ts` with plain Node (Playwright's loader cannot start the API) and hands the URLs and the seed to the workers through their environment; closing the backend's stdin stops it all.
-- `scripts/backend.ts` — harness container under a DB test slot, `startApi()` from `apps/api/scripts/api-process.ts`, both previews, then `scripts/seed.ts` (super admin through `seedSuperAdmin()`, two clinics with owners through `createClinic()`; synthetic names and phones from `@shifa/testing`). Its one stdout line (READY) carries the URLs and the one-time tokens: keep stdout a pipe to the parent.
-- `support/page.ts` — API calls as a `fetch` run in the page (same origin, the cookie lands in the browser's jar); `expireSession()` is the only raw database access.
+- `scripts/backend.ts` — harness container under a DB test slot, `startApi()` from `apps/api/scripts/api-process.ts`, both previews, then `scripts/seed.ts` (two super admins through `seedSuperAdmin()`, three clinics with owners through `createClinic()`; synthetic names and phones from `@shifa/testing`). Its one stdout line (READY) carries the URLs and the one-time tokens: keep stdout a pipe to the parent.
+- `support/page.ts` — API calls as a `fetch` run in the page (same origin, the cookie lands in the browser's jar): `callInPage()`, `expectCall()` (a wrong status names the code, never the body); `expireSession()` is the only raw database access.
+- `support/screens.ts` — the entry-path steps as a person does them (setup link, enrolment, sign-in, challenge, `tabTo()`); `support/totp.ts` the journeys' own authenticator (waits for an unused 30 s step); `support/axe.ts` axe on a whole page (WCAG 2.2 A/AA and page-level rules).
+- `tests/entry-path.spec.ts` (A-01-07): five journeys sharing browser contexts, in order: (5) the second seeded super admin enrols, then (1)–(4) build on it. `tests/keyboard-axe.spec.ts`: the third seeded owner, keyboard only, axe on each screen. `tests/smoke.spec.ts` (A-01-06) keeps the first super admin and the first two clinics.
 - Clinic web runs on `localhost`, admin web on `127.0.0.1`: cookies ignore ports, so two hosts keep two jars.
 
 ## Rules
