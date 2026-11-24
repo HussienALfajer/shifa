@@ -1,6 +1,6 @@
 # A-01-09 Account API gaps: profile, password change, recovery codes, staff TOTP reset, contract fixes
 
-Status: Planned (re-planned 2026-11-24 with the A-01-07 rows, OD-92, OD-93, OD-95; approved by the owner 2026-11-24, with the three new error codes) · Tier: T0 · Branch: `feat/A-01-09-account-api-gaps`
+Status: Built, in review (re-planned 2026-11-24 with the A-01-07 rows, OD-92, OD-93, OD-95; approved by the owner 2026-11-24, with the three new error codes; second-session critique waived by starting `/build-slice`, as for A-01-01 to A-01-05) · Tier: T0 · Branch: `claude/focused-darwin-t1505l` (the cloud session's branch; planned `feat/A-01-09-account-api-gaps`)
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 8–12, 14 and the screens "My account", "TOTP challenge", "Setup link"; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 3, 10, 12 (criteria added or changed by this slice, see Plan 0) · Requirements: PLT-10, PLT-19, PLT-47, PLT-48 · Decisions: ADR-0042, ADR-0044, ADR-0045, ADR-0046; OD-86, OD-91, OD-92, OD-93, OD-95
 
 After [A-01-05](A-01-05-branches-and-switcher.md) (merged) and the approved drawings of [A-01-07](A-01-07-ui-sign-in-screens.md) checkpoint 1. Before A-01-07 checkpoint 2, [A-01-10](A-01-10-ui-account-settings-admin-web.md) and [A-01-08](A-01-08-ui-team-branches-switcher.md). Changes contracts: serialised with every other contract change. No schema change.
@@ -81,8 +81,16 @@ Hand-written lines: ~3,050 (contracts and error codes ~350; spec and docs ~150; 
 
 Critique: T0, a second session critiques this plan before building, unless the owner waives it as for A-01-01 to A-01-05. Model and effort: Opus 5.5 at `high` (T0).
 
+## Decisions and deviations while building (2026-11-24)
+- **OD-96** (owner): `two_factor` has no time column, so `enrolledAt` needs one: migration `20261124101215_two_factor_enrolled_at` adds nullable `two_factor.enrolled_at` (expand only; set at enrolment confirm; enrolments before it read null; rollback: the column is unused by older code, drop it in a later migration if ever needed). The plan's "no migration" (item 2) no longer holds; `shifa_auth` keeps its table-level grant, `shifa_app`'s column grant on `two_factor` is unchanged.
+- **Locked tests** (owner allowed both): a type-only cast in `packages/contracts/test/account.test.ts`; in `apps/api/test/identity/session-reason.test.ts` the super admin's end-sessions answers 204 (not 200), and the absolute-limit case starts a fresh world (the idle case before it runs every session out). No assertion weakened.
+- **1h**: `Contract.public` marks public contracts; `defineContract()` adds 401 to every other one; `ContractCheck` refuses `public: true` on a route that is not `@Public()`. One direction only: test-only `testContract()` routes are `@Public()` without the flag (they then declare an extra 401, harmless). The OpenAPI document already added 400/401/403; it changes only by the new routes and fields.
+- **1f sign-in**: a person whose only clinic needs a branch (roles in two or more branches, none tenant-wide) starts with no active clinic, so the chooser runs its branch step.
+- **Timing floor (3)**: the current password is always verified with scrypt (as at sign-in); no separate floor test, since the answer (401 or not) is explicit to the signed-in caller anyway.
+- **Audit**: new events `auth.password_changed`, `auth.password_change_failed`, `auth.recovery_codes_renewed`, `member.mfa_reset`; session-end reason `password_changed`. Ended sessions on the owner's TOTP reset audit as reason `member`.
+
 ## Stopped at
-Plan approved by the owner 2026-11-24. Not started; the second-session critique is the owner's call before building.
+All checkpoints built in one pass (contracts → db → API); `pnpm verify` green; reviews and the PR next.
 
 ## Evidence
 - `verify` (full): —
