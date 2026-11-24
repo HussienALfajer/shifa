@@ -3,8 +3,10 @@
 // person's account (sessions, password, whether a phone has an account) through identity.
 import { type DynamicModule, Module, type ModuleMetadata } from '@nestjs/common';
 import { ClinicSettingsController } from './clinic-settings.controller.ts';
+import { MemberCorrections } from './member-corrections.ts';
 import { TeamController } from './team.controller.ts';
 import { TeamService } from './team.service.ts';
+import { TeamPermissionsController } from './team-permissions.controller.ts';
 
 @Module({})
 export class TeamModule {
@@ -17,8 +19,8 @@ export class TeamModule {
     return {
       module: TeamModule,
       imports: [identity],
-      controllers: [TeamController, ClinicSettingsController],
-      providers: [TeamService],
+      controllers: [TeamController, TeamPermissionsController, ClinicSettingsController],
+      providers: [TeamService, MemberCorrections],
     };
   }
 }

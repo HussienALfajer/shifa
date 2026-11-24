@@ -75,8 +75,11 @@ export interface SampleContext {
   totp(state: 'none' | 'unconfirmed' | 'enrolled' | 'reenrolling'): Promise<string>;
   /** A fresh member of the callers' clinic (TENANT_A), pending or deactivated (A-01-04). */
   memberId(status?: 'pending' | 'deactivated'): Promise<string>;
-  /** A fresh active branch of the callers' clinic (TENANT_A), never its last one (A-01-05). */
-  branchId(): Promise<string>;
+  /**
+   * A fresh branch of the callers' clinic (TENANT_A), never its last active one (A-01-05);
+   * archived for the restore route (A-01-12).
+   */
+  branchId(state?: 'active' | 'archived'): Promise<string>;
   /** A fresh open invitation for the calling person's phone; its membership id (OD-90). */
   invitationId(): Promise<string>;
   /** A new clinic where the calling person is an active doctor (A-01-05 switch). */
@@ -167,6 +170,16 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   }),
   'POST /team/members/:id/reset-mfa': async (ctx) => ({
     url: `/team/members/${await ctx.enrolledMemberId()}/reset-mfa`,
+  }),
+  // A-01-12: the sensitive keys with each role's default (OD-102), a pending member's phone
+  // (OD-103), an archived branch restored (OD-105).
+  'GET /team/permissions': () => ({}),
+  'PATCH /team/members/:id/phone': async (ctx) => ({
+    url: `/team/members/${await ctx.memberId()}/phone`,
+    body: { phone: ctx.nextPhone() },
+  }),
+  'POST /branches/:id/restore': async (ctx) => ({
+    url: `/branches/${await ctx.branchId('archived')}/restore`,
   }),
   // A-01-09: the caller's own password and recovery codes.
   'POST /auth/password': async (ctx) => ({
@@ -264,6 +277,9 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /team/members/:id/reactivate': ownerOnly,
   'POST /team/members/:id/setup-link': ownerOnly,
   'POST /team/members/:id/reset-mfa': ownerOnly,
+  // A-01-12: members.view (catalogue) and members.manage (phone), owner only
+  'GET /team/permissions': ownerOnly,
+  'PATCH /team/members/:id/phone': ownerOnly,
   // clinic settings (A-01a criterion 9): clinic.settings.manage
   'GET /clinic/settings': ownerOnly,
   'PATCH /clinic/settings': ownerOnly,
@@ -273,6 +289,8 @@ export const EXPECTED_MATRIX: Matrix = {
   'PATCH /branches/:id': ownerOnly,
   'GET /branches/:id/archive-preview': ownerOnly,
   'POST /branches/:id/archive': ownerOnly,
+  // A-01-12: branches.manage (OD-105)
+  'POST /branches/:id/restore': ownerOnly,
   // invitations (A-01-04): the token is the credential to view; answering needs a session
   'POST /invitations/view': everyone,
   'POST /invitations/accept': signedIn,

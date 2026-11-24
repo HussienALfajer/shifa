@@ -9,6 +9,7 @@ import {
   branchesArchivePreview,
   branchesCreate,
   branchesList,
+  branchesRestore,
   branchesUpdate,
   type RequestBody,
   type RequestParams,
@@ -72,5 +73,17 @@ export class BranchesController {
     @ClientRequest() request: RequestMeta,
   ): Promise<Branch> {
     return this.branches.archive(scope, params.id, request.requestId);
+  }
+
+  @RequirePermission('branches.manage')
+  @Contract(branchesRestore)
+  @HttpCode(200)
+  @Post(':id/restore')
+  restore(
+    @Param() params: RequestParams<typeof branchesRestore>,
+    @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<Branch> {
+    return this.branches.restore(scope, params.id, request.requestId);
   }
 }

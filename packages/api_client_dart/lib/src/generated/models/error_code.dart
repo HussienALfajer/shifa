@@ -102,7 +102,19 @@ enum ErrorCode {
   @JsonValue('owner_role_protected')
   ownerRoleProtected('owner_role_protected'),
   @JsonValue('owner_account_exists')
-  ownerAccountExists('owner_account_exists');
+  ownerAccountExists('owner_account_exists'),
+  @JsonValue('member_deactivated')
+  memberDeactivated('member_deactivated'),
+  @JsonValue('member_not_deactivated')
+  memberNotDeactivated('member_not_deactivated'),
+  @JsonValue('member_account_exists')
+  memberAccountExists('member_account_exists'),
+  @JsonValue('self_action')
+  selfAction('self_action'),
+  @JsonValue('invitation_other_phone')
+  invitationOtherPhone('invitation_other_phone'),
+  @JsonValue('branch_not_archived')
+  branchNotArchived('branch_not_archived');
 
   const ErrorCode(this.json);
 

@@ -76,11 +76,21 @@ describe('the owner resets a member’s TOTP (criterion 3, OD-95)', () => {
     expect(JSON.stringify([...clinicRows, ...authRows])).not.toContain(m.phone);
   });
 
-  it('an owner’s TOTP, the caller’s own included → 409 owner_mfa_platform', async () => {
-    const res = await reset(clinic.ownerMembershipId);
+  it('the caller’s own → 409 self_action; another owner’s → 409 owner_mfa_platform', async () => {
+    const own = await reset(clinic.ownerMembershipId);
+    expect(own.statusCode).toBe(409);
+    expect(errorCode(own)).toBe('self_action');
+    expect((await get(world.app, '/auth/session', clinic.owner.cookie)).statusCode).toBe(200);
+    const other = await world.clinic();
+    const second = await activeMember(world, other, [{ role: 'owner', branchId: null }]);
+    const res = await post(
+      world.app,
+      `/team/members/${second.membershipId}/reset-mfa`,
+      {},
+      other.owner.cookie,
+    );
     expect(res.statusCode).toBe(409);
     expect(errorCode(res)).toBe('owner_mfa_platform');
-    expect((await get(world.app, '/auth/session', clinic.owner.cookie)).statusCode).toBe(200);
   });
 
   it('a member without TOTP, or pending without an account → 409 mfa_not_enrolled', async () => {

@@ -34,6 +34,13 @@
             "pattern": "\\S",
             "type": "string"
           },
+          "permissions": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionSetting"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
           "phone": {
             "maxLength": 32,
             "minLength": 1,
@@ -580,7 +587,13 @@
           "mfa_not_owed",
           "mfa_not_enrolled",
           "owner_role_protected",
-          "owner_account_exists"
+          "owner_account_exists",
+          "member_deactivated",
+          "member_not_deactivated",
+          "member_account_exists",
+          "self_action",
+          "invitation_other_phone",
+          "branch_not_archived"
         ],
         "type": "string"
       },
@@ -657,6 +670,9 @@
           "personName": {
             "type": "string"
           },
+          "phoneMasked": {
+            "type": "string"
+          },
           "roles": {
             "items": {
               "$ref": "#/components/schemas/InvitationRole"
@@ -668,7 +684,8 @@
           "clinicName",
           "personName",
           "roles",
-          "expiresAt"
+          "expiresAt",
+          "phoneMasked"
         ],
         "type": "object"
       },
@@ -697,7 +714,22 @@
           "isLastOwner": {
             "type": "boolean"
           },
+          "isSelf": {
+            "type": "boolean"
+          },
           "lastActiveAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "linkExpiresAt": {
             "anyOf": [
               {
                 "format": "date-time",
@@ -741,6 +773,8 @@
           "status",
           "roles",
           "lastActiveAt",
+          "linkExpiresAt",
+          "isSelf",
           "permissions",
           "isLastOwner",
           "mfaEnrolled"
@@ -805,6 +839,19 @@
         ],
         "type": "object"
       },
+      "MemberPhoneRequest": {
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "type": "object"
+      },
       "MemberRole": {
         "properties": {
           "branchId": {
@@ -843,7 +890,22 @@
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           },
+          "isSelf": {
+            "type": "boolean"
+          },
           "lastActiveAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "linkExpiresAt": {
             "anyOf": [
               {
                 "format": "date-time",
@@ -877,7 +939,9 @@
           "phone",
           "status",
           "roles",
-          "lastActiveAt"
+          "lastActiveAt",
+          "linkExpiresAt",
+          "isSelf"
         ],
         "type": "object"
       },
@@ -1131,10 +1195,57 @@
         ],
         "type": "object"
       },
+      "PermissionDefault": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/PermissionKeyName"
+          },
+          "roles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "roles"
+        ],
+        "type": "object"
+      },
+      "PermissionDefaults": {
+        "properties": {
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/PermissionDefault"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "type": "object"
+      },
       "PermissionKeyName": {
         "maxLength": 100,
         "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
         "type": "string"
+      },
+      "PermissionSetting": {
+        "properties": {
+          "granted": {
+            "type": "boolean"
+          },
+          "key": {
+            "$ref": "#/components/schemas/PermissionKeyName"
+          }
+        },
+        "required": [
+          "key",
+          "granted"
+        ],
+        "type": "object"
       },
       "PermissionSwitch": {
         "properties": {
@@ -1678,6 +1789,11 @@
       },
       "UpdateMemberRequest": {
         "properties": {
+          "name": {
+            "maxLength": 200,
+            "pattern": "\\S",
+            "type": "string"
+          },
           "permissions": {
             "items": {
               "$ref": "#/components/schemas/PermissionSwitch"
@@ -2967,6 +3083,87 @@
           }
         },
         "summary": "Whether a branch can be archived and whose sessions would end",
+        "x-permission": "branches.manage"
+      }
+    },
+    "/branches/{id}/restore": {
+      "post": {
+        "operationId": "branchesRestore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Branch"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Restore an archived branch",
         "x-permission": "branches.manage"
       }
     },
@@ -4294,7 +4491,7 @@
             "description": "Conflict"
           }
         },
-        "summary": "Change a member’s roles and sensitive toggles",
+        "summary": "Change a member’s name, roles and sensitive toggles",
         "x-permission": "members.manage"
       }
     },
@@ -4376,6 +4573,97 @@
           }
         },
         "summary": "Deactivate a member; their sessions in this clinic end",
+        "x-permission": "members.manage"
+      }
+    },
+    "/team/members/{id}/phone": {
+      "patch": {
+        "operationId": "teamMemberPhone",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MemberPhoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberLinkIssued"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Correct a pending member’s phone; returns their new link once",
         "x-permission": "members.manage"
       }
     },
@@ -4620,6 +4908,45 @@
         },
         "summary": "Issue a new link (staff recovery); ends the member’s sessions",
         "x-permission": "members.manage"
+      }
+    },
+    "/team/permissions": {
+      "get": {
+        "operationId": "teamPermissions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PermissionDefaults"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The sensitive keys with the roles that grant each by default",
+        "x-permission": "members.view"
       }
     }
   }

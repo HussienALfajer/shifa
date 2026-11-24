@@ -186,7 +186,7 @@ describe('review 4, 6, 7', () => {
     expect(row?.lastActiveAt).not.toBeNull();
   });
 
-  it('a deactivated member gets no link (409): reactivate first', async () => {
+  it('a deactivated member gets no link (409 member_deactivated): reactivate first', async () => {
     const added = await addMember(world.app, clinic.owner.cookie, {
       phone: world.phone(),
       roles: [{ role: 'assistant', branchId: null }],
@@ -204,6 +204,7 @@ describe('review 4, 6, 7', () => {
       clinic.owner.cookie,
     );
     expect(res.statusCode).toBe(409);
+    expect(errorCode(res)).toBe('member_deactivated');
   });
 
   it('two adds of one phone at once: one 201, one 409 phone_in_team', async () => {

@@ -87,10 +87,15 @@ async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): P
 }
 
 /** A fresh active branch of the callers' clinic (A-01-05 routes); never its last one. */
-async function branchOfTenantA(): Promise<string> {
+async function branchOfTenantA(state: 'active' | 'archived' = 'active'): Promise<string> {
   const id = randomUUID();
   await testDb().withTenant({ tenantId: TENANT_A, userId: fixtureId('matrix seeder') }, (tx) =>
-    tx.insert(branch).values({ id, tenantId: TENANT_A, name: 'فرع المصفوفة' }),
+    tx.insert(branch).values({
+      id,
+      tenantId: TENANT_A,
+      name: 'فرع المصفوفة',
+      archivedAt: state === 'archived' ? new Date() : null,
+    }),
   );
   return id;
 }
@@ -223,7 +228,7 @@ async function observe(app: TestApp): Promise<Observed> {
         newLinkToken: async () => (await clinicWithLink()).token,
         totp: (state) => totpState(userId, state),
         memberId: (status) => memberOfTenantA(status),
-        branchId: () => branchOfTenantA(),
+        branchId: (state) => branchOfTenantA(state),
         invitationToken: () => invitationFor(phonesOf.get(caller)),
         invitationId: () => invitationIdFor(phonesOf.get(caller)),
         callerClinicId: () => clinicOfCaller(userId, phonesOf.get(caller)),

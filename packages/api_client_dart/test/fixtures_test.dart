@@ -22,6 +22,7 @@ final _decoders = <String, Object Function(_Json)>{
   'ClinicCreated': (json) => ClinicCreated.fromJson(json).toJson(),
   'MemberDetail': (json) => MemberDetail.fromJson(json).toJson(),
   'InvitationView': (json) => InvitationView.fromJson(json).toJson(),
+  'PermissionDefaults': (json) => PermissionDefaults.fromJson(json).toJson(),
   'ClinicSettings': (json) => ClinicSettings.fromJson(json).toJson(),
   'BranchList': (json) => BranchList.fromJson(json).toJson(),
   'ArchiveBranchPreview': (json) =>

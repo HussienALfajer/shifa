@@ -8,9 +8,10 @@ import {
   permissionOverride,
   type Role,
   roleAssignment,
+  setupLink,
   type Tx,
 } from '@shifa/db';
-import { and, asc, eq, inArray } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, max } from 'drizzle-orm';
 import type { PermissionCatalogue, PermissionKey } from '../../access/index.ts';
 
 type Grants = Readonly<Record<string, readonly string[]>>;
@@ -47,7 +48,36 @@ async function rolesBy(tx: Tx, membershipIds: string[]): Promise<Map<string, Mem
   return byMember;
 }
 
-function summary(row: MembershipRow, roles: MemberRole[]): MemberSummary {
+/** The latest unused, unreplaced link per membership, past or future (one query, A-01-12). */
+async function openLinksBy(tx: Tx, membershipIds: string[]): Promise<Map<string, Date>> {
+  if (membershipIds.length === 0) return new Map();
+  const rows = await tx
+    .select({ membershipId: setupLink.membershipId, expiresAt: max(setupLink.expiresAt) })
+    .from(setupLink)
+    .where(
+      and(
+        inArray(setupLink.membershipId, membershipIds),
+        isNull(setupLink.usedAt),
+        isNull(setupLink.replacedAt),
+      ),
+    )
+    .groupBy(setupLink.membershipId);
+  return new Map(
+    rows.flatMap((r) => (r.expiresAt ? [[r.membershipId, r.expiresAt] as const] : [])),
+  );
+}
+
+/** Who is reading: the caller's own row reads «أنت». */
+export interface Viewer {
+  userId: string;
+}
+
+function summary(
+  row: MembershipRow,
+  roles: MemberRole[],
+  link: Date | undefined,
+  viewer: Viewer,
+): MemberSummary {
   return {
     id: row.id,
     name: row.displayName,
@@ -55,16 +85,18 @@ function summary(row: MembershipRow, roles: MemberRole[]): MemberSummary {
     status: row.status,
     roles,
     lastActiveAt: row.lastActiveAt?.toISOString() ?? null,
+    // A pending member's link only: an active member's unused recovery link is not «انتهى الرابط».
+    linkExpiresAt: row.status === 'pending' ? (link?.toISOString() ?? null) : null,
+    isSelf: row.userId !== null && row.userId === viewer.userId,
   };
 }
 
-export async function listMembers(tx: Tx): Promise<MemberSummary[]> {
+export async function listMembers(tx: Tx, viewer: Viewer): Promise<MemberSummary[]> {
   const rows = await tx.select().from(membership).orderBy(asc(membership.createdAt));
-  const roles = await rolesBy(
-    tx,
-    rows.map((r) => r.id),
-  );
-  return rows.map((row) => summary(row, roles.get(row.id) ?? []));
+  const ids = rows.map((r) => r.id);
+  const roles = await rolesBy(tx, ids);
+  const links = await openLinksBy(tx, ids);
+  return rows.map((row) => summary(row, roles.get(row.id) ?? [], links.get(row.id), viewer));
 }
 
 export async function findMember(tx: Tx, id: string): Promise<MembershipRow | undefined> {
@@ -89,6 +121,7 @@ export async function activeOwners(tx: Tx): Promise<string[]> {
 }
 
 export interface DetailContext {
+  viewer: Viewer;
   catalogue: PermissionCatalogue;
   grants: Grants;
   /** Whether a person has TOTP, read on the auth path (identity's MemberAccounts). */
@@ -126,8 +159,9 @@ export async function memberDetail(
       overridden: override !== undefined,
     };
   });
+  const links = await openLinksBy(tx, [row.id]);
   return {
-    ...summary(row, roles),
+    ...summary(row, roles, links.get(row.id), ctx.viewer),
     permissions,
     isLastOwner: owners.length === 1 && owners[0] === row.id,
     mfaEnrolled: row.userId ? await ctx.mfaEnrolled(row.userId) : false,

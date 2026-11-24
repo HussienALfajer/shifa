@@ -4,6 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'permission_setting.dart';
 import 'role_scope_input.dart';
 
 part 'add_member_request.g.dart';
@@ -14,12 +15,15 @@ class AddMemberRequest {
     required this.name,
     required this.phone,
     required this.roles,
+    this.permissions,
   });
 
   factory AddMemberRequest.fromJson(Map<String, Object?> json) =>
       _$AddMemberRequestFromJson(json);
 
   final String name;
+  @JsonKey(includeIfNull: false)
+  final List<PermissionSetting>? permissions;
   final String phone;
   final List<RoleScopeInput> roles;
 

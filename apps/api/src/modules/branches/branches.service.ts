@@ -113,6 +113,25 @@ export class BranchesService {
     });
   }
 
+  /**
+   * OD-105: the branch returns to switchers and role pickers, which read `archived_at`; its role
+   * assignments were never deleted, so they stand again. Sessions the archive ended stay ended.
+   */
+  restore(scope: RequestScope, id: string, requestId: string): Promise<Branch> {
+    return this.tenants.run(scope, async (tx) => {
+      const current = await find(tx, id, { lock: true });
+      if (!current.archivedAt) throw new ApiError(409, 'branch_not_archived');
+      const [row] = await tx
+        .update(branch)
+        .set({ archivedAt: null, updatedAt: new Date() })
+        .where(eq(branch.id, id))
+        .returning();
+      if (!row) throw new NotFoundException();
+      await audit(tx, scope, 'branch.restored', row.id, requestId);
+      return toBranch(row, (await memberCounts(tx)).get(row.id) ?? 0);
+    });
+  }
+
   async archive(scope: RequestScope, id: string, requestId: string): Promise<Branch> {
     const by = { actorId: scope.userId, requestId };
     return this.tenants.run(scope, async (tx) => {

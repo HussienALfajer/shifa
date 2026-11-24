@@ -11,11 +11,13 @@ part 'update_member_request.g.dart';
 
 @JsonSerializable()
 class UpdateMemberRequest {
-  const UpdateMemberRequest({this.permissions, this.roles});
+  const UpdateMemberRequest({this.name, this.permissions, this.roles});
 
   factory UpdateMemberRequest.fromJson(Map<String, Object?> json) =>
       _$UpdateMemberRequestFromJson(json);
 
+  @JsonKey(includeIfNull: false)
+  final String? name;
   @JsonKey(includeIfNull: false)
   final List<PermissionSwitch>? permissions;
   @JsonKey(includeIfNull: false)

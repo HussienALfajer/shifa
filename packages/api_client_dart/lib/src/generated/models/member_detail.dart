@@ -15,7 +15,9 @@ class MemberDetail {
   const MemberDetail({
     required this.id,
     required this.isLastOwner,
+    required this.isSelf,
     required this.lastActiveAt,
+    required this.linkExpiresAt,
     required this.mfaEnrolled,
     required this.name,
     required this.permissions,
@@ -29,8 +31,11 @@ class MemberDetail {
 
   final String id;
   final bool isLastOwner;
+  final bool isSelf;
   @JsonKey(includeIfNull: true)
   final DateTime? lastActiveAt;
+  @JsonKey(includeIfNull: true)
+  final DateTime? linkExpiresAt;
   final bool mfaEnrolled;
   final String name;
   final List<MemberPermission> permissions;

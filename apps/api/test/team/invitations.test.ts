@@ -48,7 +48,7 @@ async function invitedDoctor() {
 }
 
 describe('viewing an invitation', () => {
-  it('shows the clinic, the person and the roles with scope; no phone', async () => {
+  it('shows the clinic, the person, the roles with scope and only the masked phone', async () => {
     const { token } = await invitedDoctor();
     const res = await post(world.app, '/invitations/view', { token });
     expect(res.statusCode).toBe(200);
@@ -62,6 +62,7 @@ describe('viewing an invitation', () => {
       ]) as unknown,
     });
     expect(JSON.stringify(body)).not.toMatch(/\+\d{8,}/);
+    expect(body['phoneMasked']).toMatch(/^\+963 ••• ••• \d{3}$/);
   });
 
   it('answers link_invalid for a member setup link and for an unknown token', async () => {
@@ -111,12 +112,12 @@ describe('accepting an invitation', () => {
     expect(errorCode(twice)).toBe('link_invalid');
   });
 
-  it('refuses a person signed in with another phone (link_invalid); nothing is bound', async () => {
+  it('refuses a person signed in with another phone (403 invitation_other_phone); nothing is bound', async () => {
     const { invited, token } = await invitedDoctor();
     const stranger = await activeMember(world, clinicA, [{ role: 'accountant', branchId: null }]);
     const res = await post(world.app, '/invitations/accept', { token }, stranger.cookie);
-    expect(res.statusCode).toBe(404);
-    expect(errorCode(res)).toBe('link_invalid');
+    expect(res.statusCode).toBe(403);
+    expect(errorCode(res)).toBe('invitation_other_phone');
     const [row] = await membershipRow(invited.membershipId);
     expect(row).toMatchObject({ status: 'pending', userId: null });
   });

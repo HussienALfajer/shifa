@@ -243,6 +243,7 @@ describe('OpenAPI document', () => {
       '/branches/{id}',
       '/branches/{id}/archive',
       '/branches/{id}/archive-preview',
+      '/branches/{id}/restore',
       '/clinic/settings',
       '/health/live',
       '/health/ready',
@@ -261,9 +262,11 @@ describe('OpenAPI document', () => {
       '/team/members',
       '/team/members/{id}',
       '/team/members/{id}/deactivate',
+      '/team/members/{id}/phone',
       '/team/members/{id}/reactivate',
       '/team/members/{id}/reset-mfa',
       '/team/members/{id}/setup-link',
+      '/team/permissions',
     ]);
     expect(Object.keys(prod.components.schemas).some((n) => n.startsWith('Probe'))).toBe(false);
   });

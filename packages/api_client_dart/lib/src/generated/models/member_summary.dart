@@ -13,7 +13,9 @@ part 'member_summary.g.dart';
 class MemberSummary {
   const MemberSummary({
     required this.id,
+    required this.isSelf,
     required this.lastActiveAt,
+    required this.linkExpiresAt,
     required this.name,
     required this.phone,
     required this.roles,
@@ -24,8 +26,11 @@ class MemberSummary {
       _$MemberSummaryFromJson(json);
 
   final String id;
+  final bool isSelf;
   @JsonKey(includeIfNull: true)
   final DateTime? lastActiveAt;
+  @JsonKey(includeIfNull: true)
+  final DateTime? linkExpiresAt;
   final String name;
   final String phone;
   final List<MemberRole> roles;
