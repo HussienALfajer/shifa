@@ -11,14 +11,17 @@ import { IdentityAudit } from './identity-audit.ts';
 import { InvitationsController } from './invitations.controller.ts';
 import { InvitationsService } from './invitations.service.ts';
 import { DEFAULT_CLINIC_WEB_URL } from './links.ts';
+import { MeController } from './me.controller.ts';
 import { MemberAccounts } from './member-accounts.service.ts';
 import { MfaService } from './mfa.service.ts';
+import { MyInvitations } from './my-invitations.service.ts';
 import { OnboardingController } from './onboarding.controller.ts';
 import { OwnerAccounts } from './owner-accounts.service.ts';
 import { SessionIssuer } from './session-issuer.ts';
 import { SessionsService } from './sessions.service.ts';
 import { SetupLinksService } from './setup-links.service.ts';
 import { SignInService } from './sign-in.service.ts';
+import { SwitcherService } from './switcher.service.ts';
 import { ThrottleService } from './throttle.service.ts';
 import {
   AUTH_DB,
@@ -49,7 +52,7 @@ export class IdentityModule implements OnApplicationShutdown {
   }: IdentityModuleOptions): DynamicModule {
     return {
       module: IdentityModule,
-      controllers: [IdentityController, OnboardingController, InvitationsController],
+      controllers: [IdentityController, OnboardingController, InvitationsController, MeController],
       providers: [
         { provide: AUTH_DB, useValue: authDb },
         { provide: IDENTITY_CONFIG, useValue: secrets },
@@ -76,6 +79,8 @@ export class IdentityModule implements OnApplicationShutdown {
         OwnerAccounts,
         MemberAccounts,
         InvitationsService,
+        MyInvitations,
+        SwitcherService,
         BetterAuthAdapter,
       ],
       exports: [BetterAuthAdapter, OwnerAccounts, MemberAccounts, CLOCK],

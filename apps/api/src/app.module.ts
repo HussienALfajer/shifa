@@ -1,6 +1,7 @@
 import { type DynamicModule, Module } from '@nestjs/common';
 import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import { AccessModule, type PermissionDefinition } from './access/index.ts';
+import { BranchesModule } from './modules/branches/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
   BetterAuthAdapter,
@@ -60,6 +61,7 @@ export class AppModule {
           ...(permissions ? { permissions } : {}),
         }),
         TeamModule.register({ identity }),
+        BranchesModule.register({ identity }),
         ContractModule,
         HealthModule,
         ...(testRoutes ? [TestSupportModule] : []),

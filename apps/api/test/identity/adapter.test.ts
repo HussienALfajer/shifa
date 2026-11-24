@@ -1,7 +1,7 @@
 // A-01a criterion 15: BetterAuthAdapter replaces NoAuthAdapter. It builds the principal from the
 // session (active tenant and branch) and the server-side memberships of that tenant only,
 // validates it with Zod, and its failures never carry the cookie, the token or a phone.
-import { membership } from '@shifa/db';
+import { membership, roleAssignment } from '@shifa/db';
 import { fixtureId, insertMembership, syntheticPhones, testDb } from '@shifa/db/testing';
 import { eq } from 'drizzle-orm';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -51,7 +51,7 @@ describe('BetterAuthAdapter', () => {
     });
   });
 
-  it('two memberships: no active clinic until one is chosen (A-01-05), no roles', async () => {
+  it('two selectable clinics: no active clinic until one is chosen (A-01-05), no roles', async () => {
     app = await identityApp();
     const person = await seedPerson(phone(1), { tenantId: TENANT_A, role: 'doctor' });
     await testDb().withTenant({ tenantId: TENANT_B, userId: person.userId }, async (tx) => {
@@ -60,6 +60,12 @@ describe('BetterAuthAdapter', () => {
         tenantId: TENANT_B,
         phone: phone(1),
         userId: person.userId,
+      });
+      // A clinic is selectable only with a role there (A-01-05).
+      await tx.insert(roleAssignment).values({
+        tenantId: TENANT_B,
+        membershipId: fixtureId('adapter:second'),
+        role: 'doctor',
       });
     });
     const res = await signIn(app, phone(1));

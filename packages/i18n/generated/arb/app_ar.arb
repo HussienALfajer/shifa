@@ -53,6 +53,18 @@
   "@errorsBadRequest": {
     "description": "errors.bad_request"
   },
+  "errorsBranchArchived": "هذا الفرع مؤرشف.",
+  "@errorsBranchArchived": {
+    "description": "errors.branch_archived"
+  },
+  "errorsBranchNotHeld": "ليس لديك دور في هذا الفرع.",
+  "@errorsBranchNotHeld": {
+    "description": "errors.branch_not_held"
+  },
+  "errorsClinicSuspended": "حساب العيادة موقوف، تواصل مع الإدارة.",
+  "@errorsClinicSuspended": {
+    "description": "errors.clinic_suspended"
+  },
   "errorsClockSkew": "الرمز لا يطابق الوقت. اضبط وقت الهاتف تلقائيًا ثم أعد المحاولة.",
   "@errorsClockSkew": {
     "description": "errors.clock_skew"
@@ -81,6 +93,10 @@
   "@errorsIpBlocked": {
     "description": "errors.ip_blocked"
   },
+  "errorsLastBranch": "لا يمكن أرشفة آخر فرع نشط في العيادة.",
+  "@errorsLastBranch": {
+    "description": "errors.last_branch"
+  },
   "errorsLastOwner": "لا يمكن تنفيذ ذلك: يجب أن يبقى للعيادة مالك نشط واحد على الأقل.",
   "@errorsLastOwner": {
     "description": "errors.last_owner"
@@ -104,6 +120,10 @@
   "errorsMfaLocked": "رموز خاطئة كثيرة. أُوقف التحقق مؤقتًا.",
   "@errorsMfaLocked": {
     "description": "errors.mfa_locked"
+  },
+  "errorsNoClinic": "لا توجد عيادة متاحة لحسابك.",
+  "@errorsNoClinic": {
+    "description": "errors.no_clinic"
   },
   "errorsNotAcceptable": "تعذّر تقديم الاستجابة بالصيغة المطلوبة.",
   "@errorsNotAcceptable": {

@@ -39,6 +39,11 @@ export interface Principal {
    * clinic is chosen (A-01-03 review 2). Absent = only the active clinic's roles count.
    */
   ownsClinic?: boolean | undefined;
+  /**
+   * The session's clinic is suspended (A-01b criterion 11): no active tenant, and every
+   * @RequirePermission route answers 403 `clinic_suspended`. Absent = not suspended.
+   */
+  clinicSuspended?: boolean | undefined;
 }
 
 export interface PermissionOverride {
@@ -79,6 +84,10 @@ export const PrincipalSchema = z
       )
       .optional(),
     ownsClinic: z.boolean().optional(),
+    clinicSuspended: z.boolean().optional(),
+  })
+  .refine((p) => p.clinicSuspended !== true || p.tenantId === null, {
+    path: ['clinicSuspended'],
   })
   .refine((p) => p.tenantId !== null || (p.overrides ?? []).length === 0, {
     path: ['overrides'],

@@ -5,11 +5,16 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
+import '../models/active_clinic.dart';
 import '../models/add_member_request.dart';
+import '../models/archive_branch_preview.dart';
+import '../models/branch.dart';
+import '../models/branch_list.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
 import '../models/clinic_list.dart';
 import '../models/clinic_settings.dart';
+import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/health_status.dart';
@@ -20,6 +25,7 @@ import '../models/member_detail.dart';
 import '../models/member_link_issued.dart';
 import '../models/member_list.dart';
 import '../models/mfa_enrolled.dart';
+import '../models/my_clinics.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
 import '../models/set_password_request.dart';
@@ -27,9 +33,11 @@ import '../models/setup_link_issued.dart';
 import '../models/setup_link_request.dart';
 import '../models/setup_link_view.dart';
 import '../models/sign_in_request.dart';
+import '../models/switch_request.dart';
 import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
 import '../models/totp_enrol_start.dart';
+import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_member_request.dart';
 
@@ -89,6 +97,31 @@ abstract class CoreClient {
   @POST('/auth/sign-out')
   Future<void> authSignOut();
 
+  /// The clinic’s active and archived branches
+  @GET('/branches')
+  Future<BranchList> branchesList();
+
+  /// Add a branch
+  @POST('/branches')
+  Future<Branch> branchesCreate({@Body() required CreateBranchRequest body});
+
+  /// Rename a branch or change its address and phone
+  @PATCH('/branches/{id}')
+  Future<Branch> branchesUpdate({
+    @Path('id') required String id,
+    @Body() required UpdateBranchRequest body,
+  });
+
+  /// Archive a branch; members left without an active branch are signed out here
+  @POST('/branches/{id}/archive')
+  Future<Branch> branchesArchive({@Path('id') required String id});
+
+  /// Whether a branch can be archived and whose sessions would end
+  @GET('/branches/{id}/archive-preview')
+  Future<ArchiveBranchPreview> branchesArchivePreview({
+    @Path('id') required String id,
+  });
+
   /// The clinic’s settings (automatic sign-out)
   @GET('/clinic/settings')
   Future<ClinicSettings> clinicSettings();
@@ -120,6 +153,14 @@ abstract class CoreClient {
   Future<InvitationView> invitationView({
     @Body() required InvitationRequest body,
   });
+
+  /// The signed-in person’s clinics and pending invitations (clinic chooser)
+  @GET('/me/clinics')
+  Future<MyClinics> meClinics();
+
+  /// Switch the session to one of the person’s clinics and branches
+  @POST('/me/switch')
+  Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});
 
   /// Clinics, newest first; search by name
   @GET('/platform/clinics')

@@ -102,7 +102,9 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       membership_auth_own_read:
         "a person's own memberships across clinics, for sign-in and the clinic chooser (A-01b 10)",
       membership_auth_only_own:
-        'restrictive: even with a tenant set, shifa_auth reaches only the signed-in person’s memberships and the membership of its setup link',
+        'restrictive: even with a tenant set, shifa_auth reaches only the signed-in person’s memberships, the membership of its setup link and pending ones for the person’s phone',
+      membership_auth_invited_read:
+        'the clinic chooser lists the person’s open invitations: pending, unbound, for their phone, with an open invitation link; read only, answered on the link (A-01b 10, OD-90, OD-91)',
       membership_auth_link_read:
         'a setup page shows the name and phone rules of the person its link is for (A-01a 4, 8)',
       membership_auth_link_accept:
@@ -140,7 +142,9 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       setup_link_auth_use:
         'using an unused, unexpired link marks it used (A-01a 4); only used_at is granted',
       setup_link_auth_only_link:
-        'restrictive: even with a tenant set, shifa_auth reaches only the link of its token hash',
+        'restrictive: even with a tenant set, shifa_auth reaches only the link of its token hash, and reads invitation links for the signed-in person’s phone',
+      setup_link_auth_invited_read:
+        'the clinic chooser finds the open invitation links of the signed-in person’s phone; read only (OD-90, OD-91)',
       setup_link_platform_issue_only:
         'restrictive: shifa_platform issues owner links only at clinic creation or an owner.link_issued action (A-01a 4, 13)',
       setup_link_platform_owner_links_only:

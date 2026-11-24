@@ -132,7 +132,8 @@ async function unfinishedSeed(authDb: AuthDb, phoneE164: string): Promise<string
   });
   if (found === null) return null;
   const memberships = await authDb.withUser(found, (tx) =>
-    tx.select({ id: membership.id }).from(membership),
+    // Own memberships only: the auth path also sees invitations for the phone (A-01-05).
+    tx.select({ id: membership.id }).from(membership).where(eq(membership.userId, found)),
   );
   return memberships.length === 0 ? found : null;
 }

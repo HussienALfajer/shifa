@@ -74,7 +74,17 @@ enum ErrorCode {
   @JsonValue('account_shared')
   accountShared('account_shared'),
   @JsonValue('permission_not_sensitive')
-  permissionNotSensitive('permission_not_sensitive');
+  permissionNotSensitive('permission_not_sensitive'),
+  @JsonValue('last_branch')
+  lastBranch('last_branch'),
+  @JsonValue('branch_archived')
+  branchArchived('branch_archived'),
+  @JsonValue('clinic_suspended')
+  clinicSuspended('clinic_suspended'),
+  @JsonValue('no_clinic')
+  noClinic('no_clinic'),
+  @JsonValue('branch_not_held')
+  branchNotHeld('branch_not_held');
 
   const ErrorCode(this.json);
 

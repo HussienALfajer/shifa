@@ -14,8 +14,9 @@ export default [
   // Budget ≈ 3 × the output of 2026-11-11 (14 files, 455 lines). When a slice adds real
   // endpoints, raise it in that PR, so the growth is reviewed (an unnamed schema shows up here).
   // A-01-03 (12 routes: setup links, MFA, super-admin clinics) took it to 66 files and 2,495
-  // lines; raised to about 1.5 × that.
-  apiClientDartCheck({ budget: { files: 100, lines: 3800 } }),
+  // lines; raised to about 1.5 × that. A-01-04 and A-01-05 (team, branches, clinic switcher)
+  // took it to 122 files and 4,568 lines; raised to about 1.5 × that.
+  apiClientDartCheck({ budget: { files: 185, lines: 6900 } }),
   i18nCheck(),
   tokensCheck(),
 ];

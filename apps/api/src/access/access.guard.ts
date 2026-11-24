@@ -78,6 +78,14 @@ export class AccessGuard implements CanActivate {
       if (principal.platformAdmin) return true;
       this.#deny(request, { handler, route, userId: principal.userId, platformAdmin: true });
     }
+    if (principal.clinicSuspended) {
+      // Tenant routes only: @SignedIn routes (/me/*, sign-out) went through above.
+      request.log.info(
+        { status: 403, handler, route, userId: principal.userId, reason: 'clinic_suspended' },
+        'access denied',
+      );
+      throw new ApiError(403, 'clinic_suspended');
+    }
     const scope = { tenantId: principal.tenantId, branchId: principal.branchId };
     const key = access.permission as PermissionKey;
     if (

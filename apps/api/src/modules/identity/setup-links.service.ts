@@ -254,11 +254,11 @@ export class SetupLinksService {
    * The link's role assignments with branch names, read in the link's clinic: the documented
    * exception to scope binding (A-01b criterion 8), since nobody there is signed in.
    */
-  async rolesOf(found: ClinicLink): Promise<LinkRole[]> {
+  async rolesOf(found: Pick<ClinicLink, 'tenantId' | 'membershipId'>): Promise<LinkRole[]> {
     return this.#roles(found);
   }
 
-  async #roles(found: ClinicLink): Promise<LinkRole[]> {
+  async #roles(found: Pick<ClinicLink, 'tenantId' | 'membershipId'>): Promise<LinkRole[]> {
     const scope = linkScope({ tenantId: found.tenantId, userId: NO_USER });
     const rows = await withScope(this.db, scope, (tx) =>
       tx

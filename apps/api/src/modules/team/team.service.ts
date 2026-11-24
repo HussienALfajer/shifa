@@ -92,6 +92,8 @@ export class TeamService {
         purpose,
         tokenHash: link.tokenHash,
         expiresAt: link.expiresAt,
+        // An invitation also shows in that person's clinic chooser (OD-90).
+        invitedPhone: purpose === 'invitation' ? phone.e164 : null,
       });
       await audit(tx, scope, 'member.added', row.id, requestId);
       return { member: await this.#detail(tx, row), link: link.issued };
@@ -217,6 +219,7 @@ export class TeamService {
         purpose,
         tokenHash: link.tokenHash,
         expiresAt: link.expiresAt,
+        invitedPhone: purpose === 'invitation' ? row.phoneE164 : null,
       });
       await audit(tx, scope, 'member.link_issued', row.id, requestId);
       if (row.userId) await this.accounts.resetPassword(row.userId, scope.tenantId, by);
@@ -290,12 +293,14 @@ async function validRoles(
   const branchIds = [...new Set(roles.flatMap((r) => (r.branchId ? [r.branchId] : [])))];
   if (branchIds.length > 0) {
     const found = await tx
-      .select({ id: branch.id })
+      .select({ id: branch.id, archivedAt: branch.archivedAt })
       .from(branch)
-      .where(and(inArray(branch.id, branchIds), isNull(branch.archivedAt)));
+      .where(inArray(branch.id, branchIds));
     if (found.length !== branchIds.length) {
       throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
     }
+    // An archived branch leaves the role picker (A-01b criterion 9).
+    if (found.some((b) => b.archivedAt !== null)) throw new ApiError(409, 'branch_archived');
   }
   return roles;
 }

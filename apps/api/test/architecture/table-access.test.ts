@@ -1,7 +1,9 @@
 // A-01b criterion 8: modules read and write only their own tables. Each module may import from
 // @shifa/db only the tables it owns, plus the reads listed below with their reason; anything
-// else (a new module reaching into team or identity tables) fails here. Companion of
-// module-imports.test.ts, which checks how modules import each other.
+// else (a new module reaching into team or identity tables) fails here. A table reached through
+// EXCEPTIONS may only be read: `.insert(t)`, `.update(t)` or `.delete(t)` on it fails unless
+// WRITES lists it with its reason (A-01-05). Companion of module-imports.test.ts, which checks
+// how modules import each other.
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, relative } from 'node:path';
 import * as shifaDb from '@shifa/db';
@@ -25,27 +27,47 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
     'auditEvent',
   ],
   platform: ['tenant', 'auditEvent'],
+  branches: ['branch', 'auditEvent'],
   team: ['membership', 'roleAssignment', 'permissionOverride', 'setupLink', 'auditEvent'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
 const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   identity: {
-    tenant: 'the principal reads the active clinic’s idle limit; a link page shows its clinic',
+    tenant:
+      'the principal reads the active clinic’s idle limit and status; the chooser lists clinics',
     membership: 'the principal and sign-in read the person’s own memberships; a link binds one',
     roleAssignment: 'the principal’s roles in the active clinic (read per request)',
     permissionOverride: 'the principal’s toggles in the active clinic (read per request)',
-    branch: 'the active branch is checked against the clinic; an invitation names its branches',
+    branch:
+      'read: the active branch is checked against the clinic; the chooser and an invitation name branches',
     setupLink: 'opening and using a link on the auth path, by its token hash alone',
   },
   platform: {
     membership: 'the owner card of a clinic (owner memberships only, by policy)',
   },
+  branches: {
+    membership: 'read: the members whose sessions end when a branch is archived (A-01b 4, 9)',
+    roleAssignment: 'read: who holds a role in a branch (cards, archive preview)',
+  },
   team: {
-    branch: 'a role assignment names a branch of the clinic (branch routes come with A-01-05)',
+    branch: 'read: a role assignment names an active branch of the clinic',
     tenant: 'the clinic’s own settings row (idle minutes, A-01a 9)',
   },
 };
+
+/** Exception tables a module also writes, each with its reason. */
+const WRITES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  identity: {
+    membership: 'accepting a link or an invitation binds it; a request stamps last_active_at',
+    setupLink: 'using a link marks it used, on the auth path',
+  },
+  team: {
+    tenant: 'the clinic’s idle setting (A-01a 9; only idle_minutes is granted)',
+  },
+};
+
+const WRITE_METHODS = new Set(['insert', 'update', 'delete']);
 
 /** Export name → is it a table, from the real package. */
 const TABLES = new Set(
@@ -62,14 +84,17 @@ function sourceFiles(dir: string): string[] {
   });
 }
 
-/** Every name imported from '@shifa/db' (or `import * as`, reported as '*') in `text`. */
-function dbImports(file: string, text: string): string[] {
+const fromDb = (node: ts.Statement): node is ts.ImportDeclaration | ts.ExportDeclaration =>
+  (ts.isImportDeclaration(node) || ts.isExportDeclaration(node)) &&
+  node.moduleSpecifier !== undefined &&
+  ts.isStringLiteral(node.moduleSpecifier) &&
+  node.moduleSpecifier.text === '@shifa/db';
+
+/** Every name imported from '@shifa/db' (or `import * as`, reported as '*'). */
+function dbImports(source: ts.SourceFile): string[] {
   const names: string[] = [];
-  const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
   for (const node of source.statements) {
-    if (!ts.isImportDeclaration(node) && !ts.isExportDeclaration(node)) continue;
-    const spec = node.moduleSpecifier;
-    if (!spec || !ts.isStringLiteral(spec) || spec.text !== '@shifa/db') continue;
+    if (!fromDb(node)) continue;
     if (ts.isImportDeclaration(node)) {
       const bindings = node.importClause?.namedBindings;
       if (bindings && ts.isNamespaceImport(bindings)) names.push('*');
@@ -85,23 +110,71 @@ function dbImports(file: string, text: string): string[] {
   return names;
 }
 
-/** `module/file → table` for every table a module imports without owning it or a reason. */
-export function tableViolations(modulesRoot: string): string[] {
+/** Tables (export names) passed to `.insert()`, `.update()` or `.delete()` in `source`. */
+function dbWrites(source: ts.SourceFile): string[] {
+  const local = new Map<string, string>();
+  for (const node of source.statements) {
+    if (!fromDb(node) || !ts.isImportDeclaration(node)) continue;
+    const bindings = node.importClause?.namedBindings;
+    if (bindings && ts.isNamedImports(bindings)) {
+      for (const el of bindings.elements)
+        local.set(el.name.text, (el.propertyName ?? el.name).text);
+    }
+  }
+  const writes: string[] = [];
+  const visit = (node: ts.Node): void => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isPropertyAccessExpression(node.expression) &&
+      WRITE_METHODS.has(node.expression.name.text)
+    ) {
+      const [target] = node.arguments;
+      const table = target && ts.isIdentifier(target) ? local.get(target.text) : undefined;
+      if (table !== undefined) writes.push(table);
+    }
+    ts.forEachChild(node, visit);
+  };
+  visit(source);
+  return writes;
+}
+
+interface Scan {
+  /** `file → table` imports and `file writes table` writes that break the lists. */
+  problems: string[];
+  /** `module → table` for every write to a table the module does not own. */
+  exceptionWrites: string[];
+}
+
+function scan(modulesRoot: string): Scan {
   const problems: string[] = [];
+  const found = new Set<string>();
   for (const module of readdirSync(modulesRoot)) {
-    const allowed = new Set([...(OWNED[module] ?? []), ...Object.keys(EXCEPTIONS[module] ?? {})]);
+    const owned = new Set(OWNED[module] ?? []);
+    const allowed = new Set([...owned, ...Object.keys(EXCEPTIONS[module] ?? {})]);
+    const writable = new Set([...owned, ...Object.keys(WRITES[module] ?? {})]);
     if (!(module in OWNED)) problems.push(`${module}: module without a table list`);
     for (const file of sourceFiles(join(modulesRoot, module))) {
       const name = relative(modulesRoot, file).replaceAll('\\', '/');
-      for (const imported of dbImports(file, readFileSync(file, 'utf8'))) {
+      const text = readFileSync(file, 'utf8');
+      const source = ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true);
+      for (const imported of dbImports(source)) {
         if (imported === '*') problems.push(`${name} → * (namespace import of @shifa/db)`);
         else if (TABLES.has(imported) && !allowed.has(imported)) {
           problems.push(`${name} → ${imported}`);
         }
       }
+      for (const table of new Set(dbWrites(source))) {
+        if (!owned.has(table)) found.add(`${module} → ${table}`);
+        if (allowed.has(table) && !writable.has(table)) problems.push(`${name} writes ${table}`);
+      }
     }
   }
-  return problems.sort();
+  return { problems: problems.sort(), exceptionWrites: [...found].sort() };
+}
+
+/** Every import and write of a module that its lists do not allow. */
+export function tableViolations(modulesRoot: string): string[] {
+  return scan(modulesRoot).problems;
 }
 
 describe('module table access', () => {
@@ -116,9 +189,31 @@ describe('module table access', () => {
   });
 
   it('every listed table exists', () => {
-    for (const list of [...Object.values(OWNED), ...Object.values(EXCEPTIONS).map(Object.keys)]) {
+    const lists = [
+      ...Object.values(OWNED),
+      ...Object.values(EXCEPTIONS).map(Object.keys),
+      ...Object.values(WRITES).map(Object.keys),
+    ];
+    for (const list of lists) {
       for (const table of list) expect(TABLES, table).toContain(table);
     }
+  });
+
+  it('the branches module owns `branch`; team and identity only read it', () => {
+    expect(OWNED['branches']).toEqual(['branch', 'auditEvent']);
+    expect(Object.keys(EXCEPTIONS['team'] ?? {})).toContain('branch');
+    expect(Object.keys(WRITES['team'] ?? {})).not.toContain('branch');
+    expect(Object.keys(WRITES['identity'] ?? {})).not.toContain('branch');
+  });
+
+  it('every WRITES entry is an exception of its module and is used', () => {
+    const listed = Object.entries(WRITES).flatMap(([module, tables]) =>
+      Object.keys(tables).map((table) => {
+        expect(Object.keys(EXCEPTIONS[module] ?? {}), `${module} → ${table}`).toContain(table);
+        return `${module} → ${table}`;
+      }),
+    );
+    expect(scan(join(SRC, 'modules')).exceptionWrites).toEqual(listed.sort());
   });
 
   it('red: a module reaching into another module’s tables fails', async () => {
@@ -140,6 +235,41 @@ describe('module table access', () => {
         'reports/r.ts → * (namespace import of @shifa/db)',
         'reports: module without a table list',
         'team/x.ts → session',
+      ]);
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it('red: a write to a table reached only for reads fails', async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const root = mkdtempSync(join(tmpdir(), 'shifa-table-writes-'));
+    try {
+      mkdirSync(join(root, 'team'));
+      mkdirSync(join(root, 'platform'));
+      writeFileSync(
+        join(root, 'team', 'w.ts'),
+        [
+          "import { branch as b, membership, tenant } from '@shifa/db';",
+          'export const w = (tx: any) => [',
+          "  tx.update(b).set({ name: 'x' }),",
+          '  tx.insert(membership).values({}),',
+          '  tx.update(tenant).set({ idleMinutes: 15 }),',
+          '  tx.select().from(b),',
+          '];',
+          '',
+        ].join('\n'),
+      );
+      writeFileSync(
+        join(root, 'platform', 'p.ts'),
+        "import { membership } from '@shifa/db';\nexport const p = (tx: any) => tx.delete(membership);\n",
+      );
+      // team owns membership and may write tenant (WRITES); branch and platform's membership
+      // are read-only exceptions.
+      expect(tableViolations(root)).toEqual([
+        'platform/p.ts writes membership',
+        'team/w.ts writes branch',
       ]);
     } finally {
       rmSync(root, { recursive: true, force: true });

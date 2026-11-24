@@ -1,0 +1,43 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "a5f5657e-e79a-40e0-9807-07dc9bd2da04",
+  "prevIds": [
+    "6141140a-18cd-45ba-9569-7ac1785edb61"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "membership"
+      ],
+      "writes": [
+        "s|ck|public.membership.membership_active_is_bound",
+        "n|ck|public.membership.membership_active_is_bound",
+        "e|ck|public.membership.membership_active_is_bound",
+        "n|con|public.membership.membership_active_is_bound"
+      ],
+      "reads": [
+        "n|tbl|public.membership",
+        "n|sch|public",
+        "n|col|public.membership.status",
+        "n|col|public.membership.user_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "membership",
+        "name": "membership_active_is_bound",
+        "value": "\"status\" <> 'active' or \"user_id\" is not null",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

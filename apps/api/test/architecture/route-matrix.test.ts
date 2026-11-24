@@ -1,10 +1,19 @@
 // Calls every registered route as every caller and compares the status class with the committed
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
 import { randomBytes, randomUUID } from 'node:crypto';
-import { createClinic, membership, roleAssignment, session, setupLink, twoFactor } from '@shifa/db';
+import {
+  branch,
+  createClinic,
+  membership,
+  roleAssignment,
+  session,
+  setupLink,
+  twoFactor,
+} from '@shifa/db';
 import {
   createTestTenants,
   fixtureId,
+  insertMembership,
   syntheticPhones,
   testAuthDb,
   testDb,
@@ -58,7 +67,7 @@ let signInPerson: SampleContext['signIn'];
 let clinicId: string;
 
 /** Fresh phones for clinic owners and links (a used link's phone has an account). */
-const spare = syntheticPhones(2026_11_28, 200);
+const spare = syntheticPhones(2026_11_28, 400);
 let spareIndex = 0;
 const nextPhone = () => {
   const phone = spare[spareIndex];
@@ -120,14 +129,29 @@ const phonesOf = new Map<Caller, string>();
 /** A fresh member of the callers' clinic (A-01-04 routes). */
 async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): Promise<string> {
   const id = randomUUID();
+  // Every membership is inserted pending (A-01-05), then deactivated as the team does.
+  await testDb().withTenant(
+    { tenantId: TENANT_A, userId: fixtureId('matrix seeder') },
+    async (tx) => {
+      await tx.insert(membership).values({
+        id,
+        tenantId: TENANT_A,
+        phoneE164: nextPhone(),
+        displayName: 'موظف المصفوفة',
+      });
+      if (status !== 'pending') {
+        await tx.update(membership).set({ status }).where(eq(membership.id, id));
+      }
+    },
+  );
+  return id;
+}
+
+/** A fresh active branch of the callers' clinic (A-01-05 routes); never its last one. */
+async function branchOfTenantA(): Promise<string> {
+  const id = randomUUID();
   await testDb().withTenant({ tenantId: TENANT_A, userId: fixtureId('matrix seeder') }, (tx) =>
-    tx.insert(membership).values({
-      id,
-      tenantId: TENANT_A,
-      phoneE164: nextPhone(),
-      displayName: 'موظف المصفوفة',
-      status,
-    }),
+    tx.insert(branch).values({ id, tenantId: TENANT_A, name: 'فرع المصفوفة' }),
   );
   return id;
 }
@@ -137,14 +161,24 @@ async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): P
  * a phone is a member of a clinic once.
  */
 async function invitationFor(phone: string | undefined): Promise<string> {
+  return (await newInvitation(phone)).token;
+}
+
+/** The invitation's membership id: listed in the caller's chooser (A-01-05, OD-90). */
+async function invitationIdFor(phone: string | undefined): Promise<string> {
+  return (await newInvitation(phone)).id;
+}
+
+async function newInvitation(phone: string | undefined): Promise<{ token: string; id: string }> {
   const { token, hash } = newLinkToken();
   const id = randomUUID();
+  const invited = phone ?? nextPhone();
   const { clinicId: tenantId } = await clinicWithLink();
   await testDb().withTenant({ tenantId, userId: fixtureId('matrix seeder') }, async (tx) => {
     await tx.insert(membership).values({
       id,
       tenantId,
-      phoneE164: phone ?? nextPhone(),
+      phoneE164: invited,
       displayName: 'مدعو المصفوفة',
     });
     await tx.insert(roleAssignment).values({ tenantId, membershipId: id, role: 'doctor' });
@@ -154,9 +188,25 @@ async function invitationFor(phone: string | undefined): Promise<string> {
       purpose: 'invitation',
       tokenHash: hash,
       expiresAt: new Date(Date.now() + 3_600_000),
+      invitedPhone: invited,
     });
   });
-  return token;
+  return { token, id };
+}
+
+/**
+ * A new clinic where `userId` is an active doctor (tenant-wide): what /me/switch needs. Anonymous
+ * callers get an unknown id (they are refused first).
+ */
+async function clinicOfCaller(userId: string | undefined, phone: string | undefined) {
+  if (userId === undefined || phone === undefined) return randomUUID();
+  const { clinicId: tenantId } = await clinicWithLink();
+  const id = randomUUID();
+  await testDb().withTenant({ tenantId, userId: fixtureId('matrix seeder') }, async (tx) => {
+    await insertMembership(tx, { id, tenantId, phone, userId });
+    await tx.insert(roleAssignment).values({ tenantId, membershipId: id, role: 'doctor' });
+  });
+  return tenantId;
 }
 
 async function seedPeople(): Promise<void> {
@@ -204,7 +254,10 @@ async function observe(app: TestApp): Promise<Observed> {
         newLinkToken: async () => (await clinicWithLink()).token,
         totp: (state) => totpState(userId, state),
         memberId: (status) => memberOfTenantA(status),
+        branchId: () => branchOfTenantA(),
         invitationToken: () => invitationFor(phonesOf.get(caller)),
+        invitationId: () => invitationIdFor(phonesOf.get(caller)),
+        callerClinicId: () => clinicOfCaller(userId, phonesOf.get(caller)),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

@@ -23,6 +23,11 @@ final _decoders = <String, Object Function(_Json)>{
   'MemberDetail': (json) => MemberDetail.fromJson(json).toJson(),
   'InvitationView': (json) => InvitationView.fromJson(json).toJson(),
   'ClinicSettings': (json) => ClinicSettings.fromJson(json).toJson(),
+  'BranchList': (json) => BranchList.fromJson(json).toJson(),
+  'ArchiveBranchPreview': (json) =>
+      ArchiveBranchPreview.fromJson(json).toJson(),
+  'MyClinics': (json) => MyClinics.fromJson(json).toJson(),
+  'ActiveClinic': (json) => ActiveClinic.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

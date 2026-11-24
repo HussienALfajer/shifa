@@ -206,6 +206,10 @@ export async function runIsolationCase(
     const err = await attempt(scope, (tx) => c.seed(tx, TENANT_B));
     out.push(...insertRefused(err, forged, c.table, scope));
   }
+  for (const [name, insert] of Object.entries(c.refusedInserts ?? {})) {
+    const err = await attempt(tenantA, (tx) => insert(tx, TENANT_A));
+    out.push(...refusedByRls(err, `insert "${name}"`, c.table, tenantA));
+  }
   const moved = await attempt(tenantA, (tx) =>
     tx.execute(sql`update ${t} set tenant_id = ${TENANT_B}`),
   );
