@@ -31,7 +31,9 @@ import { nextCode } from '../support/totp.ts';
 
 const PASSWORD = 'جملة-سرية-لرحلة-الحساب';
 const NEW_PASSWORD = 'جملة-أخرى-بعد-التغيير';
-const random = createRandom(2026_11_27);
+// Each spec draws from its own seed, so no phone is shared: seed.ts 2026_11_24, entry-path
+// 2026_11_26, refusals 2026_11_27 (its phone must stay unknown), this file 2026_11_28.
+const random = createRandom(2026_11_28);
 const person = () =>
   fullName(generatePersonName(random, { sex: 'female', adult: true, region: 'aleppo' }));
 
@@ -169,11 +171,18 @@ test('(2) the owner changes the password on My account; the other device is sign
 
 test('(3) the owner renews the recovery codes; an old code is refused, a new one works', async () => {
   const base = urls().clinic;
-  const [oldCode] = owner.codes;
-  if (oldCode === undefined) throw new Error('no recovery codes kept');
+  const [usedCode, oldCode] = owner.codes;
+  if (usedCode === undefined || oldCode === undefined) throw new Error('no recovery codes kept');
+  // One code used first, so the renewal's «10» is a count read again, not the one before.
+  await signOutFromFrame(ownerPage, base);
+  await signInThroughScreen(ownerPage, base, owner.phone, NEW_PASSWORD);
+  await ownerPage.getByRole('button', { name: 'استخدام رمز استرداد' }).click();
+  await ownerPage.getByLabel('رمز الاسترداد', { exact: true }).fill(usedCode);
+  await ownerPage.getByRole('button', { name: 'تأكيد' }).click();
+  await expect(ownerPage).toHaveURL(`${base}/`);
   await ownerPage.goto(`${base}/account`);
   const card = ownerPage.getByTestId('mfa-card');
-  await expect(card.getByTestId('codes-left')).toContainText('بقيت 10 رموز');
+  await expect(card.getByTestId('codes-left')).toContainText('بقيت 9 رموز');
   await card.getByRole('button', { name: 'رموز استرداد جديدة' }).click();
   const dialog = ownerPage.getByRole('dialog', { name: 'رموز استرداد جديدة' });
   await look(ownerPage, 'account-codes-ask');
@@ -182,7 +191,10 @@ test('(3) the owner renews the recovery codes; an old code is refused, a new one
   await expect(list).toBeVisible();
   const fresh = await list.locator('[data-slot="code"]').allInnerTexts();
   expect(fresh.length, 'ten new codes are shown').toBe(10);
-  expect(fresh.includes(oldCode), 'the new codes are new').toBe(false);
+  expect(
+    fresh.some((code) => owner.codes.includes(code)),
+    'the new codes are new',
+  ).toBe(false);
   await look(ownerPage, 'account-codes-once');
   const done = dialog.getByRole('button', { name: 'تم' });
   await expect(done).toBeDisabled();
@@ -223,7 +235,10 @@ test('(4) the owner sets 15 minutes; a second member reads it on the next reques
   await expect(member.getByRole('link', { name: 'إعدادات العيادة' })).toHaveCount(0);
   await look(member, 'account-member-no-mfa');
 
-  await ownerPage.goto(`${base}/settings`);
+  // The owner reaches it from the menu: the item exists for the owner alone.
+  await ownerPage.goto(`${base}/account`);
+  await ownerPage.getByRole('link', { name: 'إعدادات العيادة' }).click();
+  await expect(ownerPage).toHaveURL(`${base}/settings`);
   await expect(ownerPage.getByRole('heading', { name: 'إعدادات العيادة', level: 1 })).toBeVisible();
   const save = ownerPage.getByRole('button', { name: 'حفظ', exact: true });
   // «حفظ» waits for a change (improvement c).
