@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     include: ['test/**/*.test.ts', 'test/**/*.test.tsx'],
     environment: 'happy-dom',
+    // The data table's scroll box gets a size, so its virtual rows draw (A-01-10 checkpoint 3).
+    setupFiles: ['test/setup-layout.ts'],
     // The page tests render the whole shell; under verify's parallel load 5 s is too tight.
     testTimeout: 30_000,
   },

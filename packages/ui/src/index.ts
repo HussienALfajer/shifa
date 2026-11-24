@@ -69,6 +69,11 @@ export {
   normaliseForSearch,
 } from './command-palette/command-palette.tsx';
 export {
+  CopyField,
+  type CopyFieldProps,
+  type CopyFieldShare,
+} from './copy-field/copy-field.tsx';
+export {
   DataTable,
   type DataTableCellValue,
   type DataTableColumn,

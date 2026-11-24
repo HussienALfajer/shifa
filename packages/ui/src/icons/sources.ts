@@ -28,6 +28,8 @@ export const SOLAR_UI = {
   'check-circle': { solar: 'check-circle' },
   clock: { solar: 'clock-circle' },
   'cloud-check': { solar: 'cloud-check' },
+  // A-01-10: copy and share of a value shown once (CopyField).
+  copy: { solar: 'copy' },
   dots: { solar: 'menu-dots' },
   eye: { solar: 'eye' },
   'eye-slash': { solar: 'eye-closed' },
@@ -42,6 +44,7 @@ export const SOLAR_UI = {
   phone: { solar: 'phone' },
   plus: { solar: 'add' },
   printer: { solar: 'printer-minimalistic' },
+  share: { solar: 'share' },
   'sign-out': { solar: 'logout-2', mirror: true },
   trash: { solar: 'trash-bin-minimalistic' },
   user: { solar: 'user-rounded' },

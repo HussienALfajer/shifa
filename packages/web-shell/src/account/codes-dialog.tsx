@@ -10,19 +10,14 @@ import type { Schemas } from '@shifa/api-client-ts';
 import {
   Button,
   Callout,
-  Checkbox,
-  CodeList,
   Dialog,
   DialogActions,
   DialogClose,
   DialogContent,
   OtpInput,
-  QrCode,
 } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import logoColour from '../../../../docs/brand/logo/shifa-logo-horizontal-color.svg';
-import { dayDate } from '../auth/dates.ts';
 import { type Lock, lockOf, useLock } from '../auth/lock.ts';
 import { LockCallout } from '../auth/lock-callout.tsx';
 import { errorFacts } from '../client.ts';
@@ -30,10 +25,11 @@ import { useShell } from '../providers.tsx';
 import { expectOwnRotation, sessionQueryKey } from '../session.ts';
 import { useText } from '../text.ts';
 import type { Tell } from './account-page.tsx';
-import { mfaKey, useActiveClinic, useProfile, useSignedIn } from './data.ts';
+import { CodesOnce } from './codes-once.tsx';
+import { mfaKey, useSignedIn } from './data.ts';
+import { TotpKey } from './totp-key.tsx';
 
 const DIGITS = 6;
-const grouped = (key: string) => key.replace(/(.{4})(?=.)/g, '$1 ');
 
 type Problem = 'invalid' | 'skew' | 'network' | 'server' | null;
 
@@ -51,13 +47,9 @@ export function CodesDialog({
   const queryClient = useQueryClient();
   const session = useSignedIn();
   const userId = session?.userId ?? '';
-  const { data: profile } = useProfile(userId);
-  const clinic = useActiveClinic(session);
   const [key, setKey] = useState<Schemas['TotpEnrolStart'] | null>(null);
   const [code, setCode] = useState('');
   const [codes, setCodes] = useState<string[] | null>(null);
-  const [saved, setSaved] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<Problem>(null);
   const [lockState, setLock] = useState<Lock | null>(null);
@@ -158,13 +150,13 @@ export function CodesDialog({
     });
   }
 
-  const who = [profile?.name, clinic?.name].filter(Boolean).join(' · ');
   return (
     <Dialog
       open
       onOpenChange={(open) => {
-        // The codes are shown once: the dialog closes only through «تم» once they are on screen.
-        if (!open && codes === null) onClose();
+        // The codes are shown once: the dialog closes only through «تم» once they are on screen,
+        // and never while a code is with the server (review A-01-10 checkpoint 3, 1).
+        if (!open && codes === null && !inFlight.current) onClose();
       }}
     >
       <DialogContent
@@ -176,43 +168,7 @@ export function CodesDialog({
             <p className="m-0 text-body leading-body">
               {kind === 'renew' ? text('codesRenewAsk') : text('codesEnrolAsk', { digits: DIGITS })}
             </p>
-            {kind === 'enrol' && key && (
-              <>
-                <QrCode
-                  value={key.otpauthUri}
-                  label={text('enrolQrLabel')}
-                  className="self-center"
-                />
-                <div className="flex flex-col gap-2">
-                  <p className="m-0 text-caption font-medium text-text-muted">
-                    {text('codesEnrolKey')}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <bdi
-                      dir="ltr"
-                      translate="no"
-                      className="flex-1 rounded-input border border-border-default bg-bg-surface-raised px-3 py-2 font-mono text-data break-all"
-                    >
-                      {grouped(key.manualKey)}
-                    </bdi>
-                    <Button
-                      size="sm"
-                      startIcon={copied ? 'check' : 'file-text'}
-                      onClick={async () => {
-                        try {
-                          await navigator.clipboard.writeText(key.manualKey);
-                          setCopied(true);
-                        } catch {
-                          // Refused: the key stays on screen to type.
-                        }
-                      }}
-                    >
-                      {text(copied ? 'enrolKeyCopied' : 'enrolCopyKey')}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
+            {kind === 'enrol' && key && <TotpKey value={key} />}
             {lock && (
               <LockCallout
                 lock={lock}
@@ -267,38 +223,11 @@ export function CodesDialog({
             </DialogActions>
           </>
         ) : (
-          <>
-            <Callout tone="info" title={text('codesOnceTitle')}>
-              {text(kind === 'renew' ? 'codesOnceRenew' : 'codesOnceEnrol')}
-            </Callout>
-            <CodeList
-              codes={codes}
-              label={text('codesListLabel')}
-              copyLabel={text('codesCopy')}
-              copiedLabel={text('codesCopied')}
-              printLabel={text('codesPrint')}
-              print={{
-                title: text('codesPrintTitle'),
-                who,
-                date: text('codesPrintDate', { date: dayDate(Date.now()) }),
-                note: text('codesPrintNote'),
-                logoSrc: logoColour,
-                logoAlt: text('appName'),
-              }}
-            />
-            <Checkbox
-              checked={saved}
-              onCheckedChange={setSaved}
-              description={text('codesSavedNote')}
-            >
-              {text('codesSaved')}
-            </Checkbox>
-            <DialogActions>
-              <Button variant="primary" disabled={!saved} onClick={() => void finish()}>
-                {text('codesDone')}
-              </Button>
-            </DialogActions>
-          </>
+          <CodesOnce
+            codes={codes}
+            note={text(kind === 'renew' ? 'codesOnceRenew' : 'codesOnceEnrol')}
+            onDone={() => void finish()}
+          />
         )}
       </DialogContent>
     </Dialog>

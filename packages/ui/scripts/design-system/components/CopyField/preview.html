@@ -1,0 +1,32 @@
+<!-- @dsCard group="Forms" height=320 subtitle="One-time link with copy, WhatsApp and expiry · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var URL = 'https://clinic.shifa.example/setup#t=Qm9ndXMtc3ludGhldGljLXRva2VuLTAwMDE';
+  var WA = 'https://wa.me/?text=' + encodeURIComponent(URL);
+  var PROPS = {
+    ar: { value: URL, label: 'رابط الإعداد', share: { href: WA, label: 'إرسال عبر واتساب' }, expiry: 'ينتهي بعد 72 ساعة · يعمل مرة واحدة' },
+    en: { value: URL, label: 'Setup link', copyLabel: 'Copy', copiedLabel: 'Copied', share: { href: WA, label: 'Send on WhatsApp' }, expiry: 'Expires in 72 hours · works once' }
+  };
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    var slot = document.createElement('div');
+    panel.appendChild(slot);
+    window.Shifa.mount(slot, 'CopyField', PROPS[panel.lang]);
+  });
+</script>
+</body>
+</html>

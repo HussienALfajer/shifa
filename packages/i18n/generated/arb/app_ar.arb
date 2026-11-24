@@ -64,6 +64,18 @@
   "@commonActionFailedTitle": {
     "description": "common.actionFailedTitle"
   },
+  "commonAdminAppName": "إدارة شفاء",
+  "@commonAdminAppName": {
+    "description": "common.adminAppName"
+  },
+  "commonAdminNetworkText": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ ذلك، وما كتبته باقٍ. راجع قائمة العيادات قبل أن تعيد المحاولة.",
+  "@commonAdminNetworkText": {
+    "description": "common.adminNetworkText"
+  },
+  "commonAdminPhoneUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن تغيّر الرقم. أعد المحاولة: يُصدر ذلك رابطاً جديداً ويوقف السابق.",
+  "@commonAdminPhoneUnknownText": {
+    "description": "common.adminPhoneUnknownText"
+  },
   "commonAdminWebBody": "يعمل حساب مدير المنصة في تطبيق إدارة المنصة، لا في تطبيق العيادة.",
   "@commonAdminWebBody": {
     "description": "common.adminWebBody"
@@ -280,6 +292,167 @@
   "@commonChooserTrial": {
     "description": "common.chooserTrial"
   },
+  "commonClinicLoading": "جارٍ تحميل العيادة",
+  "@commonClinicLoading": {
+    "description": "common.clinicLoading"
+  },
+  "commonClinicMeta": "{type} · أُنشئت {date}",
+  "@commonClinicMeta": {
+    "description": "common.clinicMeta",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicNotFoundText": "ربما الرابط خاطئ أو قديم. ارجع إلى قائمة العيادات.",
+  "@commonClinicNotFoundText": {
+    "description": "common.clinicNotFoundText"
+  },
+  "commonClinicNotFoundTitle": "لا عيادة بهذا العنوان",
+  "@commonClinicNotFoundTitle": {
+    "description": "common.clinicNotFoundTitle"
+  },
+  "commonClinicNotSavedServer": "حدث خطأ في الخادم. ما زالت العيادة {status}.",
+  "@commonClinicNotSavedServer": {
+    "description": "common.clinicNotSavedServer",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicNotSavedTitle": "لم تُحفظ التغييرات",
+  "@commonClinicNotSavedTitle": {
+    "description": "common.clinicNotSavedTitle"
+  },
+  "commonClinicSaved": "حُفظت التغييرات",
+  "@commonClinicSaved": {
+    "description": "common.clinicSaved"
+  },
+  "commonClinicStatusActive": "فعّالة",
+  "@commonClinicStatusActive": {
+    "description": "common.clinicStatusActive"
+  },
+  "commonClinicStatusSuspended": "موقوفة",
+  "@commonClinicStatusSuspended": {
+    "description": "common.clinicStatusSuspended"
+  },
+  "commonClinicStatusTrial": "تجريبية",
+  "@commonClinicStatusTrial": {
+    "description": "common.clinicStatusTrial"
+  },
+  "commonClinicSubTitle": "الحالة والاشتراك",
+  "@commonClinicSubTitle": {
+    "description": "common.clinicSubTitle"
+  },
+  "commonClinicSuspendText": "لن يصل فريق العيادة إلى بياناتها حتى تعيدها فعّالة أو تجريبية. لا يُحذف شيء.",
+  "@commonClinicSuspendText": {
+    "description": "common.clinicSuspendText"
+  },
+  "commonClinicSuspendTitle": "إيقاف العيادة",
+  "@commonClinicSuspendTitle": {
+    "description": "common.clinicSuspendTitle"
+  },
+  "commonClinicTypeMultiBranch": "متعددة الفروع",
+  "@commonClinicTypeMultiBranch": {
+    "description": "common.clinicTypeMultiBranch"
+  },
+  "commonClinicTypeMultiDoctor": "متعددة الأطباء",
+  "@commonClinicTypeMultiDoctor": {
+    "description": "common.clinicTypeMultiDoctor"
+  },
+  "commonClinicTypeSolo": "عيادة فردية",
+  "@commonClinicTypeSolo": {
+    "description": "common.clinicTypeSolo"
+  },
+  "commonClinicUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن حُفظ التغيير. احفظ مرة أخرى؛ لا ضرر في التكرار.",
+  "@commonClinicUnknownText": {
+    "description": "common.clinicUnknownText"
+  },
+  "commonClinicsCreate": "إنشاء عيادة",
+  "@commonClinicsCreate": {
+    "description": "common.clinicsCreate"
+  },
+  "commonClinicsEmptyText": "أنشئ أول عيادة وأرسل لمالكها رابط الإعداد.",
+  "@commonClinicsEmptyText": {
+    "description": "common.clinicsEmptyText"
+  },
+  "commonClinicsEmptyTitle": "لا عيادات بعد",
+  "@commonClinicsEmptyTitle": {
+    "description": "common.clinicsEmptyTitle"
+  },
+  "commonClinicsFilter": "الحالة",
+  "@commonClinicsFilter": {
+    "description": "common.clinicsFilter"
+  },
+  "commonClinicsFilterActive": "فعّالة ({count})",
+  "@commonClinicsFilterActive": {
+    "description": "common.clinicsFilterActive",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicsFilterAll": "الكل ({count})",
+  "@commonClinicsFilterAll": {
+    "description": "common.clinicsFilterAll",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicsFilterSuspended": "موقوفة ({count})",
+  "@commonClinicsFilterSuspended": {
+    "description": "common.clinicsFilterSuspended",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicsFilterTrial": "تجريبية ({count})",
+  "@commonClinicsFilterTrial": {
+    "description": "common.clinicsFilterTrial",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonClinicsLoading": "جارٍ تحميل العيادات",
+  "@commonClinicsLoading": {
+    "description": "common.clinicsLoading"
+  },
+  "commonClinicsNoMatchText": "جرّب جزءاً من الاسم، أو امسح البحث والتصفية.",
+  "@commonClinicsNoMatchText": {
+    "description": "common.clinicsNoMatchText"
+  },
+  "commonClinicsNoMatchTitle": "لا عيادة بهذا الاسم",
+  "@commonClinicsNoMatchTitle": {
+    "description": "common.clinicsNoMatchTitle"
+  },
+  "commonClinicsNoneInStatus": "لا عيادة بهذه الحالة",
+  "@commonClinicsNoneInStatus": {
+    "description": "common.clinicsNoneInStatus"
+  },
+  "commonClinicsSearch": "بحث باسم العيادة",
+  "@commonClinicsSearch": {
+    "description": "common.clinicsSearch"
+  },
+  "commonClinicsText": "عيادات شفاء ومالكوها. لا يرى المشرف بيانات أي عيادة.",
+  "@commonClinicsText": {
+    "description": "common.clinicsText"
+  },
+  "commonClinicsTitle": "العيادات",
+  "@commonClinicsTitle": {
+    "description": "common.clinicsTitle"
+  },
   "commonClockSkewText": "افتح إعدادات الهاتف واجعل التاريخ والوقت «تلقائياً»، ثم اكتب الرمز الجديد من التطبيق.",
   "@commonClockSkewText": {
     "description": "common.clockSkewText"
@@ -460,9 +633,86 @@
   "@commonCodesToClinic": {
     "description": "common.codesToClinic"
   },
+  "commonColClinic": "العيادة",
+  "@commonColClinic": {
+    "description": "common.colClinic"
+  },
+  "commonColCreated": "أُنشئت",
+  "@commonColCreated": {
+    "description": "common.colCreated"
+  },
+  "commonColEnd": "نهاية الاشتراك",
+  "@commonColEnd": {
+    "description": "common.colEnd"
+  },
+  "commonColOwner": "المالك",
+  "@commonColOwner": {
+    "description": "common.colOwner"
+  },
+  "commonColStatus": "الحالة",
+  "@commonColStatus": {
+    "description": "common.colStatus"
+  },
+  "commonColType": "النوع",
+  "@commonColType": {
+    "description": "common.colType"
+  },
   "commonConfirm": "تأكيد",
   "@commonConfirm": {
     "description": "common.confirm"
+  },
+  "commonCreateClinicSection": "العيادة",
+  "@commonCreateClinicSection": {
+    "description": "common.createClinicSection"
+  },
+  "commonCreateNameMissing": "اكتب اسم العيادة",
+  "@commonCreateNameMissing": {
+    "description": "common.createNameMissing"
+  },
+  "commonCreateOwnerMissing": "اكتب اسم المالك",
+  "@commonCreateOwnerMissing": {
+    "description": "common.createOwnerMissing"
+  },
+  "commonCreateOwnerSection": "المالك",
+  "@commonCreateOwnerSection": {
+    "description": "common.createOwnerSection"
+  },
+  "commonCreatePendingText": "أرسل له رابط تلك العيادة من صفحتها، أو صحّح رقمها إن كان خاطئاً، ثم أعد المحاولة.",
+  "@commonCreatePendingText": {
+    "description": "common.createPendingText"
+  },
+  "commonCreatePendingTitle": "لهذا الرقم عيادة أخرى لم يُكمل مالكها الإعداد",
+  "@commonCreatePendingTitle": {
+    "description": "common.createPendingTitle"
+  },
+  "commonCreatePhoneMissing": "اكتب هاتف المالك",
+  "@commonCreatePhoneMissing": {
+    "description": "common.createPhoneMissing"
+  },
+  "commonCreateSubmit": "إنشاء العيادة",
+  "@commonCreateSubmit": {
+    "description": "common.createSubmit"
+  },
+  "commonCreateText": "العيادة ومالكها. يصل المالكَ رابط إعداد يعمل مرة واحدة.",
+  "@commonCreateText": {
+    "description": "common.createText"
+  },
+  "commonCreateTitle": "إنشاء عيادة",
+  "@commonCreateTitle": {
+    "description": "common.createTitle"
+  },
+  "commonCreatedText": "أرسل الرابط إلى {owner} الآن: لا يظهر مرة أخرى.",
+  "@commonCreatedText": {
+    "description": "common.createdText",
+    "placeholders": {
+      "owner": {
+        "type": "String"
+      }
+    }
+  },
+  "commonCreatedTitle": "أُنشئت العيادة",
+  "@commonCreatedTitle": {
+    "description": "common.createdTitle"
   },
   "commonDevicesActiveNow": "نشط الآن",
   "@commonDevicesActiveNow": {
@@ -597,6 +847,15 @@
   "@commonDevicesUnknown": {
     "description": "common.devicesUnknown"
   },
+  "commonEndsInDays": "{count, plural, zero {ينتهي اليوم} one {ينتهي خلال يوم} two {ينتهي خلال يومين} few {ينتهي خلال {count} أيام} many {ينتهي خلال {count} يوماً} other {ينتهي خلال {count} يوم}}",
+  "@commonEndsInDays": {
+    "description": "common.endsInDays",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
   "commonEnrolAdded": "أضفت الحساب، التالي",
   "@commonEnrolAdded": {
     "description": "common.enrolAdded"
@@ -712,6 +971,38 @@
   "commonEnrolWhyOwner": "حسابك حساب مالك العيادة، فيحتاج رمزاً من هاتفك مع كلمة المرور. لا تُفتح أي صفحة قبل التفعيل.",
   "@commonEnrolWhyOwner": {
     "description": "common.enrolWhyOwner"
+  },
+  "commonFieldClinicName": "اسم العيادة",
+  "@commonFieldClinicName": {
+    "description": "common.fieldClinicName"
+  },
+  "commonFieldClinicType": "نوع العيادة",
+  "@commonFieldClinicType": {
+    "description": "common.fieldClinicType"
+  },
+  "commonFieldEnd": "نهاية الاشتراك",
+  "@commonFieldEnd": {
+    "description": "common.fieldEnd"
+  },
+  "commonFieldEndHint": "للعلم فقط: لا يوقف التاريخ العيادة تلقائياً.",
+  "@commonFieldEndHint": {
+    "description": "common.fieldEndHint"
+  },
+  "commonFieldOwnerName": "اسم المالك",
+  "@commonFieldOwnerName": {
+    "description": "common.fieldOwnerName"
+  },
+  "commonFieldOwnerPhone": "هاتف المالك",
+  "@commonFieldOwnerPhone": {
+    "description": "common.fieldOwnerPhone"
+  },
+  "commonFieldOwnerPhoneHint": "رقم الدخول الذي سيستعمله المالك، مع رمز البلد.",
+  "@commonFieldOwnerPhoneHint": {
+    "description": "common.fieldOwnerPhoneHint"
+  },
+  "commonFieldStatus": "الحالة",
+  "@commonFieldStatus": {
+    "description": "common.fieldStatus"
   },
   "commonHeaderCodesLeft": "{count, plural, zero {لا رموز استرداد} one {بقي رمز استرداد واحد} two {بقي رمزا استرداد} few {بقيت {count} رموز استرداد} many {بقي {count} رمز استرداد} other {بقي {count} رمز استرداد}}",
   "@commonHeaderCodesLeft": {
@@ -871,6 +1162,79 @@
       }
     }
   },
+  "commonLinkCopied": "نُسخ",
+  "@commonLinkCopied": {
+    "description": "common.linkCopied"
+  },
+  "commonLinkCopy": "نسخ",
+  "@commonLinkCopy": {
+    "description": "common.linkCopy"
+  },
+  "commonLinkExpiry": "ينتهي {date} · يعمل مرة واحدة",
+  "@commonLinkExpiry": {
+    "description": "common.linkExpiry",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLinkInvitation": "رابط الدعوة",
+  "@commonLinkInvitation": {
+    "description": "common.linkInvitation"
+  },
+  "commonLinkInvitationNote": "لهذا الرقم حساب في شفاء، فالرابط دعوة: يدخل المالك بحسابه ويقبل العيادة.",
+  "@commonLinkInvitationNote": {
+    "description": "common.linkInvitationNote"
+  },
+  "commonLinkLeaveGo": "المغادرة دون نسخ",
+  "@commonLinkLeaveGo": {
+    "description": "common.linkLeaveGo"
+  },
+  "commonLinkLeaveStay": "البقاء هنا",
+  "@commonLinkLeaveStay": {
+    "description": "common.linkLeaveStay"
+  },
+  "commonLinkLeaveText": "لن يظهر هذا الرابط مرة أخرى. إن غادرت دون نسخه فعليك إصدار رابط جديد.",
+  "@commonLinkLeaveText": {
+    "description": "common.linkLeaveText"
+  },
+  "commonLinkLeaveTitle": "لم تنسخ الرابط بعد",
+  "@commonLinkLeaveTitle": {
+    "description": "common.linkLeaveTitle"
+  },
+  "commonLinkNewTitle": "رابط جديد للمالك",
+  "@commonLinkNewTitle": {
+    "description": "common.linkNewTitle"
+  },
+  "commonLinkOpenClinic": "فتح صفحة العيادة",
+  "@commonLinkOpenClinic": {
+    "description": "common.linkOpenClinic"
+  },
+  "commonLinkQr": "رمز QR للرابط، لمالك حاضر يمسحه بهاتفه",
+  "@commonLinkQr": {
+    "description": "common.linkQr"
+  },
+  "commonLinkQrNote": "المالك معك؟ يمسح الرمز بكاميرا هاتفه.",
+  "@commonLinkQrNote": {
+    "description": "common.linkQrNote"
+  },
+  "commonLinkRefused": "لم يُنسخ. الرابط محدّد: انسخه بنفسك.",
+  "@commonLinkRefused": {
+    "description": "common.linkRefused"
+  },
+  "commonLinkSetup": "رابط الإعداد",
+  "@commonLinkSetup": {
+    "description": "common.linkSetup"
+  },
+  "commonLinkSetupNote": "يفتحه المالك فيضع كلمة مرور ويفعّل التحقق بخطوتين.",
+  "@commonLinkSetupNote": {
+    "description": "common.linkSetupNote"
+  },
+  "commonLinkShare": "إرسال عبر واتساب",
+  "@commonLinkShare": {
+    "description": "common.linkShare"
+  },
   "commonLoadFailedText": "لم نصل إلى الخادم. تأكّد من الاتصال ثم أعد المحاولة.",
   "@commonLoadFailedText": {
     "description": "common.loadFailedText"
@@ -1010,6 +1374,10 @@
   "@commonNavClinicSettings": {
     "description": "common.navClinicSettings"
   },
+  "commonNavClinics": "العيادات",
+  "@commonNavClinics": {
+    "description": "common.navClinics"
+  },
   "commonNavHome": "الرئيسية",
   "@commonNavHome": {
     "description": "common.navHome"
@@ -1029,6 +1397,14 @@
   "commonNoClinicTitle": "لا توجد عيادة متاحة لحسابك",
   "@commonNoClinicTitle": {
     "description": "common.noClinicTitle"
+  },
+  "commonNoEnd": "بلا تاريخ",
+  "@commonNoEnd": {
+    "description": "common.noEnd"
+  },
+  "commonNoOwner": "بلا مالك",
+  "@commonNoOwner": {
+    "description": "common.noOwner"
   },
   "commonNoResults": "لا توجد نتائج.",
   "@commonNoResults": {
@@ -1102,6 +1478,155 @@
   "commonNoticeSignedOutTitle": "خرجت من حسابك",
   "@commonNoticeSignedOutTitle": {
     "description": "common.noticeSignedOutTitle"
+  },
+  "commonOwnerAccountExistsText": "لا يُصحَّح الرقم بعد الإعداد. حدّثنا الصفحة.",
+  "@commonOwnerAccountExistsText": {
+    "description": "common.ownerAccountExistsText"
+  },
+  "commonOwnerAccountExistsTitle": "أكمل المالك إعداد حسابه",
+  "@commonOwnerAccountExistsTitle": {
+    "description": "common.ownerAccountExistsTitle"
+  },
+  "commonOwnerActionUnknown": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ ذلك. حدّثنا البطاقة؛ راجعها قبل أن تعيد.",
+  "@commonOwnerActionUnknown": {
+    "description": "common.ownerActionUnknown"
+  },
+  "commonOwnerActive": "أكمل الإعداد",
+  "@commonOwnerActive": {
+    "description": "common.ownerActive"
+  },
+  "commonOwnerCardTitle": "المالك",
+  "@commonOwnerCardTitle": {
+    "description": "common.ownerCardTitle"
+  },
+  "commonOwnerDeactivated": "معطّل",
+  "@commonOwnerDeactivated": {
+    "description": "common.ownerDeactivated"
+  },
+  "commonOwnerEndSessions": "إنهاء جلسات المالك",
+  "@commonOwnerEndSessions": {
+    "description": "common.ownerEndSessions"
+  },
+  "commonOwnerEndSessionsAction": "إنهاء الجلسات",
+  "@commonOwnerEndSessionsAction": {
+    "description": "common.ownerEndSessionsAction"
+  },
+  "commonOwnerEndSessionsDone": "انتهت كل جلسات المالك",
+  "@commonOwnerEndSessionsDone": {
+    "description": "common.ownerEndSessionsDone"
+  },
+  "commonOwnerEndSessionsText": "يُطلب منه الدخول من جديد على كل أجهزته.",
+  "@commonOwnerEndSessionsText": {
+    "description": "common.ownerEndSessionsText"
+  },
+  "commonOwnerEndSessionsTitle": "إنهاء كل جلسات المالك؟",
+  "@commonOwnerEndSessionsTitle": {
+    "description": "common.ownerEndSessionsTitle"
+  },
+  "commonOwnerFixPhone": "تصحيح رقم الهاتف",
+  "@commonOwnerFixPhone": {
+    "description": "common.ownerFixPhone"
+  },
+  "commonOwnerFixPhoneAction": "حفظ الرقم وإصدار رابط",
+  "@commonOwnerFixPhoneAction": {
+    "description": "common.ownerFixPhoneAction"
+  },
+  "commonOwnerFixPhoneField": "الرقم الصحيح",
+  "@commonOwnerFixPhoneField": {
+    "description": "common.ownerFixPhoneField"
+  },
+  "commonOwnerFixPhoneText": "يتوقف الرابط السابق، ويظهر رابط جديد للرقم الصحيح مرة واحدة.",
+  "@commonOwnerFixPhoneText": {
+    "description": "common.ownerFixPhoneText"
+  },
+  "commonOwnerFixPhoneTitle": "تصحيح رقم هاتف المالك",
+  "@commonOwnerFixPhoneTitle": {
+    "description": "common.ownerFixPhoneTitle"
+  },
+  "commonOwnerLinkExpired": "انتهى الرابط. أصدر رابطاً جديداً.",
+  "@commonOwnerLinkExpired": {
+    "description": "common.ownerLinkExpired"
+  },
+  "commonOwnerLinkExpires": "ينتهي الرابط {date}",
+  "@commonOwnerLinkExpires": {
+    "description": "common.ownerLinkExpires",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOwnerNewLink": "رابط إعداد جديد",
+  "@commonOwnerNewLink": {
+    "description": "common.ownerNewLink"
+  },
+  "commonOwnerNewLinkAction": "إصدار رابط جديد",
+  "@commonOwnerNewLinkAction": {
+    "description": "common.ownerNewLinkAction"
+  },
+  "commonOwnerNewLinkActive": "تُمسح كلمة مرور المالك وتنتهي كل جلساته، ثم يضع كلمة مرور جديدة من الرابط.",
+  "@commonOwnerNewLinkActive": {
+    "description": "common.ownerNewLinkActive"
+  },
+  "commonOwnerNewLinkPending": "يتوقف الرابط السابق عن العمل، ويعمل الجديد وحده.",
+  "@commonOwnerNewLinkPending": {
+    "description": "common.ownerNewLinkPending"
+  },
+  "commonOwnerNewLinkTitle": "إصدار رابط إعداد جديد؟",
+  "@commonOwnerNewLinkTitle": {
+    "description": "common.ownerNewLinkTitle"
+  },
+  "commonOwnerNone": "لا مالك لهذه العيادة.",
+  "@commonOwnerNone": {
+    "description": "common.ownerNone"
+  },
+  "commonOwnerNotSetUpText": "لا حساب له بعد، فلا جلسات تنتهي ولا تحقق يُعاد ضبطه. أرسل له رابط الإعداد.",
+  "@commonOwnerNotSetUpText": {
+    "description": "common.ownerNotSetUpText"
+  },
+  "commonOwnerNotSetUpTitle": "لم يُكمل المالك الإعداد بعد",
+  "@commonOwnerNotSetUpTitle": {
+    "description": "common.ownerNotSetUpTitle"
+  },
+  "commonOwnerPending": "بانتظار الإعداد",
+  "@commonOwnerPending": {
+    "description": "common.ownerPending"
+  },
+  "commonOwnerPendingShort": "لم يُكمل الإعداد",
+  "@commonOwnerPendingShort": {
+    "description": "common.ownerPendingShort"
+  },
+  "commonOwnerPhoneLabel": "الهاتف",
+  "@commonOwnerPhoneLabel": {
+    "description": "common.ownerPhoneLabel"
+  },
+  "commonOwnerResetMfa": "إعادة ضبط التحقق بخطوتين",
+  "@commonOwnerResetMfa": {
+    "description": "common.ownerResetMfa"
+  },
+  "commonOwnerResetMfaAction": "إعادة الضبط",
+  "@commonOwnerResetMfaAction": {
+    "description": "common.ownerResetMfaAction"
+  },
+  "commonOwnerResetMfaDone": "أُعيد ضبط التحقق بخطوتين",
+  "@commonOwnerResetMfaDone": {
+    "description": "common.ownerResetMfaDone"
+  },
+  "commonOwnerResetMfaDoneText": "سيفعّله المالك من جديد في دخوله التالي.",
+  "@commonOwnerResetMfaDoneText": {
+    "description": "common.ownerResetMfaDoneText"
+  },
+  "commonOwnerResetMfaText": "تنتهي كل جلساته، ويفعّل التحقق من جديد في دخوله التالي. استعمله إن ضاع هاتفه.",
+  "@commonOwnerResetMfaText": {
+    "description": "common.ownerResetMfaText"
+  },
+  "commonOwnerResetMfaTitle": "إعادة ضبط التحقق بخطوتين للمالك؟",
+  "@commonOwnerResetMfaTitle": {
+    "description": "common.ownerResetMfaTitle"
+  },
+  "commonPhoneInvalid": "رقم الهاتف غير صحيح. اكتبه مع رمز البلد.",
+  "@commonPhoneInvalid": {
+    "description": "common.phoneInvalid"
   },
   "commonPwCardText": "بعد تغييرها تبقى داخلاً على هذا الجهاز، ونُخرج أجهزتك الأخرى كلها.",
   "@commonPwCardText": {
@@ -1253,6 +1778,67 @@
   "commonReasonSignedOut": "انتهت الجلسة أو لم تسجّل الدخول. سجّل الدخول للمتابعة.",
   "@commonReasonSignedOut": {
     "description": "common.reasonSignedOut"
+  },
+  "commonReenrolDoneText": "أجهزتك الأخرى ما زالت داخلة. احذف حساب شفاء من التطبيق على الهاتف القديم، فرموزه لم تعد تعمل.",
+  "@commonReenrolDoneText": {
+    "description": "common.reenrolDoneText"
+  },
+  "commonReenrolDoneTitle": "نُقل التحقق إلى الهاتف الجديد",
+  "@commonReenrolDoneTitle": {
+    "description": "common.reenrolDoneTitle"
+  },
+  "commonReenrolNetworkText": "لم نصل إلى الخادم. لم يتغيّر شيء، وهاتفك القديم ما زال يعمل.",
+  "@commonReenrolNetworkText": {
+    "description": "common.reenrolNetworkText"
+  },
+  "commonReenrolNewAsk": "على الهاتف الجديد: امسح الرمز بتطبيق مصادقة، ثم اكتب الرمز المكوّن من {digits} أرقام الذي يظهر فيه.",
+  "@commonReenrolNewAsk": {
+    "description": "common.reenrolNewAsk",
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      }
+    }
+  },
+  "commonReenrolNewCode": "الرمز من الهاتف الجديد",
+  "@commonReenrolNewCode": {
+    "description": "common.reenrolNewCode"
+  },
+  "commonReenrolOldAsk": "للتأكد أنه أنت: اكتب الرمز الظاهر الآن في تطبيق المصادقة على الهاتف القديم. يبقى يعمل حتى تؤكد الهاتف الجديد.",
+  "@commonReenrolOldAsk": {
+    "description": "common.reenrolOldAsk"
+  },
+  "commonReenrolOldCode": "الرمز من الهاتف القديم",
+  "@commonReenrolOldCode": {
+    "description": "common.reenrolOldCode"
+  },
+  "commonReenrolOldStillWorks": "هاتفك القديم ما زال يعمل.",
+  "@commonReenrolOldStillWorks": {
+    "description": "common.reenrolOldStillWorks"
+  },
+  "commonReenrolOpen": "نقل التحقق إلى هاتف جديد",
+  "@commonReenrolOpen": {
+    "description": "common.reenrolOpen"
+  },
+  "commonReenrolRestartText": "احذف ما أضفته في التطبيق على الهاتف الجديد، وابدأ من جديد بالرمز من الهاتف القديم.",
+  "@commonReenrolRestartText": {
+    "description": "common.reenrolRestartText"
+  },
+  "commonReenrolRestartTitle": "انتهى المفتاح الجديد أو استُبدل",
+  "@commonReenrolRestartTitle": {
+    "description": "common.reenrolRestartTitle"
+  },
+  "commonReenrolStep1": "الخطوة الأولى من اثنتين · الهاتف القديم",
+  "@commonReenrolStep1": {
+    "description": "common.reenrolStep1"
+  },
+  "commonReenrolStep2": "الخطوة الثانية من اثنتين · الهاتف الجديد",
+  "@commonReenrolStep2": {
+    "description": "common.reenrolStep2"
+  },
+  "commonReenrolUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن تمّ النقل. أعد المحاولة برمز جديد من الهاتف الجديد.",
+  "@commonReenrolUnknownText": {
+    "description": "common.reenrolUnknownText"
   },
   "commonResultsCount": "{count, plural, zero {لا توجد نتائج} one {نتيجة واحدة} two {نتيجتان} few {{count} نتائج} many {{count} نتيجةً} other {{count} نتيجة}}",
   "@commonResultsCount": {

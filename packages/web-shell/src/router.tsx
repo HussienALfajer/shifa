@@ -44,6 +44,10 @@ export interface ShellPages {
   /** Clinic web only: My account and the clinic's settings (A-01-10 checkpoint 2). */
   account?: ComponentType;
   settings?: ComponentType;
+  /** Admin web only: the clinics list (its home), «إنشاء عيادة» and a clinic (A-01-10 checkpoint 3). */
+  clinics?: ComponentType;
+  createClinic?: ComponentType;
+  clinic?: ComponentType;
   notFound?: ComponentType;
 }
 
@@ -120,7 +124,7 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   const children = [
     signIn,
     route('/mfa', 'mfa', pages.mfa),
-    route('/', 'signed-in', pages.home),
+    route('/', 'signed-in', app === 'admin' && pages.clinics ? pages.clinics : pages.home),
     route('/about', 'open', pages.about),
   ];
   // The setup link page serves both apps (a super admin's link opens on admin web).
@@ -134,6 +138,12 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   }
   if (app === 'clinic' && pages.settings) {
     children.push(route('/settings', 'signed-in', pages.settings));
+  }
+  if (app === 'admin' && pages.createClinic) {
+    children.push(route('/clinics/new', 'signed-in', pages.createClinic));
+  }
+  if (app === 'admin' && pages.clinic) {
+    children.push(route('/clinics/$id', 'signed-in', pages.clinic));
   }
   return root.addChildren(children);
 }
@@ -195,7 +205,11 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
-    void router.navigate({ to: '/sign-in', search: searchFor(reason ?? otherTab ?? code) });
+    void router.navigate({
+      to: '/sign-in',
+      search: searchFor(reason ?? otherTab ?? code),
+      ignoreBlocker: true,
+    });
   });
   // Never on the message alone: the server's answer decides (tabs.ts).
   const offTabs = onOtherTabSignOut((tabReason) => {
@@ -241,7 +255,9 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     // stays theirs, and the MFA page shows the recovery codes before it goes on (A-01-07).
     if (!changed || rotated) return;
     queryClient.removeQueries({ predicate: (q) => q.queryHash !== SESSION_HASH });
-    void router.navigate({ to: '/' });
+    // Never held by a page's leave guard (admin web's one-time link): nothing of the previous
+    // session may stay on screen (A-01-10 checkpoint 3 review, 8).
+    void router.navigate({ to: '/', ignoreBlocker: true });
   });
   const dispose = () => {
     offEnded();

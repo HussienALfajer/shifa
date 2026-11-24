@@ -134,6 +134,29 @@ export interface DataTableProps {
   emptyTitle?: string;
 }
 
+/** A value shown once to copy or send (slice A-01-10): a setup link. */
+export interface CopyFieldProps {
+  /** The value to copy; absent: loading. */
+  value?: string;
+  /** The visible label and the box's name («رابط الإعداد»). */
+  label: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+  /** Shown when the clipboard refused; the value is selected to copy by hand. */
+  refusedText?: string;
+  /** «إرسال عبر واتساب» to the server's address; hidden when disabled. */
+  share?: { href: string; label: string };
+  /** The line under the box: the expiry, or why it no longer works. */
+  expiry?: string;
+  /** Wraps a long value over several lines (a phone). */
+  multiline?: boolean;
+  /** The copy button shows its icon only (still named). */
+  iconOnly?: boolean;
+  /** A replaced link: muted, nothing to copy or share. */
+  disabled?: boolean;
+}
+
+export declare const CopyField: (props: CopyFieldProps) => unknown;
 export declare const Spinner: (props: SpinnerProps) => unknown;
 export declare const Badge: (props: BadgeProps) => unknown;
 export declare const CountBadge: (props: CountBadgeProps) => unknown;
