@@ -1,10 +1,9 @@
-// A-01-05 checkpoint 3 (OD-90): the clinic chooser lists the signed-in person's pending
-// invitations and accepts or declines them by id, without the link. On the auth path
-// (withUser), shifa_auth sees a membership that is pending, unbound, for the account's phone and
-// has an open invitation link carrying that phone (`setup_link.invited_phone`); nothing else.
-// It binds such a membership to the signed-in person only (never a super admin) while the link
-// is open, and marks that link used. A declined, expired, replaced or other phone's invitation,
-// and any member link, stay out of reach. The link names the membership's own phone (foreign key).
+// A-01-05 checkpoint 3 (OD-90, OD-91): the clinic chooser lists the signed-in person's pending
+// invitations. On the auth path (withUser), shifa_auth sees a membership that is pending,
+// unbound, for the account's phone and has an open invitation link carrying that phone
+// (`setup_link.invited_phone`); nothing else. It can neither bind such a membership nor mark its
+// link used by phone: phones are unverified until A-09, so accepting and declining stay on the
+// invitation's link (OD-91). The link names the membership's own phone (foreign key).
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import type { Tx } from '../src/index.ts';
@@ -124,10 +123,10 @@ describe('reading invitations on the auth path (withUser)', () => {
   });
 });
 
-describe('accepting and declining by id', () => {
-  const bind = (userId: string, membershipId: string, to = userId) =>
+describe('no answer by phone (OD-91): accepting and declining stay on the link', () => {
+  const bind = (userId: string, membershipId: string) =>
     asUser(userId, (tx) =>
-      tx.execute<{ id: string }>(sql`update membership set user_id = ${to}, status = 'active',
+      tx.execute<{ id: string }>(sql`update membership set user_id = ${userId}, status = 'active',
           updated_at = now() where id = ${membershipId} returning id`),
     );
   const useLink = (userId: string, linkId: string) =>
@@ -137,36 +136,17 @@ describe('accepting and declining by id', () => {
       ),
     );
 
-  it('binds the open invitation to the signed-in person and marks its link used', async () => {
-    expect((await bind(PERSON, memberOf('open'))).rows).toHaveLength(1);
-    expect((await useLink(PERSON, linkOf('open'))).rows).toHaveLength(1);
-    const { rows } = await su().execute<{ user_id: string; status: string; used: boolean }>(
-      sql`select m.user_id, m.status, sl.used_at is not null as used
-            from membership m join setup_link sl on sl.membership_id = m.id
-           where m.id = ${memberOf('open')}`,
+  it.each(KINDS)('binds no %s invitation without its link', async (kind) => {
+    const userId = kind === 'admin' ? ADMIN : PERSON;
+    expect((await bind(userId, memberOf(kind))).rows).toEqual([]);
+    const { rows } = await su().execute<{ user_id: string | null }>(
+      sql`select user_id from membership where id = ${memberOf(kind)}`,
     );
-    expect(rows).toEqual([{ user_id: PERSON, status: 'active', used: true }]);
+    expect(rows).toEqual([{ user_id: null }]);
   });
 
-  it.each(['declined', 'expired', 'replaced', 'other phone', 'member link'] as const)(
-    'binds nothing for a %s invitation',
-    async (kind) => {
-      expect((await bind(PERSON, memberOf(kind))).rows).toEqual([]);
-    },
-  );
-
-  it('refuses binding the invitation to someone else', async () => {
-    expect(await sqlState(() => bind(PERSON, memberOf('open'), OTHER))).toBe('42501');
-  });
-
-  it('refuses a super admin’s account (OD-89)', async () => {
-    expect(await sqlState(() => bind(ADMIN, memberOf('admin')))).toBe('42501');
-  });
-
-  it('marks only open invitation links of the account’s phone used', async () => {
-    for (const kind of ['declined', 'expired', 'replaced', 'other phone', 'member link'] as const) {
-      expect((await useLink(PERSON, linkOf(kind))).rows, kind).toEqual([]);
-    }
+  it.each(KINDS)('marks no %s invitation link used without its token', async (kind) => {
+    expect((await useLink(PERSON, linkOf(kind))).rows).toEqual([]);
   });
 
   it('cannot change anything else on the link', async () => {

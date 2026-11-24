@@ -1,7 +1,8 @@
-// The clinic chooser and switcher (A-01b criteria 10, 11; OD-90): the signed-in person's own
-// clinics, last used first, with role, last activity and the branches they hold a role in; their
-// pending invitations (clinic name and roles only); switching clinic and branch, checked on the
-// server. A suspended clinic is listed but cannot be chosen.
+// The clinic chooser and switcher (A-01b criteria 10, 11; OD-90, OD-91): the signed-in person's
+// own clinics, last used first, with role, last activity and the branches they hold a role in;
+// their pending invitations (clinic name and roles only; answered on the invitation's own link);
+// switching clinic and branch, checked on the server. A suspended clinic is listed but cannot be
+// chosen.
 import { z } from 'zod';
 import { defineContract } from './define.ts';
 import { ErrorEnvelope } from './errors.ts';
@@ -31,7 +32,7 @@ export type MyClinic = z.infer<typeof MyClinic>;
 
 export const MyInvitation = z
   .object({
-    /** The invitation's id (accept or decline by it). */
+    /** The invitation's id. It is answered on its own link (OD-91), never by this id. */
     id: z.uuid(),
     clinicName: z.string(),
     roles: z.array(InvitationRole),
@@ -59,8 +60,6 @@ export const ActiveClinic = z
   .meta({ id: 'ActiveClinic' });
 export type ActiveClinic = z.infer<typeof ActiveClinic>;
 
-export const InvitationIdParams = z.object({ id: z.uuid() }).meta({ id: 'InvitationIdParams' });
-
 export const meClinics = defineContract({
   operationId: 'meClinics',
   method: 'GET',
@@ -79,23 +78,4 @@ export const meSwitch = defineContract({
   // 403 `clinic_suspended` or `branch_not_held`; 404 not a clinic of the person; 409
   // `branch_archived`.
   responses: { 200: ActiveClinic, 404: ErrorEnvelope, 409: ErrorEnvelope },
-});
-
-export const meAcceptInvitation = defineContract({
-  operationId: 'meAcceptInvitation',
-  method: 'POST',
-  path: '/me/invitations/:id/accept',
-  summary: 'Accept a pending invitation from the clinic chooser',
-  request: { params: InvitationIdParams },
-  // 404 `link_invalid`.
-  responses: { 204: null, 404: ErrorEnvelope },
-});
-
-export const meDeclineInvitation = defineContract({
-  operationId: 'meDeclineInvitation',
-  method: 'POST',
-  path: '/me/invitations/:id/decline',
-  summary: 'Decline a pending invitation from the clinic chooser',
-  request: { params: InvitationIdParams },
-  responses: { 204: null, 404: ErrorEnvelope },
 });

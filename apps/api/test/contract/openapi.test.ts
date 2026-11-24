@@ -245,8 +245,6 @@ describe('OpenAPI document', () => {
       '/invitations/decline',
       '/invitations/view',
       '/me/clinics',
-      '/me/invitations/{id}/accept',
-      '/me/invitations/{id}/decline',
       '/me/switch',
       '/platform/clinics',
       '/platform/clinics/{id}',

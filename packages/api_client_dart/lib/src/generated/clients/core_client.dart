@@ -158,14 +158,6 @@ abstract class CoreClient {
   @GET('/me/clinics')
   Future<MyClinics> meClinics();
 
-  /// Accept a pending invitation from the clinic chooser
-  @POST('/me/invitations/{id}/accept')
-  Future<void> meAcceptInvitation({@Path('id') required String id});
-
-  /// Decline a pending invitation from the clinic chooser
-  @POST('/me/invitations/{id}/decline')
-  Future<void> meDeclineInvitation({@Path('id') required String id});
-
   /// Switch the session to one of the person’s clinics and branches
   @POST('/me/switch')
   Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});

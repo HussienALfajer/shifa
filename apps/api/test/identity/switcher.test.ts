@@ -1,5 +1,6 @@
 // A-01b criteria 10, 11, 12 (A-01-05): the clinic chooser and switcher. A doctor in two clinics
-// accepts the second clinic's invitation from the chooser (OD-90), sees both clinics last used
+// sees the second clinic's invitation in the chooser (OD-90), accepts it on its link (OD-91: no
+// answer by id while phones are unverified), sees both clinics last used
 // first with role, last activity and the branches they hold a role in, switches clinic and
 // branch (checked on the server, audited), and is refused a branch they hold no role in. A
 // suspended clinic is listed but not selectable, cannot be switched to, and its signed-in
@@ -88,6 +89,16 @@ async function doctorInvitedByB(a: Clinic, b: Clinic, bBranch: string) {
   return { ...doctor, invitation: invited };
 }
 
+/** The invited doctor accepts on the invitation's link, signed in (OD-91). */
+function acceptByLink(doctor: { cookie: string; invitation: { linkUrl: string } }) {
+  return post(
+    world.app,
+    '/invitations/accept',
+    { token: tokenOf(doctor.invitation.linkUrl) },
+    doctor.cookie,
+  );
+}
+
 describe('a doctor in two clinics (journey)', () => {
   it('accepts from the chooser, lists, switches clinic and branch, is refused, then suspended', async () => {
     const a = await world.clinic();
@@ -101,23 +112,14 @@ describe('a doctor in two clinics (journey)', () => {
     expect(before.invitations).toEqual([
       {
         id: doctor.invitation.membershipId,
-        clinicName: expect.any(String),
+        clinicName: expect.any(String) as unknown,
         roles: [{ role: 'doctor', branchName: 'فرع الجميلية' }],
-        expiresAt: expect.any(String),
+        expiresAt: expect.any(String) as unknown,
       },
     ]);
-    const accepted = await post(
-      world.app,
-      `/me/invitations/${doctor.invitation.membershipId}/accept`,
-      {},
-      doctor.cookie,
-    );
+    // Answered on its own link (OD-91), never by id from the chooser.
+    const accepted = await acceptByLink(doctor);
     expect(accepted.statusCode, accepted.body).toBe(204);
-    // The clinic's link is closed: the link path answers link_invalid now.
-    const viaLink = await post(world.app, '/invitations/view', {
-      token: tokenOf(doctor.invitation.linkUrl),
-    });
-    expect(errorCode(viaLink)).toBe('link_invalid');
 
     // Last used first: A (where the doctor has been active), then B; branches per role.
     const both = await myClinics(doctor.cookie);
@@ -226,12 +228,7 @@ describe('a suspended clinic (criterion 11)', () => {
     const a = await world.clinic();
     const b = await world.clinic();
     const doctor = await doctorInvitedByB(a, b, b.branchId);
-    await post(
-      world.app,
-      `/me/invitations/${doctor.invitation.membershipId}/accept`,
-      {},
-      doctor.cookie,
-    );
+    expect((await acceptByLink(doctor)).statusCode).toBe(204);
     await adminPatch(
       world.app,
       `/platform/clinics/${b.clinicId}`,
@@ -277,28 +274,19 @@ describe('refused switches (criteria 10, 11)', () => {
   });
 });
 
-describe('invitations by id (OD-90)', () => {
-  it('declining removes it from the chooser and closes the link', async () => {
+describe('invitations in the chooser (OD-90, OD-91)', () => {
+  it('declining on the link removes it from the chooser', async () => {
     const a = await world.clinic();
     const b = await world.clinic();
     const doctor = await doctorInvitedByB(a, b, b.branchId);
     const res = await post(
       world.app,
-      `/me/invitations/${doctor.invitation.membershipId}/decline`,
-      {},
+      '/invitations/decline',
+      { token: tokenOf(doctor.invitation.linkUrl) },
       doctor.cookie,
     );
     expect(res.statusCode).toBe(204);
     expect((await myClinics(doctor.cookie)).invitations).toEqual([]);
-    const viaLink = await post(
-      world.app,
-      '/invitations/accept',
-      {
-        token: tokenOf(doctor.invitation.linkUrl),
-      },
-      doctor.cookie,
-    );
-    expect(errorCode(viaLink)).toBe('link_invalid');
     const rows = (await tenantAuditRows(b.clinicId)).filter((r) =>
       r.event.startsWith('member.invitation'),
     );
@@ -307,17 +295,21 @@ describe('invitations by id (OD-90)', () => {
     ]);
   });
 
-  it('someone else’s invitation, or an unknown id, answers 404 link_invalid', async () => {
+  it('no route answers an invitation by id; someone else never sees it', async () => {
     const a = await world.clinic();
     const b = await world.clinic();
     const doctor = await doctorInvitedByB(a, b, b.branchId);
     const stranger = await activeMember(world, a, [{ role: 'receptionist', branchId: null }]);
-    for (const id of [doctor.invitation.membershipId, a.ownerMembershipId]) {
-      for (const action of ['accept', 'decline']) {
-        const res = await post(world.app, `/me/invitations/${id}/${action}`, {}, stranger.cookie);
-        expect([res.statusCode, errorCode(res)]).toEqual([404, 'link_invalid']);
-      }
+    for (const action of ['accept', 'decline']) {
+      const res = await post(
+        world.app,
+        `/me/invitations/${doctor.invitation.membershipId}/${action}`,
+        {},
+        doctor.cookie,
+      );
+      expect(res.statusCode).toBe(404);
     }
+    expect((await myClinics(stranger.cookie)).invitations).toEqual([]);
     expect((await myClinics(doctor.cookie)).invitations).toHaveLength(1);
   });
 

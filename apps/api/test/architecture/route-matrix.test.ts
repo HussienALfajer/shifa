@@ -164,7 +164,7 @@ async function invitationFor(phone: string | undefined): Promise<string> {
   return (await newInvitation(phone)).token;
 }
 
-/** The invitation's membership id: answered from the chooser (A-01-05, OD-90). */
+/** The invitation's membership id: listed in the caller's chooser (A-01-05, OD-90). */
 async function invitationIdFor(phone: string | undefined): Promise<string> {
   return (await newInvitation(phone)).id;
 }

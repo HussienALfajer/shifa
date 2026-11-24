@@ -163,12 +163,6 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
     return {};
   },
   'POST /me/switch': async (ctx) => ({ body: { tenantId: await ctx.callerClinicId() } }),
-  'POST /me/invitations/:id/accept': async (ctx) => ({
-    url: `/me/invitations/${await ctx.invitationId()}/accept`,
-  }),
-  'POST /me/invitations/:id/decline': async (ctx) => ({
-    url: `/me/invitations/${await ctx.invitationId()}/decline`,
-  }),
   'PATCH /branches/:id': async (ctx) => ({
     url: `/branches/${await ctx.branchId()}`,
     body: { name: 'فرع معدّل' },
@@ -248,8 +242,6 @@ export const EXPECTED_MATRIX: Matrix = {
   // the clinic chooser and switcher (A-01-05): the person's own clinics, any role
   'GET /me/clinics': signedIn,
   'POST /me/switch': signedIn,
-  'POST /me/invitations/:id/accept': signedIn,
-  'POST /me/invitations/:id/decline': signedIn,
   // probe
   'GET /__probe/public': everyone,
   'GET /__probe/read': {
