@@ -1,7 +1,8 @@
 // «التحقق بخطوتين» on My account (slice A-01-10 checkpoint 2; prototype `Account10`; A-01a
 // criteria 11, 12a). GET /auth/mfa: enrolled («مفعّل» since when) with the recovery codes left
 // — information at three or more, a warning at one or two, danger at none, and the renewal button
-// primary when low — or not enrolled («غير مفعّل», optional for staff) with the enrolment.
+// primary when low — or not enrolled («غير مفعّل», optional for staff) with the enrolment. An
+// enrolled person moves TOTP to a new phone here (checkpoint 3, OD-98).
 import { Badge, Button, Callout, Card, SkeletonGroup, SkeletonText } from '@shifa/ui';
 import { useState } from 'react';
 import { dayDate } from '../auth/dates.ts';
@@ -11,6 +12,7 @@ import { LOW_CODES } from './app-frame.tsx';
 import { CodesDialog } from './codes-dialog.tsx';
 import { isOwner, useMfaStatus, useSignedIn } from './data.ts';
 import { LoadFailed } from './load-failed.tsx';
+import { ReenrolDialog } from './reenrol-dialog.tsx';
 
 const TOTAL = 10;
 
@@ -18,10 +20,10 @@ export function MfaCard({ tell }: { tell: Tell }) {
   const text = useText();
   const session = useSignedIn();
   const { data: status, isError, refetch } = useMfaStatus(session?.userId ?? '');
-  const [dialog, setDialog] = useState<'renew' | 'enrol' | null>(null);
+  const [dialog, setDialog] = useState<'renew' | 'enrol' | 'move' | null>(null);
   const left = status?.recoveryCodesLeft ?? null;
   const low = left !== null && left <= LOW_CODES;
-  const openDialog = (kind: 'renew' | 'enrol') => {
+  const openDialog = (kind: 'renew' | 'enrol' | 'move') => {
     tell(null);
     setDialog(kind);
   };
@@ -65,7 +67,7 @@ export function MfaCard({ tell }: { tell: Tell }) {
                 )}
               </Callout>
             )}
-            <div>
+            <div className="flex flex-wrap gap-2">
               <Button
                 variant={low ? 'primary' : 'secondary'}
                 startIcon="file-text"
@@ -74,6 +76,15 @@ export function MfaCard({ tell }: { tell: Tell }) {
                 }}
               >
                 {text('codesRenew')}
+              </Button>
+              <Button
+                variant="ghost"
+                startIcon="phone"
+                onClick={() => {
+                  openDialog('move');
+                }}
+              >
+                {text('reenrolOpen')}
               </Button>
             </div>
           </>
@@ -95,7 +106,15 @@ export function MfaCard({ tell }: { tell: Tell }) {
           </>
         )}
       </Card>
-      {dialog !== null && (
+      {dialog === 'move' && (
+        <ReenrolDialog
+          tell={tell}
+          onClose={() => {
+            setDialog(null);
+          }}
+        />
+      )}
+      {(dialog === 'renew' || dialog === 'enrol') && (
         <CodesDialog
           kind={dialog}
           tell={tell}

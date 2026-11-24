@@ -56,11 +56,6 @@ export {
 export { Checkbox, type CheckboxProps } from './checkbox/checkbox.tsx';
 export { CodeList, type CodeListPrint, type CodeListProps } from './code-list/code-list.tsx';
 export {
-  CopyField,
-  type CopyFieldProps,
-  type CopyFieldShare,
-} from './copy-field/copy-field.tsx';
-export {
   Combobox,
   type ComboboxItem,
   type ComboboxProps,
@@ -73,6 +68,11 @@ export {
   type CommandPaletteProps,
   normaliseForSearch,
 } from './command-palette/command-palette.tsx';
+export {
+  CopyField,
+  type CopyFieldProps,
+  type CopyFieldShare,
+} from './copy-field/copy-field.tsx';
 export {
   DataTable,
   type DataTableCellValue,
