@@ -4,7 +4,7 @@
 // together with the audit row of withPlatformAdmin(). Also the platform's two other writes:
 // re-issuing an owner's link and registering a super admin (seed command).
 import { randomUUID } from 'node:crypto';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, isNull, sql } from 'drizzle-orm';
 import { assertTokenHash, assertUuid } from './context.ts';
 import { auditTargetOf, type PlatformTx } from './platform.ts';
 import {
@@ -173,6 +173,60 @@ export async function issueOwnerLink(tx: PlatformTx, link: OwnerLink): Promise<v
       invitedPhone: owner?.phone ?? null,
     });
   });
+}
+
+/**
+ * Expiry of the owner's latest open link (unused, not replaced), past or future; null when none
+ * is open (the owner card, A-01-11). Only `expires_at` is read, never a token hash.
+ */
+export async function ownerLinkExpiry(
+  tx: PlatformTx,
+  owner: { tenantId: string; membershipId: string },
+): Promise<Date | null> {
+  assertUuid('tenantId', owner.tenantId);
+  assertUuid('membershipId', owner.membershipId);
+  const [open] = await inTenant(tx, owner.tenantId, (sp) =>
+    sp
+      .select({ expiresAt: setupLink.expiresAt })
+      .from(setupLink)
+      .where(
+        and(
+          eq(setupLink.tenantId, owner.tenantId),
+          eq(setupLink.membershipId, owner.membershipId),
+          isNull(setupLink.usedAt),
+          isNull(setupLink.replacedAt),
+        ),
+      )
+      .orderBy(desc(setupLink.createdAt))
+      .limit(1),
+  );
+  return open?.expiresAt ?? null;
+}
+
+export interface OwnerPhone {
+  tenantId: string;
+  membershipId: string;
+  /** E.164, normalised by the caller. */
+  phoneE164: string;
+}
+
+/**
+ * Corrects the phone of a clinic's pending owner (an owner.phone_changed transaction, OD-99):
+ * true when it changed; false when the membership is not the owner's, or the owner already has
+ * an account (the policies leave such rows untouched). An invitation link naming the old phone
+ * follows the new one (ON UPDATE CASCADE); the caller re-issues the link with issueOwnerLink().
+ */
+export async function changeOwnerPhone(tx: PlatformTx, owner: OwnerPhone): Promise<boolean> {
+  assertUuid('tenantId', owner.tenantId);
+  assertUuid('membershipId', owner.membershipId);
+  const changed = await inTenant(tx, owner.tenantId, (sp) =>
+    sp
+      .update(membership)
+      .set({ phoneE164: owner.phoneE164, updatedAt: sql`now()` })
+      .where(and(eq(membership.tenantId, owner.tenantId), eq(membership.id, owner.membershipId)))
+      .returning({ id: membership.id }),
+  );
+  return changed.length === 1;
 }
 
 /** Marks an existing account as a super admin (seed command only, platform.admin_created). */

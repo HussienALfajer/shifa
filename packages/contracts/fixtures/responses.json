@@ -629,7 +629,18 @@
             "status": "trial",
             "subscriptionEnd": "2027-06-30",
             "ownerName": "مالك تجريبي",
+            "ownerStatus": "pending",
             "createdAt": "2026-11-23T08:00:00.000Z"
+          },
+          {
+            "id": "4fa06e8c-0a5b-4b1e-9f4c-6d8a9eafbc2d",
+            "name": "عيادة بلا مالك",
+            "type": "solo",
+            "status": "active",
+            "subscriptionEnd": null,
+            "ownerName": null,
+            "ownerStatus": null,
+            "createdAt": "2026-11-22T08:00:00.000Z"
           }
         ]
       }
@@ -645,11 +656,14 @@
           "status": "trial",
           "subscriptionEnd": null,
           "ownerName": "مالك تجريبي",
+          "ownerStatus": "pending",
           "createdAt": "2026-11-23T08:00:00.000Z",
           "owner": {
             "membershipId": "3e9a5d7b-9f4a-4a0d-8e3b-5c7f8d9eab1c",
             "name": "مالك تجريبي",
-            "status": "pending"
+            "status": "pending",
+            "phoneMasked": "+963 ••• ••• 123",
+            "linkExpiresAt": "2026-11-26T08:00:00.000Z"
           }
         },
         "ownerLink": {
@@ -662,6 +676,23 @@
     }
   ],
   "invalid": [
+    {
+      "name": "clinic list without the owner status",
+      "schema": "ClinicList",
+      "body": {
+        "clinics": [
+          {
+            "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+            "name": "عيادة تجريبية",
+            "type": "solo",
+            "status": "trial",
+            "subscriptionEnd": null,
+            "ownerName": "مالك تجريبي",
+            "createdAt": "2026-11-23T08:00:00.000Z"
+          }
+        ]
+      }
+    },
     {
       "name": "idle minutes outside 15, 30, 60",
       "schema": "ClinicSettings",

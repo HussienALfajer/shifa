@@ -117,6 +117,13 @@ export const twoFactor = pgTable(
     lastUsedStep: bigint('last_used_step', { mode: 'number' }),
     /** When enrolment was confirmed (A-01a 12a, My account); null before, and for older rows. */
     enrolledAt: at('enrolled_at'),
+    /**
+     * A self re-enrolment's new secret, sealed like `secret` (OD-98, A-01-11): the old one stays
+     * in use until a code from the new app confirms it; null when none is pending.
+     */
+    pendingSecret: text('pending_secret'),
+    /** The pending secret's own replay state, until it replaces `secret`. */
+    pendingLastUsedStep: bigint('pending_last_used_step', { mode: 'number' }),
   },
   (t) => [
     index('two_factor_secret_idx').on(t.secret),

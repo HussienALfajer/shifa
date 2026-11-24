@@ -258,7 +258,17 @@ describe('owner support actions (criterion 13)', () => {
       owner: { membershipId: created.ownerMembershipId, name: 'مالك تجريبي', status: 'active' },
     });
     expect(Object.keys(body).sort()).toEqual(
-      ['createdAt', 'id', 'name', 'owner', 'status', 'subscriptionEnd', 'type', 'ownerName'].sort(),
+      [
+        'createdAt',
+        'id',
+        'name',
+        'owner',
+        'status',
+        'subscriptionEnd',
+        'type',
+        'ownerName',
+        'ownerStatus',
+      ].sort(),
     );
   });
 

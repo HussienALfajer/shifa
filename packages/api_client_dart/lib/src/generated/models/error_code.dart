@@ -100,7 +100,9 @@ enum ErrorCode {
   @JsonValue('mfa_not_enrolled')
   mfaNotEnrolled('mfa_not_enrolled'),
   @JsonValue('owner_role_protected')
-  ownerRoleProtected('owner_role_protected');
+  ownerRoleProtected('owner_role_protected'),
+  @JsonValue('owner_account_exists')
+  ownerAccountExists('owner_account_exists');
 
   const ErrorCode(this.json);
 

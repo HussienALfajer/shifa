@@ -226,6 +226,16 @@
               "null"
             ]
           },
+          "ownerStatus": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MembershipStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "$ref": "#/components/schemas/ClinicStatus"
           },
@@ -251,6 +261,7 @@
           "status",
           "subscriptionEnd",
           "ownerName",
+          "ownerStatus",
           "createdAt",
           "owner"
         ],
@@ -272,12 +283,27 @@
       },
       "ClinicOwner": {
         "properties": {
+          "linkExpiresAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "membershipId": {
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
           },
           "name": {
+            "type": "string"
+          },
+          "phoneMasked": {
             "type": "string"
           },
           "status": {
@@ -287,7 +313,9 @@
         "required": [
           "membershipId",
           "name",
-          "status"
+          "status",
+          "phoneMasked",
+          "linkExpiresAt"
         ],
         "type": "object"
       },
@@ -331,6 +359,16 @@
               "null"
             ]
           },
+          "ownerStatus": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MembershipStatus"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "status": {
             "$ref": "#/components/schemas/ClinicStatus"
           },
@@ -356,6 +394,7 @@
           "status",
           "subscriptionEnd",
           "ownerName",
+          "ownerStatus",
           "createdAt"
         ],
         "type": "object"
@@ -540,7 +579,8 @@
           "mfa_not_started",
           "mfa_not_owed",
           "mfa_not_enrolled",
-          "owner_role_protected"
+          "owner_role_protected",
+          "owner_account_exists"
         ],
         "type": "string"
       },
@@ -1078,6 +1118,19 @@
         ],
         "type": "object"
       },
+      "OwnerPhoneRequest": {
+        "properties": {
+          "phone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
+        ],
+        "type": "object"
+      },
       "PermissionKeyName": {
         "maxLength": 100,
         "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
@@ -1548,6 +1601,28 @@
         ],
         "type": "object"
       },
+      "TotpReenrolConfirm": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/TotpCode"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
+      "TotpReenrolStart": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/TotpCode"
+          }
+        },
+        "required": [
+          "code"
+        ],
+        "type": "object"
+      },
       "UpdateBranchRequest": {
         "properties": {
           "address": {
@@ -1885,6 +1960,164 @@
         },
         "summary": "Start TOTP enrolment: a new key (replaces an unconfirmed one)",
         "x-before-mfa": true,
+        "x-signed-in": true
+      }
+    },
+    "/auth/mfa/re-enrol/confirm": {
+      "post": {
+        "operationId": "authMfaReenrolConfirm",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpReenrolConfirm"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodes"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Confirm the new TOTP with a code from the new app; returns new recovery codes once",
+        "x-signed-in": true
+      }
+    },
+    "/auth/mfa/re-enrol/start": {
+      "post": {
+        "operationId": "authMfaReenrolStart",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TotpReenrolStart"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpEnrolStart"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Start moving TOTP to a new phone, confirmed by a current code from the old app",
         "x-signed-in": true
       }
     },
@@ -3489,6 +3722,97 @@
         "x-platform-admin": true
       }
     },
+    "/platform/clinics/{id}/owner": {
+      "patch": {
+        "operationId": "platformOwnerPhone",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OwnerPhoneRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SetupLinkIssued"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Correct a pending owner’s phone; returns the new setup link once",
+        "x-platform-admin": true
+      }
+    },
     "/platform/clinics/{id}/owner/end-sessions": {
       "post": {
         "operationId": "platformOwnerEndSessions",
@@ -3547,6 +3871,16 @@
               }
             },
             "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "End every session of the owner",
@@ -3611,6 +3945,16 @@
               }
             },
             "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "Reset the owner’s TOTP: enrol again at next sign-in (ends the owner’s sessions)",

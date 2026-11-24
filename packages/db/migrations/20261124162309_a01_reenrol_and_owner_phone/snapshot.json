@@ -1,0 +1,116 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d47c42e4-1a11-466a-a829-d4dbea98a1d3",
+  "prevIds": [
+    "0326bb3c-a9cf-404a-86ce-cbf7fe2fe1c1"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "two_factor",
+        "pending_secret"
+      ],
+      "writes": [
+        "s|col|public.two_factor.pending_secret",
+        "n|col|public.two_factor.pending_secret",
+        "e|col|public.two_factor.pending_secret"
+      ],
+      "reads": [
+        "n|tbl|public.two_factor",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "two_factor",
+        "pending_last_used_step"
+      ],
+      "writes": [
+        "s|col|public.two_factor.pending_last_used_step",
+        "n|col|public.two_factor.pending_last_used_step",
+        "e|col|public.two_factor.pending_last_used_step"
+      ],
+      "reads": [
+        "n|tbl|public.two_factor",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "recreate_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "setup_link"
+      ],
+      "writes": [
+        "s|fk|public.setup_link.setup_link_invited_phone_fk",
+        "n|fk|public.setup_link.setup_link_invited_phone_fk",
+        "e|fk|public.setup_link.setup_link_invited_phone_fk",
+        "n|con|public.setup_link.setup_link_invited_phone_fk"
+      ],
+      "reads": [
+        "n|tbl|public.setup_link",
+        "n|sch|public",
+        "n|tbl|public.membership",
+        "n|sch|public",
+        "n|col|public.setup_link.tenant_id",
+        "n|col|public.setup_link.membership_id",
+        "n|col|public.setup_link.invited_phone",
+        "n|col|public.membership.tenant_id",
+        "n|col|public.membership.id",
+        "n|col|public.membership.phone_e164",
+        "e|uniqueness|public.membership.id.phone_e164.tenant_id"
+      ],
+      "sqlHash": "1b3227bc7e841653"
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "two_factor",
+        "name": "pending_secret",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "two_factor",
+        "name": "pending_last_used_step",
+        "type": "bigint",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "alter",
+      "key": "fks\u0000[\"public\",\"setup_link\",\"setup_link_invited_phone_fk\"]",
+      "set": {
+        "onUpdate": "CASCADE"
+      }
+    }
+  ]
+}

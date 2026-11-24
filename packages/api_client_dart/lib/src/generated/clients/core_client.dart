@@ -30,6 +30,7 @@ import '../models/mfa_passed.dart';
 import '../models/mfa_status.dart';
 import '../models/my_clinics.dart';
 import '../models/my_profile.dart';
+import '../models/owner_phone_request.dart';
 import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
@@ -43,6 +44,8 @@ import '../models/switch_request.dart';
 import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
 import '../models/totp_enrol_start.dart';
+import '../models/totp_reenrol_confirm.dart';
+import '../models/totp_reenrol_start.dart';
 import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_member_request.dart';
@@ -70,6 +73,18 @@ abstract class CoreClient {
   /// Start TOTP enrolment: a new key (replaces an unconfirmed one)
   @POST('/auth/mfa/enrol/start')
   Future<TotpEnrolStart> authMfaEnrolStart();
+
+  /// Confirm the new TOTP with a code from the new app; returns new recovery codes once
+  @POST('/auth/mfa/re-enrol/confirm')
+  Future<RecoveryCodes> authMfaReenrolConfirm({
+    @Body() required TotpReenrolConfirm body,
+  });
+
+  /// Start moving TOTP to a new phone, confirmed by a current code from the old app
+  @POST('/auth/mfa/re-enrol/start')
+  Future<TotpEnrolStart> authMfaReenrolStart({
+    @Body() required TotpReenrolStart body,
+  });
 
   /// Replace the recovery codes with a new set, confirmed with a TOTP code
   @POST('/auth/mfa/recovery-codes')
@@ -207,6 +222,13 @@ abstract class CoreClient {
   Future<ClinicDetail> platformUpdateClinic({
     @Path('id') required String id,
     @Body() required UpdateClinicRequest body,
+  });
+
+  /// Correct a pending owner’s phone; returns the new setup link once
+  @PATCH('/platform/clinics/{id}/owner')
+  Future<SetupLinkIssued> platformOwnerPhone({
+    @Path('id') required String id,
+    @Body() required OwnerPhoneRequest body,
   });
 
   /// End every session of the owner

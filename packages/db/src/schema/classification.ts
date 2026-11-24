@@ -117,6 +117,10 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'the super admin sees each clinic’s owner card (name, status), never other members (A-01a 3, 13)',
       membership_platform_only_owner:
         'restrictive: even with a tenant set, shifa_platform reads owner memberships only',
+      membership_platform_phone_change:
+        'the super admin corrects the phone of a clinic’s owner who has no account yet, in an owner.phone_changed action (A-01a 13, OD-99)',
+      membership_platform_phone_only:
+        'restrictive: even with a tenant set, shifa_platform updates only a pending, unbound owner membership, only in owner.phone_changed; user_id and status stay as they were',
     },
   },
   role_assignment: {
@@ -146,13 +150,13 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       setup_link_auth_invited_read:
         'the clinic chooser finds the open invitation links of the signed-in person’s phone; read only (OD-90, OD-91)',
       setup_link_platform_issue_only:
-        'restrictive: shifa_platform issues owner links only at clinic creation or an owner.link_issued action (A-01a 4, 13)',
+        'restrictive: shifa_platform issues owner links only at clinic creation, an owner.link_issued action or a pending owner’s phone corrected (A-01a 4, 13, OD-99)',
       setup_link_platform_owner_links_only:
         'restrictive: shifa_platform writes only owner or invitation links for a clinic’s owner, valid at most 72 h (review M1)',
       setup_link_platform_owner_only:
         'restrictive: shifa_platform sees owner links only (to replace them), never a token hash',
       setup_link_platform_replace_only:
-        'restrictive: re-issuing marks the owner’s unused links replaced, nothing else (A-01a 4)',
+        'restrictive: re-issuing (also after a pending owner’s phone is corrected) marks the owner’s unused links replaced, nothing else (A-01a 4, OD-99)',
     },
   },
   audit_event: {

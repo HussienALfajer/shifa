@@ -14,6 +14,10 @@ ClinicDetail _$ClinicDetailFromJson(Map<String, dynamic> json) => ClinicDetail(
       ? null
       : ClinicOwner.fromJson(json['owner'] as Map<String, dynamic>),
   ownerName: json['ownerName'] as String?,
+  ownerStatus: $enumDecodeNullable(
+    _$MembershipStatusEnumMap,
+    json['ownerStatus'],
+  ),
   status: $enumDecode(_$ClinicStatusEnumMap, json['status']),
   subscriptionEnd: json['subscriptionEnd'] as String?,
   type: $enumDecode(_$ClinicTypeEnumMap, json['type']),
@@ -26,10 +30,17 @@ Map<String, dynamic> _$ClinicDetailToJson(ClinicDetail instance) =>
       'name': instance.name,
       'owner': instance.owner,
       'ownerName': instance.ownerName,
+      'ownerStatus': instance.ownerStatus,
       'status': instance.status,
       'subscriptionEnd': instance.subscriptionEnd,
       'type': instance.type,
     };
+
+const _$MembershipStatusEnumMap = {
+  MembershipStatus.pending: 'pending',
+  MembershipStatus.active: 'active',
+  MembershipStatus.deactivated: 'deactivated',
+};
 
 const _$ClinicStatusEnumMap = {
   ClinicStatus.trial: 'trial',

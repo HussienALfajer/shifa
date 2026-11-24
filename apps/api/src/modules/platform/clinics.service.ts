@@ -5,28 +5,34 @@
 // memberships and roles. Owner actions on the person (sessions, MFA, password) run on the auth
 // path inside the platform transaction: a failure there leaves no platform row and no new link;
 // the auth step commits with its own audit row, so it stays recorded even if the platform
-// commit fails afterwards (two pools, no shared transaction).
+// commit fails afterwards (two pools, no shared transaction). A-01-11: the owner card's masked
+// phone and open link's expiry, the owner's status in the list, 409 for no-op owner actions, and
+// a pending owner's phone corrected (OD-99).
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type ClinicCreated,
   type ClinicDetail,
   type ClinicList,
   type CreateClinicRequest,
+  maskPhone,
   normalisePhone,
+  type OwnerPhoneRequest,
   type SetupLinkIssued,
   type UpdateClinicRequest,
 } from '@shifa/contracts';
 import {
   type AuditTarget,
+  changeOwnerPhone,
   createClinic,
   issueOwnerLink,
   membership,
+  ownerLinkExpiry,
   type PlatformAction,
   type PlatformDb,
   type PlatformTx,
   tenant,
 } from '@shifa/db';
-import { and, desc, eq, ilike } from 'drizzle-orm';
+import { and, desc, eq, ilike, ne } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -64,6 +70,7 @@ export class ClinicsService {
           subscriptionEnd: tenant.subscriptionEnd,
           createdAt: tenant.createdAt,
           ownerName: membership.displayName,
+          ownerStatus: membership.status,
         })
         .from(tenant)
         // shifa_platform sees owner memberships only: at most one row per clinic.
@@ -74,6 +81,7 @@ export class ClinicsService {
         clinics: rows.map((r) => ({
           ...r,
           ownerName: r.ownerName ?? null,
+          ownerStatus: r.ownerStatus ?? null,
           createdAt: r.createdAt.toISOString(),
         })),
       };
@@ -186,11 +194,74 @@ export class ClinicsService {
         if (owner.userId) await this.owners.resetPassword(owner.userId, by);
         return link.issued(purpose);
       }
-      if (owner.userId) {
-        if (kind === 'reset-mfa') await this.owners.resetMfa(owner.userId, by);
-        else await this.owners.endSessions(owner.userId, by);
-      }
+      // An owner without an account has no sessions or TOTP: answering a success would be a lie
+      // (A-01-11 gap 6). The throw rolls back, so no owner.* audit row is written.
+      if (!owner.userId) throw new ApiError(409, 'owner_setup_pending');
+      if (kind === 'reset-mfa') await this.owners.resetMfa(owner.userId, by);
+      else await this.owners.endSessions(owner.userId, by);
       return undefined;
+    });
+  }
+
+  /**
+   * OD-99: corrects a pending owner's phone and re-issues the owner's link (the earlier one stops
+   * working); an invitation when the new phone has an account. 409 `owner_account_exists` once
+   * the owner has an account; 409 `owner_setup_pending` when the new phone owns another clinic
+   * not set up (OD-85). The phone never enters the audit row, logs or errors.
+   */
+  async changeOwnerPhone(
+    principal: Principal,
+    id: string,
+    input: OwnerPhoneRequest,
+    requestId: string,
+  ): Promise<SetupLinkIssued> {
+    const phone = normalisePhone(input.phone);
+    if (!phone.ok) {
+      throw new RequestValidationError([{ path: 'body.phone', code: 'invalid_format' }]);
+    }
+    const purpose = (await this.owners.userIdByPhone(phone.e164)) ? 'invitation' : 'owner_setup';
+    const link = this.owners.newSetupLink();
+    const action = {
+      event: 'owner.phone_changed',
+      requestId,
+      data: { clinicId: id, linkPurpose: purpose },
+    } as const;
+    return this.#run(principal, action, async (tx, audit) => {
+      const [owner] = await tx
+        .select({ id: membership.id, userId: membership.userId })
+        .from(membership)
+        .where(eq(membership.tenantId, id));
+      if (!owner) throw new NotFoundException();
+      audit.setTarget(owner.id);
+      if (owner.userId) throw new ApiError(409, 'owner_account_exists');
+      const [pending] = await tx
+        .select({ id: membership.id })
+        .from(membership)
+        .where(
+          and(
+            eq(membership.phoneE164, phone.e164),
+            eq(membership.status, 'pending'),
+            ne(membership.id, owner.id),
+          ),
+        )
+        .limit(1);
+      if (pending) throw new ApiError(409, 'owner_setup_pending');
+      // False only when the owner bound an account since the read above: the update re-checks
+      // the row against the policies.
+      const changed = await changeOwnerPhone(tx, {
+        tenantId: id,
+        membershipId: owner.id,
+        phoneE164: phone.e164,
+      });
+      if (!changed) throw new ApiError(409, 'owner_account_exists');
+      await issueOwnerLink(tx, {
+        tenantId: id,
+        membershipId: owner.id,
+        purpose,
+        tokenHash: link.tokenHash,
+        expiresAt: link.expiresAt,
+      });
+      return link.issued(purpose);
     });
   }
 
@@ -212,9 +283,13 @@ async function clinicDetail(tx: PlatformTx, id: string): Promise<ClinicDetail> {
       membershipId: membership.id,
       name: membership.displayName,
       status: membership.status,
+      phone: membership.phoneE164,
     })
     .from(membership)
     .where(and(eq(membership.tenantId, id)));
+  const linkExpiresAt = owner
+    ? await ownerLinkExpiry(tx, { tenantId: id, membershipId: owner.membershipId })
+    : null;
   return {
     id: clinic.id,
     name: clinic.name,
@@ -222,7 +297,17 @@ async function clinicDetail(tx: PlatformTx, id: string): Promise<ClinicDetail> {
     status: clinic.status,
     subscriptionEnd: clinic.subscriptionEnd,
     ownerName: owner?.name ?? null,
+    ownerStatus: owner?.status ?? null,
     createdAt: clinic.createdAt.toISOString(),
-    owner: owner ?? null,
+    owner: owner
+      ? {
+          membershipId: owner.membershipId,
+          name: owner.name,
+          status: owner.status,
+          // Masked here: the full phone never leaves the platform path (A-01-11).
+          phoneMasked: maskPhone(owner.phone),
+          linkExpiresAt: linkExpiresAt?.toISOString() ?? null,
+        }
+      : null,
   };
 }

@@ -4,7 +4,7 @@
 // on refusal, and on success: the password set, the link used, the membership bound, one audit
 // row, and a new session at mfa 'none' (the guard then allows enrolment only).
 import { Inject, Injectable } from '@nestjs/common';
-import type { SessionView, SetupLinkView } from '@shifa/contracts';
+import { maskPhone, type SessionView, type SetupLinkView } from '@shifa/contracts';
 import {
   type AuthDb,
   branch,
@@ -65,15 +65,6 @@ const PASSWORD_ERRORS: Record<PasswordProblem, ApiError> = {
 };
 
 export const linkInvalid = () => new ApiError(404, 'link_invalid');
-
-/**
- * The phone as the setup page shows it (A-01-09): the country code and the last three digits,
- * e.g. `+963 ••• ••• 123`. Never the full number before the password is set.
- */
-export function maskPhone(phoneE164: string): string {
-  const code = phoneE164.startsWith('+963') ? '+963' : phoneE164.startsWith('+90') ? '+90' : '+';
-  return `${code} ••• ••• ${phoneE164.slice(-3)}`;
-}
 
 export type ClinicLink = Extract<Found, { kind: 'clinic' }>;
 

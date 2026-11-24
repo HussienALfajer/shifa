@@ -117,6 +117,8 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
     ],
   ],
   ['shifa_platform', 'setup_link', 'UPDATE', ['replaced_at']],
+  // A-01-11: a pending owner's phone corrected (OD-99; policies keep it to that row)
+  ['shifa_platform', 'membership', 'UPDATE', ['phone_e164', 'updated_at']],
 ];
 
 /** Secret columns no role but shifa_auth may read. */
@@ -128,6 +130,8 @@ const SECRETS: readonly [table: string, column: string][] = [
   ['account', 'id_token'],
   ['two_factor', 'secret'],
   ['two_factor', 'backup_codes'],
+  // A-01-11: a self re-enrolment's new secret (OD-98)
+  ['two_factor', 'pending_secret'],
 ];
 
 async function publicTables(): Promise<string[]> {

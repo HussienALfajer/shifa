@@ -62,3 +62,12 @@ export function normalisePhone(input: string): PhoneResult {
   if (compact.startsWith('00')) return international(compact.slice(2));
   return national(compact);
 }
+
+/**
+ * An E.164 phone as the setup page and the owner card show it (A-01-09, A-01-11): the country
+ * code and the last three digits, e.g. `+963 ••• ••• 123`. Never the full number.
+ */
+export function maskPhone(phoneE164: string): string {
+  const code = phoneE164.startsWith('+963') ? '+963' : phoneE164.startsWith('+90') ? '+90' : '+';
+  return `${code} ••• ••• ${phoneE164.slice(-3)}`;
+}

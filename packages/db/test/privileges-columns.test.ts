@@ -47,8 +47,11 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_platform membership.display_name SELECT',
   'shifa_platform membership.id SELECT',
   'shifa_platform membership.phone_e164 SELECT',
+  // A-01-11: a pending owner's phone corrected (OD-99)
+  'shifa_platform membership.phone_e164 UPDATE',
   'shifa_platform membership.status SELECT',
   'shifa_platform membership.tenant_id SELECT',
+  'shifa_platform membership.updated_at UPDATE',
   'shifa_platform membership.user_id SELECT',
   'shifa_platform role_assignment.id SELECT',
   'shifa_platform role_assignment.membership_id SELECT',

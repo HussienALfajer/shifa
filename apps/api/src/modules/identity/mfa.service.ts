@@ -5,6 +5,7 @@
 // two_factor row (FOR UPDATE), so parallel attempts cannot share a code or outrun the lock. A
 // failure is committed before it is answered. The session is rotated after either success.
 // A-01-09: status (codes left), a new set of recovery codes for a current code, and named 409s.
+// A-01-11 (OD-98): a self re-enrolment; the challenge keeps the old secret until it is confirmed.
 import { Inject, Injectable } from '@nestjs/common';
 import type {
   MfaEnrolled,
@@ -186,6 +187,80 @@ export class MfaService {
         .where(eq(twoFactor.id, row.id));
       await this.audit.record(
         { event: 'auth.recovery_codes_renewed' },
+        { actorId: principal.userId, targetId: principal.userId, requestId: meta.requestId },
+        tx,
+      );
+      return { ok: true, recoveryCodes };
+    });
+    if (!outcome.ok) throw outcome.error;
+    return { recoveryCodes: outcome.recoveryCodes ?? [] };
+  }
+
+  /**
+   * OD-98 (A-01-11): a current code from the old app starts moving TOTP to a new phone. The
+   * replay and lock rules of criterion 12 apply; the new secret waits in `pending_secret`
+   * (replacing an earlier unconfirmed one) and the old one stays in use until the confirm.
+   */
+  async reenrolStart(principal: Principal, code: string, meta: MfaMeta): Promise<TotpEnrolStart> {
+    const secret = newTotpSecret();
+    const sealed = sealSecret(secret, this.secrets.betterAuthSecret);
+    const now = this.clock.now();
+    const outcome = await this.authDb.withAuth(async (tx): Promise<Outcome> => {
+      const row = await lockRow(tx, principal.userId);
+      if (!row?.verified) return { ok: false, error: new ApiError(409, 'mfa_not_enrolled') };
+      const locked = lockError(row, now);
+      if (locked) return { ok: false, error: locked };
+      if (!(await this.#useTotp(tx, row, code, now))) {
+        return this.#failure(tx, row, now, meta, 'invalid_code');
+      }
+      await tx
+        .update(twoFactor)
+        .set({ pendingSecret: sealed, pendingLastUsedStep: null })
+        .where(eq(twoFactor.id, row.id));
+      return { ok: true };
+    });
+    if (!outcome.ok) throw outcome.error;
+    const manualKey = base32Encode(secret);
+    return { otpauthUri: otpauthUri(manualKey), manualKey };
+  }
+
+  /**
+   * OD-98, OD-101 (A-01-11): a code from the new app (±1 step, the clock-skew hint, the pending
+   * secret's own replay state) makes it the person's secret, with ten new recovery codes and the
+   * old set gone; audited. Other sessions are kept and this one is not rotated: the person proved
+   * the old factor and the second factor is unchanged in kind.
+   */
+  async reenrolConfirm(principal: Principal, code: string, meta: MfaMeta): Promise<RecoveryCodes> {
+    const now = this.clock.now();
+    const outcome = await this.authDb.withAuth(async (tx): Promise<Outcome> => {
+      const row = await lockRow(tx, principal.userId);
+      if (!row?.verified) return { ok: false, error: new ApiError(409, 'mfa_not_enrolled') };
+      const locked = lockError(row, now);
+      if (locked) return { ok: false, error: locked };
+      if (!row.pendingSecret) return { ok: false, error: new ApiError(409, 'mfa_not_started') };
+      const secret = openSecret(row.pendingSecret, this.secrets.betterAuthSecret);
+      const step = matchStep(secret, code, now, TOTP_WINDOW);
+      // The pending secret's own replay state: never a step at or before its last one.
+      if (step === null || step <= (row.pendingLastUsedStep ?? -1)) {
+        const near = step === null ? matchStep(secret, code, now, TOTP_SKEW_HINT_WINDOW) : null;
+        return this.#failure(tx, row, now, meta, near === null ? 'invalid_code' : 'clock_skew');
+      }
+      const recoveryCodes = newRecoveryCodes();
+      await tx
+        .update(twoFactor)
+        .set({
+          secret: row.pendingSecret,
+          lastUsedStep: step,
+          backupCodes: this.#hashes(recoveryCodes),
+          failedVerificationCount: 0,
+          lockedUntil: null,
+          enrolledAt: now,
+          pendingSecret: null,
+          pendingLastUsedStep: null,
+        })
+        .where(eq(twoFactor.id, row.id));
+      await this.audit.record(
+        { event: 'auth.mfa_reenrolled' },
         { actorId: principal.userId, targetId: principal.userId, requestId: meta.requestId },
         tx,
       );

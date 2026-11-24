@@ -10,6 +10,7 @@ import {
   platformClinics,
   platformCreateClinic,
   platformOwnerEndSessions,
+  platformOwnerPhone,
   platformOwnerResetMfa,
   platformOwnerSetupLink,
   platformUpdateClinic,
@@ -70,6 +71,19 @@ export class ClinicsController {
     @ClientRequest() request: RequestMeta,
   ): Promise<ClinicDetail> {
     return this.clinics.update(principal, params.id, body, request.requestId);
+  }
+
+  /** OD-99: a pending owner's phone corrected; the new link is shown once. */
+  @PlatformAdmin()
+  @Contract(platformOwnerPhone)
+  @Patch(':id/owner')
+  ownerPhone(
+    @Param() params: RequestParams<typeof platformOwnerPhone>,
+    @Body() body: RequestBody<typeof platformOwnerPhone>,
+    @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<SetupLinkIssued> {
+    return this.clinics.changeOwnerPhone(principal, params.id, body, request.requestId);
   }
 
   /** A new link replaces the owner's earlier one; for a set-up owner it resets the password. */

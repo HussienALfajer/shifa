@@ -250,5 +250,6 @@ export const clinicUpdateSettings = defineContract({
   path: '/clinic/settings',
   summary: 'Change the clinic’s automatic sign-out (15, 30 or 60 minutes)',
   request: { body: ClinicSettings },
-  responses: { 200: ClinicSettings },
+  // 400 `validation_failed`: not 15, 30 or 60; 403: not the clinic's owner (A-01-11).
+  responses: { 200: ClinicSettings, 400: ErrorEnvelope, 403: ErrorEnvelope },
 });
