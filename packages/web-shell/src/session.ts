@@ -68,6 +68,22 @@ export function watchFocus(queryClient: QueryClient): () => void {
   };
 }
 
+const ownRotations = new Set<string>();
+
+/**
+ * This tab is about to put a rotated session of the same person into the cache: a change of
+ * password (OD-92) or a TOTP enrolment from My account. The router keeps the page and what is
+ * cached through that one change (A-01-10); any other new session id still clears it.
+ */
+export function expectOwnRotation(fromSessionId: string): void {
+  ownRotations.add(fromSessionId);
+}
+
+/** True once for a session id this tab said it would rotate. */
+export function takeOwnRotation(fromSessionId: string): boolean {
+  return ownRotations.delete(fromSessionId);
+}
+
 let signOuts = 0;
 
 /**

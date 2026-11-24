@@ -21,6 +21,7 @@ import {
   sessionQueryKey,
   signOut,
   signOutCount,
+  takeOwnRotation,
 } from './session.ts';
 import { onOtherTabSignOut } from './tabs.ts';
 import { IdleBoundary } from './use-idle.tsx';
@@ -40,6 +41,9 @@ export interface ShellPages {
   adminWeb?: ComponentType;
   /** Clinic web only: the clinic chooser with its branch step (A-01-07 checkpoint 4). */
   choose?: ComponentType;
+  /** Clinic web only: My account and the clinic's settings (A-01-10 checkpoint 2). */
+  account?: ComponentType;
+  settings?: ComponentType;
   notFound?: ComponentType;
 }
 
@@ -125,6 +129,12 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
     children.push(route('/admin-web', 'admin-web', pages.adminWeb));
   }
   if (app === 'clinic' && pages.choose) children.push(route('/choose', 'choose', pages.choose));
+  if (app === 'clinic' && pages.account) {
+    children.push(route('/account', 'signed-in', pages.account));
+  }
+  if (app === 'clinic' && pages.settings) {
+    children.push(route('/settings', 'signed-in', pages.settings));
+  }
   return root.addChildren(children);
 }
 
@@ -145,6 +155,23 @@ function isMfaRotation(
   // `owesMfa`, not "not verified": a staff session without TOTP is complete and reads clinic
   // routes; its successor gets no exception (security review L3).
   return a.userId === b.userId && sameClinic && owesMfa(a) && b.mfa === 'verified';
+}
+
+/**
+ * A rotation this tab asked for (a change of password, a TOTP enrolment from My account): the
+ * same person, clinic and branch, from the session id it named (`expectOwnRotation`).
+ */
+function isOwnRotation(
+  previous: SessionState | undefined,
+  next: Extract<SessionState, { kind: 'signed-in' }>,
+): boolean {
+  if (previous?.kind !== 'signed-in') return false;
+  const a = previous.session;
+  const b = next.session;
+  if (a.userId !== b.userId || a.tenantId !== b.tenantId || a.branchId !== b.branchId) {
+    return false;
+  }
+  return takeOwnRotation(a.sessionId);
 }
 
 export interface ShellRouterOptions extends ShellRouterContext {
@@ -207,7 +234,7 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const { userId, sessionId, tenantId, branchId } = state.session;
     const next = `${userId}|${sessionId}|${tenantId ?? ''}|${branchId ?? ''}`;
     const changed = identity !== undefined && identity !== next;
-    const rotated = changed && isMfaRotation(before, state);
+    const rotated = changed && (isMfaRotation(before, state) || isOwnRotation(before, state));
     identity = next;
     before = state;
     // The rotation after the second factor is the same person in the same clinic: what is cached
