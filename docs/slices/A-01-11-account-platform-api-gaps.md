@@ -98,5 +98,9 @@ Built (spec → contracts → db → API); reviewed; PR open. Web: A-01-10 check
 - **Locked tests:** the owner allowed two timing-only fixes in `owner-card.test.ts` (2026-11-24): a 73 h clock jump outlived the super admin's 12 h session (the admin signs in again after it) and a 1 h jump its 15 min idle limit (now 60 s); no assertion changed. The formatter reordered one import in `packages/contracts/test/account-platform.test.ts` (Biome's import order; no assertion changed).
 
 ## Evidence
-- `verify` (full): —
-- Reviewer findings fixed: —; deferred to backlog: —
+- Red phase: the five locked test files failed for the expected reasons first (missing routes, columns, event, schemas): 24 API cases, 7 DB cases, 8 contract cases.
+- `pnpm verify:full` (2026-11-24, cloud session, Docker in the session, after the review fixes): all 15 steps PASS, `all green`, `typecheck+lint+test` 86/86 tasks (format, instructions, lint-root, scripts-test, file-length, pub-get, drift with `api-client-dart`, typecheck+lint+test 281 s, build, boot, ui-browser, ui-storybook, ui-storybook-build, ui-screenshots, e2e). One earlier run failed once in `web-shell`'s idle countdown (`00:54` for `00:55` under load; untouched by this slice, green alone and in the next full run).
+- Isolation and policies: `@shifa/db` 48 files green, with `owner-phone-policies.test.ts`, `owner-phone-coowner.test.ts`, the privileges pins and the RLS presence test (two new roleAccess reasons); API: `reenrol-isolation.test.ts`; route matrix with the three new rows (`POST /auth/mfa/re-enrol/start`, `…/confirm`: signed in; `PATCH /platform/clinics/:id/owner`: super admin).
+- Leak test (`mfa-link-leak.test.ts`) extended with the re-enrolment and the phone edit: no phone, key, code or token in logs, spans, error events or audit rows.
+- Reviewer findings fixed: staff reset during a pending re-enrolment tested (1), `pending_last_used_step` documented (2); deferred to backlog: the phone-edit/link-use deadlock (3), the OD-85 check-then-write race (4).
+- Security review: M1 (a pending co-owner could be retargeted by the phone edit) fixed in the policies and the service, with tests; L1 (a pending re-enrolment never expires) to `docs/backlog.md` for the owner; L2 (the FK cascade rewrites dead invitation links' phone) accepted and documented.
