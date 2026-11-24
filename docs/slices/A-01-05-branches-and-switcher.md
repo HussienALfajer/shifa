@@ -50,11 +50,15 @@ Estimated hand-written lines: ~3,750 with OD-90 (binding migration, fixtures and
 Plan approved by the owner (2026-11-23) with OD-90's recommendation; the owner waived the second-session critique of this T0 plan.
 
 ## Stopped at
-Checkpoint 1 done (membership binding on INSERT): migrations `20261123235315_a01_membership_active_is_bound` and `20261123235324_a01_membership_binding_policies`, fixtures, isolation case; `pnpm verify` green. Next: checkpoint 2 (branches).
+Checkpoint 1 done (membership binding on INSERT): migrations `20261123235315_a01_membership_active_is_bound` and `20261123235324_a01_membership_binding_policies`, fixtures, isolation case; `pnpm verify` green.
+Checkpoint 2 done (branches): `modules/branches` (5 routes, `branches.manage`), contracts, `last_branch`/`branch_archived`, team's role picker refuses archived branches, table-access write rule; `pnpm verify` green. Next: checkpoint 3 (switcher, suspended clinic, invitations in the chooser).
 
 ## Deviations from the plan
 - **CHECK `membership_active_is_bound`** (`status <> 'active' OR user_id IS NOT NULL`) instead of the planned `membership_bound_unless_pending` (`status = 'pending' OR user_id IS NOT NULL`): the planned form also refuses an unbound `deactivated` row, which A-01-04 writes when the owner deactivates a pending invitation (`POST /team/members/:id/deactivate`, reactivated back to `pending`). The stated intent, "an unbound row set to `active` must be impossible", holds; with the shifa_app UPDATE policy a bound row never returns to `pending`, and an unbound one only moves between `pending` and `deactivated`.
 - The shifa_app UPDATE policy is named `membership_app_never_unbind` and has `USING (true)`, so it restricts only the new row.
+- **`WRITES` entries:** the plan listed "platform → `tenant`: clinic edit", but platform owns `tenant`; the exception-table writes that exist are identity → `membership` (binding, `last_active_at`), identity → `setupLink` (marking a link used) and team → `tenant` (the idle setting). The test also fails when a `WRITES` entry is unused.
+- **Branch routes:** `GET /branches` (active and archived lists), `POST /branches`, `PATCH /branches/:id`, `GET /branches/:id/archive-preview` (`lastBranch`, members whose sessions end), `POST /branches/:id/archive`. Archiving an archived branch or editing one answers 409 `branch_archived`; the team's role picker answers the same for an archived branch (an unknown one stays 400). Edits of the address or phone are audited as `branch.renamed` too (data: which fields changed).
+- **Dart client budget** raised to 165 files and 6,200 lines (`scripts/drift.config.mjs`) for the branch and switcher schemas.
 
 ## Evidence
 - `verify` (full): —

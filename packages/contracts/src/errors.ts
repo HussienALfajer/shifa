@@ -42,6 +42,9 @@ export const ErrorCode = z
     'phone_in_team',
     'account_shared',
     'permission_not_sensitive',
+    // branches (A-01-05)
+    'last_branch',
+    'branch_archived',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -130,6 +133,8 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   phone_in_team: 'This phone is already a member of this clinic',
   account_shared: 'This account works in another clinic; recovery goes through the platform',
   permission_not_sensitive: 'Only sensitive permissions can be switched per member',
+  last_branch: 'The clinic must keep at least one active branch',
+  branch_archived: 'This branch is archived',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

@@ -72,6 +72,8 @@ export interface SampleContext {
   totp(state: 'none' | 'unconfirmed' | 'enrolled'): Promise<string>;
   /** A fresh member of the callers' clinic (TENANT_A), pending or deactivated (A-01-04). */
   memberId(status?: 'pending' | 'deactivated'): Promise<string>;
+  /** A fresh active branch of the callers' clinic (TENANT_A), never its last one (A-01-05). */
+  branchId(): Promise<string>;
   /** A fresh invitation to TENANT_B for the calling person's phone; its token. */
   invitationToken(): Promise<string>;
 }
@@ -149,6 +151,17 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
     url: `/team/members/${await ctx.memberId()}/setup-link`,
   }),
   'PATCH /clinic/settings': () => ({ body: { idleMinutes: 30 } }),
+  'POST /branches': () => ({ body: { name: 'فرع المصفوفة' } }),
+  'PATCH /branches/:id': async (ctx) => ({
+    url: `/branches/${await ctx.branchId()}`,
+    body: { name: 'فرع معدّل' },
+  }),
+  'GET /branches/:id/archive-preview': async (ctx) => ({
+    url: `/branches/${await ctx.branchId()}/archive-preview`,
+  }),
+  'POST /branches/:id/archive': async (ctx) => ({
+    url: `/branches/${await ctx.branchId()}/archive`,
+  }),
   'POST /invitations/view': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
   'POST /invitations/accept': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
   'POST /invitations/decline': async (ctx) => ({ body: { token: await ctx.invitationToken() } }),
@@ -205,6 +218,12 @@ export const EXPECTED_MATRIX: Matrix = {
   // clinic settings (A-01a criterion 9): clinic.settings.manage
   'GET /clinic/settings': ownerOnly,
   'PATCH /clinic/settings': ownerOnly,
+  // branches (A-01-05): branches.manage
+  'GET /branches': ownerOnly,
+  'POST /branches': ownerOnly,
+  'PATCH /branches/:id': ownerOnly,
+  'GET /branches/:id/archive-preview': ownerOnly,
+  'POST /branches/:id/archive': ownerOnly,
   // invitations (A-01-04): the token is the credential to view; answering needs a session
   'POST /invitations/view': everyone,
   'POST /invitations/accept': signedIn,

@@ -1,7 +1,15 @@
 // Calls every registered route as every caller and compares the status class with the committed
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
 import { randomBytes, randomUUID } from 'node:crypto';
-import { createClinic, membership, roleAssignment, session, setupLink, twoFactor } from '@shifa/db';
+import {
+  branch,
+  createClinic,
+  membership,
+  roleAssignment,
+  session,
+  setupLink,
+  twoFactor,
+} from '@shifa/db';
 import {
   createTestTenants,
   fixtureId,
@@ -138,6 +146,15 @@ async function memberOfTenantA(status: 'pending' | 'deactivated' = 'pending'): P
   return id;
 }
 
+/** A fresh active branch of the callers' clinic (A-01-05 routes); never its last one. */
+async function branchOfTenantA(): Promise<string> {
+  const id = randomUUID();
+  await testDb().withTenant({ tenantId: TENANT_A, userId: fixtureId('matrix seeder') }, (tx) =>
+    tx.insert(branch).values({ id, tenantId: TENANT_A, name: 'فرع المصفوفة' }),
+  );
+  return id;
+}
+
 /**
  * A fresh invitation for `phone` (any phone for anonymous callers), in a new clinic each time:
  * a phone is a member of a clinic once.
@@ -210,6 +227,7 @@ async function observe(app: TestApp): Promise<Observed> {
         newLinkToken: async () => (await clinicWithLink()).token,
         totp: (state) => totpState(userId, state),
         memberId: (status) => memberOfTenantA(status),
+        branchId: () => branchOfTenantA(),
         invitationToken: () => invitationFor(phonesOf.get(caller)),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};

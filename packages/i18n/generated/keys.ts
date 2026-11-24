@@ -15,6 +15,7 @@ export type CommonKey =
 export type ErrorsKey =
   | 'account_shared'
   | 'bad_request'
+  | 'branch_archived'
   | 'clock_skew'
   | 'conflict'
   | 'forbidden'
@@ -22,6 +23,7 @@ export type ErrorsKey =
   | 'invalid_code'
   | 'invalid_credentials'
   | 'ip_blocked'
+  | 'last_branch'
   | 'last_owner'
   | 'link_invalid'
   | 'method_not_allowed'

@@ -4,7 +4,7 @@ Dart API client for the Flutter patient app, generated from `packages/contracts/
 
 - `lib/src/generated/` is generated (swagger_parser 1.46.0 → json_serializable models and retrofit/dio clients, then build_runner and `dart format`): never edit it (a hook refuses). Settings live in `swagger_parser.yaml` and `build.yaml` (absent optional fields are omitted from JSON, never sent as `null`).
 - Regenerate with `node scripts/check-drift.mjs --full --fix` (about a minute). It generates in a standalone temp copy of the package (offline, from the workspace `pubspec.lock`) and syncs the output; never run swagger_parser or build_runner into `lib/` by hand. The `api-client-dart` drift check runs in `verify:full` and CI only.
-- Size budget: the drift entry in `scripts/drift.config.mjs` fails above 100 files or 3800 lines (≈ 1.5 × the A-01-03 output, raised there for 12 routes). A slice that adds endpoints raises it in its PR; a sudden jump usually means an unnamed schema in `packages/contracts`.
+- Size budget: the drift entry in `scripts/drift.config.mjs` fails above 165 files or 6200 lines (≈ 1.5 × the output with A-01-04's team and A-01-05's branch routes). A slice that adds endpoints raises it in its PR; a sudden jump usually means an unnamed schema in `packages/contracts`.
 - `lib/api_client_dart.dart` exports only the generated clients (`ShifaApi`, one client per tag; untagged operations are in `CoreClient`) and models. Apps map them into their own models.
 - Enums are exhaustive (`unknown_enum_value: false`): an unknown value fails decoding. swagger_parser ignores `const`, so `HealthStatus.status` is a plain `String`.
 - `test/fixtures_test.dart` decodes and round-trips the shared `packages/contracts/fixtures/responses.json`.

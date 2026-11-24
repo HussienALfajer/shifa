@@ -53,6 +53,10 @@
   "@errorsBadRequest": {
     "description": "errors.bad_request"
   },
+  "errorsBranchArchived": "هذا الفرع مؤرشف.",
+  "@errorsBranchArchived": {
+    "description": "errors.branch_archived"
+  },
   "errorsClockSkew": "الرمز لا يطابق الوقت. اضبط وقت الهاتف تلقائيًا ثم أعد المحاولة.",
   "@errorsClockSkew": {
     "description": "errors.clock_skew"
@@ -80,6 +84,10 @@
   "errorsIpBlocked": "محاولات دخول خاطئة كثيرة من هذا الجهاز أو الشبكة. أُوقف الدخول مؤقتًا.",
   "@errorsIpBlocked": {
     "description": "errors.ip_blocked"
+  },
+  "errorsLastBranch": "لا يمكن أرشفة آخر فرع نشط في العيادة.",
+  "@errorsLastBranch": {
+    "description": "errors.last_branch"
   },
   "errorsLastOwner": "لا يمكن تنفيذ ذلك: يجب أن يبقى للعيادة مالك نشط واحد على الأقل.",
   "@errorsLastOwner": {

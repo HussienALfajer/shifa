@@ -57,4 +57,6 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.phoneInTeam: 'phone_in_team',
   ErrorCode.accountShared: 'account_shared',
   ErrorCode.permissionNotSensitive: 'permission_not_sensitive',
+  ErrorCode.lastBranch: 'last_branch',
+  ErrorCode.branchArchived: 'branch_archived',
 };

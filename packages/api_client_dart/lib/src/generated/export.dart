@@ -6,6 +6,10 @@
 export 'clients/core_client.dart';
 // Data classes
 export 'models/add_member_request.dart';
+export 'models/archive_branch_preview.dart';
+export 'models/archived_member.dart';
+export 'models/branch.dart';
+export 'models/branch_list.dart';
 export 'models/clinic_created.dart';
 export 'models/clinic_detail.dart';
 export 'models/clinic_list.dart';
@@ -14,6 +18,7 @@ export 'models/clinic_settings.dart';
 export 'models/clinic_status.dart';
 export 'models/clinic_summary.dart';
 export 'models/clinic_type.dart';
+export 'models/create_branch_request.dart';
 export 'models/create_clinic_request.dart';
 export 'models/ended_sessions.dart';
 export 'models/error_body.dart';
@@ -55,6 +60,7 @@ export 'models/totp_challenge_method.dart';
 export 'models/totp_code.dart';
 export 'models/totp_enrol_confirm.dart';
 export 'models/totp_enrol_start.dart';
+export 'models/update_branch_request.dart';
 export 'models/update_clinic_request.dart';
 export 'models/update_member_request.dart';
 export 'models/validation_issue.dart';

@@ -1,4 +1,5 @@
 // Public surface of @shifa/contracts: named Zod schemas and route contracts (ADR-0013).
+export * from './branches.ts';
 export * from './define.ts';
 export * from './errors.ts';
 export * from './health.ts';
