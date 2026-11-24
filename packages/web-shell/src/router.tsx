@@ -109,11 +109,29 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
     route('/', 'signed-in', pages.home),
     route('/about', 'open', pages.about),
   ];
-  if (app === 'clinic') {
-    if (pages.setup) children.push(route('/setup', 'open', pages.setup));
-    if (pages.adminWeb) children.push(route('/admin-web', 'admin-web', pages.adminWeb));
+  // The setup link page serves both apps (a super admin's link opens on admin web).
+  if (pages.setup) children.push(route('/setup', 'open', pages.setup));
+  if (app === 'clinic' && pages.adminWeb) {
+    children.push(route('/admin-web', 'admin-web', pages.adminWeb));
   }
   return root.addChildren(children);
+}
+
+/**
+ * A new session id for the same person and clinic, from a session that still owed the second
+ * factor to one that passed it: the cookie rotated by enrol/confirm or the challenge.
+ */
+function isMfaRotation(
+  previous: SessionState | undefined,
+  next: Extract<SessionState, { kind: 'signed-in' }>,
+): boolean {
+  if (previous?.kind !== 'signed-in') return false;
+  const a = previous.session;
+  const b = next.session;
+  // Before the second factor no clinic route answers, so nothing cached belongs to a clinic: a
+  // session that had none may name one now.
+  const sameClinic = a.tenantId === b.tenantId || a.tenantId === null;
+  return a.userId === b.userId && sameClinic && a.mfa !== 'verified' && b.mfa === 'verified';
 }
 
 export interface ShellRouterOptions extends ShellRouterContext {
@@ -141,10 +159,12 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
   // tab): nothing cached for the previous one may stay on screen (security review M1).
   const SESSION_HASH = hashKey(sessionQueryKey);
   let identity: string | undefined;
+  let before: SessionState | undefined;
   const offCache = queryClient.getQueryCache().subscribe((event) => {
     if (event.query.queryHash !== SESSION_HASH) return;
     if (event.type === 'removed') {
       identity = undefined;
+      before = undefined;
       return;
     }
     if (event.type !== 'updated') return;
@@ -153,8 +173,12 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const { userId, sessionId, tenantId } = state.session;
     const next = `${userId}|${sessionId}|${tenantId ?? ''}`;
     const changed = identity !== undefined && identity !== next;
+    const rotated = changed && isMfaRotation(before, state);
     identity = next;
-    if (!changed) return;
+    before = state;
+    // The rotation after the second factor is the same person in the same clinic: what is cached
+    // stays theirs, and the MFA page shows the recovery codes before it goes on (A-01-07).
+    if (!changed || rotated) return;
     queryClient.removeQueries({ predicate: (q) => q.queryHash !== SESSION_HASH });
     void router.navigate({ to: '/' });
   });

@@ -1,6 +1,6 @@
 // Slice A-01-06: the smoke journeys against the built API, a real database and the built apps
 // (A-01a and A-01b, "Flows"). (a) signed out → sign-in on both apps; (b) the super admin sets the
-// password through the setup-link API and signs in: admin web shows the MFA state; (c) a session
+// password through the setup-link API and signs in: admin web shows enrolment; (c) a session
 // that ran out sends the next request to sign-in with the reason; (d) each app refuses the
 // other's people.
 import { expect, test } from '@playwright/test';
@@ -21,7 +21,7 @@ test('(a) signed out, / on each app goes to /sign-in', async ({ page }) => {
   }
 });
 
-test('(b) the super admin sets the password, signs in, and sees the MFA state', async ({
+test('(b) the super admin sets the password, signs in, and is sent to enrolment', async ({
   page,
   context,
 }) => {
@@ -35,9 +35,10 @@ test('(b) the super admin sets the password, signs in, and sees the MFA state', 
   expect(cookies.map((c) => c.name)).toContain('__Host-shifa.sid');
 
   await page.goto(`${urls().admin}/`);
+  // A super admin owes enrolment (A-01-07 checkpoint 3): the first of its three steps.
   await expect(page).toHaveURL(`${urls().admin}/mfa`);
-  await expect(page.getByTestId('mfa-state')).toHaveAttribute('data-mfa', 'none');
-  await expect(page.getByTestId('mfa-state')).toHaveAttribute('data-required', 'true');
+  await expect(page.getByRole('heading', { name: 'ثبّت تطبيق المصادقة' })).toBeVisible();
+  await expect(page.getByText('حساب مشرف شفاء يحتاج رمزاً من هاتفك')).toBeVisible();
 });
 
 test('(c) a session that ran out sends the next request to sign-in with the reason', async ({

@@ -72,9 +72,273 @@
   "@commonCancel": {
     "description": "common.cancel"
   },
+  "commonChallengeLost": "فقدت الهاتف والرموز معاً؟ تواصل مع مالك العيادة، أو مع إدارة شفاء إن كنت المالك.",
+  "@commonChallengeLost": {
+    "description": "common.challengeLost"
+  },
+  "commonChallengeRecoveryEmpty": "اكتب رمز الاسترداد.",
+  "@commonChallengeRecoveryEmpty": {
+    "description": "common.challengeRecoveryEmpty"
+  },
+  "commonChallengeRecoveryHint": "من الورقة أو الملف الذي حفظته عند التفعيل. الحروف الكبيرة والشرطة لا تهم.",
+  "@commonChallengeRecoveryHint": {
+    "description": "common.challengeRecoveryHint"
+  },
+  "commonChallengeRecoveryLabel": "رمز الاسترداد",
+  "@commonChallengeRecoveryLabel": {
+    "description": "common.challengeRecoveryLabel"
+  },
+  "commonChallengeRecoveryText": "اكتب أحد رموز الاسترداد العشرة. يعمل الرمز مرة واحدة ثم يُلغى.",
+  "@commonChallengeRecoveryText": {
+    "description": "common.challengeRecoveryText"
+  },
+  "commonChallengeRecoveryTitle": "الدخول برمز استرداد",
+  "@commonChallengeRecoveryTitle": {
+    "description": "common.challengeRecoveryTitle"
+  },
+  "commonChallengeText": "أهلاً {name}. افتح تطبيق المصادقة على هاتفك واكتب الرمز الظاهر لحساب شفاء.",
+  "@commonChallengeText": {
+    "description": "common.challengeText",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonChallengeTextNoName": "افتح تطبيق المصادقة على هاتفك واكتب الرمز الظاهر لحساب شفاء.",
+  "@commonChallengeTextNoName": {
+    "description": "common.challengeTextNoName"
+  },
+  "commonChallengeTitle": "رمز التحقق",
+  "@commonChallengeTitle": {
+    "description": "common.challengeTitle"
+  },
+  "commonChallengeUseRecovery": "استخدام رمز استرداد",
+  "@commonChallengeUseRecovery": {
+    "description": "common.challengeUseRecovery"
+  },
+  "commonChallengeUseTotp": "استخدام رمز التطبيق",
+  "@commonChallengeUseTotp": {
+    "description": "common.challengeUseTotp"
+  },
+  "commonClockSkewText": "افتح إعدادات الهاتف واجعل التاريخ والوقت «تلقائياً»، ثم اكتب الرمز الجديد من التطبيق.",
+  "@commonClockSkewText": {
+    "description": "common.clockSkewText"
+  },
+  "commonClockSkewTitle": "ساعة هاتفك غير مضبوطة",
+  "@commonClockSkewTitle": {
+    "description": "common.clockSkewTitle"
+  },
   "commonClose": "إغلاق",
   "@commonClose": {
     "description": "common.close"
+  },
+  "commonCodesBadge": "فُعّل التحقق بخطوتين",
+  "@commonCodesBadge": {
+    "description": "common.codesBadge"
+  },
+  "commonCodesCopied": "نُسخت الرموز العشرة",
+  "@commonCodesCopied": {
+    "description": "common.codesCopied"
+  },
+  "commonCodesCopy": "نسخ الكل",
+  "@commonCodesCopy": {
+    "description": "common.codesCopy"
+  },
+  "commonCodesLeftText": "الرمز الذي استعملته أُلغي. إن ضاع هاتفك فأعد ربط التطبيق من «حسابي».",
+  "@commonCodesLeftText": {
+    "description": "common.codesLeftText"
+  },
+  "commonCodesLeftTitle": "دخلت برمز استرداد · بقي لديك {count, plural, zero {لا شيء} one {رمز واحد} two {رمزان} few {{count} رموز} many {{count} رمزاً} other {{count} رمز}}",
+  "@commonCodesLeftTitle": {
+    "description": "common.codesLeftTitle",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonCodesListLabel": "رموز الاسترداد العشرة",
+  "@commonCodesListLabel": {
+    "description": "common.codesListLabel"
+  },
+  "commonCodesLowText": "أنشئ رموزاً جديدة من «حسابي» قبل أن تنفد، أو أعد ربط تطبيق المصادقة على هاتفك.",
+  "@commonCodesLowText": {
+    "description": "common.codesLowText"
+  },
+  "commonCodesLowTitle": "{count, plural, zero {لم يبق لديك أي رمز استرداد} one {بقي لديك رمز استرداد واحد فقط} two {بقي لديك رمزا استرداد فقط} few {بقي لديك {count} رموز استرداد فقط} many {بقي لديك {count} رمز استرداد فقط} other {بقي لديك {count} رمز استرداد فقط}}",
+  "@commonCodesLowTitle": {
+    "description": "common.codesLowTitle",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonCodesPrint": "طباعة",
+  "@commonCodesPrint": {
+    "description": "common.codesPrint"
+  },
+  "commonCodesPrintDate": "طُبعت {date}",
+  "@commonCodesPrintDate": {
+    "description": "common.codesPrintDate",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonCodesPrintNote": "كل رمز يعمل مرة واحدة؛ اشطب ما تستعمله. احفظ الورقة بعيداً عن الهاتف، ولا تصوّرها.",
+  "@commonCodesPrintNote": {
+    "description": "common.codesPrintNote"
+  },
+  "commonCodesPrintTitle": "رموز الاسترداد لحساب شفاء",
+  "@commonCodesPrintTitle": {
+    "description": "common.codesPrintTitle"
+  },
+  "commonCodesSaved": "حفظتُ الرموز في مكان آمن بعيداً عن الهاتف",
+  "@commonCodesSaved": {
+    "description": "common.codesSaved"
+  },
+  "commonCodesSavedNote": "لن تستطيع المتابعة قبل ذلك.",
+  "@commonCodesSavedNote": {
+    "description": "common.codesSavedNote"
+  },
+  "commonCodesText": "إن ضاع هاتفك تدخل بأحد هذه الرموز. كل رمز يعمل مرة واحدة، ولن نعرضها مرة أخرى.",
+  "@commonCodesText": {
+    "description": "common.codesText"
+  },
+  "commonCodesTitle": "احفظ رموز الاسترداد",
+  "@commonCodesTitle": {
+    "description": "common.codesTitle"
+  },
+  "commonCodesToAdmin": "متابعة إلى إدارة شفاء",
+  "@commonCodesToAdmin": {
+    "description": "common.codesToAdmin"
+  },
+  "commonCodesToClinic": "متابعة إلى العيادة",
+  "@commonCodesToClinic": {
+    "description": "common.codesToClinic"
+  },
+  "commonConfirm": "تأكيد",
+  "@commonConfirm": {
+    "description": "common.confirm"
+  },
+  "commonEnrolAdded": "أضفت الحساب، التالي",
+  "@commonEnrolAdded": {
+    "description": "common.enrolAdded"
+  },
+  "commonEnrolAppIntro": "ثبّت على هاتفك تطبيق مصادقة مجانياً إن لم يكن لديك، مثل:",
+  "@commonEnrolAppIntro": {
+    "description": "common.enrolAppIntro"
+  },
+  "commonEnrolAppNote": "التطبيق يعطي رمزاً من {digits} أرقام يتغيّر كل {seconds} ثانية، ويعمل دون إنترنت.",
+  "@commonEnrolAppNote": {
+    "description": "common.enrolAppNote",
+    "placeholders": {
+      "digits": {
+        "type": "String"
+      },
+      "seconds": {
+        "type": "String"
+      }
+    }
+  },
+  "commonEnrolBackToKey": "رجوع إلى المفتاح",
+  "@commonEnrolBackToKey": {
+    "description": "common.enrolBackToKey"
+  },
+  "commonEnrolCodeLabel": "الرمز الظاهر في التطبيق لحساب شفاء",
+  "@commonEnrolCodeLabel": {
+    "description": "common.enrolCodeLabel"
+  },
+  "commonEnrolCopyKey": "نسخ المفتاح",
+  "@commonEnrolCopyKey": {
+    "description": "common.enrolCopyKey"
+  },
+  "commonEnrolHaveApp": "لديّ التطبيق، التالي",
+  "@commonEnrolHaveApp": {
+    "description": "common.enrolHaveApp"
+  },
+  "commonEnrolHideQr": "إخفاء رمز QR",
+  "@commonEnrolHideQr": {
+    "description": "common.enrolHideQr"
+  },
+  "commonEnrolKeyCopied": "نُسخ المفتاح",
+  "@commonEnrolKeyCopied": {
+    "description": "common.enrolKeyCopied"
+  },
+  "commonEnrolKeyLabelDesk": "لا تستطيع المسح؟ اكتب المفتاح يدوياً",
+  "@commonEnrolKeyLabelDesk": {
+    "description": "common.enrolKeyLabelDesk"
+  },
+  "commonEnrolKeyLabelPhone": "أو انسخ المفتاح والصقه في التطبيق",
+  "@commonEnrolKeyLabelPhone": {
+    "description": "common.enrolKeyLabelPhone"
+  },
+  "commonEnrolOpenApp": "فتح في تطبيق المصادقة",
+  "@commonEnrolOpenApp": {
+    "description": "common.enrolOpenApp"
+  },
+  "commonEnrolOpenedNote": "يفتح التطبيق ويضيف حساب «شفاء» بنفسه. عد إلى هنا بعدها.",
+  "@commonEnrolOpenedNote": {
+    "description": "common.enrolOpenedNote"
+  },
+  "commonEnrolQrLabel": "رمز QR لإضافة حساب شفاء إلى تطبيق المصادقة",
+  "@commonEnrolQrLabel": {
+    "description": "common.enrolQrLabel"
+  },
+  "commonEnrolScanHow": "افتح التطبيق واختر «إضافة حساب» ثم «مسح رمز QR»، ووجّه الكاميرا إلى الرمز.",
+  "@commonEnrolScanHow": {
+    "description": "common.enrolScanHow"
+  },
+  "commonEnrolShowQr": "عرض رمز QR لمسحه من جهاز آخر",
+  "@commonEnrolShowQr": {
+    "description": "common.enrolShowQr"
+  },
+  "commonEnrolStartFailedText": "تأكد من الاتصال ثم أعد المحاولة.",
+  "@commonEnrolStartFailedText": {
+    "description": "common.enrolStartFailedText"
+  },
+  "commonEnrolStartFailedTitle": "تعذّر إنشاء المفتاح",
+  "@commonEnrolStartFailedTitle": {
+    "description": "common.enrolStartFailedTitle"
+  },
+  "commonEnrolStep": "التحقق بخطوتين · الخطوة {step} من {total}",
+  "@commonEnrolStep": {
+    "description": "common.enrolStep",
+    "placeholders": {
+      "step": {
+        "type": "String"
+      },
+      "total": {
+        "type": "String"
+      }
+    }
+  },
+  "commonEnrolTitleApp": "ثبّت تطبيق المصادقة",
+  "@commonEnrolTitleApp": {
+    "description": "common.enrolTitleApp"
+  },
+  "commonEnrolTitleCode": "اكتب الرمز من التطبيق",
+  "@commonEnrolTitleCode": {
+    "description": "common.enrolTitleCode"
+  },
+  "commonEnrolTitleScan": "امسح الرمز بالتطبيق",
+  "@commonEnrolTitleScan": {
+    "description": "common.enrolTitleScan"
+  },
+  "commonEnrolTitleScanPhone": "أضف حساب شفاء إلى التطبيق",
+  "@commonEnrolTitleScanPhone": {
+    "description": "common.enrolTitleScanPhone"
+  },
+  "commonEnrolWhyAdmin": "حساب مشرف شفاء يحتاج رمزاً من هاتفك مع كلمة المرور. لا تُفتح أي صفحة قبل التفعيل.",
+  "@commonEnrolWhyAdmin": {
+    "description": "common.enrolWhyAdmin"
+  },
+  "commonEnrolWhyOwner": "حسابك حساب مالك العيادة، فيحتاج رمزاً من هاتفك مع كلمة المرور. لا تُفتح أي صفحة قبل التفعيل.",
+  "@commonEnrolWhyOwner": {
+    "description": "common.enrolWhyOwner"
   },
   "commonHomePending": "تُرسم الشاشة الرئيسية في شريحة لاحقة.",
   "@commonHomePending": {
@@ -93,6 +357,19 @@
       }
     }
   },
+  "commonInvitationText": "هذا الرابط دعوة للانضمام إلى العيادة. صفحة قبول الدعوة أو رفضها تصل قريباً؛ احتفظ بالرابط حتى ذلك الحين.",
+  "@commonInvitationText": {
+    "description": "common.invitationText"
+  },
+  "commonInvitationTitle": "دعوة إلى {clinic}",
+  "@commonInvitationTitle": {
+    "description": "common.invitationTitle",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
   "commonLoading": "جارٍ التحميل…",
   "@commonLoading": {
     "description": "common.loading"
@@ -104,6 +381,14 @@
   "commonLockIpTitle": "توقّف الدخول من هذه الشبكة مؤقتاً",
   "@commonLockIpTitle": {
     "description": "common.lockIpTitle"
+  },
+  "commonLockMfaText": "رموز خاطئة كثيرة.",
+  "@commonLockMfaText": {
+    "description": "common.lockMfaText"
+  },
+  "commonLockMfaTitle": "توقّف التحقق مؤقتاً",
+  "@commonLockMfaTitle": {
+    "description": "common.lockMfaTitle"
   },
   "commonLockPhoneText": "محاولات خاطئة كثيرة بهذا الرقم.",
   "@commonLockPhoneText": {
@@ -134,9 +419,17 @@
       }
     }
   },
+  "commonMfaCodeWrong": "الرمز غير صحيح أو استُعمل من قبل. اكتب الرمز الجديد من التطبيق.",
+  "@commonMfaCodeWrong": {
+    "description": "common.mfaCodeWrong"
+  },
   "commonMfaPending": "تُرسم شاشة التحقق بخطوتين في الشريحة التالية.",
   "@commonMfaPending": {
     "description": "common.mfaPending"
+  },
+  "commonMfaRecoveryWrong": "رمز الاسترداد غير صحيح أو استُعمل من قبل.",
+  "@commonMfaRecoveryWrong": {
+    "description": "common.mfaRecoveryWrong"
   },
   "commonMfaRequiredNote": "يجب تفعيل التحقق بخطوتين قبل المتابعة.",
   "@commonMfaRequiredNote": {
@@ -280,13 +573,155 @@
   "@commonServerErrorTitle": {
     "description": "common.serverErrorTitle"
   },
+  "commonSetupInvalidText": "استُخدم من قبل، أو انتهت مدته، أو صدر رابط أحدث منه. اطلب رابطاً جديداً ممن أرسله إليك.",
+  "@commonSetupInvalidText": {
+    "description": "common.setupInvalidText"
+  },
+  "commonSetupInvalidTitle": "هذا الرابط لم يعد صالحاً",
+  "@commonSetupInvalidTitle": {
+    "description": "common.setupInvalidTitle"
+  },
+  "commonSetupLoading": "جارٍ فتح الرابط",
+  "@commonSetupLoading": {
+    "description": "common.setupLoading"
+  },
+  "commonSetupMismatch": "الكلمتان غير متطابقتين.",
+  "@commonSetupMismatch": {
+    "description": "common.setupMismatch"
+  },
+  "commonSetupNewPassword": "كلمة مرور جديدة",
+  "@commonSetupNewPassword": {
+    "description": "common.setupNewPassword"
+  },
+  "commonSetupOwnerPendingText": "افتح رابط إعداد عيادتك أولاً وأكمله، ثم افتح هذا الرابط من جديد.",
+  "@commonSetupOwnerPendingText": {
+    "description": "common.setupOwnerPendingText"
+  },
+  "commonSetupOwnerPendingTitle": "هذا الرقم لمالك عيادة لم يكتمل إعدادها",
+  "@commonSetupOwnerPendingTitle": {
+    "description": "common.setupOwnerPendingTitle"
+  },
+  "commonSetupPasswordCommon": "هذه الكلمة شائعة ويسهل تخمينها. اختر جملة لا يعرفها غيرك.",
+  "@commonSetupPasswordCommon": {
+    "description": "common.setupPasswordCommon"
+  },
+  "commonSetupPasswordContainsPhone": "كلمة المرور تحتوي رقم هاتفك. اختر غيرها.",
+  "@commonSetupPasswordContainsPhone": {
+    "description": "common.setupPasswordContainsPhone"
+  },
+  "commonSetupPasswordEmpty": "اكتب كلمة المرور الجديدة.",
+  "@commonSetupPasswordEmpty": {
+    "description": "common.setupPasswordEmpty"
+  },
+  "commonSetupPasswordTooShort": "كلمة المرور أقصر من {min} أحرف.",
+  "@commonSetupPasswordTooShort": {
+    "description": "common.setupPasswordTooShort",
+    "placeholders": {
+      "min": {
+        "type": "String"
+      }
+    }
+  },
   "commonSetupPending": "تُرسم شاشة إعداد الحساب في الشريحة التالية.",
   "@commonSetupPending": {
     "description": "common.setupPending"
   },
+  "commonSetupPhone": "ستدخل بعد اليوم برقمك {phone} وكلمة المرور التي تضعها الآن.",
+  "@commonSetupPhone": {
+    "description": "common.setupPhone",
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSetupRepeatPassword": "أعد كتابة كلمة المرور",
+  "@commonSetupRepeatPassword": {
+    "description": "common.setupRepeatPassword"
+  },
+  "commonSetupRoleAccountant": "محاسب",
+  "@commonSetupRoleAccountant": {
+    "description": "common.setupRoleAccountant"
+  },
+  "commonSetupRoleAssistant": "مساعد",
+  "@commonSetupRoleAssistant": {
+    "description": "common.setupRoleAssistant"
+  },
+  "commonSetupRoleDoctor": "طبيب",
+  "@commonSetupRoleDoctor": {
+    "description": "common.setupRoleDoctor"
+  },
+  "commonSetupRoleOwner": "مالك العيادة",
+  "@commonSetupRoleOwner": {
+    "description": "common.setupRoleOwner"
+  },
+  "commonSetupRolePlatformAdmin": "مشرف عام",
+  "@commonSetupRolePlatformAdmin": {
+    "description": "common.setupRolePlatformAdmin"
+  },
+  "commonSetupRoleReceptionist": "موظف استقبال",
+  "@commonSetupRoleReceptionist": {
+    "description": "common.setupRoleReceptionist"
+  },
+  "commonSetupRuleLength": "{min} أحرف على الأقل · كتبت {count}",
+  "@commonSetupRuleLength": {
+    "description": "common.setupRuleLength",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSetupRuleOther": "لا تحتوي رقم هاتفك، وليست من الكلمات الشائعة (يُفحص عند الحفظ)",
+  "@commonSetupRuleOther": {
+    "description": "common.setupRuleOther"
+  },
+  "commonSetupSaveEnrol": "حفظ والمتابعة إلى التحقق",
+  "@commonSetupSaveEnrol": {
+    "description": "common.setupSaveEnrol"
+  },
+  "commonSetupSaveEnter": "حفظ والدخول",
+  "@commonSetupSaveEnter": {
+    "description": "common.setupSaveEnter"
+  },
   "commonSetupTitle": "إعداد الحساب",
   "@commonSetupTitle": {
     "description": "common.setupTitle"
+  },
+  "commonSetupTitleAdmin": "إعداد حسابك في إدارة شفاء",
+  "@commonSetupTitleAdmin": {
+    "description": "common.setupTitleAdmin"
+  },
+  "commonSetupTitleClinic": "إعداد حسابك في {clinic}",
+  "@commonSetupTitleClinic": {
+    "description": "common.setupTitleClinic",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSetupToSignIn": "لديك حساب؟ تسجيل الدخول",
+  "@commonSetupToSignIn": {
+    "description": "common.setupToSignIn"
+  },
+  "commonSetupValidity": "الرابط يعمل مرة واحدة، وهو صالح حتى {date} الساعة {time} ({relative}).",
+  "@commonSetupValidity": {
+    "description": "common.setupValidity",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "relative": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "commonSignInAdminLine": "لمشرفي شفاء فقط.",
   "@commonSignInAdminLine": {
@@ -359,6 +794,10 @@
   "commonSignOut": "تسجيل الخروج",
   "@commonSignOut": {
     "description": "common.signOut"
+  },
+  "commonSignOutShort": "خروج",
+  "@commonSignOutShort": {
+    "description": "common.signOutShort"
   },
   "commonSignedInAs": "مسجّل الدخول، رقم الحساب {userId}",
   "@commonSignedInAs": {

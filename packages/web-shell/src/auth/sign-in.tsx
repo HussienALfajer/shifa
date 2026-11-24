@@ -16,7 +16,7 @@ import { useShell } from '../providers.tsx';
 import { sessionQueryKey } from '../session.ts';
 import { useErrorText, useText } from '../text.ts';
 import { AuthLayout } from './auth-layout.tsx';
-import { clockTime, remaining } from './lock.ts';
+import { clockTime, remaining, serverOffset, useNow } from './lock.ts';
 import { SignInNotice } from './sign-in-notice.tsx';
 
 /**
@@ -80,30 +80,6 @@ const RETRY_WINDOW_MS = 2 * 60_000;
 
 /** Arabic letters only: Arabic-Indic digits and Arabic punctuation (، ؟) are not a keyboard sign. */
 const ARABIC_LETTER = /[ء-يٱ-ۓ]/;
-
-/** The time now, read on every render; while `active`, a render each second. */
-function useNow(active: boolean): number {
-  const [, setTick] = useState(0);
-  useEffect(() => {
-    if (!active) return undefined;
-    const timer = setInterval(() => {
-      setTick((n) => n + 1);
-    }, 1000);
-    return () => {
-      clearInterval(timer);
-    };
-  }, [active]);
-  return Date.now();
-}
-
-/**
- * The server's clock minus this device's, from the answer's `Date` header (0 without one): a lock
- * counts down to the server's `until` even on a clinic computer whose clock is off.
- */
-function serverOffset(response: Response): number {
-  const date = Date.parse(response.headers.get('date') ?? '');
-  return Number.isFinite(date) ? date - Date.now() : 0;
-}
 
 export function SignInPage() {
   const text = useText();

@@ -1,12 +1,15 @@
-// The shell's pages. Sign-in is the approved screen of A-01-07 (`auth/sign-in.tsx`); the others
-// are still the placeholders of A-01-06, which name the page, who is signed in and the session's
-// state so the journeys can check the shell, until A-01-07's next checkpoints and A-01-08 replace
-// them with the approved drawings.
+// The shell's pages. Sign-in, the setup link and MFA are the approved screens of A-01-07
+// (`auth/`); home, about and admin web are still the placeholders of A-01-06, which name the
+// page, who is signed in and the session's state so the journeys can check the shell, until
+// A-01-07's next checkpoint and A-01-08 replace them with the approved drawings.
 import type { CommonKey } from '@shifa/i18n';
 import { Button, Card, CardBody, SegmentedControl } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
+import { MfaPage } from './auth/mfa.tsx';
+import { SetupLinkPage } from './auth/setup-link.tsx';
 import { SignInPage } from './auth/sign-in.tsx';
 import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
@@ -116,20 +119,11 @@ function CurrentSession() {
   return state?.kind === 'signed-in' ? <SessionSummary session={state.session} /> : null;
 }
 
-function MfaPage() {
-  const text = useText();
-  return (
-    <Page title="mfaTitle">
-      <p className="text-text-muted">{text('mfaPending')}</p>
-      <CurrentSession />
-    </Page>
-  );
-}
-
 function HomePage() {
   const text = useText();
   return (
     <Page title="homeTitle">
+      <CodesLeftNotice />
       <p className="text-text-muted">{text('homePending')}</p>
       <CurrentSession />
       <Link to="/about">{text('aboutTitle')}</Link>
@@ -151,16 +145,6 @@ function AboutPage() {
         </a>
       </p>
       <CurrentSession />
-    </Page>
-  );
-}
-
-/** The setup link page keeps the token in the fragment and sends it nowhere yet (A-01-07). */
-function SetupPage() {
-  const text = useText();
-  return (
-    <Page title="setupTitle">
-      <p className="text-text-muted">{text('setupPending')}</p>
     </Page>
   );
 }
@@ -189,7 +173,7 @@ export const shellPages: ShellPages = {
   mfa: MfaPage,
   home: HomePage,
   about: AboutPage,
-  setup: SetupPage,
+  setup: SetupLinkPage,
   adminWeb: AdminWebPage,
   notFound: NotFoundPage,
 };

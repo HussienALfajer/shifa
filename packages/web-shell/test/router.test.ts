@@ -108,14 +108,15 @@ describe('route guard', () => {
     expect(clinic.router.state.location.pathname).toBe('/admin-web');
   });
 
-  it('keeps /about and /setup open to anyone; /setup only on clinic web', async () => {
+  it('keeps /about and /setup open to anyone; /setup on both apps (A-01-07)', async () => {
     expect((await start('clinic', fakeApi(null), '/about')).router.state.location.pathname).toBe(
       '/about',
     );
     expect((await start('clinic', fakeApi(null), '/setup')).router.state.location.pathname).toBe(
       '/setup',
     );
+    // A super admin's setup link and enrolment run on admin web, where the session must live.
     const admin = await start('admin', fakeApi(null), '/setup');
-    expect(admin.router.state.matches.map((m) => String(m.routeId))).not.toContain('/setup');
+    expect(admin.router.state.matches.map((m) => String(m.routeId))).toContain('/setup');
   });
 });
