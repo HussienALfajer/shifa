@@ -34,6 +34,9 @@ export function sessionQuery(shell: ShellClient) {
     retry: (failures) => failures < 2,
     // Focus is watched by watchFocus(), which asks again on every focus, not only after a blur.
     refetchOnWindowFocus: false,
+    // Every request is activity to the server: no background refetch keeps an unattended
+    // session alive (the idle limit counts the person's activity only).
+    refetchOnReconnect: false,
     staleTime: 30_000,
   });
 }
@@ -60,10 +63,17 @@ export function watchFocus(queryClient: QueryClient): () => void {
   };
 }
 
-/** Ends the session on the server (best effort) and forgets everything cached for it. */
-export async function signOut(shell: ShellClient, queryClient: QueryClient): Promise<void> {
+/**
+ * Ends the session on the server and forgets everything cached for it. Never throws: true when
+ * the server answered 204, false when the request failed (network, 5xx), so the caller can say
+ * the session may still be open on the server.
+ */
+export async function signOut(shell: ShellClient, queryClient: QueryClient): Promise<boolean> {
   try {
-    await shell.api.POST('/auth/sign-out');
+    const { response } = await shell.api.POST('/auth/sign-out');
+    return response.ok;
+  } catch {
+    return false;
   } finally {
     queryClient.clear();
   }

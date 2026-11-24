@@ -27,6 +27,7 @@ export type CommonKey =
   | 'reasonIdle'
   | 'reasonNotAdmin'
   | 'reasonSessionExpired'
+  | 'reasonSignOutFailed'
   | 'reasonSignedOut'
   | 'resultsCount'
   | 'retry'

@@ -40,6 +40,7 @@ export const SHELL_KEYS = [
   'reasonIdle',
   'reasonNotAdmin',
   'reasonSignedOut',
+  'reasonSignOutFailed',
   'idleWarning',
   'theme',
   'themeLight',

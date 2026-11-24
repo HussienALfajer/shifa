@@ -1,7 +1,7 @@
 // The shell's router (slice A-01-06): the same few routes in both apps, each guarded by
 // decideRoute() in `beforeLoad`, and the mid-session rule: a 401 while a session was known clears
 // every cached query and goes to sign-in with the reason. Pages are placeholders until A-01-07.
-import type { QueryClient } from '@tanstack/react-query';
+import { hashKey, type QueryClient } from '@tanstack/react-query';
 import {
   createBrowserHistory,
   createRootRouteWithContext,
@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 import type { ShellClient } from './client.ts';
 import { decideRoute, type RouteKind, type ShellApp } from './guard.ts';
 import { type SessionState, sessionQuery, sessionQueryKey, signOut } from './session.ts';
+import { IdleBoundary } from './use-idle.tsx';
 
 export type { ShellApp } from './guard.ts';
 
@@ -79,7 +80,12 @@ function guard(kind: RouteKind) {
 
 export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   const root = createRootRouteWithContext<ShellRouterContext>()({
-    component: Outlet,
+    // The idle limit runs here, once for every page (security review L1).
+    component: () => (
+      <IdleBoundary>
+        <Outlet />
+      </IdleBoundary>
+    ),
     ...(pages.notFound ? { notFoundComponent: pages.notFound } : {}),
   });
   const route = (path: string, kind: RouteKind, component: ComponentType) =>
@@ -119,12 +125,37 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     isServer: false,
   });
   // Mid-session only: a 401 for a visitor who never had a session is the guard's business.
-  const dispose = shell.onSessionEnded((code) => {
+  const offEnded = shell.onSessionEnded((code) => {
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
     void router.navigate({ to: '/sign-in', search: searchFor(code) });
   });
+  // Another person, session or clinic behind the same page (a switch or a sign-in in another
+  // tab): nothing cached for the previous one may stay on screen (security review M1).
+  const SESSION_HASH = hashKey(sessionQueryKey);
+  let identity: string | undefined;
+  const offCache = queryClient.getQueryCache().subscribe((event) => {
+    if (event.query.queryHash !== SESSION_HASH) return;
+    if (event.type === 'removed') {
+      identity = undefined;
+      return;
+    }
+    if (event.type !== 'updated') return;
+    const state = event.query.state.data as SessionState | undefined;
+    if (state?.kind !== 'signed-in') return;
+    const { userId, sessionId, tenantId } = state.session;
+    const next = `${userId}|${sessionId}|${tenantId ?? ''}`;
+    const changed = identity !== undefined && identity !== next;
+    identity = next;
+    if (!changed) return;
+    queryClient.removeQueries({ predicate: (q) => q.queryHash !== SESSION_HASH });
+    void router.navigate({ to: '/' });
+  });
+  const dispose = () => {
+    offEnded();
+    offCache();
+  };
   return { router, dispose };
 }
 

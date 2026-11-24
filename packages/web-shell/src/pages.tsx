@@ -11,7 +11,7 @@ import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
 import { type SessionView, signOut, useSession } from './session.ts';
 import { type ThemePreference, useThemePreference } from './theme.ts';
-import { useIdle } from './use-idle.ts';
+import { useIdleState } from './use-idle.tsx';
 
 /** The shell's texts, typed by the keys of `common`. */
 export function useText(): (key: CommonKey, values?: Record<string, unknown>) => string {
@@ -22,6 +22,7 @@ export function useText(): (key: CommonKey, values?: Record<string, unknown>) =>
 const REASONS: Partial<Record<string, CommonKey>> = {
   session_expired: 'reasonSessionExpired',
   idle: 'reasonIdle',
+  sign_out_failed: 'reasonSignOutFailed',
   not_admin: 'reasonNotAdmin',
 };
 
@@ -82,8 +83,9 @@ function SignOutButton() {
     <Button
       variant="secondary"
       onClick={async () => {
-        await signOut(shell, queryClient);
-        await navigate({ to: '/sign-in' });
+        // Always back to sign-in; say so when the server did not end the session.
+        const ended = await signOut(shell, queryClient);
+        await navigate({ to: '/sign-in', search: ended ? {} : { reason: 'sign_out_failed' } });
       }}
     >
       {text('signOut')}
@@ -94,8 +96,7 @@ function SignOutButton() {
 /** Who is signed in and what the session still needs. */
 function SessionSummary({ session }: { session: SessionView }) {
   const text = useText();
-  const { shell } = useShell();
-  const idle = useIdle(shell, session);
+  const idle = useIdleState();
   return (
     <div data-testid="signed-in" className="flex flex-col gap-2">
       <p>{text('signedInAs', { userId: session.userId })}</p>

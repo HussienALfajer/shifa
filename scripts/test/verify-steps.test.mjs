@@ -161,12 +161,15 @@ describe('verifySteps', () => {
     assert.deepEqual(names('full').slice(-7), [
       'build',
       'boot',
-      'e2e',
       'ui-browser',
       'ui-storybook',
       'ui-storybook-build',
       'ui-screenshots',
+      'e2e',
     ]);
+    // One browser at a time: the journeys wait for the ui steps (review, A-01-06).
+    const e2e = verifySteps('full').find((s) => s.name === 'e2e');
+    assert.ok(e2e?.after?.includes('ui-screenshots'));
   });
 
   it('keeps the serialisations: pub-get before drift and turbo, turbo before build', () => {

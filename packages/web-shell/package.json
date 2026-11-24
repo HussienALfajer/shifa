@@ -29,6 +29,7 @@
   "devDependencies": {
     "@shifa/contracts": "workspace:*",
     "@shifa/eslint-config": "workspace:*",
+    "@shifa/testing": "workspace:*",
     "@shifa/tsconfig": "workspace:*",
     "@types/node": "24.19.2",
     "@types/react": "19.3.0",

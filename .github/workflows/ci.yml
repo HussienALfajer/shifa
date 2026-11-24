@@ -332,6 +332,8 @@ jobs:
     timeout-minutes: 25
     permissions:
       contents: read
+    # Traces of failed journeys hold the synthetic setup tokens and cookies of a backend that dies
+    # with the job: an accepted exception to "never write them to a file" (e2e/CLAUDE.md).
     env:
       E2E_TRACE: "1"
     steps:

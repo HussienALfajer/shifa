@@ -121,6 +121,10 @@
   "@commonReasonSessionExpired": {
     "description": "common.reasonSessionExpired"
   },
+  "commonReasonSignOutFailed": "تعذّر إنهاء الجلسة على الخادم. أغلق المتصفح إن كان الجهاز مشتركًا.",
+  "@commonReasonSignOutFailed": {
+    "description": "common.reasonSignOutFailed"
+  },
   "commonReasonSignedOut": "انتهت الجلسة أو لم تسجّل الدخول. سجّل الدخول للمتابعة.",
   "@commonReasonSignedOut": {
     "description": "common.reasonSignedOut"

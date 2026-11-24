@@ -9,10 +9,12 @@ export {
   type SignInReason,
 } from './guard.ts';
 export {
+  clockOffset,
   createIdleTracker,
   type IdleMessage,
   type IdleState,
   type IdleTracker,
+  idleAction,
   idleState,
   isIdleMessage,
   REFRESH_EVERY_MS,
@@ -40,4 +42,4 @@ export {
   watchFocus,
 } from './session.ts';
 export { type ThemePreference, useThemePreference } from './theme.ts';
-export { useIdle } from './use-idle.ts';
+export { IdleBoundary, useIdle, useIdleState } from './use-idle.tsx';

@@ -40,7 +40,10 @@ export function decideRoute(app: ShellApp, kind: RouteKind, state: SessionState)
       : { action: 'redirect', to: '/sign-in', reason: state.code };
   }
   const { session } = state;
-  if (app === 'admin' && !session.platformAdmin) return { action: 'sign-out', reason: 'not_admin' };
+  if (app === 'admin' && !session.platformAdmin) {
+    // On sign-in it stays: if the sign-out failed (5xx), signing out again would loop.
+    return kind === 'signed-out' ? STAY : { action: 'sign-out', reason: 'not_admin' };
+  }
   if (app === 'clinic' && session.platformAdmin) {
     return kind === 'admin-web' ? STAY : { action: 'redirect', to: '/admin-web' };
   }

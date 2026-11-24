@@ -2,6 +2,7 @@
 // a session on sign-in → home; MFA owed → /mfa; a 401 mid-session → sign-in with its reason and
 // an empty cache; admin web refuses a session without platformAdmin; clinic web sends a super
 // admin to the page that names admin web.
+import { createRandom, generatePhone } from '@shifa/testing';
 import { QueryClient } from '@tanstack/react-query';
 import { createMemoryHistory } from '@tanstack/react-router';
 import { afterEach, describe, expect, it } from 'vitest';
@@ -85,7 +86,8 @@ describe('route guard', () => {
     let ended = 0;
     shell.onSessionEnded(() => (ended += 1));
     api.endSession('invalid_credentials');
-    await shell.api.POST('/auth/sign-in', { body: { phone: '+963900000000', password: 'x' } });
+    const phone = generatePhone(createRandom(2026_11_24), 'SY');
+    await shell.api.POST('/auth/sign-in', { body: { phone, password: 'x' } });
     await settle();
     expect(ended).toBe(0);
     expect(router.state.location.search).toEqual({});

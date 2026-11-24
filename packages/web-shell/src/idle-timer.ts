@@ -54,8 +54,15 @@ export interface IdleTrackerOptions {
 export interface IdleTracker {
   state(): IdleState;
   expiry(): SessionExpiry;
-  /** The person did something (pointer, key). */
+  /** The person did something (pointer, key, wheel, scroll, touch). */
   activity(): void;
+  /**
+   * Called every second: refreshes for activity the once-a-minute limit held back, so the last
+   * real activity always moves the idle limit (a trailing refresh).
+   */
+  tick(): void;
+  /** True once a refresh found no session: the 401 rule, not the idle timer, ends the page. */
+  gone(): boolean;
   /** Another tab refreshed. */
   receive(message: unknown): void;
 }
@@ -65,6 +72,7 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
   let current: SessionExpiry = { ...options.expiry };
   let ended = false;
   let lastRefresh = Number.NEGATIVE_INFINITY;
+  let lastActivity = Number.NEGATIVE_INFINITY;
 
   /** Takes a later idle limit; the absolute one stays what the session started with. */
   const take = (idleExpiresAt: number): boolean => {
@@ -73,30 +81,65 @@ export function createIdleTracker(options: IdleTrackerOptions): IdleTracker {
     return true;
   };
 
+  const refresh = () => {
+    const now = options.now();
+    if (ended || now - lastRefresh < REFRESH_EVERY_MS) return;
+    if (idleState(current, now).kind === 'expired') return;
+    lastRefresh = now;
+    void options.refresh().then(
+      (next) => {
+        if (next === null) {
+          ended = true;
+          return;
+        }
+        if (take(next.idleExpiresAt)) options.post({ type: 'session', ...current });
+      },
+      // A failed refresh changes nothing: the limits stay, the next activity asks again.
+      () => {
+        lastRefresh = Number.NEGATIVE_INFINITY;
+      },
+    );
+  };
+
   return {
     state: () => (ended ? { kind: 'expired' } : idleState(current, options.now())),
     expiry: () => ({ ...current }),
     activity() {
-      const now = options.now();
-      if (ended || now - lastRefresh < REFRESH_EVERY_MS) return;
-      if (idleState(current, now).kind === 'expired') return;
-      lastRefresh = now;
-      void options.refresh().then(
-        (next) => {
-          if (next === null) {
-            ended = true;
-            return;
-          }
-          if (take(next.idleExpiresAt)) options.post({ type: 'session', ...current });
-        },
-        // A failed refresh changes nothing: the limits stay, the next activity asks again.
-        () => {
-          lastRefresh = Number.NEGATIVE_INFINITY;
-        },
-      );
+      lastActivity = options.now();
+      refresh();
     },
+    tick() {
+      if (lastActivity > lastRefresh) refresh();
+    },
+    gone: () => ended,
     receive(message) {
       if (isIdleMessage(message)) take(message.idleExpiresAt);
     },
   };
+}
+
+/**
+ * What the page does on a tick: sign out once when the limit is reached; nothing when a refresh
+ * found the session already gone (the 401 rule then names the real reason, not `idle`).
+ */
+export function idleAction(
+  state: IdleState,
+  { gone, ended }: { gone: boolean; ended: boolean },
+): 'none' | 'sign-out' {
+  return state.kind === 'expired' && !gone && !ended ? 'sign-out' : 'none';
+}
+
+/**
+ * How far the server's clock is ahead of this browser's, from a session answer: every
+ * authenticated request sets the session's last activity to the server's now, so
+ * `idleExpiresAt − idleMinutes` is the server's now when the answer left (A-01-02). Compare the
+ * limits with `Date.now() + offset`, never `Date.now()` alone: a clinic PC whose clock runs
+ * 40 minutes fast would otherwise sign out at once.
+ */
+export function clockOffset(
+  session: { idleExpiresAt: string; idleMinutes: number },
+  clientNow: number,
+): number {
+  const serverNow = Date.parse(session.idleExpiresAt) - session.idleMinutes * 60_000;
+  return Number.isFinite(serverNow) ? serverNow - clientNow : 0;
 }

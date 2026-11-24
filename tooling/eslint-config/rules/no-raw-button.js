@@ -1,4 +1,5 @@
-// Slice A-01-06 (backlog 0.4-03): app code under apps/ never draws its own button. `<button>`
+// Slice A-01-06 (backlog 0.4-03): app code (apps/, and packages/web-shell whose pages the apps
+// mount) never draws its own button. `<button>`
 // and `role="button"` on another element are refused there; Button from @shifa/ui carries the
 // focus ring, the pressed state, the disabled semantics and the density. Elsewhere (packages/ui
 // builds Button) the rule is silent.
@@ -45,7 +46,9 @@ export const noRawButtonRule = {
   },
   create(context) {
     const { appsRoot } = context.options[0];
-    if (!inside(appsRoot, context.filename)) return {};
+    // The apps' pages are also drawn in the shell they share (A-01-06 review): app code too.
+    const shellRoot = resolve(appsRoot, '..', 'packages', 'web-shell');
+    if (!inside(appsRoot, context.filename) && !inside(shellRoot, context.filename)) return {};
     return {
       JSXOpeningElement(node) {
         if (node.name.type === 'JSXIdentifier' && node.name.name === 'button') {

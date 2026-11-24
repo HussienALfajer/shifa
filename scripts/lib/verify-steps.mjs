@@ -167,16 +167,6 @@ function allSteps(mode, affected) {
       cmd: 'pnpm',
       args: ['--filter', '@shifa/api', 'run', 'boot-check'],
     },
-    // The journeys (slice A-01-06, scripts/lib/e2e.mjs): full mode on the build above; fast mode
-    // (no build step) only when --affected reaches @shifa/e2e, building what they need itself, so
-    // it waits for the Turborepo run (one at a time). Takes a DB test slot like boot.
-    {
-      name: 'e2e',
-      requires: 'build',
-      after: ['typecheck+lint+test'],
-      cmd: 'node',
-      args: ['scripts/run-e2e.mjs', ...(mode === 'fast' ? ['--fast'] : [])],
-    },
     // Full only (slice 0.4-03): packages/ui in Chromium. Each waits for the one before, so two
     // browsers and two Vite servers never compete for the machine; the screenshots compare the
     // Storybook just built, in the pinned Playwright image (needs Docker).
@@ -207,6 +197,17 @@ function allSteps(mode, affected) {
       requires: 'ui-storybook-build',
       cmd: 'pnpm',
       args: ['--filter', '@shifa/ui', 'screenshots'],
+    },
+    // The journeys (slice A-01-06, scripts/lib/e2e.mjs): full mode on the build above, after the
+    // ui browser steps (one browser and its Vite servers at a time); fast mode (no build or ui
+    // step) only when --affected reaches @shifa/e2e, building what they need itself, so it waits
+    // for the Turborepo run (one at a time). Takes a DB test slot like boot.
+    {
+      name: 'e2e',
+      requires: 'build',
+      after: ['typecheck+lint+test', 'ui-screenshots'],
+      cmd: 'node',
+      args: ['scripts/run-e2e.mjs', ...(mode === 'fast' ? ['--fast'] : [])],
     },
   ];
   return all.filter((step) => (mode === 'docs' ? step.docs : mode === 'full' || !step.full));
