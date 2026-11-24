@@ -188,8 +188,10 @@ export class TeamService {
       refuseSelf(scope, row);
       if (row.status === 'deactivated') throw new ApiError(409, 'member_deactivated');
       if (await isLastOwner(tx, row)) throw lastOwner();
-      const changed = await setStatus(tx, row.id, 'deactivated');
+      // Links, then the membership: the order of a link's use and of the phone edit, so two of
+      // them at once wait instead of deadlocking (security review L1).
       await replaceLinks(tx, row.id);
+      const changed = await setStatus(tx, row.id, 'deactivated');
       await audit(tx, scope, 'member.deactivated', row.id, requestId);
       await this.#endSessions(row, scope, requestId);
       return this.#detail(tx, scope, changed);

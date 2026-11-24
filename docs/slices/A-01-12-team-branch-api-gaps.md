@@ -1,6 +1,6 @@
 # A-01-12 Team and branch API gaps: toggles on add, member corrections, invitation for another number, branch restore
 
-Status: Built, in review (approved by the owner 2026-11-24 with the three proposals; second-session critique waived by starting `/build-slice`, as for A-01-09 and A-01-11) · Tier: T0 · Branch: `claude/serene-gates-0m7f1l` (cloud session)
+Status: In review (PR open) (approved by the owner 2026-11-24 with the three proposals; second-session critique waived by starting `/build-slice`, as for A-01-09 and A-01-11) · Tier: T0 · Branch: `claude/serene-gates-0m7f1l` (cloud session)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 2, 3, 4, 7, 9, 12 and the screens "Accept invitation", "Team", "Member drawer" and "Branches" (criteria to add or change: Plan 0 of this slice) · Requirements: PLT-03, PLT-04, PLT-05, PLT-43, PLT-45, PLT-47 · Decisions: ADR-0046, OD-76, OD-78, OD-86, OD-91, OD-99, OD-102, OD-103, OD-104, OD-105, OD-106
 
 After the approved drawings of [A-01-08](A-01-08-ui-team-branches-switcher.md) checkpoint 1 (2026-11-24). Before A-01-08 checkpoint 2. It changes contracts, the team and branch modules, the invitation path on the auth pool and possibly the schema (a member's phone edit, branch restore): T0, with `reviewer` and `security-reviewer`.
@@ -98,7 +98,7 @@ Critique: T0, a second session critiques this plan before building, unless the o
 - **Phone edit to the same phone:** answers a new link, as a resend; the earlier one stops.
 
 ## Stopped at
-Checkpoints 1–5 built and committed; `pnpm verify` green; `reviewer` and `security-reviewer` run (findings below); PR open.
+Checkpoints 1–5 built and committed; `pnpm verify` green; `reviewer` and `security-reviewer` run, real findings fixed (below); PR opened. Next: A-01-08 checkpoint 2.
 
 ## As built
 - **Routes:** `GET /team/permissions` (`members.view`, `TeamPermissionsController`), `PATCH /team/members/:id/phone` (`members.manage`), `POST /branches/:id/restore` (`branches.manage`); matrix rows owner-only for all three. `ctx.branchId('archived')` added to the matrix sample context.
@@ -115,4 +115,4 @@ Checkpoints 1–5 built and committed; `pnpm verify` green; `reviewer` and `secu
 - `apps/api` vitest: 89 files, 595 tests pass, then the leak test `team-corrections-leak.test.ts`.
 - `pnpm verify` (fast, affected): format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e: **all green**. A first run failed `web-shell` `idle-dialog` once on a timing assertion (`00:55`) under load; it passed alone and in the next full run (untouched by this slice).
 - Dart client size: 149 files, 5,604 lines (budget 185 / 6,900).
-- Reviewer findings fixed: REVIEW_FIXED; deferred to backlog: REVIEW_DEFERRED
+- Reviewer findings fixed: reviewer 1 and security L1 (lock order: a phone edit locks the member's open links before the membership, and deactivation replaces links before the status, so every path takes link then membership; the security reviewer reproduced both 40P01 cycles in PostgreSQL 18 and the fix); reviewer 3 (`linkExpiresAt` for pending members only); security L3 (the leak test asserts every path it covers). Deferred to backlog: security M1 (phone edit as an account probe, extends OD-88; owner decision), reviewer 2 / security L2 (`linkPurpose` in the clinic audit row; owner decision), security I1 (dead invitation rows follow a corrected phone), I2 (no restore preview or count). No critical or high findings.

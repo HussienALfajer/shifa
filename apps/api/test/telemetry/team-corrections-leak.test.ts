@@ -110,9 +110,17 @@ beforeAll(async () => {
 
   const phone = (id: string, value: string) =>
     send('PATCH', `/team/members/${id}/phone`, { phone: value }, owner);
-  await phone(pending.member.id, `${CORRECTED}99`);
-  await phone(pending.member.id, ACTIVE);
-  await phone(active.member.id, CORRECTED);
+  const code = (r: { status: number; json: Record<string, unknown> }) => [
+    r.status,
+    (r.json['error'] as { code?: string } | undefined)?.code,
+  ];
+  // Each path below must really run (security review L3).
+  expect(code(await phone(pending.member.id, `${CORRECTED}99`))).toEqual([
+    400,
+    'validation_failed',
+  ]);
+  expect(code(await phone(pending.member.id, ACTIVE))).toEqual([409, 'phone_in_team']);
+  expect(code(await phone(active.member.id, CORRECTED))).toEqual([409, 'member_account_exists']);
   const changed = await phone(pending.member.id, CORRECTED);
   if (changed.status !== 200) throw new Error(`phone: ${String(changed.status)}`);
   secrets.push(tokenOf(String(changed.json['url'])));
@@ -127,10 +135,14 @@ beforeAll(async () => {
   await seedPerson(STRANGER);
   const stranger = sessionCookie(await signIn(current, STRANGER, PASSWORD));
   await send('POST', '/invitations/view', { token });
-  await send('POST', '/invitations/accept', { token }, stranger);
-  await send('POST', '/invitations/decline', { token }, stranger);
+  for (const action of ['accept', 'decline']) {
+    expect(code(await send('POST', `/invitations/${action}`, { token }, stranger))).toEqual([
+      403,
+      'invitation_other_phone',
+    ]);
+  }
   const person = sessionCookie(await signIn(current, ACCOUNT, PASSWORD));
-  await send('POST', '/invitations/accept', { token }, person);
+  expect((await send('POST', '/invitations/accept', { token }, person)).status).toBe(204);
 
   // OD-105.
   const branch = await send('POST', '/branches', { name: 'فرع', phone: CORRECTED }, owner);
