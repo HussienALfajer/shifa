@@ -1,0 +1,12 @@
+{
+  "extends": "@shifa/tsconfig/library.json",
+  "compilerOptions": {
+    "lib": ["es2024", "dom", "dom.iterable"],
+    "jsx": "react-jsx",
+    // Bundled by Vite in the apps; bundler resolution reads the router's declaration files.
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "types": ["node", "vite/client"]
+  },
+  "include": ["src", "test", "*.config.ts"]
+}

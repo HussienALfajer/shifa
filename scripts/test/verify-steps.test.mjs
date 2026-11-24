@@ -149,21 +149,27 @@ describe('verifySteps', () => {
     ]);
   });
 
-  it('fast mode has no build, boot or browser step; full mode ends with them', () => {
+  it('fast mode has no build, boot or ui step; full mode ends with them and e2e', () => {
     assert.ok(!names('fast').includes('build'));
     assert.ok(!names('fast').includes('boot'));
     assert.deepEqual(
       names('fast').filter((n) => n.startsWith('ui-')),
       [],
     );
-    assert.deepEqual(names('full').slice(-6), [
+    // e2e runs in both modes; fast mode decides inside the step (scripts/lib/e2e.mjs).
+    assert.ok(names('fast').includes('e2e'));
+    assert.deepEqual(names('full').slice(-7), [
       'build',
       'boot',
       'ui-browser',
       'ui-storybook',
       'ui-storybook-build',
       'ui-screenshots',
+      'e2e',
     ]);
+    // One browser at a time: the journeys wait for the ui steps (review, A-01-06).
+    const e2e = verifySteps('full').find((s) => s.name === 'e2e');
+    assert.ok(e2e?.after?.includes('ui-screenshots'));
   });
 
   it('keeps the serialisations: pub-get before drift and turbo, turbo before build', () => {

@@ -1,0 +1,43 @@
+{
+  "name": "@shifa/web-shell",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The shell both web apps share: typed API client with session handling, route guard, idle timer, providers, the Vite proxy and service worker (slice A-01-06).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./vite": "./src/vite/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@shifa/api-client-ts": "workspace:*",
+    "@shifa/i18n": "workspace:*",
+    "@shifa/ui": "workspace:*",
+    "@tailwindcss/vite": "4.3.5",
+    "@tanstack/react-query": "5.108.3",
+    "@tanstack/react-router": "1.170.46",
+    "@vitejs/plugin-react": "6.3.0",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "react-i18next": "18.0.3",
+    "tailwindcss": "4.3.5"
+  },
+  "devDependencies": {
+    "@shifa/contracts": "workspace:*",
+    "@shifa/eslint-config": "workspace:*",
+    "@shifa/testing": "workspace:*",
+    "@shifa/tsconfig": "workspace:*",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "eslint": "10.14.0",
+    "happy-dom": "21.0.4",
+    "typescript": "6.0.3",
+    "vite": "8.3.8",
+    "vitest": "5.1.0"
+  }
+}

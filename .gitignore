@@ -53,6 +53,10 @@ Thumbs.db
 # Spike 0.3-S4 imaging: generated studies, the public CBCT case and per-run state (never committed)
 .cache/
 
+# End-to-end journeys (A-01-06): Playwright's output and traces
+e2e/test-results/
+e2e/playwright-report/
+
 # Spike 0.3-S6 voice: generated audio, ledger and logs, the test pack and Playwright output
 spikes/s6-voice/.out/
 spikes/s6-voice/display/public/pack/

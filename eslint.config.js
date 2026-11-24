@@ -14,6 +14,8 @@ export default defineConfig(
       'apps/**',
       'packages/**',
       'spikes/**',
+      // The end-to-end package (A-01-06) lints itself through Turborepo like the others.
+      'e2e/**',
       // Design-direction prototypes exported from the design project (slice 0.4-02).
       'design/directions/**',
       'node_modules/**',

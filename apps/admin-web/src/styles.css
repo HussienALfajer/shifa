@@ -1,0 +1,3 @@
+/* Shifa's components and tokens, plus the shell's own pages (their classes live there). */
+@import "@shifa/ui/styles.css";
+@source "../../../packages/web-shell/src";

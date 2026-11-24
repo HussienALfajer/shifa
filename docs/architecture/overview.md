@@ -50,7 +50,9 @@ flowchart TB
 apps/      api · clinic-web · admin-web · display-web · booking-web · patient_app (Flutter)
 packages/  contracts · api-client-ts (generated) · api_client_dart (generated) · db
            tokens · ui (UI SDK design system) · shifa_ui (Flutter design system)
-           i18n · domain-* (pure rules: money, queue, dental, ortho, …) · testing (synthetic data)
+           i18n · web-shell (session, guard, idle timer, Vite proxy of both web apps)
+           domain-* (pure rules: money, queue, dental, ortho, …) · testing (synthetic data)
+e2e/       Playwright journeys against the built API, a real database and the built web apps
 docs/      product · domain · architecture · adr · compliance · process · slices · specs · research
 ```
 Monorepo with pnpm + Turborepo; Flutter pinned with FVM ([ADR-0002](../adr/README.md)).
@@ -98,6 +100,7 @@ One deployable NestJS application with strict module boundaries, enforced by lin
 | Voice | Voice packs generated server-side outside Syria, cached on displays, played locally | 0020 |
 | Files, cache, PDFs, search | Garage, Valkey, Gotenberg, Postgres search with Arabic normalisation | 0021 |
 | Design system | DTCG tokens → CSS/Tailwind and Dart; UI SDK components (Base UI fallback); Flutter design system from the same tokens | 0011, 0039, [design-system](design-system.md) |
+| Web apps and the API origin | One origin per app: each web app reaches the API at its own `/api`, which a proxy maps to the API with the prefix removed (`/api/auth/session` → `/auth/session`), so the `__Host-` session cookie and the request guard's same-origin rule hold without CORS. Dev and preview servers do it with Vite's proxy (`@shifa/web-shell/vite`, slice A-01-06); the production proxy follows the same rule (`/release`). A second origin needs the origin allowlist first (backlog) | 0010, 0044 |
 | Security | Audit of every record read; deny rules and hooks in development; no real patient data in dev | 0023 |
 | Licensed content | PROMs and AO/OTA gated per tenant licence | 0024 |
 

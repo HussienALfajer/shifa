@@ -1,6 +1,6 @@
 # A-01-06 Web shells and the real-backend end-to-end harness
 
-Status: Planned · Tier: T1 · Branch: `feat/A-01-06-web-shells-and-e2e-harness`
+Status: In review · Tier: T1 · Branch: `feat/A-01-06-web-shells-and-e2e-harness`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) and [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) verification rows "Flows" and "Screens" (the harness they need); A-01a criterion 9 on the client side (idle warning one minute before, 401 → sign-in) · Requirements: none new · Decisions: ADR-0002, ADR-0010, ADR-0039, ADR-0042, ADR-0044
 
 After [A-01-05](A-01-05-branches-and-switcher.md) (merged). Re-planned on 2026-11-24 against the merged A-01-01 to A-01-05 code. Changes no schema and no contract.
@@ -64,12 +64,30 @@ Estimated hand-written lines: ~3,300 (web-shell ~700, two apps ~700, i18n runtim
 Plan approved by the owner (2026-11-24) as one slice at tier T1, with `security-reviewer` on the CI job, the proxy and the client's session handling.
 
 ## Stopped at
-Not started.
+Done: four checkpoints built, reviews fixed, PR opened (2026-11-24).
+
+## Changes from the plan (built 2026-11-24)
+- **Code-based routes, no router plugin.** Both apps have the same five routes, so `@shifa/web-shell` builds them (`buildRouteTree()`); no generated route tree to keep in drift, and `@tanstack/router-plugin` (and its Babel tree) is not pinned. The apps are `main.tsx`, `index.html`, `vite.config.ts` and a stylesheet.
+- **Hand-written service worker, no Workbox.** `src/vite/service-worker.ts` emits `sw.js` (about 60 lines): precache at install, navigations network-first with the cached `index.html` as fallback, precached files from the cache, nothing else answered, no runtime `cache.put`. A test runs it in a sandbox. Neither `vite-plugin-pwa` nor Serwist is pinned.
+- **Placeholder pages live in the shell** (`src/pages.tsx`), not per app; A-01-07 and A-01-08 pass their own pages to `mountShellApp()`.
+- **The `e2e` script is `e2e`, not `test`**: Turborepo's `test` task would otherwise run the journeys inside `typecheck+lint+test` as well.
+- **Backend as a plain-Node child.** Playwright's loader could not start the API (`/health/ready` never answered), so `support/global-setup.ts` spawns `scripts/backend.ts` with Node, reads one READY line and stops it by closing its stdin.
+- **Two hosts for two cookie jars**: clinic web on `localhost`, admin web on `127.0.0.1` (cookies ignore ports).
+- **`__Host-` over plain HTTP settled**: Chromium keeps the Secure cookie on `http://localhost` and `127.0.0.1`; no HTTPS needed.
+- **Journey (c) ages the session** instead of ending it: `POST /auth/sessions/end-others` needs a verified MFA (A-01-07), and a deleted session answers `unauthorized`, not `session_expired`. `expireSession()` moves `last_active_at` two hours back, so the API ends it on the next request with `session_expired`, as an idle session ends.
+- **Focus watch of our own** (`watchFocus()`): TanStack Query refetches on focus only after a blur; the shell asks again on every `focus` and visible `visibilitychange`.
+- **A signed-out answer is never cached**, so the guard asks again after an in-page sign-in; the mid-session rule acts only when a signed-in session was cached.
+- **Cross-tab messages are checked** (`isIdleMessage()`): any tab of the origin can post on the channel.
+- Web-shell tests run in happy-dom (the router reads `window`; nothing is rendered). One more journey: `tests/offline-shell.spec.ts`, the only one with service workers allowed.
+- Two locked tests changed for lint only, with the owner's approval (2026-11-24): `idle-timer.test.ts` lost an unneeded `as IdleMessage`, `router.test.ts` wraps the library's `any` `routeId` in `String()`. No assertion changed.
 
 ## Evidence
-- `verify` (full): —
-- End-to-end smoke: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- `pnpm verify` (fast, Windows): format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e: all green.
+- `pnpm verify:full` (Windows, after the review fixes): 14 of 15 steps PASS (build, boot, ui-browser, ui-storybook, ui-storybook-build, e2e included). `ui-screenshots` FAIL locally only: port 6107 was held by an unrelated process on the machine (`http://localhost:6107/index.json is already used`); this slice changes nothing in packages/ui's stories, and CI runs the step. An earlier full run had `boot` and `e2e` time out on `/health/ready` right after the build while the browser steps ran; both passed on their own and on the next full run.
+- End-to-end (`pnpm --filter @shifa/e2e e2e`): 5 passed in 11 s: (a) signed out → `/sign-in` on both apps, RTL and `lang="ar"`; (b) super admin sets the password through the setup-link API, signs in, admin web shows `mfa=none`, `required=true`; (c) a session aged past its idle limit → the next request ends on `/sign-in?reason=session_expired`; (d) a super admin on clinic web → `/admin-web`, a clinic owner on admin web → signed out, `reason=not_admin`; offline: the shell loads from the service worker, `/api` stays unreachable.
+- Production builds: both apps' build tests pass; a `NODE_ENV=development` build of clinic web carries `ui-sdk.devtools`, the production build does not (checked by hand, so the marker test is not empty).
+- Browser (built clinic web on the real backend): `/` → `/sign-in` (RTL, Arabic, system dark theme); after a synthetic owner's setup link, `/mfa` shows the MFA state and «تسجيل الخروج»; light theme switches; `/about` shows the version and the Solar credit with its licence link. No product screen exists to compare with a drawing (A-01-07 draws them).
+- Reviewer findings fixed: idle limit on the server's clock (blocking: a fast PC clock signed out at once), idle sign-out not called `idle` when the session was found gone, wheel/scroll/touch activity and a trailing refresh, admin-web sign-out loop on a 5xx, `e2e` after the ui browser steps, `no-raw-button` covers packages/web-shell, docs of the fast-mode trigger. Security review fixed: M1 (cache dropped when the person, session or clinic changes), L1 (idle limit at the router root, no refetch on reconnect), L2 (clock), L4 (trace exception written down), L6 (sign-out failure shown), wrong paths in `e2e/CLAUDE.md`. Deferred to backlog: L3 (sessions bound to their app), L5 (security headers), production proxy rule details, setup token left in the URL, a test of the idle hook's wiring.
 
 ## Notes for the next session
 - The slice touches build and CI: run `pnpm verify:full` before the PR (ADR-0033); Playwright and Docker run in CI if the session is sandboxed (OD-24).

@@ -76,6 +76,43 @@ describe('only packages/ui depends on the UI library', () => {
   });
 });
 
+// Slice A-01-06 (audit 0.4, S-3): the browser packages never pull in server code, and the server
+// packages never pull in the browser shell. `@shifa/contracts` (types and schemas) is shared.
+describe('browser and server packages stay apart', () => {
+  const SERVER = /^@shifa\/(?:db|api|api-client-[\w-]+)$/;
+  const BROWSER = /^@shifa\/(?:ui|web-shell)$/;
+  const namesOf = (path: string) => {
+    const m = readManifest(join(root, path, 'package.json'));
+    return Object.keys({ ...m.dependencies, ...m.devDependencies, ...m.peerDependencies });
+  };
+
+  it('finds a planted server dependency', () => {
+    expect(['@shifa/db', '@shifa/api', '@shifa/api-client-ts'].every((n) => SERVER.test(n))).toBe(
+      true,
+    );
+    expect(SERVER.test('@shifa/contracts')).toBe(false);
+    expect(BROWSER.test('@shifa/web-shell')).toBe(true);
+  });
+
+  it('@shifa/ui and @shifa/tokens depend on no server package', () => {
+    for (const path of ['packages/ui', 'packages/tokens']) {
+      expect(
+        namesOf(path).filter((n) => SERVER.test(n)),
+        path,
+      ).toEqual([]);
+    }
+  });
+
+  it('apps/api and packages/db depend on neither @shifa/ui nor @shifa/web-shell', () => {
+    for (const path of ['apps/api', 'packages/db']) {
+      expect(
+        namesOf(path).filter((n) => BROWSER.test(n)),
+        path,
+      ).toEqual([]);
+    }
+  });
+});
+
 describe('the agent bridge', () => {
   it('is named by no file of packages/ui, so lint cannot be silenced around it', () => {
     const files = ['src', 'test', '.storybook', 'scripts']
