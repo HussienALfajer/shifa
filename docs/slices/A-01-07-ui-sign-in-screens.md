@@ -1,6 +1,6 @@
 # A-01-07 UI batch 1: sign-in, MFA, setup link and clinic chooser screens
 
-Status: Checkpoint 1 drawn, awaiting owner approval (re-planned 2026-11-24) · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens`
+Status: Checkpoint 1 approved by the owner 2026-11-24; code after A-01-09 (re-planned 2026-11-24) · Tier: T1 · Branch: `feat/A-01-07-ui-sign-in-screens`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screen inventory (Sign in, Setup link, TOTP enrol, TOTP challenge, Idle warning), verification rows "Flows" and "Screens"; criteria 4–7, 9, 11, 12 as seen by the user; [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen "Clinic chooser", criterion 10 (after sign-in) · Requirements: PLT-01, PLT-05, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-91, OD-94
 
 After [A-01-06](A-01-06-web-shells-and-e2e-harness.md) (merged). Checkpoint 1 (drawing and analysis) starts now; its approved API gaps are built in [A-01-09](A-01-09-account-api-gaps.md), and checkpoint 2 (code) starts after A-01-09 merges, so the batch codes against the whole API (ADR-0042). Re-planned 2026-11-24 against the merged API (A-01-02 to A-01-05): the entry path from the first link to the first clinic is one batch; the clinic chooser moved here from A-01-08 (it is the last step of signing in); My account, the automatic sign-out setting and the admin-web screens moved to [A-01-10](A-01-10-ui-account-settings-admin-web.md), after the account API gaps found in this re-plan are closed by [A-01-09](A-01-09-account-api-gaps.md).
@@ -63,7 +63,7 @@ Tests written first: component tests per screen state (mocks typed from contract
 Estimated hand-written lines: ~3,600 (sign-in ~450, setup link ~400, enrol and recovery codes ~650, challenge ~300, chooser ~550, idle and notices ~250, i18n texts ~400, journeys ~600); the approved new components are `/ui-component` work, not counted here.
 
 ## Drawings and analysis
-Drawn 2026-11-24 in "Shifa Screens · Clinic web", page "A-01-07 Sign-in batch" (link not committed, ADR-0040): one interactive prototype (`Main`, marked interactive, Play), the analysis board (`Analysis`, Arabic, for the owner) and three component sheets (`CalloutSheet`, `QrCodeSheet`, `CodeListSheet`). The Shifa Design System installed on the canvas is current (its `tokens.json`, `tokens.css` and bundle hashes equal the system's version `1795473355-da6b`). The 2026-11-23 drafts of sign-in, setup link, MFA and switcher on page "A-01 Foundation" are kept there, marked superseded; the desktop sign-in draft (`Main`) became the prototype. **Awaiting the owner's approval; no code before it.**
+Drawn 2026-11-24 in "Shifa Screens · Clinic web", page "A-01-07 Sign-in batch" (link not committed, ADR-0040): one interactive prototype (`Main`, marked interactive, Play), the analysis board (`Analysis`, Arabic, for the owner) and three component sheets (`CalloutSheet`, `QrCodeSheet`, `CodeListSheet`). The Shifa Design System installed on the canvas is current (its `tokens.json`, `tokens.css` and bundle hashes equal the system's version `1795473355-da6b`). The 2026-11-23 drafts of sign-in, setup link, MFA and switcher on page "A-01 Foundation" are kept there, marked superseded; the desktop sign-in draft (`Main`) became the prototype. **Approved by the owner on 2026-11-24: all screens, the three components, every improvement (a–j) and the gap list; staff MFA recovery by the owner (OD-95).**
 
 ### The prototype
 One artboard keeps the whole entry path in one state (ADR-0042). A control panel outside the device frame switches theme (light, dark), size (desktop 1280 × 800, tablet 768 × 1024, phone 390 × 844) and app (clinic web, admin web); where to start (sign-in page; owner, member, admin, invitation or expired setup link); the account signing in (doctor with TOTP, owner not yet enrolled, staff without TOTP, super admin); the person's clinics (one, several, none); and the server's answer to the next press (per screen, every error code of the table below; it falls back to success after each press). Fields take typing (the password rules, Caps Lock and Arabic-letter hints read what is typed), a six-digit code submits itself, lock and idle countdowns run in real time (the idle limit is shortened to 75 s, with buttons to jump to the warning, to the 12-hour notice and to a session ended elsewhere), and a "go to" list reaches every screen directly. Each creative improvement has a checkbox, so the owner sees the screens with and without it.
@@ -119,7 +119,7 @@ Feature routes no screen of this batch uses: `/auth/sessions*`, `/clinic/setting
 | i (ط) | Remember the last phone on this device, with «ليس رقمك؟» | ~40 lines; the owner may decline it for shared reception computers |
 | j (ي) | Retry by itself when the connection returns | ~30 lines |
 
-Declined: — (none decided yet).
+Accepted by the owner 2026-11-24: all ten. Declined: none.
 
 ### Design-system gaps
 - **Callout** (inline page message: info, success, warning, danger; optional title and one action; `role` alert or status), **QrCode** (white plate in both themes, folded on phones; proposes semantic `color.scan.bg` and `color.scan.fg`), **CodeList** (ten codes, numbered, mono, LTR, copy all, print sheet): each drawn on its own sheet (every state, light and dark, RTL and LTR, both densities) and on its screens. After approval each is built with `/ui-component` and synced before checkpoint 2 uses it.
@@ -130,7 +130,7 @@ Declined: — (none decided yet).
 The five artboards hold no literal colour (`#…`, `rgb()`, `hsl()`), every `--shifa-` name exists in the installed `tokens.css`, and no existing component is drawn by hand (buttons, fields, OTP, checkbox, badges, avatars, skeletons, spinner, empty states and icons are mounted from the bundle). The only px values are device and artboard sizes.
 
 ## Stopped at
-Checkpoint 1 drawn and analysed 2026-11-24 (see above); waiting for the owner's approval of the screens, the three components, the gaps (A-01-09 rows) and each improvement. No code before it.
+Checkpoint 1 approved by the owner 2026-11-24 (everything accepted). Next: A-01-09 with the approved rows; then the three components with `/ui-component` from their sheets and synced; then checkpoint 2 here.
 
 ## Evidence
 - `verify` (full): —
