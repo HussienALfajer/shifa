@@ -1,6 +1,6 @@
 # A-01-10 UI batch 2: My account, automatic sign-out and admin-web clinics
 
-Status: In progress (checkpoint 1 drawn, awaiting the owner's approval) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
+Status: In progress (checkpoint 1 approved 2026-11-24; waiting for A-01-11) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screens "My account", "Clinic settings · automatic sign-out", "Clinics list", "Create clinic", "Clinic detail"; criteria 3, 4, 9, 10, 10a, 10b, 12a, 13 as seen by the user; verification rows "Flows" and "Screens" · Requirements: PLT-01, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) and [A-01-09](A-01-09-account-api-gaps.md) (merged). Split from the first A-01-07 plan in the 2026-11-24 re-plan.
@@ -36,7 +36,7 @@ Tests written first: component tests per screen state; the five journeys; screen
 Estimated hand-written lines: ~3,400 (My account ~1,000, settings ~200, admin web ~1,100, i18n ~400, journeys ~700); missing components are separate `/ui-component` work.
 
 ## Drawings and analysis
-Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic web", new page "A-01-10 Account batch": one interactive prototype (`Account10`, marked interactive, Play), the analysis board (`Analysis10`, Arabic, for the owner) and the sheet of the one missing component (`CopyFieldSheet`). On "Shifa Screens · Admin web", new page "A-01-10 Clinics": one interactive prototype (`Main`); the Shifa Design System was installed there for the first time (version `1795473355-da6b`, tokens, component bundle and fonts copied from the system, logos copied from the clinic-web canvas). The clinic-web canvas's installed copy has the same `tokens.css`, `tokens.json` and bundle hashes as that version. The 2026-11-23 draft `Account` on page "A-01 Foundation" stays there as a draft; `Account10` supersedes it. Colours, spaces, radii, shadows and sizes are `--shifa-*` tokens and type uses the named styles; both prototypes were checked for unknown `--shifa-` names before showing (one, a component-level input token, was replaced with `--shifa-color-bg-surface`). Callout, QrCode and CodeList (built in A-01-07) are not yet in the synced bundle, so they are drawn by hand from their approved sheets. **Not yet approved.**
+Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic web", new page "A-01-10 Account batch": one interactive prototype (`Account10`, marked interactive, Play), the analysis board (`Analysis10`, Arabic, for the owner) and the sheet of the one missing component (`CopyFieldSheet`). On "Shifa Screens · Admin web", new page "A-01-10 Clinics": one interactive prototype (`Main`); the Shifa Design System was installed there for the first time (version `1795473355-da6b`, tokens, component bundle and fonts copied from the system, logos copied from the clinic-web canvas). The clinic-web canvas's installed copy has the same `tokens.css`, `tokens.json` and bundle hashes as that version. The 2026-11-23 draft `Account` on page "A-01 Foundation" stays there as a draft; `Account10` supersedes it. Colours, spaces, radii, shadows and sizes are `--shifa-*` tokens and type uses the named styles; both prototypes were checked for unknown `--shifa-` names before showing (one, a component-level input token, was replaced with `--shifa-color-bg-surface`). Callout, QrCode and CodeList (built in A-01-07) are not yet in the synced bundle, so they are drawn by hand from their approved sheets. **Approved by the owner on 2026-11-24: all screens of both prototypes, the CopyField component, every improvement (a–h) and the gap list; API gaps 1 and 3 accepted (OD-98, OD-99); all three statuses at creation kept (OD-100).** API gaps 1–7 are closed in the T0 slice [A-01-11](A-01-11-account-platform-api-gaps.md) before checkpoint 2.
 
 ### The prototypes
 **Clinic web (`Account10`).** A control panel outside the device frame switches theme (light, dark), size (desktop 1280 × 800, phone 390 × 844), the person (owner with mandatory TOTP; doctor with TOTP; receptionist without TOTP), recovery codes left (9, 2, 0), the sessions (four devices, one with unknown device and browser; this device only), a loading state, and the server's answer to the next press (per context, every error code of the table below; it falls back to success after each press). Flows that run end to end: change password → wrong current password, each refused rule, unchanged, phone locked with a live countdown, no connection, success (other devices signed out, the list keeps this device only); new recovery codes → TOTP code → wrong code, MFA locked, success → ten codes shown once, copy, print, «حفظتُ الرموز» required → «بقيت 10 رموز»; a receptionist enrols from My account (QR, key with copy, code, clock-skew hint, codes); end one device (confirm naming it; 404 "already signed out" refreshes the list); end all others (confirm with the count; no-other-device state); owner → clinic settings → 15 / 30 / 60 with a description each → save (success, no connection). Non-owners have no "Clinic settings" item. Each creative improvement has a checkbox.
@@ -62,9 +62,9 @@ Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic we
 | `POST …/owner/reset-mfa`, `…/owner/end-sessions` | active owner only, each confirmed | 404; no connection |
 
 ### API gaps (to close in the API before or in this slice, never worked around in the client)
-1. **Moving TOTP to a new phone oneself:** no route; `enrol/start` answers 409 to an enrolled person, so someone who changes phone while still holding the old one needs the owner (staff) or the super admin (owner). Proposal: a re-enrolment confirmed by a current code (the old secret stays until the new one is confirmed). Or it stays with the owner and the super admin by decision. **Owner decision.**
+1. **Moving TOTP to a new phone oneself:** no route; `enrol/start` answers 409 to an enrolled person, so someone who changes phone while still holding the old one needs the owner (staff) or the super admin (owner). Proposal: a re-enrolment confirmed by a current code (the old secret stays until the new one is confirmed). Or it stays with the owner and the super admin by decision. **Accepted (OD-98).**
 2. **Owner phone missing on clinic detail:** the super admin sends a reset link without seeing whom it is for. Proposal: `owner.phoneMasked` (country code and last three digits, as the setup page).
-3. **Wrong owner phone cannot be corrected:** a typo at creation leaves a clinic whose link is for the wrong number. Proposal: edit the owner's phone while the owner is pending. **Owner decision.**
+3. **Wrong owner phone cannot be corrected:** a typo at creation leaves a clinic whose link is for the wrong number. Proposal: edit the owner's phone while the owner is pending. **Accepted (OD-99).**
 4. **Pending owner's link expiry not returned:** proposal `owner.linkExpiresAt`, so the page says «انتهى الرابط» and offers a new one.
 5. **Owner status not in the list:** `ClinicSummary` has no `ownerStatus`; proposal: add it, so a row can say «لم يُكمل الإعداد».
 6. **No-op actions answer success:** `reset-mfa` and `end-sessions` for a pending owner answer 204 and do nothing. Proposal: 409 `owner_setup_pending`. The client hides both anyway.
@@ -75,7 +75,7 @@ Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic we
 1. A non-owner has no "Clinic settings" item.
 2. My account on a phone: one column, navigation behind a menu button.
 3. Staff enrol from My account with the same steps as A-01-07 (QR, key, code, codes).
-4. Status at creation: the spec allows suspended; all three are drawn. Keep, or only trial and active? **Question to the owner.**
+4. Status at creation: the spec allows suspended; all three are drawn. All three kept (OD-100).
 5. The new-setup-link confirmation says what happens: for an active owner the password is cleared and every session ends.
 
 ### Creative improvements (each toggled in a prototype; the owner accepts or declines each)
@@ -90,6 +90,8 @@ Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic we
 | g (ز) | «ينتهي خلال 5 أيام» badge near the subscription end | ~25 lines |
 | h (ح) | Ask before leaving the link page without copying the link | ~30 lines |
 
+Accepted by the owner 2026-11-24: all eight. Declined: none.
+
 ### Components
 - **New: CopyField** (sheet `CopyFieldSheet`): a value shown once to copy or send, read-only, LTR monospace, copy inside at the logical end, optional WhatsApp share and expiry line; states default, focus (text selected), copied, copy refused (text selected, copy by hand), multiline and icon-only copy on a phone, disabled (replaced link), loading, LTR English, dark. Used here and for the member link in A-01-08. Built with `/ui-component` after approval.
 - **No new status chip:** Badge's locked tones carry clinic status in words with their icon (trial info, active success, suspended warning).
@@ -100,7 +102,7 @@ Drawn 2026-11-24 (links not committed, ADR-0040). On "Shifa Screens · Clinic we
 Tests and code: the plan's tests are written after the approval (no code before it, OD-80).
 
 ## Stopped at
-Checkpoint 1 drawn and analysed (2026-11-24); waiting for the owner's approval of the drawings, the CopyField sheet, the improvements a–h, the gap list and the two decisions (API gaps 1 and 3) and the question (spec gap 4).
+Checkpoint 1 approved by the owner (2026-11-24). Next: the API gaps in [A-01-11](A-01-11-account-platform-api-gaps.md) (T0), then CopyField with `/ui-component` and the copy and share icons, synced, then checkpoint 2 with its tests first.
 
 ## Evidence
 - `verify` (full): —

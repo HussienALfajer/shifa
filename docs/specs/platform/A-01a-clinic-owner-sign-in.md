@@ -86,12 +86,12 @@ Clinic web, Arabic RTL, light and dark:
 - **TOTP enrol** (desktop, phone): why, app hint, QR + manual key, one code, then 10 recovery codes with print and copy, confirm before continuing. States: wrong code; clock-skew hint.
 - **TOTP challenge** (desktop, phone): greeting by name, six-digit code, «استخدام رمز استرداد». States: wrong or replayed code; MFA locked (end time).
 - **Idle warning** (all sizes): countdown from 1:00, «متابعة العمل», «خروج الآن».
-- **My account** (desktop, phone): phone (read-only), change password, MFA status (enrolled since, recovery codes left) and actions (enrol; new recovery codes), sessions (device, browser, last active, this device) with end one and end all others.
-- **Clinic settings · automatic sign-out** (desktop): 15 / 30 / 60 minutes, owner only.
+- **My account** (desktop, phone): phone (read-only), change password, MFA status (enrolled since, recovery codes left) and actions (enrol; new recovery codes), sessions (device, browser, last active, this device) with end one and end all others. On a phone: one column, navigation behind a menu button. Staff without TOTP enrol here with the steps of TOTP enrol; an enrolled person moves TOTP to a new phone here, confirmed by a current code (OD-98).
+- **Clinic settings · automatic sign-out** (desktop): 15 / 30 / 60 minutes, owner only; a non-owner has no navigation item for it.
 Admin web, light and dark:
 - **Clinics list** (desktop): name, type, status, end date, owner name; search; «إنشاء عيادة». States: empty, loading.
 - **Create clinic** (desktop): clinic fields and owner name and phone → the owner's setup link shown once with copy and WhatsApp share.
-- **Clinic detail** (desktop): status and end date edit; owner card with new setup link, reset MFA, end sessions (each confirmed, each audited); no clinic data.
+- **Clinic detail** (desktop): status and end date edit; owner card with the masked phone, the status and a pending link's expiry; new setup link (its confirmation says that an active owner's password is cleared and every session ends), reset MFA, end sessions (each confirmed, each audited; the last two for an owner with an account only); a pending owner's phone corrected (OD-99); no clinic data.
 
 ## Out of scope
 Members, roles, branches and the switcher (A-01b); entitlements, limits, settings cascade, support access, cities (A-02); passkeys; self-service recovery over WhatsApp (A-09 at the earliest); patient accounts (A-09/A-11); audit viewer UI; automatic action at the end date.
