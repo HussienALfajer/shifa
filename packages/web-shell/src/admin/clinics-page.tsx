@@ -80,7 +80,7 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
           return <span className="text-text-muted">{text('noEnd')}</span>;
         const days = daysUntil(c.subscriptionEnd);
         return (
-          <span className="inline-flex flex-wrap items-center gap-2">
+          <span className="flex items-center gap-2 whitespace-nowrap">
             <span className="tabular-nums">{calendarDate(c.subscriptionEnd)}</span>
             {days >= 0 && days <= ENDS_SOON_DAYS && (
               <Badge tone="warning" size="sm">
@@ -94,13 +94,14 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
     {
       id: 'owner',
       header: text('colOwner'),
-      width: 'md',
+      width: 'lg',
       value: (c) => c.ownerName ?? '',
+      // One line in a 48 px row: the name gives way, the badge stays whole.
       cell: (c) => (
-        <span className="inline-flex flex-wrap items-center gap-2">
-          <span>{c.ownerName ?? text('noOwner')}</span>
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="min-w-0 truncate">{c.ownerName ?? text('noOwner')}</span>
           {c.ownerStatus === 'pending' && (
-            <Badge tone="neutral" size="sm">
+            <Badge tone="neutral" size="sm" className="shrink-0">
               {text('ownerPendingShort')}
             </Badge>
           )}
