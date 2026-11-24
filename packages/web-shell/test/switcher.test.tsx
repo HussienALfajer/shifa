@@ -6,7 +6,7 @@
 // clinic with one branch: no switcher), POST /me/switch (the branch step inside the menu for roles
 // in two branches; the session re-read; «أنت الآن في …», improvement c), every refusal as a
 // Callout inside the menu, and the phone's bottom sheet.
-import { createRandom, generatePersonName } from '@shifa/testing';
+import { createRandom, generatePersonName, generatePhone } from '@shifa/testing';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { click, flush, type Rendered, renderShell } from './render.tsx';
 import { errorAnswer, type FakeApi, fakeApi, json, SESSION } from './support.ts';
@@ -97,7 +97,7 @@ function api(
 ) {
   const fake = fakeApi(session);
   fake.answers['/api/me'] = () =>
-    json(200, { userId: SESSION.userId, name: NAME, phoneE164: '+963900000000' });
+    json(200, { userId: SESSION.userId, name: NAME, phoneE164: generatePhone(random, 'SY') });
   fake.answers['/api/me/clinics'] = () => json(200, { clinics, invitations });
   fake.answers['/api/auth/mfa'] = () => json(200, { enrolled: false, recoveryCodesLeft: null });
   return fake;

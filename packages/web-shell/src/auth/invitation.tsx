@@ -24,12 +24,13 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
-import { ROLE_TEXT } from '../chooser/chooser-text.ts';
+import { listOf, ROLE_TEXT } from '../chooser/chooser-text.ts';
 import { useClinicSwitch } from '../chooser/use-clinic-switch.ts';
 import { errorFacts } from '../client.ts';
 import { owesMfa } from '../guard.ts';
 import { useShell } from '../providers.tsx';
 import { useSession } from '../session.ts';
+import { PROBLEM } from '../switcher/clinic-switcher.tsx';
 import { useText } from '../text.ts';
 import { useSignOut } from '../use-sign-out.ts';
 import { clockTime, dayDate } from './dates.ts';
@@ -76,6 +77,7 @@ export function InvitationAnswer({ token }: { token: string }) {
   const [failure, setFailure] = useState<Failure>();
   const [busy, setBusy] = useState(false);
   const [asking, setAsking] = useState(false);
+  const [finding, setFinding] = useState(false);
   const asked = useRef(false);
   const open = useClinicSwitch({
     reload: () => undefined,
@@ -125,15 +127,27 @@ export function InvitationAnswer({ token }: { token: string }) {
   }
 
   async function openClinic(view: InvitationView) {
-    const { data } = await shell.api.GET('/me/clinics').catch(() => ({ data: undefined }));
-    // The accept answers 204 without the clinic's id: the clinic is found by its name among the
-    // person's clinics (a backlog gap); not exactly one, the shell's own routing decides.
-    const matches = data?.clinics.filter((c) => c.name === view.clinicName && c.selectable) ?? [];
-    const [only] = matches;
-    if (matches.length === 1 && only) {
-      open.choose(only.tenantId, null);
-      return;
+    if (finding || open.busy) return;
+    setFinding(true);
+    open.clear();
+    try {
+      const { data } = await shell.api.GET('/me/clinics').catch(() => ({ data: undefined }));
+      // The accept answers 204 without the clinic's id: the clinic is found by its name among the
+      // person's clinics (a backlog gap); not exactly one, the shell's own routing decides.
+      const matches = data?.clinics.filter((c) => c.name === view.clinicName && c.selectable) ?? [];
+      const [only] = matches;
+      if (matches.length === 1 && only) {
+        open.choose(only.tenantId, null);
+        return;
+      }
+      await home();
+    } finally {
+      setFinding(false);
     }
+  }
+
+  /** Home, with the person's clinics and invitations read again (they just changed). */
+  async function home() {
     await queryClient.invalidateQueries();
     await navigate({ to: '/' });
   }
@@ -165,6 +179,7 @@ export function InvitationAnswer({ token }: { token: string }) {
   }
 
   const { view } = shown;
+  const problem = open.problem === undefined ? undefined : PROBLEM[open.problem];
   const roles = view.roles.map((r) =>
     r.branchName === null
       ? text(ROLE_TEXT[r.role])
@@ -179,9 +194,23 @@ export function InvitationAnswer({ token }: { token: string }) {
           size="page"
           headingLevel={2}
           title={text('inviteAcceptedTitle', { clinic: view.clinicName })}
-          description={text('inviteAcceptedText', { roles: roles.join(' و') })}
+          description={text('inviteAcceptedText', { roles: listOf(roles) })}
         />
-        <Button variant="primary" loading={open.busy} onClick={() => void openClinic(view)}>
+        {problem && (
+          // The switch to the clinic was refused or got no answer (review finding 1).
+          <Callout
+            tone={problem.tone}
+            {...(open.problem === 'network' ? { icon: 'wifi-slash' as const } : {})}
+            title={text(problem.title)}
+          >
+            {text(problem.body)}
+          </Callout>
+        )}
+        <Button
+          variant="primary"
+          loading={finding || open.busy}
+          onClick={() => void openClinic(view)}
+        >
           {text('inviteOpen')}
         </Button>
       </div>
@@ -197,7 +226,7 @@ export function InvitationAnswer({ token }: { token: string }) {
           title={text('inviteDeclinedTitle')}
           description={text('inviteDeclinedText')}
         />
-        <Button variant="secondary" onClick={() => navigate({ to: '/' })}>
+        <Button variant="secondary" onClick={() => void home()}>
           {text('inviteToClinics')}
         </Button>
       </div>

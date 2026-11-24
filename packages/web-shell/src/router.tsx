@@ -12,7 +12,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
-import { hasHeldInvitation } from './auth/held-invitation.ts';
+import { forgetHeldInvitation, hasHeldInvitation } from './auth/held-invitation.ts';
 import type { ShellClient } from './client.ts';
 import { decideRoute, owesMfa, type RouteKind, type ShellApp } from './guard.ts';
 import {
@@ -100,6 +100,14 @@ function guard(kind: RouteKind) {
     ) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect
       throw redirect({ to: '/setup' });
+    }
+    // A session sent elsewhere (a super admin to admin web, a refused session signed out) will
+    // never answer it: the next person on this tab must not be shown it.
+    if (
+      outcome.action === 'sign-out' ||
+      (outcome.action === 'redirect' && outcome.to === '/admin-web')
+    ) {
+      forgetHeldInvitation();
     }
     if (outcome.action === 'stay') return;
     if (outcome.action === 'sign-out') {

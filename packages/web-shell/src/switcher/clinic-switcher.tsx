@@ -31,7 +31,7 @@ import {
 import { useState } from 'react';
 import { type MyClinic, useMyClinics } from '../account/data.ts';
 import { useIsPhone } from '../auth/media.ts';
-import { lastActive, ROLE_TEXT } from '../chooser/chooser-text.ts';
+import { lastActive, listOf, ROLE_TEXT } from '../chooser/chooser-text.ts';
 import { type SwitchProblem, useClinicSwitch } from '../chooser/use-clinic-switch.ts';
 import type { SessionView } from '../session.ts';
 import { useText } from '../text.ts';
@@ -39,7 +39,7 @@ import { useText } from '../text.ts';
 /** The radio value of «كل الفروع» (no branch chosen, a tenant-wide role). */
 const ALL = 'all';
 
-const PROBLEM: Record<
+export const PROBLEM: Record<
   SwitchProblem,
   { tone: 'warning' | 'danger'; title: CommonKey; body: CommonKey }
 > = {
@@ -79,9 +79,16 @@ export function ClinicSwitcher({ session }: { session: SessionView }) {
   const invitations = clinics.data?.invitations ?? [];
   const here = list.find((c) => c.tenantId === session.tenantId);
 
+  /**
+   * The branch a session in `c` works in, in words: none for a solo clinic (PLT-03), whose
+   * sessions still carry its one branch's id (review finding 2); «كل الفروع» for a tenant-wide
+   * role with none chosen; the one branch a person holds when the server chose it for them.
+   */
   const branchName = (c: MyClinic, id: string | null): string => {
-    if (id === null) return c.tenantWide && !c.solo ? text('switcherAllBranches') : '';
-    return c.branches.find((b) => b.id === id)?.name ?? '';
+    if (c.solo) return '';
+    if (id !== null) return c.branches.find((b) => b.id === id)?.name ?? '';
+    if (c.tenantWide) return text('switcherAllBranches');
+    return c.branches.length === 1 ? (c.branches[0]?.name ?? '') : '';
   };
   const flow = useClinicSwitch({
     reload: () => void clinics.refetch(),
@@ -93,10 +100,7 @@ export function ClinicSwitcher({ session }: { session: SessionView }) {
       setOpen(false);
       const to = list.find((c) => c.tenantId === tenantId);
       if (!to) return;
-      const branch =
-        branchId === null && !to.tenantWide && to.branches.length === 1
-          ? (to.branches[0]?.name ?? '')
-          : branchName(to, branchId);
+      const branch = branchName(to, branchId);
       toast.show({
         type: 'success',
         title: text('switcherNowIn', { clinic: to.name }),
@@ -107,24 +111,21 @@ export function ClinicSwitcher({ session }: { session: SessionView }) {
 
   if (!here) return null;
   const options = branchOptions(here);
-  const current =
-    session.branchId === null && !here.tenantWide && here.branches.length === 1 && !here.solo
-      ? (here.branches[0]?.name ?? '')
-      : branchName(here, session.branchId);
+  const current = branchName(here, session.branchId);
   if (list.length < 2 && options.length < 2 && invitations.length === 0) {
     return <span className="min-w-0 truncate text-data font-medium">{here.name}</span>;
   }
 
-  const roles = (c: MyClinic) => c.roles.map((r) => text(ROLE_TEXT[r])).join(' و');
+  const roles = (c: MyClinic) => listOf(c.roles.map((r) => text(ROLE_TEXT[r])));
   const describe = (c: MyClinic) => {
     if (!c.selectable) return text('switcherSuspendedLine');
-    const scope = c.tenantWide
-      ? c.solo
-        ? []
-        : [text('switcherAllBranches')]
-      : c.branches.length > 1
-        ? [text('switcherBranchCount', { count: c.branches.length })]
-        : c.branches.map((b) => b.name);
+    const scope = c.solo
+      ? []
+      : c.tenantWide
+        ? [text('switcherAllBranches')]
+        : c.branches.length > 1
+          ? [text('switcherBranchCount', { count: c.branches.length })]
+          : c.branches.map((b) => b.name);
     const seen = c.lastActiveAt === null ? [] : [lastActive(Date.parse(c.lastActiveAt), now)];
     return [roles(c), ...scope, ...seen.map((p) => text(p.key, p.values))].join(' · ');
   };

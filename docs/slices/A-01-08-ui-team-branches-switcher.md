@@ -123,6 +123,9 @@ Differences from the drawing, explained: the sheet's rows are `menuitemradio` (t
 Checkpoint 2 built and verified; PR open. Next: checkpoint 3 (team and member drawer), tests first; the owner may start the design-system sync for the Menu groups meanwhile.
 
 ## Evidence
-- `verify` (full): —
-- Screenshots: —
-- Reviewer findings fixed: —; deferred to backlog: —
+Checkpoint 2 (cloud session, sandbox off, 2026-11-24):
+- `pnpm verify`: `all green` (scripts-test, format, lint, file-length, drift, typecheck+lint+test, e2e against the real backend).
+- `node scripts/verify.mjs full --part ui`: browser tests and story tests green (`menu-groups.gate.test.tsx` 36 in RTL and LTR, axe clean as a popover and as a sheet; stories `Groups` and `Sheet` with axe); screenshots 281 of 283 matched, the two differences explained: `foundations-icon--all` shows the two new icons (baseline updated and looked at), and `components-menu--long-arabic-label` came from a `truncate` added to the trigger label, removed (a long label wraps again, as approved).
+- Page tests: `switcher.test.tsx` 16, `invitation.test.tsx` 8, `checkpoint2-review.test.tsx` 3, `setup-link.test.tsx` updated for the invitation page.
+- Screenshots of the screens against the real backend and the journeys: checkpoint 5, as planned.
+- Reviewer (checkpoint 2): no blocking findings; fixed: (1) «فتح العيادة» now shows a refused or unanswered switch and stays busy through its lookup; (2) a solo clinic names no branch on the switcher although its sessions carry the branch's id; (3) a held invitation lasts 15 minutes and is forgotten when the session goes to admin web or is signed out; (4) role lists joined by `listOf()`, not a literal «و»; (5) «إلى عياداتي» reads the clinics again. Deferred to the backlog: the accept's missing clinic id, the menu sheet's scrim and back-arrow key.

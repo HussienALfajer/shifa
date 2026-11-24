@@ -131,12 +131,11 @@ export function MenuTrigger(props: MenuTriggerProps) {
       {...(testId === undefined ? {} : { 'data-testid': testId })}
       className={cn(
         buttonClasses({ variant: variant ?? 'secondary', size: size ?? 'md', iconOnly }),
-        'min-w-0',
         className,
       )}
     >
       {icon !== undefined && <Icon name={icon} />}
-      {!iconOnly && <span className="min-w-0 truncate">{children}</span>}
+      {!iconOnly && <span className="min-w-0">{children}</span>}
       {!iconOnly && <Icon name="caret-down" />}
     </BaseMenuTrigger>
   );

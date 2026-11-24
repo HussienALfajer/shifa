@@ -6,7 +6,7 @@
 // accept (→ «فتح العيادة» switches there) or decline (confirmed); 403 `invitation_other_phone`
 // names the invited number; 404 `link_invalid` is one message without the clinic; no connection
 // keeps the page for a retry.
-import { createRandom, generatePersonName } from '@shifa/testing';
+import { createRandom, generatePersonName, generatePhone } from '@shifa/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { sessionQueryKey } from '../src/session.ts';
 import { button, click, flush, type Rendered, renderShell } from './render.tsx';
@@ -58,7 +58,7 @@ function api(session: typeof SIGNED_IN | null): FakeApi {
   fake.answers['/api/auth/setup-link/view'] = () => json(200, SETUP_VIEW);
   fake.answers['/api/invitations/view'] = () => json(200, INVITATION_VIEW);
   fake.answers['/api/me'] = () =>
-    json(200, { userId: SESSION.userId, name: PERSON, phoneE164: '+963900000000' });
+    json(200, { userId: SESSION.userId, name: PERSON, phoneE164: generatePhone(random, 'SY') });
   fake.answers['/api/auth/mfa'] = () => json(200, { enrolled: false, recoveryCodesLeft: null });
   return fake;
 }
