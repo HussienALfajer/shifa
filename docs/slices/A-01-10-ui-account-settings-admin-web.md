@@ -1,6 +1,6 @@
 # A-01-10 UI batch 2: My account, automatic sign-out and admin-web clinics
 
-Status: In progress (checkpoint 1 approved 2026-11-24; checkpoint 2 merged #153; re-enrolment drawing approved 2026-11-24; checkpoint 3 built 2026-11-24) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
+Status: In progress (checkpoint 1 approved 2026-11-24; checkpoint 2 merged #153; re-enrolment drawing approved 2026-11-24; checkpoint 3 merged #155; checkpoint 4 built 2026-11-24) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screens "My account", "Clinic settings · automatic sign-out", "Clinics list", "Create clinic", "Clinic detail"; criteria 3, 4, 9, 10, 10a, 10b, 12a, 13 as seen by the user; verification rows "Flows" and "Screens" · Requirements: PLT-01, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) and [A-01-09](A-01-09-account-api-gaps.md) (merged). Split from the first A-01-07 plan in the 2026-11-24 re-plan.
@@ -129,8 +129,16 @@ Clinic web, all in `packages/web-shell/src/account/`: `/account` and `/settings`
 - «إنشاء عيادة» and the 404 page's way back are links drawn with Button's look (`admin/button-link.tsx`): @shifa/ui has no link button (backlog).
 - The «حفظ» of the clinic page and the error words were not all drawn: a server error and a lost answer have their own words (review 3, 7).
 
+## Checkpoint 4 — built (2026-11-24)
+- **Journeys** (`e2e/tests/account-clinics.spec.ts`), against the built API, a real database and the built apps, in order: (1) a third seeded super admin enrols, then on admin web: the clinics list, «إنشاء العيادة» refused before sending, the clinic created, the link copied with «نسخ» (read back from the clipboard, checked as a boolean), «فتح صفحة العيادة» without the leave question, the owner card «بانتظار الإعداد»; the owner opens the copied link, sets the password and enrols; the card then reads «أكمل الإعداد». (2) The owner signs in on a second device (a phone), My account lists both devices with this one first; a wrong current password is a field error, never a sign-out; the change says «أخرجنا أجهزتك الأخرى (1)», the list keeps this device, the other device's next request answers 401 and it lands on sign-in. (3) New recovery codes with a TOTP code: ten new codes, none of the old, «تم» only after «حفظتُ الرموز»; signed out, an old code is refused and a new one signs in («بقي لديك 9 رموز»). (4) A doctor added through the API reads 30 minutes and has no «إعدادات العيادة»; the owner chooses 15 minutes («حفظ» disabled until then), «حُفظ: 15 دقيقة», and the doctor's next request reads 15. (5) The super admin finds the clinic by search, resets the owner's MFA with its confirmation; the owner's session answers 401, the owner signs in, is sent to enrolment and enrols with a new key.
+- **Screens** (`e2e/support/look.ts`): each screen on the way is axe clean in light and dark (14 screens, 28 runs). With `E2E_SHOTS=<folder>` each is captured full page; the one-time link, its QR code, the TOTP key and the recovery codes are masked. The seed has a third super admin (`accountAdmin`) so these journeys share no person with A-01-07's.
+- No product code changed: the screens were built in checkpoints 2 and 3. The journeys therefore passed on their first run; there was no red phase to see fail.
+
+### Differences from the drawings (screenshots)
+The 28 screenshots (14 screens, light and dark) were compared with what checkpoints 2 and 3 recorded against `Account10` and `Main`; nothing new beyond the differences listed there. The drawings themselves could not be opened from this session: the owner compares the screenshots with them. In a full-page capture with a dialog open, the overlay covers only the first 800 px (a capture artefact, not the page).
+
 ## Stopped at
-Checkpoint 3 built, reviewed and verified (this PR). Next: checkpoint 4: the five journeys, screenshots of every screen against the real backend, `security-reviewer` on the one-time link and code handling.
+Checkpoint 4 built, reviewed and verified (this PR). The slice is done when it merges and the owner has compared the screenshots with `Account10` and `Main`.
 
 ## Evidence
 - Red phase: the four locked test files failed for the expected reason (no `/account` or `/settings` route: «الصفحة غير موجودة.», no radios).
