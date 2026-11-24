@@ -60,8 +60,9 @@ export class SwitcherService {
     const branchId = await this.#branch(principal.userId, choice, input.branchId ?? null);
     const active = { tenantId: choice.tenantId, branchId };
     const now = this.clock.now();
-    // The clinic's audit row and the session change commit together or not at all: the auth
-    // step runs inside the clinic's transaction (two pools, as invitations do).
+    // The auth step runs inside the clinic's transaction (two pools, as invitations do): a failed
+    // session change rolls back the audit row; the rare failure of the clinic's commit after the
+    // auth step leaves the switch without its row (accepted, as for invitations).
     await this.db.withTenant(
       { tenantId: choice.tenantId, userId: principal.userId },
       async (tx) => {

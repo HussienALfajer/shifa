@@ -73,16 +73,23 @@ export async function clinicChoices(
   for (const member of own.members) {
     const clinic = own.clinics.find((c) => c.id === member.tenantId);
     if (!clinic) continue;
-    const roles = own.roles.filter((r) => r.membershipId === member.id);
+    const assigned = own.roles.filter((r) => r.membershipId === member.id);
     const suspended = clinic.status === 'suspended';
     const active = suspended ? [] : await activeBranches(db, clinic.id, userId);
+    // Live roles: tenant-wide, or in an active branch (as the principal counts them). A
+    // suspended clinic shows the roles held there with its message.
+    const roles = suspended
+      ? assigned
+      : assigned.filter((r) => r.branchId === null || active.some((b) => b.id === r.branchId));
+    // No live role in an active clinic: the person holds nothing there; it is not listed.
+    if (!suspended && roles.length === 0) continue;
     const tenantWide = roles.some((r) => r.branchId === null);
     const held = tenantWide ? active : active.filter((b) => roles.some((r) => r.branchId === b.id));
     choices.push({
       tenantId: clinic.id,
       name: clinic.name,
       status: clinic.status,
-      selectable: !suspended && (tenantWide || held.length > 0),
+      selectable: !suspended,
       roles: [...new Set(roles.map((r) => r.role))].sort(
         (a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b),
       ),

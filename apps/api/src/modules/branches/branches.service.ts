@@ -77,6 +77,9 @@ export class BranchesService {
     return this.tenants.run(scope, async (tx) => {
       const current = await find(tx, id, { lock: true });
       if (current.archivedAt) throw archivedError();
+      // Nothing given: nothing changes and nothing is audited.
+      const nothing = [input.name, input.address, input.phone].every((v) => v === undefined);
+      if (nothing) return toBranch(current, (await memberCounts(tx)).get(current.id) ?? 0);
       const [row] = await tx
         .update(branch)
         .set({
@@ -128,7 +131,8 @@ export class BranchesService {
       await audit(tx, scope, 'branch.archived', row.id, requestId, {
         sessionsEnded: stranded.length,
       });
-      // The auth step commits on its own; a failure here rolls back the archive and its row.
+      // Each auth step commits on its own: a failure here rolls back the archive and its row,
+      // but sessions already ended stay ended (fails safe; the owner can archive again).
       for (const member of stranded) {
         if (member.userId)
           await this.accounts.endSessionsInClinic(member.userId, scope.tenantId, by);

@@ -48,12 +48,13 @@ export function tenantView(
       .from(tenant)
       .where(eq(tenant.id, tenantId));
     if (!clinic) return NONE;
-    if (clinic.status === 'suspended') return { ...NONE, suspended: true };
     const [member] = await tx
       .select({ id: membership.id })
       .from(membership)
       .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
+    // Membership first: someone no longer a member learns nothing of the clinic's status.
     if (!member) return NONE;
+    if (clinic.status === 'suspended') return { ...NONE, suspended: true };
     const roles = await tx
       .select({ role: roleAssignment.role, branchId: roleAssignment.branchId })
       .from(roleAssignment)

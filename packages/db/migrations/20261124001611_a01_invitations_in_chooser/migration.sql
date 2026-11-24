@@ -71,7 +71,14 @@ CREATE POLICY membership_auth_only_own ON "membership" AS RESTRICTIVE TO shifa_a
                      WHERE sl.tenant_id = "membership".tenant_id
                        AND sl.membership_id = "membership".id
                        AND sl.token_hash = current_link_token_hash())
-         OR (user_id IS NULL AND status = 'pending' AND phone_e164 = current_user_phone()))
+         OR (user_id IS NULL AND status = 'pending' AND phone_e164 = current_user_phone()
+             AND EXISTS (SELECT 1 FROM "setup_link" sl
+                          WHERE sl.tenant_id = "membership".tenant_id
+                            AND sl.membership_id = "membership".id
+                            AND sl.purpose = 'invitation'
+                            AND sl.invited_phone = current_user_phone()
+                            AND sl.used_at IS NULL AND sl.replaced_at IS NULL
+                            AND sl.expires_at > now())))
   WITH CHECK (user_id = current_user_id()
          OR EXISTS (SELECT 1 FROM "setup_link" sl
                      WHERE sl.tenant_id = "membership".tenant_id
@@ -88,7 +95,14 @@ CREATE POLICY membership_auth_accept_only ON "membership" AS RESTRICTIVE FOR UPD
                          AND sl.token_hash = current_link_token_hash()
                          AND sl.used_at IS NOT NULL
                          AND sl.purpose IN ('owner_setup', 'member_setup', 'invitation'))
-              OR phone_e164 = current_user_phone()))
+              OR (phone_e164 = current_user_phone()
+                  AND EXISTS (SELECT 1 FROM "setup_link" sl
+                               WHERE sl.tenant_id = "membership".tenant_id
+                                 AND sl.membership_id = "membership".id
+                                 AND sl.purpose = 'invitation'
+                                 AND sl.invited_phone = current_user_phone()
+                                 AND sl.used_at IS NULL AND sl.replaced_at IS NULL
+                                 AND sl.expires_at > now()))))
   WITH CHECK (user_id IS NOT NULL AND status = 'active'
               AND phone_e164 = (SELECT u.phone_number FROM "user" u
                                  WHERE u.id = "membership".user_id)

@@ -1,6 +1,6 @@
 # A-01-05 Branches and the clinic switcher
 
-Status: Planned · Tier: T0 · Branch: `feat/A-01-05-branches-and-switcher`
+Status: Built, waiting for the owner (OD-91, locked-test lint fix) · Tier: T0 · Branch: `claude/optimistic-hypatia-y2abbh` (cloud session)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) criteria 4 (archived branch), 9–11, 12 (branch and switch events), 13 (HEAD before GET) · Requirements: PLT-03, PLT-04, PLT-05, PLT-47 · Decisions: OD-76, OD-89, OD-90
 
 After [A-01-04](A-01-04-members-roles-toggles-scope.md) (merged). Last backend slice of A-01. Re-planned on 2026-11-23 against the merged A-01-01 to A-01-04 code: it now carries the backlog blocker "Membership binding on INSERT" (A-01-01 security review L4, A-01-04 security review L2), so it has a migration, and it extends `apps/api/test/architecture/table-access.test.ts` with branch ownership and a write rule.
@@ -70,7 +70,9 @@ Checkpoint 3 built (switcher, suspended clinic, invitations in the chooser, HEAD
 - `pnpm verify` after checkpoints 1 and 2: `all green` (format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test).
 - `pnpm verify:full` after checkpoint 3 (cloud session, Docker available): 13 of 14 steps pass (format, instructions, lint-root, scripts-test, file-length, pub-get, drift, build, boot, ui-browser, ui-storybook, ui-storybook-build, ui-screenshots); `typecheck+lint+test` fails only on `@shifa/api:lint` in the locked `test/identity/switcher.test.ts` (lines 104, 106: `@typescript-eslint/no-unsafe-assignment` on `expect.any(String)`).
 - Tests: `@shifa/db` 46 files, 337 tests (isolation suite direct and pooled, with the new refused inserts); `apps/api` 73 files, 486 tests, all pass.
-- Reviewer and security-reviewer findings fixed: —; deferred to backlog: —
+- Reviewer (no blocking findings). Fixed: the chooser lists only live roles (none from archived branches) and leaves out a clinic with no live role, so `no_clinic` fires as spec 11 says; an empty `PATCH /branches/:id` writes no audit row; the seed's own-membership check ignores invitations; comments on the switch's two commits and the migration lock corrected. Deferred to backlog: raw SQL writes escape the table-access rule (review 5).
+- Security reviewer. **H1 open, owner decision OD-91:** accepting by id trusts the account's unverified phone; an owner who claimed a phone through a member link (OD-88) could accept that phone's invitations from other clinics. Fixed: L1 (the recreated restrictive policies now require an open invitation link on the phone path too), N1 (membership checked before suspension, so a former member learns nothing of the status), N2 (comment). L2 (a declined link stays bindable on the link path) stays in the backlog: not a regression.
+- Deferred proof: spec A-01b's verification contract asks for Playwright (sign-in → chooser → switch) for criteria 9–11; with no web screens in this slice it comes with A-01-08. Criterion 13's HEAD rule is proved by `routeList` unit tests only (no route can declare HEAD today).
 
 ## Notes for the next session
 - Bound memberships in tests are written as the owner/superuser after checkpoint 1; any new fixture that needs an active member uses `insertMembership()` with a `userId`.

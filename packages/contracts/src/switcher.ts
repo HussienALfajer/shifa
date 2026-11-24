@@ -16,7 +16,7 @@ export const MyClinic = z
     tenantId: z.uuid(),
     name: z.string(),
     status: ClinicStatus,
-    /** False for a suspended clinic or one where no role is left in an active branch. */
+    /** False for a suspended clinic; a clinic where no role is left is not listed at all. */
     selectable: z.boolean(),
     roles: z.array(SessionRole),
     /** The person's last activity in this clinic; null if never. */
