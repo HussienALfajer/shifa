@@ -99,6 +99,19 @@
         "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.green.50}" } } }
       }
     },
+    "scan": {
+      "$description": "A code a camera reads (the TOTP QR code, slice A-01-07): the same light plate and dark modules in both themes, since many readers cannot read an inverted code.",
+      "bg": {
+        "$description": "The plate behind the modules: white in both themes.",
+        "$value": "{color.white}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.white}" } } }
+      },
+      "fg": {
+        "$description": "The dark modules of the code: ink in both themes.",
+        "$value": "{color.jasmine.ink.900}",
+        "$extensions": { "shifa": { "modes": { "dark": "{color.jasmine.ink.900}" } } }
+      }
+    },
     "avatar": {
       "$description": "Initials avatars of people (staff and patients), one hue per person picked from the name; no meaning, never red. Initials use the fg on the bg of the same hue.",
       "green": {

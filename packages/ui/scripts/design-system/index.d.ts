@@ -371,6 +371,32 @@ export interface FormProps {
   submitting?: boolean;
 }
 
+export interface QrCodeProps {
+  /** The text to encode (an otpauth:// URI); absent: the loading state. */
+  value?: string;
+  /** What screen readers hear. */
+  label: string;
+}
+
+export interface CodeListProps {
+  /** The recovery codes, as the server sends them. */
+  codes: string[];
+  /** The list's name for screen readers («رموز الاسترداد العشرة» by default). */
+  label?: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+  printLabel?: string;
+  /** What the print sheet says; without it there is no «طباعة». */
+  print?: {
+    title: string;
+    who: string;
+    date: string;
+    note: string;
+    logoSrc?: string;
+    logoAlt?: string;
+  };
+}
+
 export interface SpinnerProps {
   /** sm 20 and md 24 for rows and controls; lg 40 for a whole panel or page. */
   size?: 'sm' | 'md' | 'lg';
@@ -417,6 +443,8 @@ type Name =
   | 'Card'
   | 'EmptyState'
   | 'Callout'
+  | 'QrCode'
+  | 'CodeList'
   | 'Avatar'
   | 'Toolbar'
   | 'Pagination'
@@ -452,3 +480,5 @@ export declare const AlertDialog: (props: AlertDialogProps) => unknown;
 export declare const Drawer: (props: DrawerProps) => unknown;
 export declare const Toast: (props: ToastProps) => unknown;
 export declare const CommandPalette: (props: CommandPaletteProps) => unknown;
+export declare const QrCode: (props: QrCodeProps) => unknown;
+export declare const CodeList: (props: CodeListProps) => unknown;

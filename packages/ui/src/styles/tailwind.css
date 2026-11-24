@@ -13,3 +13,10 @@
 
 /* The components' classes, for an app that imports this entry. */
 @source "../";
+
+/* A page that holds a CodeList's print sheet prints that sheet alone (slice A-01-07). */
+@media print {
+  body:has(> [data-slot="code-list-print"]) > :not([data-slot="code-list-print"]) {
+    display: none !important;
+  }
+}

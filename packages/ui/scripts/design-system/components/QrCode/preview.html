@@ -1,0 +1,30 @@
+<!-- @dsCard group="Feedback" height=300 subtitle="Ready and loading · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-wrap: wrap; gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var URI = 'otpauth://totp/Shifa:%2B963930012345?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=Shifa';
+  var LABELS = { ar: 'رمز QR لإضافة حساب شفاء إلى تطبيق المصادقة', en: 'QR code to add the Shifa account to the authenticator app' };
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    [{ value: URI, label: LABELS[panel.lang] }, { label: LABELS[panel.lang] }].forEach(function (props) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'QrCode', props);
+    });
+  });
+</script>
+</body>
+</html>

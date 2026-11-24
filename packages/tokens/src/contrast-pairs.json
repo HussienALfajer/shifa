@@ -9,6 +9,7 @@
   { "text": "color.text.muted", "surface": "color.bg.surface-raised", "class": "body" },
   { "text": "color.nav.text", "surface": "color.nav.bg", "class": "body" },
   { "text": "color.brand.accent", "surface": "color.nav.bg", "class": "large" },
+  { "text": "color.scan.fg", "surface": "color.scan.bg", "class": "ui" },
   { "text": "color.brand.primary", "surface": "color.bg.app", "class": "body" },
   { "text": "color.brand.primary", "surface": "color.bg.surface", "class": "body" },
   { "text": "color.brand.primary", "surface": "color.bg.surface-raised", "class": "body" },

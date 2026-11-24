@@ -54,6 +54,7 @@ export {
   type CardProps,
 } from './card/card.tsx';
 export { Checkbox, type CheckboxProps } from './checkbox/checkbox.tsx';
+export { CodeList, type CodeListPrint, type CodeListProps } from './code-list/code-list.tsx';
 export {
   Combobox,
   type ComboboxItem,
@@ -174,6 +175,7 @@ export {
   useDirection,
 } from './providers/direction-provider.tsx';
 export { type Theme, ThemeProvider, useTheme } from './providers/theme-provider.tsx';
+export { QrCode, type QrCodeProps } from './qr-code/qr-code.tsx';
 export {
   Radio,
   RadioGroup,

@@ -1,0 +1,31 @@
+<!-- @dsCard group="Feedback" height=420 subtitle="Ten codes with copy and print · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var CODES = ['k7m2q-9xw4r', 'h8zdt-3npwa', 'p5rte-9cqeb', 'b2nvk-7yfgm', 'x6gjh-4tsmq', 'c9wat-3hune', 'r4yxe-6bnqz', 'f7mck-2vjta', 'u3ksy-5wgad', 'd8qpm-4rzhe'];
+  var PROPS = {
+    ar: { codes: CODES },
+    en: { codes: CODES, label: 'The ten recovery codes', copyLabel: 'Copy all', copiedLabel: 'All ten copied', printLabel: 'Print' }
+  };
+  document.querySelectorAll('.panel').forEach(function (panel) {
+    var slot = document.createElement('div');
+    panel.appendChild(slot);
+    window.Shifa.mount(slot, 'CodeList', PROPS[panel.lang]);
+  });
+</script>
+</body>
+</html>

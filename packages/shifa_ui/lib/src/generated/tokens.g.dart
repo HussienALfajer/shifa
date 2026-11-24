@@ -249,6 +249,8 @@ abstract final class ShifaColorsLight {
   static const Color colorSelectionStrong = Color(0xFF9AD8C5);
   static const Color colorNavBg = Color(0xFF134A3D);
   static const Color colorNavText = Color(0xFFE8F2EE);
+  static const Color colorScanBg = Color(0xFFFFFFFF);
+  static const Color colorScanFg = Color(0xFF1D2A26);
   static const Color colorAvatarGreenBg = Color(0xFFE2F0EA);
   static const Color colorAvatarGreenFg = Color(0xFF134A3D);
   static const Color colorAvatarGoldBg = Color(0xFFF7EDD3);
@@ -364,6 +366,8 @@ abstract final class ShifaColorsDark {
   static const Color colorSelectionStrong = Color(0xFF134A3D);
   static const Color colorNavBg = Color(0xFF0C2A23);
   static const Color colorNavText = Color(0xFFE8F2EE);
+  static const Color colorScanBg = Color(0xFFFFFFFF);
+  static const Color colorScanFg = Color(0xFF1D2A26);
   static const Color colorAvatarGreenBg = Color(0xFF12382F);
   static const Color colorAvatarGreenFg = Color(0xFF9AD8C5);
   static const Color colorAvatarGoldBg = Color(0xFF3A2F14);
