@@ -8,6 +8,9 @@ After [A-01-05](A-01-05-branches-and-switcher.md) (merged) and the approved draw
 ## Goal
 The API gives the clinic-web screens what the A-01a inventory needs and the A-01-07 re-plan found missing: who is signed in, how to change one's own password, how many recovery codes are left and a way to make new ones.
 
+## Rows proposed by the A-01-07 analysis (2026-11-24, pending the owner)
+From [A-01-07 Drawings and analysis](A-01-07-ui-sign-in-screens.md#api-gaps-confirmed-and-extended-closed-in-a-01-09-never-worked-around-in-the-client): declare the undeclared statuses (`authMfaEnrolConfirm`, `authMfaChallenge` 400; `meSwitch` 403; 401 on authenticated routes); `MyClinic.tenantWide` and 400 `branch_required`; `reason` on 401 `session_expired`; a staff TOTP reset by the owner (or the owner's decision against it); named MFA 409 codes; the recovery-code challenge answering the codes left; `SetupLinkView.phoneMasked` if improvement h is accepted. Added to the plan below once approved.
+
 ## Plan
 0. **Spec** (owner-approved with this plan): A-01a gets criteria for 10a own profile, 10b change of password, 12a recovery codes left and renewal; the verification table gets their rows; the screen inventory names the counts.
 1. **Contracts** (`packages/contracts`):
