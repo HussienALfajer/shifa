@@ -1,7 +1,9 @@
 -- A-01-11 (expand, OD-99): the super admin corrects the phone of a clinic's pending owner, only in
 -- an owner.phone_changed action, and re-issues the owner's link in the same transaction. Runs as
 -- shifa_owner. shifa_platform gains UPDATE on two membership columns only (never user_id, status
--- or the name), for the owner membership of a clinic whose owner has no account yet; the two
+-- or the name), for the owner membership of a clinic whose owner has no account yet: the
+-- clinic's only owner (a pending co-owner the owner invited sits next to a set-up owner and is
+-- never one; security review M1); the two
 -- restrictive setup_link policies are replaced by ones with the same name that also allow
 -- owner.phone_changed (their other conditions are unchanged). Every policy for shifa_platform has
 -- its reason in src/schema/classification.ts. Rollback: drop the two membership policies, revoke
@@ -13,11 +15,18 @@ CREATE POLICY membership_platform_phone_change ON "membership" FOR UPDATE TO shi
          AND user_id IS NULL AND status = 'pending'
          AND EXISTS (SELECT 1 FROM "role_assignment" ra
                       WHERE ra.tenant_id = "membership".tenant_id
-                        AND ra.membership_id = "membership".id AND ra.role = 'owner'))
+                        AND ra.membership_id = "membership".id AND ra.role = 'owner')
+         AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra2
+                          WHERE ra2.tenant_id = "membership".tenant_id
+                            AND ra2.role = 'owner' AND ra2.membership_id <> "membership".id))
   WITH CHECK (user_id IS NULL AND status = 'pending'
               AND EXISTS (SELECT 1 FROM "role_assignment" ra
                            WHERE ra.tenant_id = "membership".tenant_id
-                             AND ra.membership_id = "membership".id AND ra.role = 'owner'));
+                             AND ra.membership_id = "membership".id AND ra.role = 'owner')
+              AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra2
+                               WHERE ra2.tenant_id = "membership".tenant_id
+                                 AND ra2.role = 'owner'
+                                 AND ra2.membership_id <> "membership".id));
 --> statement-breakpoint
 -- Restrictive: the tenant isolation policy (PUBLIC) would otherwise let shifa_platform, with a
 -- tenant set, update any membership row it can see.
@@ -27,11 +36,18 @@ CREATE POLICY membership_platform_phone_only ON "membership" AS RESTRICTIVE FOR 
          AND user_id IS NULL AND status = 'pending'
          AND EXISTS (SELECT 1 FROM "role_assignment" ra
                       WHERE ra.tenant_id = "membership".tenant_id
-                        AND ra.membership_id = "membership".id AND ra.role = 'owner'))
+                        AND ra.membership_id = "membership".id AND ra.role = 'owner')
+         AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra2
+                          WHERE ra2.tenant_id = "membership".tenant_id
+                            AND ra2.role = 'owner' AND ra2.membership_id <> "membership".id))
   WITH CHECK (user_id IS NULL AND status = 'pending'
               AND EXISTS (SELECT 1 FROM "role_assignment" ra
                            WHERE ra.tenant_id = "membership".tenant_id
-                             AND ra.membership_id = "membership".id AND ra.role = 'owner'));
+                             AND ra.membership_id = "membership".id AND ra.role = 'owner')
+              AND NOT EXISTS (SELECT 1 FROM "role_assignment" ra2
+                               WHERE ra2.tenant_id = "membership".tenant_id
+                                 AND ra2.role = 'owner'
+                                 AND ra2.membership_id <> "membership".id));
 --> statement-breakpoint
 DROP POLICY setup_link_platform_issue_only ON "setup_link";
 --> statement-breakpoint

@@ -1,7 +1,9 @@
 -- A-01-11 (expand, OD-98, OD-99): a self re-enrolment's pending TOTP secret and its own replay
 -- state (shifa_auth's table grant covers them; shifa_app's column grant does not), and the
 -- invitation link's phone follows a pending owner's corrected phone (ON UPDATE CASCADE; RI
--- actions run as the table owner). The FK is re-created and validated under a lock of
+-- actions run as the table owner; only shifa_platform can change membership.phone_e164, so only
+-- the phone edit fires it, and it also rewrites the phone of the membership's used or replaced
+-- invitation links, which are dead; accepted, security review L2). The FK is re-created and validated under a lock of
 -- setup_link and membership (small tables). Rollback: drop the two columns (unused by older
 -- code); re-create the FK without ON UPDATE.
 ALTER TABLE "two_factor" ADD COLUMN "pending_secret" text;--> statement-breakpoint

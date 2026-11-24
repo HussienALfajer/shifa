@@ -120,7 +120,7 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       membership_platform_phone_change:
         'the super admin corrects the phone of a clinic’s owner who has no account yet, in an owner.phone_changed action (A-01a 13, OD-99)',
       membership_platform_phone_only:
-        'restrictive: even with a tenant set, shifa_platform updates only a pending, unbound owner membership, only in owner.phone_changed; user_id and status stay as they were',
+        'restrictive: even with a tenant set, shifa_platform updates only the pending, unbound membership of a clinic’s only owner (never a co-owner the owner invited), only in owner.phone_changed; user_id and status stay as they were',
     },
   },
   role_assignment: {

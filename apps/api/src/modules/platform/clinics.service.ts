@@ -69,21 +69,23 @@ export class ClinicsService {
           status: tenant.status,
           subscriptionEnd: tenant.subscriptionEnd,
           createdAt: tenant.createdAt,
-          ownerName: membership.displayName,
-          ownerStatus: membership.status,
         })
         .from(tenant)
-        // shifa_platform sees owner memberships only: at most one row per clinic.
-        .leftJoin(membership, eq(membership.tenantId, tenant.id))
         .where(search ? ilike(tenant.name, likePattern(search)) : undefined)
         .orderBy(desc(tenant.createdAt));
+      // shifa_platform sees owner memberships only; a clinic can hold several (co-owners the
+      // owner invited): one card per clinic, the same one the detail shows.
+      const owners = await ownerRows(tx);
       return {
-        clinics: rows.map((r) => ({
-          ...r,
-          ownerName: r.ownerName ?? null,
-          ownerStatus: r.ownerStatus ?? null,
-          createdAt: r.createdAt.toISOString(),
-        })),
+        clinics: rows.map((r) => {
+          const owner = ownerOf(owners.filter((o) => o.tenantId === r.id));
+          return {
+            ...r,
+            ownerName: owner?.name ?? null,
+            ownerStatus: owner?.status ?? null,
+            createdAt: r.createdAt.toISOString(),
+          };
+        }),
       };
     });
   }
@@ -172,10 +174,7 @@ export class ClinicsService {
     const action = { event: OWNER_EVENTS[kind], requestId, data: { clinicId: id } } as const;
     const by = { actorId: principal.userId, requestId };
     return this.#run(principal, action, async (tx, audit) => {
-      const [owner] = await tx
-        .select({ id: membership.id, userId: membership.userId, phone: membership.phoneE164 })
-        .from(membership)
-        .where(eq(membership.tenantId, id));
+      const owner = ownerOf(await ownerRows(tx, id));
       if (!owner) throw new NotFoundException();
       audit.setTarget(owner.userId ?? owner.id);
       if (kind === 'setup-link') {
@@ -227,13 +226,13 @@ export class ClinicsService {
       data: { clinicId: id, linkPurpose: purpose },
     } as const;
     return this.#run(principal, action, async (tx, audit) => {
-      const [owner] = await tx
-        .select({ id: membership.id, userId: membership.userId })
-        .from(membership)
-        .where(eq(membership.tenantId, id));
+      // Every owner membership: the edit is for a clinic whose only owner has no account yet. A
+      // pending co-owner the set-up owner invited is never "the owner" (security review M1).
+      const all = await ownerRows(tx, id);
+      const owner = ownerOf(all);
       if (!owner) throw new NotFoundException();
       audit.setTarget(owner.id);
-      if (owner.userId) throw new ApiError(409, 'owner_account_exists');
+      if (owner.userId || all.length > 1) throw new ApiError(409, 'owner_account_exists');
       const [pending] = await tx
         .select({ id: membership.id })
         .from(membership)
@@ -274,21 +273,39 @@ export class ClinicsService {
   }
 }
 
-/** The clinic's own fields and its owner card; 404 when there is no such clinic. */
-async function clinicDetail(tx: PlatformTx, id: string): Promise<ClinicDetail> {
-  const [clinic] = await tx.select().from(tenant).where(eq(tenant.id, id));
-  if (!clinic) throw new NotFoundException();
-  const [owner] = await tx
+/** Owner memberships (all shifa_platform can see), of one clinic or of every clinic. */
+function ownerRows(tx: PlatformTx, tenantId?: string) {
+  return tx
     .select({
-      membershipId: membership.id,
+      id: membership.id,
+      tenantId: membership.tenantId,
+      userId: membership.userId,
       name: membership.displayName,
       status: membership.status,
       phone: membership.phoneE164,
     })
     .from(membership)
-    .where(and(eq(membership.tenantId, id)));
+    .where(tenantId ? eq(membership.tenantId, tenantId) : undefined);
+}
+
+/**
+ * The clinic's owner for its card and the support actions. A clinic can also hold co-owners the
+ * owner invited (pending until they accept): the owner with an account comes first, then the
+ * lowest id, so every call names the same person (security review M1).
+ */
+function ownerOf<T extends { id: string; userId: string | null }>(rows: T[]): T | undefined {
+  return [...rows].sort(
+    (a, b) => Number(a.userId === null) - Number(b.userId === null) || a.id.localeCompare(b.id),
+  )[0];
+}
+
+/** The clinic's own fields and its owner card; 404 when there is no such clinic. */
+async function clinicDetail(tx: PlatformTx, id: string): Promise<ClinicDetail> {
+  const [clinic] = await tx.select().from(tenant).where(eq(tenant.id, id));
+  if (!clinic) throw new NotFoundException();
+  const owner = ownerOf(await ownerRows(tx, id));
   const linkExpiresAt = owner
-    ? await ownerLinkExpiry(tx, { tenantId: id, membershipId: owner.membershipId })
+    ? await ownerLinkExpiry(tx, { tenantId: id, membershipId: owner.id })
     : null;
   return {
     id: clinic.id,
@@ -301,7 +318,7 @@ async function clinicDetail(tx: PlatformTx, id: string): Promise<ClinicDetail> {
     createdAt: clinic.createdAt.toISOString(),
     owner: owner
       ? {
-          membershipId: owner.membershipId,
+          membershipId: owner.id,
           name: owner.name,
           status: owner.status,
           // Masked here: the full phone never leaves the platform path (A-01-11).
