@@ -71,6 +71,7 @@ export const BUNDLE_COMPONENTS = [
   'Callout',
   'QrCode',
   'CodeList',
+  'CopyField',
   'Avatar',
   'Toolbar',
   'Pagination',

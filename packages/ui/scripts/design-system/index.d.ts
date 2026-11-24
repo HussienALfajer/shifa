@@ -16,6 +16,7 @@ export type IconName =
   | 'check-circle'
   | 'clock'
   | 'cloud-check'
+  | 'copy'
   | 'dots'
   | 'eye'
   | 'eye-slash'
@@ -30,6 +31,7 @@ export type IconName =
   | 'phone'
   | 'plus'
   | 'printer'
+  | 'share'
   | 'sign-out'
   | 'trash'
   | 'user'
@@ -397,6 +399,27 @@ export interface CodeListProps {
   };
 }
 
+export interface CopyFieldProps {
+  /** The value to copy (a setup link); absent: loading. */
+  value?: string;
+  /** The visible label and the box's name («رابط الإعداد»). */
+  label: string;
+  copyLabel?: string;
+  copiedLabel?: string;
+  /** Shown when the clipboard refused; the value is selected to copy by hand. */
+  refusedText?: string;
+  /** «إرسال عبر واتساب» to the server's address; hidden when disabled. */
+  share?: { href: string; label: string };
+  /** The line under the box: the expiry, or why it no longer works. */
+  expiry?: string;
+  /** Wraps a long value over several lines (a phone). */
+  multiline?: boolean;
+  /** The copy button shows its icon only (still named). */
+  iconOnly?: boolean;
+  /** A replaced link: muted, nothing to copy or share. */
+  disabled?: boolean;
+}
+
 export interface SpinnerProps {
   /** sm 20 and md 24 for rows and controls; lg 40 for a whole panel or page. */
   size?: 'sm' | 'md' | 'lg';
@@ -445,6 +468,7 @@ type Name =
   | 'Callout'
   | 'QrCode'
   | 'CodeList'
+  | 'CopyField'
   | 'Avatar'
   | 'Toolbar'
   | 'Pagination'
@@ -482,3 +506,4 @@ export declare const Toast: (props: ToastProps) => unknown;
 export declare const CommandPalette: (props: CommandPaletteProps) => unknown;
 export declare const QrCode: (props: QrCodeProps) => unknown;
 export declare const CodeList: (props: CodeListProps) => unknown;
+export declare const CopyField: (props: CopyFieldProps) => unknown;
