@@ -1,6 +1,6 @@
 # A-01-11 Account and platform API gaps: TOTP re-enrolment, pending owner's phone, owner card fields
 
-Status: Planned (2026-11-24, waiting for the owner's approval and OD-101) · Tier: T0 · Branch: `feat/A-01-11-account-platform-api-gaps`
+Status: Planned (approved by the owner 2026-11-24 with OD-101 and the error code `owner_account_exists`; second-session critique waived if `/build-slice` is started directly, as for A-01-09) · Tier: T0 · Branch: `feat/A-01-11-account-platform-api-gaps`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) criteria 3, 11, 12, 13, 14 and the screens "My account" and "Clinic detail" (criteria to add or change: Plan 0 of this slice) · Requirements: PLT-01, PLT-10, PLT-19, PLT-47 · Decisions: ADR-0046, OD-93, OD-98, OD-99, OD-100
 
 After the approved drawings of [A-01-10](A-01-10-ui-account-settings-admin-web.md) checkpoint 1 (2026-11-24). Before A-01-10 checkpoint 2. It changes contracts, the auth path and the platform path: T0, with `reviewer` and `security-reviewer`.
@@ -24,8 +24,8 @@ The API gives the approved A-01-10 drawings everything they use, so the client n
 | API gap 6: no-op owner actions | `reset-mfa` and `end-sessions` on a pending owner answer 409 `owner_setup_pending` |
 | API gap 7: undeclared statuses | 400 on `platformCreateClinic` and `platformUpdateClinic`; 400 and 403 on `clinicUpdateSettings`; the new routes' statuses |
 
-## Open for the owner
-- **OD-101**: does a self re-enrolment of TOTP end the person's other sessions? Recommendation: no. The person proved the old factor and the password; this session is not rotated (the second factor is unchanged in kind). A change of password (OD-92) and the resets by the owner or the super admin keep ending sessions.
+## Owner decision on this plan
+- **OD-101** (owner, 2026-11-24): a self re-enrolment of TOTP does not end the person's other sessions. The person proved the old factor and the password; this session is not rotated (the second factor is unchanged in kind). A change of password (OD-92) and the resets by the owner or the super admin keep ending sessions.
 
 ## What the code showed (2026-11-24, planning)
 - `two_factor` holds one secret per person, and `enrolStart` overwrites it: keeping the old secret until the new one is confirmed (OD-98) needs a second, sealed column. **One expand-only migration**, so this slice changes the schema.
@@ -39,7 +39,7 @@ The API gives the approved A-01-10 drawings everything they use, so the client n
 ## Plan
 ### Checkpoint 1 — spec and contracts
 0. **Spec** (owner-approved with this plan; written first, on the branch). A-01a:
-   - criterion 11 adds the self re-enrolment (OD-98): an enrolled person starts it with a current code from the old app (replay and lock rules of criterion 12), scans a new key, confirms with a code from the new app; the old secret works until then; ten new recovery codes, the old set gone; other sessions as OD-101; audited;
+   - criterion 11 adds the self re-enrolment (OD-98): an enrolled person starts it with a current code from the old app (replay and lock rules of criterion 12), scans a new key, confirms with a code from the new app; the old secret works until then; ten new recovery codes, the old set gone; other sessions kept (OD-101); audited;
    - criterion 3 adds the owner's status in the clinics list; criterion 13 adds the owner card (masked phone, status, the open link's expiry), the phone edit of a pending owner (OD-99: earlier link replaced, new link shown once, refused once the owner has an account, `owner_setup_pending` for a phone that owns another clinic not set up, audited), and 409 for MFA reset and end sessions on an owner without an account;
    - criterion 14 adds `auth.mfa_reenrolled` and `owner.phone_changed`; the verification table gets rows for both.
 1. **Contracts** (`packages/contracts`):
@@ -59,7 +59,7 @@ The API gives the approved A-01-10 drawings everything they use, so the client n
    - Rollback: the columns are unused by older code; the policies and the FK revert in a later migration if ever needed.
 
 ### Checkpoint 2 — self re-enrolment of TOTP
-3. `MfaService.reenrolStart`: row `FOR UPDATE`; not verified → 409 `mfa_not_enrolled`; lock → 429; the old-app code through `#useTotp` (replay rule, failures through `#failure()`); a new sealed secret into `pending_secret`, `pending_last_used_step` cleared. `reenrolConfirm`: no `pending_secret` → 409 `mfa_not_started`; the code against the pending secret (±1 step, skew hint, its own replay state); on success in one transaction `secret` ← pending, `lastUsedStep` ← the step, new recovery-code hashes, failures cleared, `enrolledAt` ← now, pending columns cleared, `auth.mfa_reenrolled` written; sessions as OD-101. The challenge keeps using the old secret while a re-enrolment is pending; a reset by the owner or the super admin deletes the row, pending included. The leak test covers both bodies (codes, keys).
+3. `MfaService.reenrolStart`: row `FOR UPDATE`; not verified → 409 `mfa_not_enrolled`; lock → 429; the old-app code through `#useTotp` (replay rule, failures through `#failure()`); a new sealed secret into `pending_secret`, `pending_last_used_step` cleared. `reenrolConfirm`: no `pending_secret` → 409 `mfa_not_started`; the code against the pending secret (±1 step, skew hint, its own replay state); on success in one transaction `secret` ← pending, `lastUsedStep` ← the step, new recovery-code hashes, failures cleared, `enrolledAt` ← now, pending columns cleared, `auth.mfa_reenrolled` written; other sessions kept (OD-101). The challenge keeps using the old secret while a re-enrolment is pending; a reset by the owner or the super admin deletes the row, pending included. The leak test covers both bodies (codes, keys).
 
 ### Checkpoint 3 — owner card, list and no-op actions
 4. `clinicDetail()` reads the owner's phone (masked with the shared `maskPhone`, moved where both modules use it) and the latest open link's `expiresAt`; `list()` returns `ownerStatus`; `ownerAction` answers 409 `owner_setup_pending` for `reset-mfa` and `end-sessions` when the owner has no account (no audit row of a done action: the platform transaction rolls back).
@@ -74,7 +74,7 @@ The API gives the approved A-01-10 drawings everything they use, so the client n
 ## Tests written first (mapped to criteria)
 - Contracts: schemas and examples of the two re-enrolment routes, `ClinicOwner.phoneMasked` and `linkExpiresAt`, `ClinicSummary.ownerStatus`, `platformOwnerPhone`; every status listed in 1e–1g declared.
 - Database: the new columns are not readable by `shifa_app`; `shifa_platform` updates the phone of a pending owner only in `owner.phone_changed`, never an active owner's, a member's, `user_id` or `status`; the FK cascade on a replaced invitation link; the policy-count and classification checks.
-- A-01a 11, OD-98: start refused without enrolment (409), with a wrong code (counted; the fifth locks, 429 with `until`), with a replayed code; start twice replaces the pending key; while pending the old secret still passes the challenge and the new one does not; confirm without a start (409 `mfa_not_started`), with a wrong code (counted), with a code 2–10 steps off (`clock_skew`); a confirm in the same time step as the start's code is accepted; after confirm the old secret refused, the new one accepted once, the old recovery codes refused, the new ones accepted once, `enrolledAt` moved; the owner's reset during a pending re-enrolment removes both; audit row; other sessions per OD-101.
+- A-01a 11, OD-98: start refused without enrolment (409), with a wrong code (counted; the fifth locks, 429 with `until`), with a replayed code; start twice replaces the pending key; while pending the old secret still passes the challenge and the new one does not; confirm without a start (409 `mfa_not_started`), with a wrong code (counted), with a code 2–10 steps off (`clock_skew`); a confirm in the same time step as the start's code is accepted; after confirm the old secret refused, the new one accepted once, the old recovery codes refused, the new ones accepted once, `enrolledAt` moved; the owner's reset during a pending re-enrolment removes both; audit row; other sessions still valid (OD-101).
 - A-01a 3, 13: `ownerStatus` for pending, active and no owner; `phoneMasked` on the detail (the full phone never in the body); `linkExpiresAt` for a fresh link, an expired one (past date), none after the link is used, a re-issued link's new date; reset MFA and end sessions on a pending owner → 409 `owner_setup_pending` and no `owner.*` audit row.
 - A-01a 13, OD-99: phone edit → new link works, the earlier link answers `link_invalid`, `phoneMasked` shows the new phone, audit row without the phone; to a phone with an account → `invitation`, accepted by that person; invalid phone → 400 on `body.phone`; owner with an account → 409 `owner_account_exists`; a phone owning another pending clinic → 409 `owner_setup_pending`; unknown clinic → 404; a clinic user → 403.
 - `clinicUpdateSettings`: 400 for an invalid value and 403 for a non-owner, both now declared.
