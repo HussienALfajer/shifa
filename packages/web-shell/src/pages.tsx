@@ -8,6 +8,9 @@ import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { AccountPage } from './account/account-page.tsx';
 import { SettingsPage } from './account/settings-page.tsx';
+import { ClinicPage } from './admin/clinic-page.tsx';
+import { ClinicsPage } from './admin/clinics-page.tsx';
+import { CreateClinicPage } from './admin/create-clinic-page.tsx';
 import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
 import { MfaPage } from './auth/mfa.tsx';
 import { SetupLinkPage } from './auth/setup-link.tsx';
@@ -172,5 +175,8 @@ export const shellPages: ShellPages = {
   adminWeb: AdminWebPage,
   account: AccountPage,
   settings: SettingsPage,
+  clinics: ClinicsPage,
+  createClinic: CreateClinicPage,
+  clinic: ClinicPage,
   notFound: NotFoundPage,
 };

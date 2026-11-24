@@ -44,6 +44,10 @@ export interface ShellPages {
   /** Clinic web only: My account and the clinic's settings (A-01-10 checkpoint 2). */
   account?: ComponentType;
   settings?: ComponentType;
+  /** Admin web only: the clinics list (its home), «إنشاء عيادة» and a clinic (A-01-10 checkpoint 3). */
+  clinics?: ComponentType;
+  createClinic?: ComponentType;
+  clinic?: ComponentType;
   notFound?: ComponentType;
 }
 
@@ -120,7 +124,7 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   const children = [
     signIn,
     route('/mfa', 'mfa', pages.mfa),
-    route('/', 'signed-in', pages.home),
+    route('/', 'signed-in', app === 'admin' && pages.clinics ? pages.clinics : pages.home),
     route('/about', 'open', pages.about),
   ];
   // The setup link page serves both apps (a super admin's link opens on admin web).
@@ -134,6 +138,12 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   }
   if (app === 'clinic' && pages.settings) {
     children.push(route('/settings', 'signed-in', pages.settings));
+  }
+  if (app === 'admin' && pages.createClinic) {
+    children.push(route('/clinics/new', 'signed-in', pages.createClinic));
+  }
+  if (app === 'admin' && pages.clinic) {
+    children.push(route('/clinics/$id', 'signed-in', pages.clinic));
   }
   return root.addChildren(children);
 }
