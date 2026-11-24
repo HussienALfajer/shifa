@@ -12,6 +12,7 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
   details: (json['details'] as List<dynamic>?)
       ?.map((e) => ValidationIssue.fromJson(e as Map<String, dynamic>))
       .toList(),
+  reason: $enumDecodeNullable(_$SessionEndReasonEnumMap, json['reason']),
   until: json['until'] == null ? null : DateTime.parse(json['until'] as String),
 );
 
@@ -19,6 +20,7 @@ Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'code': instance.code,
   'details': ?instance.details,
   'message': instance.message,
+  'reason': ?instance.reason,
   'until': ?instance.until?.toIso8601String(),
 };
 
@@ -62,4 +64,17 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.clinicSuspended: 'clinic_suspended',
   ErrorCode.noClinic: 'no_clinic',
   ErrorCode.branchNotHeld: 'branch_not_held',
+  ErrorCode.passwordUnchanged: 'password_unchanged',
+  ErrorCode.branchRequired: 'branch_required',
+  ErrorCode.ownerMfaPlatform: 'owner_mfa_platform',
+  ErrorCode.mfaAlreadyEnrolled: 'mfa_already_enrolled',
+  ErrorCode.mfaNotStarted: 'mfa_not_started',
+  ErrorCode.mfaNotOwed: 'mfa_not_owed',
+  ErrorCode.mfaNotEnrolled: 'mfa_not_enrolled',
+};
+
+const _$SessionEndReasonEnumMap = {
+  SessionEndReason.idle: 'idle',
+  SessionEndReason.absolute: 'absolute',
+  SessionEndReason.ended: 'ended',
 };

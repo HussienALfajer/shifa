@@ -41,7 +41,11 @@ afterEach(async () => {
   await app.app.close();
 });
 
-const expired = { error: { code: 'session_expired', message: expect.any(String) as unknown } };
+/** 401 `session_expired` with the limit that ran out (A-01-09). */
+const expiredBy = (reason: 'idle' | 'absolute') => ({
+  error: { code: 'session_expired', message: expect.any(String) as unknown, reason },
+});
+const expired = expiredBy('idle');
 
 describe('session cookie (criterion 9)', () => {
   it('is __Host-shifa.sid: Secure, HttpOnly, SameSite=Lax, Path=/, no Domain, 12 h', async () => {
@@ -144,7 +148,7 @@ describe('idle and absolute limits (criterion 9)', () => {
       expect((await get(app, '/auth/session', cookie)).statusCode, `step ${String(i)}`).toBe(200);
     }
     clock.advanceBy(30 * MINUTE);
-    expect((await get(app, '/auth/session', cookie)).json()).toEqual(expired);
+    expect((await get(app, '/auth/session', cookie)).json()).toEqual(expiredBy('absolute'));
   });
 
   it('the session view tells the client when it ends', async () => {

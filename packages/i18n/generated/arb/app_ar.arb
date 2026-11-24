@@ -211,6 +211,10 @@
   "@errorsBranchNotHeld": {
     "description": "errors.branch_not_held"
   },
+  "errorsBranchRequired": "اختر الفرع الذي تعمل فيه.",
+  "@errorsBranchRequired": {
+    "description": "errors.branch_required"
+  },
   "errorsClinicSuspended": "حساب العيادة موقوف، تواصل مع الإدارة.",
   "@errorsClinicSuspended": {
     "description": "errors.clinic_suspended"
@@ -259,6 +263,10 @@
   "@errorsMethodNotAllowed": {
     "description": "errors.method_not_allowed"
   },
+  "errorsMfaAlreadyEnrolled": "التحقق بخطوتين مفعّل مسبقًا.",
+  "@errorsMfaAlreadyEnrolled": {
+    "description": "errors.mfa_already_enrolled"
+  },
   "errorsMfaChallengeRequired": "أدخل رمز التحقق للمتابعة.",
   "@errorsMfaChallengeRequired": {
     "description": "errors.mfa_challenge_required"
@@ -271,6 +279,18 @@
   "@errorsMfaLocked": {
     "description": "errors.mfa_locked"
   },
+  "errorsMfaNotEnrolled": "التحقق بخطوتين غير مفعّل.",
+  "@errorsMfaNotEnrolled": {
+    "description": "errors.mfa_not_enrolled"
+  },
+  "errorsMfaNotOwed": "لا يلزم رمز تحقق لهذه الجلسة.",
+  "@errorsMfaNotOwed": {
+    "description": "errors.mfa_not_owed"
+  },
+  "errorsMfaNotStarted": "لم يبدأ إعداد التحقق بخطوتين. ابدأ من جديد.",
+  "@errorsMfaNotStarted": {
+    "description": "errors.mfa_not_started"
+  },
   "errorsNoClinic": "لا توجد عيادة متاحة لحسابك.",
   "@errorsNoClinic": {
     "description": "errors.no_clinic"
@@ -282,6 +302,10 @@
   "errorsNotFound": "العنصر المطلوب غير موجود.",
   "@errorsNotFound": {
     "description": "errors.not_found"
+  },
+  "errorsOwnerMfaPlatform": "إعادة ضبط التحقق بخطوتين للمالك تتم عبر إدارة المنصة.",
+  "@errorsOwnerMfaPlatform": {
+    "description": "errors.owner_mfa_platform"
   },
   "errorsOwnerSetupPending": "هذا الرقم مالكٌ لعيادة لم يُكمل إعدادها بعد. انتظر حتى يُكمل الإعداد ثم أعد المحاولة.",
   "@errorsOwnerSetupPending": {
@@ -298,6 +322,10 @@
   "errorsPasswordTooShort": "كلمة المرور أقصر من الحد الأدنى.",
   "@errorsPasswordTooShort": {
     "description": "errors.password_too_short"
+  },
+  "errorsPasswordUnchanged": "كلمة المرور الجديدة هي الحالية نفسها. اختر كلمة مرور مختلفة.",
+  "@errorsPasswordUnchanged": {
+    "description": "errors.password_unchanged"
   },
   "errorsPayloadTooLarge": "حجم البيانات المرسلة أكبر من المسموح.",
   "@errorsPayloadTooLarge": {

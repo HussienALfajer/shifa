@@ -93,6 +93,7 @@ export const authSignIn = defineContract({
   method: 'POST',
   path: '/auth/sign-in',
   summary: 'Sign in with phone and password; sets the session cookie',
+  public: true,
   request: { body: SignInRequest },
   responses: { 200: SessionView, 401: ErrorEnvelope, 429: ErrorEnvelope },
 });
@@ -136,4 +137,42 @@ export const authEndOtherSessions = defineContract({
   path: '/auth/sessions/end-others',
   summary: 'End every session of the signed-in person but this one',
   responses: { 200: EndedSessions },
+});
+
+/** The signed-in person (A-01a criterion 10a). The phone goes to its owner only. */
+export const MyProfile = z
+  .object({ userId: z.uuid(), name: z.string(), phoneE164: z.string() })
+  .meta({ id: 'MyProfile' });
+export type MyProfile = z.infer<typeof MyProfile>;
+
+/** Before MFA too: the challenge screen greets the person by name. */
+export const meProfile = defineContract({
+  operationId: 'meProfile',
+  method: 'GET',
+  path: '/me',
+  summary: 'The signed-in person’s own profile',
+  responses: { 200: MyProfile },
+});
+
+export const ChangePasswordRequest = z
+  .object({
+    currentPassword: z.string().min(1).max(128),
+    newPassword: z.string().min(1).max(128),
+  })
+  .meta({ id: 'ChangePasswordRequest' });
+export type ChangePasswordRequest = z.infer<typeof ChangePasswordRequest>;
+
+/**
+ * A-01a criterion 10b (OD-92): every other session of the person ends and this one is rotated
+ * (cookie set). 400 `password_too_short`, `password_common`, `password_contains_phone`,
+ * `password_unchanged`; 401 `invalid_credentials` (wrong current password, counted toward the
+ * phone lock); 429 `phone_locked` with `until`.
+ */
+export const authChangePassword = defineContract({
+  operationId: 'authChangePassword',
+  method: 'POST',
+  path: '/auth/password',
+  summary: 'Change the signed-in person’s password; ends their other sessions',
+  request: { body: ChangePasswordRequest },
+  responses: { 200: SessionView, 400: ErrorEnvelope, 401: ErrorEnvelope, 429: ErrorEnvelope },
 });

@@ -80,6 +80,10 @@ export interface SampleContext {
   callerClinicId(): Promise<string>;
   /** A fresh invitation to TENANT_B for the calling person's phone; its token. */
   invitationToken(): Promise<string>;
+  /** Sets the calling person's password back to the known one and returns it (A-01-09). */
+  password(): Promise<string>;
+  /** A fresh active doctor of TENANT_A with an account and TOTP enrolled (A-01-09 reset). */
+  enrolledMemberId(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -154,6 +158,16 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'POST /team/members/:id/setup-link': async (ctx) => ({
     url: `/team/members/${await ctx.memberId()}/setup-link`,
   }),
+  'POST /team/members/:id/reset-mfa': async (ctx) => ({
+    url: `/team/members/${await ctx.enrolledMemberId()}/reset-mfa`,
+  }),
+  // A-01-09: the caller's own password and recovery codes.
+  'POST /auth/password': async (ctx) => ({
+    body: { currentPassword: await ctx.password(), newPassword: 'matrix lantern harbour 31' },
+  }),
+  'POST /auth/mfa/recovery-codes': async (ctx) => ({
+    body: { code: await ctx.totp('enrolled') },
+  }),
   'PATCH /clinic/settings': () => ({ body: { idleMinutes: 30 } }),
   'POST /branches': () => ({ body: { name: 'فرع المصفوفة' } }),
   // A-01-05: the chooser needs a clinic or an invitation of the caller; the switch a clinic where
@@ -203,6 +217,11 @@ export const EXPECTED_MATRIX: Matrix = {
   'GET /auth/sessions': signedIn,
   'DELETE /auth/sessions/:id': signedIn,
   'POST /auth/sessions/end-others': signedIn,
+  // the person's own account (A-01-09): profile (before MFA too), password, MFA status, codes
+  'GET /me': signedIn,
+  'POST /auth/password': signedIn,
+  'GET /auth/mfa': signedIn,
+  'POST /auth/mfa/recovery-codes': signedIn,
   // setup links and MFA (A-01-03): a link's token is the credential; enrolment and the
   // challenge need a session (and are reachable before MFA)
   'POST /auth/setup-link/view': everyone,
@@ -226,6 +245,7 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /team/members/:id/deactivate': ownerOnly,
   'POST /team/members/:id/reactivate': ownerOnly,
   'POST /team/members/:id/setup-link': ownerOnly,
+  'POST /team/members/:id/reset-mfa': ownerOnly,
   // clinic settings (A-01a criterion 9): clinic.settings.manage
   'GET /clinic/settings': ownerOnly,
   'PATCH /clinic/settings': ownerOnly,

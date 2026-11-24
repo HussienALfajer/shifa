@@ -2,6 +2,7 @@
 // takes credentials; the others need a session and no permission (@SignedIn).
 import { Body, Controller, Delete, Get, HttpCode, Inject, Param, Post } from '@nestjs/common';
 import {
+  authChangePassword,
   authEndOtherSessions,
   authEndSession,
   authSession,
@@ -23,6 +24,7 @@ import {
 } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { AccountService } from './account.service.ts';
 import { CLEAR_SESSION_COOKIE, SESSION_COOKIE } from './session-cookie.ts';
 import { SessionsService } from './sessions.service.ts';
 import { SignInService } from './sign-in.service.ts';
@@ -32,6 +34,7 @@ export class IdentityController {
   constructor(
     @Inject(SignInService) private readonly signInService: SignInService,
     @Inject(SessionsService) private readonly sessions: SessionsService,
+    @Inject(AccountService) private readonly account: AccountService,
   ) {}
 
   /** Public: anyone may try; locks, timing and audit in SignInService. */
@@ -92,6 +95,26 @@ export class IdentityController {
     @ClientRequest() request: RequestMeta,
   ): Promise<void> {
     await this.sessions.endOne(principal, params.id, request.requestId);
+  }
+
+  /** After MFA: OD-92, every other session ends and this one is rotated (cookie set). */
+  @SignedIn()
+  @Contract(authChangePassword)
+  @HttpCode(200)
+  @Post('password')
+  async changePassword(
+    @Body() body: RequestBody<typeof authChangePassword>,
+    @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<SessionView> {
+    const { view, cookie } = await this.account.changePassword(
+      principal,
+      body.currentPassword,
+      body.newPassword,
+      { requestId: request.requestId, ip: request.ip },
+    );
+    request.setCookie(cookie);
+    return view;
   }
 
   @SignedIn()

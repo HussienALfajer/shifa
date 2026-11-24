@@ -127,7 +127,7 @@ describe('challenge (criterion 12)', () => {
     );
     const res = await challenge(owner.pending, 'totp', totpAt(owner.manualKey, clock.now(), 1));
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ mfa: 'verified' });
+    expect(res.json()).toMatchObject({ session: { mfa: 'verified' }, recoveryCodesLeft: 10 });
     const rotated = sessionCookie(res);
     expect(rotated).not.toBe(owner.pending);
     expect((await get(app, '/auth/session', owner.pending)).statusCode).toBe(401);
@@ -178,7 +178,7 @@ describe('challenge (criterion 12)', () => {
     const recovery = owner.recoveryCodes[0] ?? '';
     const res = await challenge(owner.pending, 'recovery', recovery);
     expect(res.statusCode).toBe(200);
-    expect(res.json()).toMatchObject({ mfa: 'verified' });
+    expect(res.json()).toMatchObject({ session: { mfa: 'verified' }, recoveryCodesLeft: 9 });
     const again = sessionCookie(await signIn(app, phone(8)));
     expect(errorCode(await challenge(again, 'recovery', recovery))).toBe('invalid_code');
     expect((await challenge(again, 'recovery', owner.recoveryCodes[1] ?? '')).statusCode).toBe(200);

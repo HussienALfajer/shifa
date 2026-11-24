@@ -1,6 +1,7 @@
 // A route contract: method, path, request schemas and response schemas per status. The API
 // validates requests with it and generates OpenAPI from it; every schema in it must be named.
 import type { z } from 'zod';
+import { ErrorEnvelope } from './errors.ts';
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -20,14 +21,29 @@ export interface Contract {
   /** Nest-style path with `:name` parameters, e.g. `/patients/:id`. */
   path: string;
   summary?: string;
+  /** A public route (`@Public()`): no 401. Every other contract declares 401 (A-01-09). */
+  public?: boolean;
   request?: ContractRequest;
   /** Schema per status; `null` for a response without a body (204). */
   responses: Readonly<Record<number, z.ZodType | null>>;
 }
 
-/** Declares a contract; `const` keeps the literal types for the helpers below. */
-export function defineContract<const C extends Contract>(contract: C): C {
-  return contract;
+/** A contract as declared: an authenticated one also answers 401 with the error envelope. */
+export type Declared<C extends Contract> = C extends { public: true }
+  ? C
+  : Omit<C, 'responses'> & { responses: C['responses'] & { 401: typeof ErrorEnvelope } };
+
+/**
+ * Declares a contract; `const` keeps the literal types for the helpers below. A contract that is
+ * not public gets 401 (`unauthorized`, `session_expired`) unless it names its own; the API's
+ * start-up check refuses a route whose `@Public()` differs from `public` (A-01-09).
+ */
+export function defineContract<const C extends Contract>(contract: C): Declared<C> {
+  if (contract.public === true) return contract as Declared<C>;
+  return {
+    ...contract,
+    responses: { 401: ErrorEnvelope, ...contract.responses },
+  } as unknown as Declared<C>;
 }
 
 type Part<C extends Contract, K extends keyof ContractRequest> =

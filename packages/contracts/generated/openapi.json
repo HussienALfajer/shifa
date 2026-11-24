@@ -161,6 +161,25 @@
         ],
         "type": "object"
       },
+      "ChangePasswordRequest": {
+        "properties": {
+          "currentPassword": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          },
+          "newPassword": {
+            "maxLength": 128,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "currentPassword",
+          "newPassword"
+        ],
+        "type": "object"
+      },
       "ClinicCreated": {
         "properties": {
           "clinic": {
@@ -457,6 +476,9 @@
           "message": {
             "type": "string"
           },
+          "reason": {
+            "$ref": "#/components/schemas/SessionEndReason"
+          },
           "until": {
             "format": "date-time",
             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
@@ -510,7 +532,14 @@
           "branch_archived",
           "clinic_suspended",
           "no_clinic",
-          "branch_not_held"
+          "branch_not_held",
+          "password_unchanged",
+          "branch_required",
+          "owner_mfa_platform",
+          "mfa_already_enrolled",
+          "mfa_not_started",
+          "mfa_not_owed",
+          "mfa_not_enrolled"
         ],
         "type": "string"
       },
@@ -639,6 +668,9 @@
               }
             ]
           },
+          "mfaEnrolled": {
+            "type": "boolean"
+          },
           "name": {
             "type": "string"
           },
@@ -669,7 +701,8 @@
           "roles",
           "lastActiveAt",
           "permissions",
-          "isLastOwner"
+          "isLastOwner",
+          "mfaEnrolled"
         ],
         "type": "object"
       },
@@ -833,6 +866,23 @@
         ],
         "type": "object"
       },
+      "MfaPassed": {
+        "properties": {
+          "recoveryCodesLeft": {
+            "maximum": 9007199254740991,
+            "minimum": 0,
+            "type": "integer"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionView"
+          }
+        },
+        "required": [
+          "session",
+          "recoveryCodesLeft"
+        ],
+        "type": "object"
+      },
       "MfaState": {
         "enum": [
           "none",
@@ -840,6 +890,43 @@
           "verified"
         ],
         "type": "string"
+      },
+      "MfaStatus": {
+        "properties": {
+          "enrolled": {
+            "type": "boolean"
+          },
+          "enrolledAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "recoveryCodesLeft": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "enrolled",
+          "enrolledAt",
+          "recoveryCodesLeft"
+        ],
+        "type": "object"
       },
       "MyBranch": {
         "properties": {
@@ -900,6 +987,9 @@
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
             "type": "string"
+          },
+          "tenantWide": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -908,6 +998,7 @@
           "status",
           "selectable",
           "roles",
+          "tenantWide",
           "lastActiveAt",
           "solo",
           "branches"
@@ -965,6 +1056,27 @@
         ],
         "type": "object"
       },
+      "MyProfile": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "phoneE164": {
+            "type": "string"
+          },
+          "userId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "userId",
+          "name",
+          "phoneE164"
+        ],
+        "type": "object"
+      },
       "PermissionKeyName": {
         "maxLength": 100,
         "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
@@ -985,6 +1097,31 @@
         "required": [
           "key",
           "granted"
+        ],
+        "type": "object"
+      },
+      "RecoveryCodes": {
+        "properties": {
+          "recoveryCodes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "recoveryCodes"
+        ],
+        "type": "object"
+      },
+      "RenewRecoveryCodes": {
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/TotpCode"
+          }
+        },
+        "required": [
+          "code"
         ],
         "type": "object"
       },
@@ -1011,6 +1148,14 @@
           "branchId"
         ],
         "type": "object"
+      },
+      "SessionEndReason": {
+        "enum": [
+          "idle",
+          "absolute",
+          "ended"
+        ],
+        "type": "string"
       },
       "SessionList": {
         "properties": {
@@ -1284,6 +1429,9 @@
           "personName": {
             "type": "string"
           },
+          "phoneMasked": {
+            "type": "string"
+          },
           "purpose": {
             "$ref": "#/components/schemas/SetupLinkPurpose"
           },
@@ -1296,6 +1444,7 @@
           "personName",
           "role",
           "purpose",
+          "phoneMasked",
           "expiresAt"
         ],
         "type": "object"
@@ -1509,6 +1658,45 @@
   },
   "openapi": "3.1.0",
   "paths": {
+    "/auth/mfa": {
+      "get": {
+        "operationId": "authMfaStatus",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MfaStatus"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Whether TOTP is enrolled, since when, and recovery codes left",
+        "x-signed-in": true
+      }
+    },
     "/auth/mfa/challenge": {
       "post": {
         "operationId": "authMfaChallenge",
@@ -1527,7 +1715,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/SessionView"
+                  "$ref": "#/components/schemas/MfaPassed"
                 }
               }
             },
@@ -1696,6 +1884,154 @@
         },
         "summary": "Start TOTP enrolment: a new key (replaces an unconfirmed one)",
         "x-before-mfa": true,
+        "x-signed-in": true
+      }
+    },
+    "/auth/mfa/recovery-codes": {
+      "post": {
+        "operationId": "authMfaRecoveryCodes",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenewRecoveryCodes"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecoveryCodes"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Replace the recovery codes with a new set, confirmed with a TOTP code",
+        "x-signed-in": true
+      }
+    },
+    "/auth/password": {
+      "post": {
+        "operationId": "authChangePassword",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Change the signed-in person’s password; ends their other sessions",
         "x-signed-in": true
       }
     },
@@ -2715,6 +3051,36 @@
         },
         "summary": "The clinic, name, roles and scope of an invitation",
         "x-public": true
+      }
+    },
+    "/me": {
+      "get": {
+        "operationId": "meProfile",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyProfile"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          }
+        },
+        "summary": "The signed-in person’s own profile",
+        "x-before-mfa": true,
+        "x-signed-in": true
       }
     },
     "/me/clinics": {
@@ -3746,6 +4112,87 @@
           }
         },
         "summary": "Reactivate a deactivated member",
+        "x-permission": "members.manage"
+      }
+    },
+    "/team/members/{id}/reset-mfa": {
+      "post": {
+        "operationId": "teamMemberResetMfa",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MemberDetail"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Reset a member’s TOTP; ends the member’s sessions",
         "x-permission": "members.manage"
       }
     },

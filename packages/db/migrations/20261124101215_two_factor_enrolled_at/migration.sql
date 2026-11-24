@@ -1,0 +1,1 @@
+ALTER TABLE "two_factor" ADD COLUMN "enrolled_at" timestamp with time zone;

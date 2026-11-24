@@ -19,6 +19,7 @@ const testFailure = defineContract({
   operationId: 'testFailure',
   method: 'GET',
   path: '/_test/fail',
+  public: true,
   responses: { 200: z.object({}).meta({ id: 'TestFailureResponse' }) },
 });
 

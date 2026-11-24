@@ -10,6 +10,7 @@ import '../models/add_member_request.dart';
 import '../models/archive_branch_preview.dart';
 import '../models/branch.dart';
 import '../models/branch_list.dart';
+import '../models/change_password_request.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
 import '../models/clinic_list.dart';
@@ -25,7 +26,12 @@ import '../models/member_detail.dart';
 import '../models/member_link_issued.dart';
 import '../models/member_list.dart';
 import '../models/mfa_enrolled.dart';
+import '../models/mfa_passed.dart';
+import '../models/mfa_status.dart';
 import '../models/my_clinics.dart';
+import '../models/my_profile.dart';
+import '../models/recovery_codes.dart';
+import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
 import '../models/set_password_request.dart';
@@ -47,9 +53,13 @@ part 'core_client.g.dart';
 abstract class CoreClient {
   factory CoreClient(Dio dio, {String? baseUrl}) = _CoreClient;
 
+  /// Whether TOTP is enrolled, since when, and recovery codes left
+  @GET('/auth/mfa')
+  Future<MfaStatus> authMfaStatus();
+
   /// Pass the second factor for this session; rotates the session cookie
   @POST('/auth/mfa/challenge')
-  Future<SessionView> authMfaChallenge({@Body() required TotpChallenge body});
+  Future<MfaPassed> authMfaChallenge({@Body() required TotpChallenge body});
 
   /// Confirm TOTP enrolment with one code; returns the recovery codes once
   @POST('/auth/mfa/enrol/confirm')
@@ -60,6 +70,18 @@ abstract class CoreClient {
   /// Start TOTP enrolment: a new key (replaces an unconfirmed one)
   @POST('/auth/mfa/enrol/start')
   Future<TotpEnrolStart> authMfaEnrolStart();
+
+  /// Replace the recovery codes with a new set, confirmed with a TOTP code
+  @POST('/auth/mfa/recovery-codes')
+  Future<RecoveryCodes> authMfaRecoveryCodes({
+    @Body() required RenewRecoveryCodes body,
+  });
+
+  /// Change the signed-in person’s password; ends their other sessions
+  @POST('/auth/password')
+  Future<SessionView> authChangePassword({
+    @Body() required ChangePasswordRequest body,
+  });
 
   /// The current session
   @GET('/auth/session')
@@ -154,6 +176,10 @@ abstract class CoreClient {
     @Body() required InvitationRequest body,
   });
 
+  /// The signed-in person’s own profile
+  @GET('/me')
+  Future<MyProfile> meProfile();
+
   /// The signed-in person’s clinics and pending invitations (clinic chooser)
   @GET('/me/clinics')
   Future<MyClinics> meClinics();
@@ -223,6 +249,10 @@ abstract class CoreClient {
   /// Reactivate a deactivated member
   @POST('/team/members/{id}/reactivate')
   Future<MemberDetail> teamReactivateMember({@Path('id') required String id});
+
+  /// Reset a member’s TOTP; ends the member’s sessions
+  @POST('/team/members/{id}/reset-mfa')
+  Future<MemberDetail> teamMemberResetMfa({@Path('id') required String id});
 
   /// Issue a new link (staff recovery); ends the member’s sessions
   @POST('/team/members/{id}/setup-link')

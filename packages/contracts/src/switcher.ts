@@ -20,6 +20,11 @@ export const MyClinic = z
     /** False for a suspended clinic; a clinic where no role is left is not listed at all. */
     selectable: z.boolean(),
     roles: z.array(SessionRole),
+    /**
+     * The person holds a tenant-wide role here. False with roles in two or more branches: the
+     * chooser asks for a branch (`branch_required` otherwise).
+     */
+    tenantWide: z.boolean(),
     /** The person's last activity in this clinic; null if never. */
     lastActiveAt: z.iso.datetime().nullable(),
     /** One active branch: no branch screens or branch switcher (PLT-03). */
@@ -49,7 +54,10 @@ export type MyClinics = z.infer<typeof MyClinics>;
 export const SwitchRequest = z
   .object({
     tenantId: z.uuid(),
-    /** Omitted or null: the one branch the person holds there, else none (tenant-wide). */
+    /**
+     * Omitted or null: none (all branches) for a tenant-wide role, else the one branch the person
+     * holds there; 400 `branch_required` for roles in two or more branches.
+     */
     branchId: z.uuid().nullable().optional(),
   })
   .meta({ id: 'SwitchRequest' });
@@ -75,7 +83,13 @@ export const meSwitch = defineContract({
   path: '/me/switch',
   summary: 'Switch the session to one of the person’s clinics and branches',
   request: { body: SwitchRequest },
-  // 403 `clinic_suspended` or `branch_not_held`; 404 not a clinic of the person; 409
-  // `branch_archived`.
-  responses: { 200: ActiveClinic, 404: ErrorEnvelope, 409: ErrorEnvelope },
+  // 400 `branch_required`; 403 `clinic_suspended` or `branch_not_held`; 404 not a clinic of the
+  // person; 409 `branch_archived`.
+  responses: {
+    200: ActiveClinic,
+    400: ErrorEnvelope,
+    403: ErrorEnvelope,
+    404: ErrorEnvelope,
+    409: ErrorEnvelope,
+  },
 });

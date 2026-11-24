@@ -15,6 +15,7 @@ class SetupLinkView {
     required this.clinicName,
     required this.expiresAt,
     required this.personName,
+    required this.phoneMasked,
     required this.purpose,
     required this.role,
   });
@@ -26,6 +27,7 @@ class SetupLinkView {
   final String? clinicName;
   final DateTime expiresAt;
   final String personName;
+  final String phoneMasked;
   final SetupLinkPurpose purpose;
   final SetupLinkRole role;
 

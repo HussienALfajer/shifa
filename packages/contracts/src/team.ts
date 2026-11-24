@@ -57,6 +57,8 @@ export const MemberDetail = MemberSummary.extend({
   permissions: z.array(MemberPermission),
   /** The clinic's only active owner: roles and deactivation are refused (`last_owner`). */
   isLastOwner: z.boolean(),
+  /** The member's account has TOTP enrolled: the owner may reset it (OD-95), not an owner's. */
+  mfaEnrolled: z.boolean(),
 }).meta({ id: 'MemberDetail' });
 export type MemberDetail = z.infer<typeof MemberDetail>;
 
@@ -190,12 +192,27 @@ export const teamMemberLink = defineContract({
   responses: { 200: MemberLinkIssued, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
+/**
+ * Staff TOTP reset (A-01b criterion 3, OD-95): the member's sessions end; they enrol again at
+ * the next sign-in. 409 `owner_mfa_platform` (an owner's goes through the super admin),
+ * `mfa_not_enrolled`, `account_shared` (its sessions in this clinic ended first, as OD-86).
+ */
+export const teamMemberResetMfa = defineContract({
+  operationId: 'teamMemberResetMfa',
+  method: 'POST',
+  path: '/team/members/:id/reset-mfa',
+  summary: 'Reset a member’s TOTP; ends the member’s sessions',
+  request: { params: MemberIdParams },
+  responses: { 200: MemberDetail, 404: ErrorEnvelope, 409: ErrorEnvelope },
+});
+
 /** Public. 404 `link_invalid` for anything but a valid invitation. */
 export const invitationView = defineContract({
   operationId: 'invitationView',
   method: 'POST',
   path: '/invitations/view',
   summary: 'The clinic, name, roles and scope of an invitation',
+  public: true,
   request: { body: InvitationRequest },
   responses: { 200: InvitationView, 404: ErrorEnvelope },
 });

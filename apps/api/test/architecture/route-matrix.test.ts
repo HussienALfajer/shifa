@@ -2,6 +2,7 @@
 // matrix. Red cases run the same comparison against mutated copies of the matrix.
 import { randomBytes, randomUUID } from 'node:crypto';
 import {
+  account,
   branch,
   createClinic,
   membership,
@@ -19,6 +20,7 @@ import {
   testDb,
   testPlatformDb,
 } from '@shifa/db/testing';
+import { hashPassword } from 'better-auth/crypto';
 import { eq } from 'drizzle-orm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { AUTH_PORT } from '../../src/access/auth.port.ts';
@@ -209,6 +211,35 @@ async function clinicOfCaller(userId: string | undefined, phone: string | undefi
   return tenantId;
 }
 
+/** Puts the caller's password back to PASSWORD (the change-of-password sample changes it). */
+async function knownPassword(userId: string | undefined): Promise<string> {
+  if (userId !== undefined) {
+    const hash = await hashPassword(PASSWORD);
+    await testAuthDb().withAuth((tx) =>
+      tx.update(account).set({ password: hash }).where(eq(account.userId, userId)),
+    );
+  }
+  return PASSWORD;
+}
+
+/** A fresh active doctor of TENANT_A with an account and TOTP enrolled (staff TOTP reset). */
+async function enrolledMemberOfTenantA(): Promise<string> {
+  const phone = nextPhone();
+  const { userId } = await seedPerson(phone);
+  const id = randomUUID();
+  await testDb().withTenant(
+    { tenantId: TENANT_A, userId: fixtureId('matrix seeder') },
+    async (tx) => {
+      await insertMembership(tx, { id, tenantId: TENANT_A, phone, userId });
+      await tx
+        .insert(roleAssignment)
+        .values({ tenantId: TENANT_A, membershipId: id, role: 'doctor' });
+    },
+  );
+  await totpState(userId, 'enrolled');
+  return id;
+}
+
 async function seedPeople(): Promise<void> {
   // The callers' clinic (principalFor: TENANT_A) and a clinic that invites them (TENANT_B).
   await createTestTenants(TENANT_A, TENANT_B);
@@ -258,6 +289,8 @@ async function observe(app: TestApp): Promise<Observed> {
         invitationToken: () => invitationFor(phonesOf.get(caller)),
         invitationId: () => invitationIdFor(phonesOf.get(caller)),
         callerClinicId: () => clinicOfCaller(userId, phonesOf.get(caller)),
+        password: () => knownPassword(userId),
+        enrolledMemberId: () => enrolledMemberOfTenantA(),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

@@ -28,6 +28,10 @@ final _decoders = <String, Object Function(_Json)>{
       ArchiveBranchPreview.fromJson(json).toJson(),
   'MyClinics': (json) => MyClinics.fromJson(json).toJson(),
   'ActiveClinic': (json) => ActiveClinic.fromJson(json).toJson(),
+  'MyProfile': (json) => MyProfile.fromJson(json).toJson(),
+  'MfaStatus': (json) => MfaStatus.fromJson(json).toJson(),
+  'RecoveryCodes': (json) => RecoveryCodes.fromJson(json).toJson(),
+  'MfaPassed': (json) => MfaPassed.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

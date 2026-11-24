@@ -49,6 +49,14 @@ export const ErrorCode = z
     'clinic_suspended',
     'no_clinic',
     'branch_not_held',
+    // account API gaps (A-01-09)
+    'password_unchanged',
+    'branch_required',
+    'owner_mfa_platform',
+    'mfa_already_enrolled',
+    'mfa_not_started',
+    'mfa_not_owed',
+    'mfa_not_enrolled',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -81,6 +89,16 @@ export const ValidationIssue = z
   .meta({ id: 'ValidationIssue' });
 export type ValidationIssue = z.infer<typeof ValidationIssue>;
 
+/**
+ * `idle` and `absolute`: a limit ran out. `ended`: the cookie is genuine but its session is gone
+ * (ended on another device, by the owner, by the super admin or by a change of password); a
+ * session deleted after its limit by an earlier request reads `ended` too.
+ */
+export const SessionEndReason = z
+  .enum(['idle', 'absolute', 'ended'])
+  .meta({ id: 'SessionEndReason' });
+export type SessionEndReason = z.infer<typeof SessionEndReason>;
+
 export const ErrorBody = z
   .object({
     code: ErrorCode,
@@ -90,6 +108,8 @@ export const ErrorBody = z
     details: z.array(ValidationIssue).optional(),
     /** End of a lock (ISO 8601, UTC): only with `phone_locked`, `ip_blocked`, `mfa_locked`. */
     until: z.iso.datetime().optional(),
+    /** Why the session ended: only with `session_expired` (A-01a criterion 9). */
+    reason: SessionEndReason.optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -142,6 +162,13 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   clinic_suspended: 'This clinic account is suspended',
   no_clinic: 'No clinic is available for this account',
   branch_not_held: 'No role in this branch',
+  password_unchanged: 'The new password is the current one',
+  branch_required: 'Choose a branch',
+  owner_mfa_platform: 'An owner’s two-factor is reset through the platform',
+  mfa_already_enrolled: 'Two-factor is already enrolled',
+  mfa_not_started: 'Two-factor enrolment was not started',
+  mfa_not_owed: 'No two-factor code is due for this session',
+  mfa_not_enrolled: 'Two-factor is not enrolled',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

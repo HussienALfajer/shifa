@@ -4,8 +4,17 @@
 // off answers `clock_skew` instead of `invalid_code`. Every attempt locks the person's
 // two_factor row (FOR UPDATE), so parallel attempts cannot share a code or outrun the lock. A
 // failure is committed before it is answered. The session is rotated after either success.
+// A-01-09: status (codes left), a new set of recovery codes for a current code, and named 409s.
 import { Inject, Injectable } from '@nestjs/common';
-import type { MfaEnrolled, SessionView, TotpChallenge, TotpEnrolStart } from '@shifa/contracts';
+import type {
+  MfaEnrolled,
+  MfaPassed,
+  MfaStatus,
+  RecoveryCodes,
+  SessionView,
+  TotpChallenge,
+  TotpEnrolStart,
+} from '@shifa/contracts';
 import { type AuthDb, type Tx, twoFactor, user } from '@shifa/db';
 import { and, eq } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
@@ -33,7 +42,15 @@ export const MFA_LOCK_MS = 15 * 60_000;
 type FactorRow = typeof twoFactor.$inferSelect;
 
 /** What one attempt decided, committed before the answer. */
-type Outcome = { ok: true; recoveryCodes?: string[] } | { ok: false; error: ApiError };
+type Outcome =
+  | { ok: true; recoveryCodes?: string[]; recoveryCodesLeft?: number }
+  | { ok: false; error: ApiError };
+
+/** How many recovery codes a stored set holds. */
+function codesLeft(backupCodes: string): number {
+  const parsed = JSON.parse(backupCodes) as unknown;
+  return Array.isArray(parsed) ? parsed.length : 0;
+}
 
 export interface MfaMeta {
   requestId: string;
@@ -57,7 +74,7 @@ export class MfaService {
     const now = this.clock.now();
     await this.authDb.withAuth(async (tx) => {
       const row = await lockRow(tx, principal.userId);
-      if (row?.verified) throw new ApiError(409, 'conflict');
+      if (row?.verified) throw new ApiError(409, 'mfa_already_enrolled');
       if (row?.lockedUntil && row.lockedUntil > now) {
         throw new ApiError(429, 'mfa_locked', row.lockedUntil);
       }
@@ -85,7 +102,8 @@ export class MfaService {
     const now = this.clock.now();
     const outcome = await this.authDb.withAuth(async (tx): Promise<Outcome> => {
       const row = await lockRow(tx, principal.userId);
-      if (!row || row.verified) return { ok: false, error: new ApiError(409, 'conflict') };
+      if (!row) return { ok: false, error: new ApiError(409, 'mfa_not_started') };
+      if (row.verified) return { ok: false, error: new ApiError(409, 'mfa_already_enrolled') };
       const locked = lockError(row, now);
       if (locked) return { ok: false, error: locked };
       const secret = openSecret(row.secret, this.secrets.betterAuthSecret);
@@ -100,11 +118,10 @@ export class MfaService {
         .set({
           verified: true,
           lastUsedStep: step,
-          backupCodes: JSON.stringify(
-            recoveryCodes.map((c) => recoveryCodeHash(c, this.secrets.hmacKey)),
-          ),
+          backupCodes: this.#hashes(recoveryCodes),
           failedVerificationCount: 0,
           lockedUntil: null,
+          enrolledAt: now,
         })
         .where(eq(twoFactor.id, row.id));
       await tx
@@ -123,23 +140,81 @@ export class MfaService {
     return { body: { recoveryCodes: outcome.recoveryCodes ?? [], session: view }, cookie };
   }
 
+  /** My account: enrolled or not, since when, and recovery codes left (A-01a 12a). */
+  async status(principal: Principal): Promise<MfaStatus> {
+    const [row] = await this.authDb.withAuth((tx) =>
+      tx
+        .select({
+          verified: twoFactor.verified,
+          backupCodes: twoFactor.backupCodes,
+          enrolledAt: twoFactor.enrolledAt,
+        })
+        .from(twoFactor)
+        .where(eq(twoFactor.userId, principal.userId)),
+    );
+    if (!row?.verified) return { enrolled: false, enrolledAt: null, recoveryCodesLeft: null };
+    return {
+      enrolled: true,
+      // Null for an enrolment confirmed before the column existed (A-01-09 migration).
+      enrolledAt: row.enrolledAt?.toISOString() ?? null,
+      recoveryCodesLeft: codesLeft(row.backupCodes),
+    };
+  }
+
+  /**
+   * A new set of ten recovery codes for a current TOTP code (A-01a 12a): the replay rule and the
+   * lock of criterion 12 apply, the old set is gone, audited.
+   */
+  async renewRecoveryCodes(
+    principal: Principal,
+    code: string,
+    meta: MfaMeta,
+  ): Promise<RecoveryCodes> {
+    const now = this.clock.now();
+    const outcome = await this.authDb.withAuth(async (tx): Promise<Outcome> => {
+      const row = await lockRow(tx, principal.userId);
+      if (!row?.verified) return { ok: false, error: new ApiError(409, 'mfa_not_enrolled') };
+      const locked = lockError(row, now);
+      if (locked) return { ok: false, error: locked };
+      if (!(await this.#useTotp(tx, row, code, now))) {
+        return this.#failure(tx, row, now, meta, 'invalid_code');
+      }
+      const recoveryCodes = newRecoveryCodes();
+      await tx
+        .update(twoFactor)
+        .set({ backupCodes: this.#hashes(recoveryCodes) })
+        .where(eq(twoFactor.id, row.id));
+      await this.audit.record(
+        { event: 'auth.recovery_codes_renewed' },
+        { actorId: principal.userId, targetId: principal.userId, requestId: meta.requestId },
+        tx,
+      );
+      return { ok: true, recoveryCodes };
+    });
+    if (!outcome.ok) throw outcome.error;
+    return { recoveryCodes: outcome.recoveryCodes ?? [] };
+  }
+
   async challenge(
     principal: Principal,
     input: TotpChallenge,
     meta: MfaMeta,
-  ): Promise<{ view: SessionView; cookie: string }> {
-    if (principal.mfa !== 'pending') throw new ApiError(409, 'conflict');
+  ): Promise<{ body: MfaPassed; cookie: string }> {
+    if (principal.mfa !== 'pending') throw new ApiError(409, 'mfa_not_owed');
     const now = this.clock.now();
     const outcome = await this.authDb.withAuth(async (tx): Promise<Outcome> => {
       const row = await lockRow(tx, principal.userId);
-      if (!row?.verified) return { ok: false, error: new ApiError(409, 'conflict') };
+      if (!row?.verified) return { ok: false, error: new ApiError(409, 'mfa_not_owed') };
       const locked = lockError(row, now);
       if (locked) return { ok: false, error: locked };
-      const passed =
+      // The codes left after this attempt, or null when it failed.
+      const left =
         input.method === 'totp'
-          ? await this.#useTotp(tx, row, input.code, now)
+          ? (await this.#useTotp(tx, row, input.code, now))
+            ? codesLeft(row.backupCodes)
+            : null
           : await this.#useRecoveryCode(tx, row, input.code);
-      if (!passed) return this.#failure(tx, row, now, meta, 'invalid_code');
+      if (left === null) return this.#failure(tx, row, now, meta, 'invalid_code');
       const ids = {
         actorId: principal.userId,
         targetId: principal.userId,
@@ -153,10 +228,11 @@ export class MfaService {
         ids,
         tx,
       );
-      return { ok: true };
+      return { ok: true, recoveryCodesLeft: left };
     });
     if (!outcome.ok) throw outcome.error;
-    return this.#rotate(principal, meta);
+    const { view, cookie } = await this.#rotate(principal, meta);
+    return { body: { session: view, recoveryCodesLeft: outcome.recoveryCodesLeft ?? 0 }, cookie };
   }
 
   async #useTotp(tx: Tx, row: FactorRow, code: string, now: Date): Promise<boolean> {
@@ -172,16 +248,22 @@ export class MfaService {
     return true;
   }
 
-  async #useRecoveryCode(tx: Tx, row: FactorRow, code: string): Promise<boolean> {
+  /** Uses one recovery code; the number left, or null when it is not one of them. */
+  async #useRecoveryCode(tx: Tx, row: FactorRow, code: string): Promise<number | null> {
     const hashes = JSON.parse(row.backupCodes) as string[];
     const hash = recoveryCodeHash(code, this.secrets.hmacKey);
     const left = hashes.filter((h) => h !== hash);
-    if (left.length === hashes.length) return false;
+    if (left.length === hashes.length) return null;
     await tx
       .update(twoFactor)
       .set({ backupCodes: JSON.stringify(left), failedVerificationCount: 0 })
       .where(eq(twoFactor.id, row.id));
-    return true;
+    return left.length;
+  }
+
+  /** The stored form of a new set: HMACs only, never the codes. */
+  #hashes(codes: readonly string[]): string {
+    return JSON.stringify(codes.map((c) => recoveryCodeHash(c, this.secrets.hmacKey)));
   }
 
   /** Counts a wrong code; the fifth locks MFA for 15 min (audited) and answers 429. */

@@ -223,9 +223,12 @@ describe('OpenAPI document', () => {
   it('the production document lists only production routes', () => {
     const prod = buildOpenApiDocument(production.app);
     expect(Object.keys(prod.paths).sort()).toEqual([
+      '/auth/mfa',
       '/auth/mfa/challenge',
       '/auth/mfa/enrol/confirm',
       '/auth/mfa/enrol/start',
+      '/auth/mfa/recovery-codes',
+      '/auth/password',
       '/auth/session',
       '/auth/sessions',
       '/auth/sessions/end-others',
@@ -244,6 +247,7 @@ describe('OpenAPI document', () => {
       '/invitations/accept',
       '/invitations/decline',
       '/invitations/view',
+      '/me',
       '/me/clinics',
       '/me/switch',
       '/platform/clinics',
@@ -255,6 +259,7 @@ describe('OpenAPI document', () => {
       '/team/members/{id}',
       '/team/members/{id}/deactivate',
       '/team/members/{id}/reactivate',
+      '/team/members/{id}/reset-mfa',
       '/team/members/{id}/setup-link',
     ]);
     expect(Object.keys(prod.components.schemas).some((n) => n.startsWith('Probe'))).toBe(false);

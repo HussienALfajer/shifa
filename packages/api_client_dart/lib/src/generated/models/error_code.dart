@@ -84,7 +84,21 @@ enum ErrorCode {
   @JsonValue('no_clinic')
   noClinic('no_clinic'),
   @JsonValue('branch_not_held')
-  branchNotHeld('branch_not_held');
+  branchNotHeld('branch_not_held'),
+  @JsonValue('password_unchanged')
+  passwordUnchanged('password_unchanged'),
+  @JsonValue('branch_required')
+  branchRequired('branch_required'),
+  @JsonValue('owner_mfa_platform')
+  ownerMfaPlatform('owner_mfa_platform'),
+  @JsonValue('mfa_already_enrolled')
+  mfaAlreadyEnrolled('mfa_already_enrolled'),
+  @JsonValue('mfa_not_started')
+  mfaNotStarted('mfa_not_started'),
+  @JsonValue('mfa_not_owed')
+  mfaNotOwed('mfa_not_owed'),
+  @JsonValue('mfa_not_enrolled')
+  mfaNotEnrolled('mfa_not_enrolled');
 
   const ErrorCode(this.json);
 

@@ -7,11 +7,13 @@
 // - the principal's branch belongs to its tenant and its roles come from server-side memberships
 //   of that tenant, read by the adapter for every request (never from the client);
 // - `userId` is an opaque UUID (it is logged);
-// - a credential that was valid but has run out throws SessionExpiredError (→ 401
-//   `session_expired`), so the client returns to sign-in;
+// - a credential that was valid but has run out, or whose session is gone, throws
+//   SessionExpiredError (→ 401 `session_expired` with `reason` idle, absolute or ended), so the
+//   client returns to sign-in and says why;
 // - errors thrown by an adapter never carry a token, a cookie or a phone, in their message or
 //   their cause.
 import { Injectable } from '@nestjs/common';
+import type { SessionEndReason } from '@shifa/contracts';
 import type { FastifyRequest } from 'fastify';
 import { ApiError } from '../platform/errors.ts';
 import type { Principal } from './principal.ts';
@@ -23,10 +25,13 @@ export interface AuthPort {
   authenticate(request: FastifyRequest): Promise<Principal | null>;
 }
 
-/** A session ended by its idle or absolute limit (or just ended elsewhere): 401. */
+/**
+ * A session ended by its idle or absolute limit, or ended elsewhere (another device, the owner,
+ * the super admin, a change of password): 401 with the reason (A-01a criterion 9).
+ */
 export class SessionExpiredError extends ApiError {
-  constructor() {
-    super(401, 'session_expired');
+  constructor(reason: SessionEndReason = 'ended') {
+    super(401, 'session_expired', undefined, reason);
   }
 }
 

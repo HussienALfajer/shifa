@@ -18,7 +18,9 @@ export type SessionEndReason =
   /** A super admin ended every session of an owner (owner support, A-01a criterion 13). */
   | 'admin'
   /** The clinic deactivated the member, removed their roles or issued a new link (A-01b 3, 4). */
-  | 'member';
+  | 'member'
+  /** The person changed their password: every other session ends (OD-92). */
+  | 'password_changed';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
@@ -37,7 +39,11 @@ export type IdentityEvent =
   // Owner support by a super admin (actor), each also ending the owner's sessions.
   | { event: 'auth.mfa_reset' }
   | { event: 'auth.password_reset' }
-  | { event: 'auth.recovery_code_used' };
+  | { event: 'auth.recovery_code_used' }
+  // A-01-09: own password and recovery codes (actor and target: the person).
+  | { event: 'auth.password_changed' }
+  | { event: 'auth.password_change_failed' }
+  | { event: 'auth.recovery_codes_renewed' };
 
 export interface AuditIds {
   actorId: string | null;

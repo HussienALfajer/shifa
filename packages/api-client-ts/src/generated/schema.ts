@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/auth/mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Whether TOTP is enrolled, since when, and recovery codes left */
+        get: operations["authMfaStatus"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/auth/mfa/challenge": {
         parameters: {
             query?: never;
@@ -49,6 +66,40 @@ export interface paths {
         put?: never;
         /** Start TOTP enrolment: a new key (replaces an unconfirmed one) */
         post: operations["authMfaEnrolStart"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/mfa/recovery-codes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Replace the recovery codes with a new set, confirmed with a TOTP code */
+        post: operations["authMfaRecoveryCodes"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/auth/password": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Change the signed-in person’s password; ends their other sessions */
+        post: operations["authChangePassword"];
         delete?: never;
         options?: never;
         head?: never;
@@ -363,6 +414,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The signed-in person’s own profile */
+        get: operations["meProfile"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/clinics": {
         parameters: {
             query?: never;
@@ -554,6 +622,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/team/members/{id}/reset-mfa": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Reset a member’s TOTP; ends the member’s sessions */
+        post: operations["teamMemberResetMfa"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/team/members/{id}/setup-link": {
         parameters: {
             query?: never;
@@ -606,6 +691,10 @@ export interface components {
         BranchList: {
             active: components["schemas"]["Branch"][];
             archived: components["schemas"]["Branch"][];
+        };
+        ChangePasswordRequest: {
+            currentPassword: string;
+            newPassword: string;
         };
         ClinicCreated: {
             clinic: components["schemas"]["ClinicDetail"];
@@ -670,6 +759,7 @@ export interface components {
             code: components["schemas"]["ErrorCode"];
             details?: components["schemas"]["ValidationIssue"][];
             message: string;
+            reason?: components["schemas"]["SessionEndReason"];
             /** Format: date-time */
             until?: string;
         };
@@ -677,7 +767,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -710,6 +800,7 @@ export interface components {
             id: string;
             isLastOwner: boolean;
             lastActiveAt: string | null;
+            mfaEnrolled: boolean;
             name: string;
             permissions: components["schemas"]["MemberPermission"][];
             phone: string;
@@ -751,8 +842,17 @@ export interface components {
             recoveryCodes: string[];
             session: components["schemas"]["SessionView"];
         };
+        MfaPassed: {
+            recoveryCodesLeft: number;
+            session: components["schemas"]["SessionView"];
+        };
         /** @enum {string} */
         MfaState: "none" | "pending" | "verified";
+        MfaStatus: {
+            enrolled: boolean;
+            enrolledAt: string | null;
+            recoveryCodesLeft: number | null;
+        };
         MyBranch: {
             /** Format: uuid */
             id: string;
@@ -768,6 +868,7 @@ export interface components {
             status: components["schemas"]["ClinicStatus"];
             /** Format: uuid */
             tenantId: string;
+            tenantWide: boolean;
         };
         MyClinics: {
             clinics: components["schemas"]["MyClinic"][];
@@ -781,15 +882,29 @@ export interface components {
             id: string;
             roles: components["schemas"]["InvitationRole"][];
         };
+        MyProfile: {
+            name: string;
+            phoneE164: string;
+            /** Format: uuid */
+            userId: string;
+        };
         PermissionKeyName: string;
         PermissionSwitch: {
             granted: boolean | null;
             key: components["schemas"]["PermissionKeyName"];
         };
+        RecoveryCodes: {
+            recoveryCodes: string[];
+        };
+        RenewRecoveryCodes: {
+            code: components["schemas"]["TotpCode"];
+        };
         RoleScopeInput: {
             branchId: string | null;
             role: components["schemas"]["SessionRole"];
         };
+        /** @enum {string} */
+        SessionEndReason: "idle" | "absolute" | "ended";
         SessionList: {
             sessions: components["schemas"]["SessionSummary"][];
         };
@@ -853,6 +968,7 @@ export interface components {
             /** Format: date-time */
             expiresAt: string;
             personName: string;
+            phoneMasked: string;
             purpose: components["schemas"]["SetupLinkPurpose"];
             role: components["schemas"]["SetupLinkRole"];
         };
@@ -907,6 +1023,44 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    authMfaStatus: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MfaStatus"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     authMfaChallenge: {
         parameters: {
             query?: never;
@@ -926,7 +1080,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SessionView"];
+                    "application/json": components["schemas"]["MfaPassed"];
                 };
             };
             /** @description Bad request */
@@ -1056,6 +1210,135 @@ export interface operations {
             };
             /** @description Conflict */
             409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    authMfaRecoveryCodes: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RenewRecoveryCodes"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RecoveryCodes"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    authChangePassword: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePasswordRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionView"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1987,6 +2270,35 @@ export interface operations {
             };
         };
     };
+    meProfile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyProfile"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     meClinics: {
         parameters: {
             query?: never;
@@ -2797,6 +3109,73 @@ export interface operations {
         };
     };
     teamReactivateMember: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MemberDetail"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    teamMemberResetMfa: {
         parameters: {
             query?: never;
             header?: never;

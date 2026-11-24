@@ -115,6 +115,8 @@ export const twoFactor = pgTable(
     lockedUntil: at('locked_until'),
     /** The last TOTP time step accepted (A-01a criterion 12): never accepted again or earlier. */
     lastUsedStep: bigint('last_used_step', { mode: 'number' }),
+    /** When enrolment was confirmed (A-01a 12a, My account); null before, and for older rows. */
+    enrolledAt: at('enrolled_at'),
   },
   (t) => [
     index('two_factor_secret_idx').on(t.secret),

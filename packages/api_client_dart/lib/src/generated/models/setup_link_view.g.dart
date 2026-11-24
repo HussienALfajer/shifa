@@ -11,6 +11,7 @@ SetupLinkView _$SetupLinkViewFromJson(Map<String, dynamic> json) =>
       clinicName: json['clinicName'] as String?,
       expiresAt: DateTime.parse(json['expiresAt'] as String),
       personName: json['personName'] as String,
+      phoneMasked: json['phoneMasked'] as String,
       purpose: $enumDecode(_$SetupLinkPurposeEnumMap, json['purpose']),
       role: $enumDecode(_$SetupLinkRoleEnumMap, json['role']),
     );
@@ -20,6 +21,7 @@ Map<String, dynamic> _$SetupLinkViewToJson(SetupLinkView instance) =>
       'clinicName': instance.clinicName,
       'expiresAt': instance.expiresAt.toIso8601String(),
       'personName': instance.personName,
+      'phoneMasked': instance.phoneMasked,
       'purpose': instance.purpose,
       'role': instance.role,
     };

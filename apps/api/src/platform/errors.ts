@@ -7,6 +7,7 @@ import {
   type ErrorCode,
   type ErrorEnvelope,
   envelopeFor,
+  type SessionEndReason,
   VALIDATION_FAILED_MESSAGE,
 } from '@shifa/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -26,6 +27,8 @@ export class ApiError extends HttpException {
     status: number,
     readonly code: ErrorCode,
     readonly until?: Date,
+    /** Why the session ended: only with `session_expired` (A-01a criterion 9). */
+    readonly reason?: SessionEndReason,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -39,6 +42,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         code: exception.code,
         message: CODE_MESSAGES[exception.code] ?? envelopeFor(status).error.message,
         ...(exception.until ? { until: exception.until.toISOString() } : {}),
+        ...(exception.reason ? { reason: exception.reason } : {}),
       },
     };
   }

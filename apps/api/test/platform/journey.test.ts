@@ -61,6 +61,9 @@ describe('super admin to clinic owner', () => {
       { method: 'totp', code: totpAt(owner.manualKey, clock.now()) },
       pending,
     );
-    expect(passed.json()).toMatchObject({ mfa: 'verified', tenantId: clinic.clinicId });
+    expect(passed.json()).toMatchObject({
+      session: { mfa: 'verified', tenantId: clinic.clinicId },
+      recoveryCodesLeft: 10,
+    });
   });
 });

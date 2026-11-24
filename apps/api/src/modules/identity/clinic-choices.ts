@@ -24,6 +24,8 @@ export interface ClinicChoice {
   status: TenantStatus;
   selectable: boolean;
   roles: SessionRole[];
+  /** A live tenant-wide role: "all branches" is the person's to choose. */
+  tenantWide: boolean;
   lastActiveAt: Date | null;
   /** The clinic has exactly one active branch. */
   solo: boolean;
@@ -93,6 +95,7 @@ export async function clinicChoices(
       roles: [...new Set(roles.map((r) => r.role))].sort(
         (a, b) => ROLE_ORDER.indexOf(a) - ROLE_ORDER.indexOf(b),
       ),
+      tenantWide,
       lastActiveAt: member.lastActiveAt,
       solo: active.length === 1,
       branches: held,
@@ -115,10 +118,20 @@ export async function activeAtSignIn(
   const selectable = (await clinicChoices(authDb, db, userId)).filter((c) => c.selectable);
   const [only, ...others] = selectable;
   if (!only || others.length > 0) return { tenantId: null, branchId: null };
+  // Roles in several branches and none tenant-wide: the chooser's branch step (A-01-09).
+  if (needsBranch(only)) return { tenantId: null, branchId: null };
   return { tenantId: only.tenantId, branchId: defaultBranch(only) };
 }
 
-/** The branch a switch without one lands in: the only branch the person holds there. */
+/** Roles in two or more branches and none tenant-wide: a branch must be picked. */
+export function needsBranch(choice: ClinicChoice): boolean {
+  return !choice.tenantWide && choice.branches.length > 1;
+}
+
+/**
+ * The branch a switch without one lands in: the only branch the person holds there, else none
+ * (all branches, for a tenant-wide role). Callers check needsBranch() first.
+ */
 export function defaultBranch(choice: ClinicChoice): string | null {
   return choice.branches.length === 1 ? (choice.branches[0]?.id ?? null) : null;
 }
