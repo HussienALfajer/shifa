@@ -1162,6 +1162,135 @@
       }
     }
   },
+  "commonInviteAccept": "قبول الدعوة",
+  "@commonInviteAccept": {
+    "description": "common.inviteAccept"
+  },
+  "commonInviteAcceptedText": "{roles}. تجد العيادة الآن في مبدّل العيادات.",
+  "@commonInviteAcceptedText": {
+    "description": "common.inviteAcceptedText",
+    "placeholders": {
+      "roles": {
+        "type": "String"
+      }
+    }
+  },
+  "commonInviteAcceptedTitle": "انضممت إلى {clinic}",
+  "@commonInviteAcceptedTitle": {
+    "description": "common.inviteAcceptedTitle",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonInviteAfter": "بعد القبول تظهر العيادة في مبدّل العيادات عندك، بالدور المكتوب أعلاه.",
+  "@commonInviteAfter": {
+    "description": "common.inviteAfter"
+  },
+  "commonInviteAs": "باسم {name}، كما كتبه مالك العيادة.",
+  "@commonInviteAs": {
+    "description": "common.inviteAs",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonInviteDecline": "رفض",
+  "@commonInviteDecline": {
+    "description": "common.inviteDecline"
+  },
+  "commonInviteDeclineConfirm": "رفض الدعوة",
+  "@commonInviteDeclineConfirm": {
+    "description": "common.inviteDeclineConfirm"
+  },
+  "commonInviteDeclineText": "يتوقف الرابط ولا تظهر العيادة في حسابك. لتنضم لاحقاً تحتاج دعوة جديدة.",
+  "@commonInviteDeclineText": {
+    "description": "common.inviteDeclineText"
+  },
+  "commonInviteDeclineTitle": "رفض دعوة {clinic}؟",
+  "@commonInviteDeclineTitle": {
+    "description": "common.inviteDeclineTitle",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonInviteDeclinedText": "لن تظهر العيادة في حسابك. إن كان ذلك خطأً فاطلب رابطاً جديداً من مالكها.",
+  "@commonInviteDeclinedText": {
+    "description": "common.inviteDeclinedText"
+  },
+  "commonInviteDeclinedTitle": "رفضت الدعوة",
+  "@commonInviteDeclinedTitle": {
+    "description": "common.inviteDeclinedTitle"
+  },
+  "commonInviteForPhone": "الدعوة لرقم",
+  "@commonInviteForPhone": {
+    "description": "common.inviteForPhone"
+  },
+  "commonInviteInvalidText": "ربما استُعمل، أو انتهت مدته، أو أُصدر رابط أحدث منه. اطلب رابطاً جديداً من مالك العيادة.",
+  "@commonInviteInvalidText": {
+    "description": "common.inviteInvalidText"
+  },
+  "commonInviteKeep": "تراجع",
+  "@commonInviteKeep": {
+    "description": "common.inviteKeep"
+  },
+  "commonInviteKicker": "دعوة للانضمام إلى فريق",
+  "@commonInviteKicker": {
+    "description": "common.inviteKicker"
+  },
+  "commonInviteLoading": "جارٍ تحميل الدعوة",
+  "@commonInviteLoading": {
+    "description": "common.inviteLoading"
+  },
+  "commonInviteNetworkText": "لم يُسجَّل جوابك. أعد المحاولة.",
+  "@commonInviteNetworkText": {
+    "description": "common.inviteNetworkText"
+  },
+  "commonInviteOpen": "فتح العيادة",
+  "@commonInviteOpen": {
+    "description": "common.inviteOpen"
+  },
+  "commonInviteOtherText": "هذه الدعوة لرقم ينتهي بـ {last}. اخرج، ثم ادخل بالرقم الذي وصلته الدعوة.",
+  "@commonInviteOtherText": {
+    "description": "common.inviteOtherText",
+    "placeholders": {
+      "last": {
+        "type": "String"
+      }
+    }
+  },
+  "commonInviteOtherTitle": "أنت داخل برقم آخر",
+  "@commonInviteOtherTitle": {
+    "description": "common.inviteOtherTitle"
+  },
+  "commonInviteSignIn": "الدخول للرد على الدعوة",
+  "@commonInviteSignIn": {
+    "description": "common.inviteSignIn"
+  },
+  "commonInviteSignedOutText": "لك حساب في شفاء بهذا الرقم. ادخل لتقبل الدعوة أو ترفضها، ثم نعيدك إلى هذه الصفحة.",
+  "@commonInviteSignedOutText": {
+    "description": "common.inviteSignedOutText"
+  },
+  "commonInviteToClinics": "إلى عياداتي",
+  "@commonInviteToClinics": {
+    "description": "common.inviteToClinics"
+  },
+  "commonInviteValid": "صالحة حتى {date} الساعة {time} · تُستعمل مرة واحدة",
+  "@commonInviteValid": {
+    "description": "common.inviteValid",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "commonLinkCopied": "نُسخ",
   "@commonLinkCopied": {
     "description": "common.linkCopied"
@@ -2171,6 +2300,14 @@
   "@commonSwitchGoneTitle": {
     "description": "common.switchGoneTitle"
   },
+  "commonSwitchNetworkText": "بقيت في العيادة الحالية. أعد المحاولة.",
+  "@commonSwitchNetworkText": {
+    "description": "common.switchNetworkText"
+  },
+  "commonSwitchNetworkTitle": "لم نصل إلى الخادم",
+  "@commonSwitchNetworkTitle": {
+    "description": "common.switchNetworkTitle"
+  },
   "commonSwitchRefusedText": "حدّثنا القائمة. إن تكرر ذلك فاخرج وادخل من جديد.",
   "@commonSwitchRefusedText": {
     "description": "common.switchRefusedText"
@@ -2186,6 +2323,95 @@
   "commonSwitchSuspendedTitle": "حساب هذه العيادة موقوف الآن",
   "@commonSwitchSuspendedTitle": {
     "description": "common.switchSuspendedTitle"
+  },
+  "commonSwitcherAllBranches": "كل الفروع",
+  "@commonSwitcherAllBranches": {
+    "description": "common.switcherAllBranches"
+  },
+  "commonSwitcherBack": "رجوع إلى العيادات",
+  "@commonSwitcherBack": {
+    "description": "common.switcherBack"
+  },
+  "commonSwitcherBranchCount": "{count, plural, zero {لا فروع} one {فرع واحد} two {فرعان} few {{count} فروع} many {{count} فرعاً} other {{count} فرع}}",
+  "@commonSwitcherBranchCount": {
+    "description": "common.switcherBranchCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonSwitcherBranchesIn": "الفروع في {clinic}",
+  "@commonSwitcherBranchesIn": {
+    "description": "common.switcherBranchesIn",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSwitcherBranchesYours": "فروعك في {clinic}",
+  "@commonSwitcherBranchesYours": {
+    "description": "common.switcherBranchesYours",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSwitcherBusy": "جارٍ التبديل",
+  "@commonSwitcherBusy": {
+    "description": "common.switcherBusy"
+  },
+  "commonSwitcherClinics": "العيادات",
+  "@commonSwitcherClinics": {
+    "description": "common.switcherClinics"
+  },
+  "commonSwitcherClose": "إغلاق",
+  "@commonSwitcherClose": {
+    "description": "common.switcherClose"
+  },
+  "commonSwitcherCurrent": "الحالية",
+  "@commonSwitcherCurrent": {
+    "description": "common.switcherCurrent"
+  },
+  "commonSwitcherInviteHow": "افتحها من الرابط الذي وصلك",
+  "@commonSwitcherInviteHow": {
+    "description": "common.switcherInviteHow"
+  },
+  "commonSwitcherInvites": "دعوات تنتظر ردّك",
+  "@commonSwitcherInvites": {
+    "description": "common.switcherInvites"
+  },
+  "commonSwitcherLabel": "العيادة والفرع: {place}",
+  "@commonSwitcherLabel": {
+    "description": "common.switcherLabel",
+    "placeholders": {
+      "place": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSwitcherNowIn": "أنت الآن في {clinic}",
+  "@commonSwitcherNowIn": {
+    "description": "common.switcherNowIn",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSwitcherStepText": "لك دور في فرعين أو أكثر هناك. اختر الفرع الذي تعمل فيه الآن.",
+  "@commonSwitcherStepText": {
+    "description": "common.switcherStepText"
+  },
+  "commonSwitcherSuspendedLine": "موقوفة · تواصل مع إدارة شفاء",
+  "@commonSwitcherSuspendedLine": {
+    "description": "common.switcherSuspendedLine"
+  },
+  "commonSwitcherTitle": "العيادة والفرع",
+  "@commonSwitcherTitle": {
+    "description": "common.switcherTitle"
   },
   "commonTheme": "المظهر",
   "@commonTheme": {

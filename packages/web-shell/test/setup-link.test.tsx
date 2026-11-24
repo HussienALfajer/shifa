@@ -114,8 +114,20 @@ describe('setup link: the view', () => {
   });
 
   it('invitation: hands over to the invitation page, no password form', async () => {
-    const r = await open(apiWith('invitation', 'doctor'));
-    expect(text(r)).toContain(`دعوة إلى ${CLINIC}`);
+    const api = apiWith('invitation', 'doctor');
+    // A-01-08: the invitation page reads its own view (POST /invitations/view).
+    api.answers['/api/invitations/view'] = () =>
+      json(200, {
+        clinicName: CLINIC,
+        personName: PERSON,
+        roles: [{ role: 'doctor', branchName: null }],
+        expiresAt: new Date(Date.now() + 48 * 3600_000).toISOString(),
+        phoneMasked: MASKED,
+      });
+    const r = await open(api);
+    await flush(60);
+    expect(text(r)).toContain('دعوة للانضمام إلى فريق');
+    expect(text(r)).toContain(CLINIC);
     expect(() => field(r.container, 'كلمة مرور جديدة')).toThrow();
   });
 

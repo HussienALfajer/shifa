@@ -1,7 +1,7 @@
 // What every page of both apps sits in (slice A-01-06): the query cache, the translator, Arabic
 // right to left, the chosen theme, the density, and the shell's own context (which app, the client).
 import type { I18n } from '@shifa/i18n/runtime';
-import { DensityProvider, DirectionProvider, ThemeProvider } from '@shifa/ui';
+import { DensityProvider, DirectionProvider, ThemeProvider, ToastProvider } from '@shifa/ui';
 import { type QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { createContext, type ReactNode, useContext } from 'react';
 import { I18nextProvider } from 'react-i18next';
@@ -50,7 +50,10 @@ export function ShellProviders({
         <I18nextProvider i18n={i18n}>
           <DirectionProvider dir="rtl" lang="ar">
             <Themed>
-              <DensityProvider density="comfortable">{children}</DensityProvider>
+              <DensityProvider density="comfortable">
+                {/* The toasts of both apps («أنت الآن في …» after a switch, A-01-08). */}
+                <ToastProvider>{children}</ToastProvider>
+              </DensityProvider>
             </Themed>
           </DirectionProvider>
         </I18nextProvider>

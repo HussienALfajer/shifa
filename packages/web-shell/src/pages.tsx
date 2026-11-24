@@ -7,6 +7,7 @@ import { Button, Card, CardBody, SegmentedControl } from '@shifa/ui';
 import { Link } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
 import { AccountPage } from './account/account-page.tsx';
+import { AppFrame } from './account/app-frame.tsx';
 import { SettingsPage } from './account/settings-page.tsx';
 import { ClinicPage } from './admin/clinic-page.tsx';
 import { ClinicsPage } from './admin/clinics-page.tsx';
@@ -107,24 +108,26 @@ function CurrentSession() {
   return state?.kind === 'signed-in' ? <SessionSummary session={state.session} /> : null;
 }
 
-/** Until A-01-08 draws home with the frame: the way to My account on clinic web. */
-function AccountLink() {
-  const text = useText();
-  const { app } = useShell();
-  return app === 'clinic' ? <Link to="/account">{text('navAccount')}</Link> : null;
-}
-
+/**
+ * Clinic web's home (A-01-08 checkpoint 2): inside the frame, so the header switcher is there
+ * after every switch (the router goes home). Its content is still the placeholder of A-01-06
+ * until the home screen is drawn; the journeys read the session summary.
+ */
 function HomePage() {
   const text = useText();
   return (
-    <Page title="homeTitle">
+    <AppFrame current="home" title={text('homeTitle')} description={text('homePending')}>
       <SessionEndsNotice />
       <CodesLeftNotice />
-      <p className="text-text-muted">{text('homePending')}</p>
-      <CurrentSession />
-      <AccountLink />
-      <Link to="/about">{text('aboutTitle')}</Link>
-    </Page>
+      <Card>
+        <CardBody>
+          <div className="flex flex-col gap-4 text-body">
+            <CurrentSession />
+            <Link to="/about">{text('aboutTitle')}</Link>
+          </div>
+        </CardBody>
+      </Card>
+    </AppFrame>
   );
 }
 

@@ -1,6 +1,6 @@
 # A-01-08 UI batch 3: team, branches and switcher screens
 
-Status: In progress (checkpoint 1 approved 2026-11-24; waiting for A-01-12) · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher`
+Status: In progress (checkpoint 1 approved 2026-11-24; A-01-12 merged (#160); checkpoint 2 built, PR open) · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher` (checkpoint 2 in the cloud session's `claude/kind-albattani-wmavzq`)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94, OD-102 to OD-106
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) (merged); may run beside [A-01-10](A-01-10-ui-account-settings-admin-web.md). The clinic chooser moved to A-01-07 in the 2026-11-24 re-plan. Last A-01 slice with A-01-10; A-01a and A-01b are done when it merges and the owner accepts.
@@ -106,10 +106,26 @@ Accepted by the owner 2026-11-24: all nine. Declined: none.
 ### Not done in this checkpoint
 Tests and code: the plan's tests are written after the approval (no code before it, OD-80).
 
+## Checkpoint 2 — built (2026-11-24)
+Tests first, locked, then the code; three owner decisions taken while building (2026-11-24), each because axe allows only items inside a `role="menu"`:
+- **Invitation rows in the switcher** are disabled menu items (`MenuNote`, `data-menu-note`): the dashed look of the sheet, reachable by the arrows and read aloud, never run. The sheet drew `role="note"`.
+- **The phone sheet's header** («العيادة والفرع» and ×) keeps its look; the title names the menu (`aria-labelledby`) and the header is hidden from screen readers (× works by touch; Escape, a swipe and a tap outside also close). The same rule is applied to the switch Callout inside the menu: drawn there, `aria-hidden`, and its words announced from a live region beside the menu.
+- **Type-only fix** of the two locked page tests (role literals typed as the role union), allowed by the owner.
+
+What was built:
+- `packages/ui` Menu: `MenuGroup`, `MenuRadioGroup`, `MenuRadioItem` (avatar or icon, second line, badge, the check at the logical end, busy spinner with `aria-busy`; the menu stays open on a choice), `MenuNote`, `MenuItem closeOnSelect`, `MenuTrigger` `size` and its own `aria-label`, `Menu presentation="sheet"` (UI SDK's own sheet presentation: grabber, title, close) and `MenuContent title`. Icons `buildings` and `archive` (Solar). Stories `Groups` and `Sheet`; README and the design-system bundle's data Menu learn groups (the sync is the owner's step). `test/support/axe.ts` waits only for running animations (the sheet keeps a paused one that a swipe scrubs).
+- `packages/web-shell` `switcher/clinic-switcher.tsx` in the frame's bar on every framed page (home now sits in the frame): every state of the table's `GET /me/clinics` and `POST /me/switch` rows; the branch step inside the menu with «رجوع إلى العيادات»; refusals as the approved Callout titles; no connection «بقيت في العيادة الحالية»; «أنت الآن في …» as a toast (improvement c); invitations listed (g); a phone shows the clinic alone and the sheet; one clinic with one branch and no invitation shows the name as text. A `ToastProvider` joins the shell's providers.
+- `auth/invitation.tsx` on `/setup` for a link of purpose `invitation`: `POST /invitations/view` (clinic, name, roles with branch, expiry, `phoneMasked`), signed out «الدخول للرد على الدعوة» (the token held in memory only, `auth/held-invitation.ts`; the router sends the finished session back to `/setup`), accept → «انضممت إلى …» → «فتح العيادة» (`POST /me/switch`), decline confirmed in an AlertDialog, 403 `invitation_other_phone` with the number's last digits and «خروج» (the token held again), 404 `link_invalid` without the clinic, no connection «لم يُسجَّل جوابك».
+
+Differences from the drawing, explained: the sheet's rows are `menuitemradio` (the drawing wrote `radio`) since the phone uses the same Menu; the sheet has no dimmed scrim (UI SDK's menu sheet has no backdrop part; backlog); the branch step's backward arrow key is not wired (the step's first row is «رجوع إلى العيادات»; backlog); after a switch the router goes home (the prototype kept an owner on the team page; checkpoint 3 decides when the team page exists); «فتح العيادة» finds the accepted clinic by name because `POST /invitations/accept` answers 204 without its id (API gap, backlog).
+
 ## Stopped at
-Checkpoint 1 approved by the owner (2026-11-24). Next: the API gaps in [A-01-12](A-01-12-team-branch-api-gaps.md) (T0), then the Menu groups addition with `/ui-component` and the `buildings` and `archive` icons, synced, then checkpoint 2 with its tests first.
+Checkpoint 2 built and verified; PR open. Next: checkpoint 3 (team and member drawer), tests first; the owner may start the design-system sync for the Menu groups meanwhile.
 
 ## Evidence
-- `verify` (full): —
-- Screenshots: —
-- Reviewer findings fixed: —; deferred to backlog: —
+Checkpoint 2 (cloud session, sandbox off, 2026-11-24):
+- `pnpm verify`: `all green` (scripts-test, format, lint, file-length, drift, typecheck+lint+test, e2e against the real backend).
+- `node scripts/verify.mjs full --part ui`: browser tests and story tests green (`menu-groups.gate.test.tsx` 36 in RTL and LTR, axe clean as a popover and as a sheet; stories `Groups` and `Sheet` with axe); screenshots 281 of 283 matched, the two differences explained: `foundations-icon--all` shows the two new icons (baseline updated and looked at), and `components-menu--long-arabic-label` came from a `truncate` added to the trigger label, removed (a long label wraps again, as approved).
+- Page tests: `switcher.test.tsx` 16, `invitation.test.tsx` 8, `checkpoint2-review.test.tsx` 3, `setup-link.test.tsx` updated for the invitation page.
+- Screenshots of the screens against the real backend and the journeys: checkpoint 5, as planned.
+- Reviewer (checkpoint 2): no blocking findings; fixed: (1) «فتح العيادة» now shows a refused or unanswered switch and stays busy through its lookup; (2) a solo clinic names no branch on the switcher although its sessions carry the branch's id; (3) a held invitation lasts 15 minutes and is forgotten when the session goes to admin web or is signed out; (4) role lists joined by `listOf()`, not a literal «و»; (5) «إلى عياداتي» reads the clinics again. Deferred to the backlog: the accept's missing clinic id, the menu sheet's scrim and back-arrow key.

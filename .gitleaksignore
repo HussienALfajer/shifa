@@ -34,3 +34,8 @@ cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/src/modules/identity/common-pa
 # A-01-07 checkpoint 3: a synthetic setup-link token in a page test ("ZyXwVu…", the reversed
 # alphabet and digits), replaced by repeated letters afterwards. No credential.
 36bc1612d23604554e7bc2855dde36ff4f6f6940:packages/web-shell/test/checkpoint3-review.test.tsx:generic-api-key:13
+
+# A-01-08 checkpoint 2: synthetic setup-link tokens (43 base64url characters typed for the
+# invitation page tests); no link, no server ever issued them.
+39c774803d32ef1dba935209df878b983a9b9755:packages/web-shell/test/invitation.test.tsx:generic-api-key:15
+99d9231308f10809f2483018a95d227637a75606:packages/web-shell/test/checkpoint2-review.test.tsx:generic-api-key:20

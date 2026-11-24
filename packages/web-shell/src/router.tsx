@@ -12,6 +12,7 @@ import {
   redirect,
 } from '@tanstack/react-router';
 import type { ReactNode } from 'react';
+import { forgetHeldInvitation, hasHeldInvitation } from './auth/held-invitation.ts';
 import type { ShellClient } from './client.ts';
 import { decideRoute, owesMfa, type RouteKind, type ShellApp } from './guard.ts';
 import {
@@ -87,6 +88,27 @@ function guard(kind: RouteKind) {
   return async ({ context }: { context: ShellRouterContext }) => {
     if (kind === 'open') return;
     const outcome = decideRoute(context.app, kind, await loadSession(context));
+    // Signed in to answer an invitation (A-01-08): a finished session on clinic web goes back to
+    // the invitation, whose token waits in memory (auth/held-invitation.ts).
+    const finished =
+      outcome.action === 'stay' || (outcome.action === 'redirect' && outcome.to === '/choose');
+    if (
+      context.app === 'clinic' &&
+      (kind === 'signed-in' || kind === 'choose') &&
+      finished &&
+      hasHeldInvitation()
+    ) {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect
+      throw redirect({ to: '/setup' });
+    }
+    // A session sent elsewhere (a super admin to admin web, a refused session signed out) will
+    // never answer it: the next person on this tab must not be shown it.
+    if (
+      outcome.action === 'sign-out' ||
+      (outcome.action === 'redirect' && outcome.to === '/admin-web')
+    ) {
+      forgetHeldInvitation();
+    }
     if (outcome.action === 'stay') return;
     if (outcome.action === 'sign-out') {
       await signOut(context.shell, context.queryClient);

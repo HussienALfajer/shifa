@@ -5,6 +5,10 @@
 // UI SDK's Menu: Up and Down, Home and End, typeahead (Arabic letters included), the forward
 // arrow of the reading direction opens a submenu and the backward one closes it, Enter runs the
 // action and focus returns to the trigger. A disabled item is reachable, says why, never runs.
+// Slice A-01-08 (sheet `MenuGroupsSheet`, approved 2026-11-24) added groups and radio rows
+// (`menu-groups.tsx`), an item that keeps the menu open (`closeOnSelect={false}`, a step inside
+// the menu), a trigger with a size and a name of its own, and `presentation="sheet"` for a phone:
+// the same rows rising from the bottom under a grabber, the content's `title` and a close button.
 import {
   Menu as BaseMenu,
   MenuContent as BaseMenuContent,
@@ -16,11 +20,31 @@ import {
   MenuSubContent,
   MenuSubTrigger,
 } from '@ui-sdk/react/menu';
-import type { ReactNode } from 'react';
+import { createContext, type ReactNode, useContext, useId, useState } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';
+import { IconButton } from '../icon-button/icon-button.tsx';
 import { Icon, type IconName } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
+import { ITEM } from './menu-styles.ts';
+
+export {
+  MenuGroup,
+  type MenuGroupProps,
+  MenuNote,
+  type MenuNoteProps,
+  MenuRadioGroup,
+  type MenuRadioGroupProps,
+  MenuRadioItem,
+  type MenuRadioItemProps,
+} from './menu-groups.tsx';
+
+export type MenuPresentation = 'popover' | 'sheet';
+
+const SheetContext = createContext<{ sheet: boolean; close: () => void }>({
+  sheet: false,
+  close: () => undefined,
+});
 
 export interface MenuProps {
   /** Runs with the item's `value` when an item is chosen. */
@@ -28,55 +52,87 @@ export interface MenuProps {
   open?: boolean | undefined;
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((open: boolean) => void) | undefined;
+  /** `sheet` on a phone: the same rows rising from the bottom, with MenuContent's `title`. */
+  presentation?: MenuPresentation | undefined;
   children: ReactNode;
 }
 
-export function Menu({ onAction, open, defaultOpen, onOpenChange, children }: MenuProps) {
+export function Menu({
+  onAction,
+  open,
+  defaultOpen,
+  onOpenChange,
+  presentation = 'popover',
+  children,
+}: MenuProps) {
+  // Held here even when uncontrolled, so the sheet's close button can close it.
+  const [inner, setInner] = useState(defaultOpen ?? false);
+  const change = (next: boolean) => {
+    setInner(next);
+    onOpenChange?.(next);
+  };
   return (
-    <BaseMenu
-      {...(open === undefined ? {} : { open })}
-      {...(defaultOpen === undefined ? {} : { defaultOpen })}
-      {...(onOpenChange === undefined
-        ? {}
-        : {
-            onOpenChange: (next: boolean) => {
-              onOpenChange(next);
-            },
-          })}
-      {...(onAction === undefined
-        ? {}
-        : {
-            onAction: (value: unknown) => {
-              onAction(String(value));
-            },
-          })}
+    <SheetContext
+      value={{
+        sheet: presentation === 'sheet',
+        close: () => {
+          change(false);
+        },
+      }}
     >
-      {children}
-    </BaseMenu>
+      <BaseMenu
+        presentation={presentation}
+        open={open ?? inner}
+        onOpenChange={(next: boolean) => {
+          change(next);
+        }}
+        {...(onAction === undefined
+          ? {}
+          : {
+              onAction: (value: unknown) => {
+                onAction(String(value));
+              },
+            })}
+      >
+        {children}
+      </BaseMenu>
+    </SheetContext>
   );
 }
 
 interface MenuTriggerCommon {
   variant?: ButtonVariant | undefined;
+  /** md (default) or sm, as Button. */
+  size?: 'sm' | 'md' | undefined;
   disabled?: boolean | undefined;
   className?: string | undefined;
+  'data-testid'?: string | undefined;
 }
 
-/** A Button that opens the menu: with a label, or an icon only (then `aria-label` names it). */
+/**
+ * A Button that opens the menu: with a label, or an icon only (then `aria-label` names it). A
+ * label may carry a fuller `aria-label` («العيادة والفرع: …»).
+ */
 export type MenuTriggerProps = MenuTriggerCommon &
   (
-    | { children: ReactNode; icon?: IconName | undefined }
+    | { children: ReactNode; icon?: IconName | undefined; 'aria-label'?: string | undefined }
     | { children?: undefined; icon: IconName; 'aria-label': string }
   );
 
 export function MenuTrigger(props: MenuTriggerProps) {
-  const { variant, disabled, className, children, icon } = props;
+  const { variant, size, disabled, className, children, icon } = props;
   const iconOnly = children === undefined;
+  const name = props['aria-label'];
+  const testId = props['data-testid'];
   return (
     <BaseMenuTrigger
       {...(disabled === undefined ? {} : { disabled })}
-      {...('aria-label' in props ? { 'aria-label': props['aria-label'] } : {})}
-      className={cn(buttonClasses({ variant: variant ?? 'secondary', iconOnly }), className)}
+      {...(name === undefined ? {} : { 'aria-label': name })}
+      {...(testId === undefined ? {} : { 'data-testid': testId })}
+      className={cn(
+        buttonClasses({ variant: variant ?? 'secondary', size: size ?? 'md', iconOnly }),
+        className,
+      )}
     >
       {icon !== undefined && <Icon name={icon} />}
       {!iconOnly && <span className="min-w-0">{children}</span>}
@@ -90,33 +146,72 @@ const CONTENT = cn(
   'flex w-max min-w-(--anchor-width) max-w-(--shifa-size-popover) flex-col gap-0.5',
 );
 
-export function MenuContent({
-  className,
-  children,
-}: {
+// A sheet: the full width, rising from the bottom, at most 5/6 of the screen high, as Drawer's.
+const SHEET = cn(
+  'data-[presentation=sheet]:w-full data-[presentation=sheet]:max-w-none',
+  'data-[presentation=sheet]:max-h-5/6 data-[presentation=sheet]:rounded-b-none',
+  'data-[presentation=sheet]:rounded-t-overlay data-[presentation=sheet]:border-0',
+  'data-[presentation=sheet]:px-4 data-[presentation=sheet]:pt-3 data-[presentation=sheet]:pb-6',
+  'data-[presentation=sheet]:shadow-overlay',
+);
+
+export interface MenuContentProps {
+  /** The sheet's heading on a phone («العيادة والفرع»); a popover shows none. */
+  title?: string | undefined;
+  /** The name of the sheet's close button. */
+  closeLabel?: string | undefined;
   className?: string | undefined;
   children: ReactNode;
-}) {
+}
+
+export function MenuContent({
+  title,
+  closeLabel = 'إغلاق',
+  className,
+  children,
+}: MenuContentProps) {
+  const { sheet, close } = useContext(SheetContext);
+  const titleId = useId();
+  const named = sheet && title !== undefined;
   return (
     <BaseMenuContent
       side="bottom"
       align="start"
       sideOffset={8}
       collisionPadding={8}
-      className={cn(CONTENT, className)}
+      {...(named ? { 'aria-labelledby': titleId } : {})}
+      className={cn(CONTENT, SHEET, className)}
     >
+      {sheet && (
+        // A menu holds only items (axe): the drawn title names the menu, and the header with its
+        // close button is hidden from screen readers, who close with Escape (owner, 2026-11-24).
+        <div aria-hidden="true" className="flex flex-col">
+          <span className="mx-auto mb-1 h-1 w-10 shrink-0 rounded-full bg-border-strong" />
+          <div className="flex items-center gap-2 px-1 pb-1">
+            {named && (
+              <span
+                id={titleId}
+                className="min-w-0 flex-1 text-heading-sm leading-heading font-semibold"
+              >
+                {title}
+              </span>
+            )}
+            <IconButton
+              icon="x"
+              label={closeLabel}
+              variant="ghost"
+              size="sm"
+              tabIndex={-1}
+              className="ms-auto"
+              onClick={close}
+            />
+          </div>
+        </div>
+      )}
       {children}
     </BaseMenuContent>
   );
 }
-
-const ITEM = cn(
-  'flex min-h-(--shifa-size-row) cursor-pointer select-none items-center gap-2 rounded-input px-3 outline-none',
-  'text-body leading-heading text-text-default in-data-[density=compact]:text-250',
-  'data-highlighted:bg-selection-subtle data-open:bg-selection-default',
-  'data-destructive:text-status-danger-fg',
-  'data-disabled:cursor-not-allowed data-disabled:text-text-disabled',
-);
 
 /** The icon column: an icon, or an empty slot so labels line up. */
 function ItemIcon({ icon }: { icon?: IconName | undefined }) {
@@ -137,6 +232,8 @@ export interface MenuItemProps {
   disabled?: boolean | undefined;
   /** A short note at the end of the row, such as why the item is disabled. */
   hint?: ReactNode | undefined;
+  /** False keeps the menu open (a step inside the menu, such as «رجوع»). */
+  closeOnSelect?: boolean | undefined;
   className?: string | undefined;
   children: ReactNode;
 }
@@ -147,6 +244,7 @@ export function MenuItem({
   danger,
   disabled,
   hint,
+  closeOnSelect,
   className,
   children,
 }: MenuItemProps) {
@@ -157,6 +255,7 @@ export function MenuItem({
       {...(typeof children === 'string' ? { label: children } : {})}
       {...(disabled === undefined ? {} : { disabled })}
       {...(danger === true ? { destructive: true } : {})}
+      {...(closeOnSelect === undefined ? {} : { closeOnSelect })}
       className={cn(ITEM, className)}
     >
       <ItemIcon icon={icon} />

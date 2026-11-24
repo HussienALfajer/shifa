@@ -3,9 +3,11 @@
 
 /** The curated icon names (Solar Broken by 480 Design, CC BY 4.0; the Healthicons tooth). */
 export type IconName =
+  | 'archive'
   | 'arrow-back'
   | 'arrow-forward'
   | 'bell'
+  | 'buildings'
   | 'calendar'
   | 'calendar-plus'
   | 'caret-back'
@@ -104,25 +106,6 @@ export interface PopoverProps {
   title: string;
   text: string;
   defaultOpen?: boolean;
-}
-
-/** A button that opens a list of actions. */
-export interface MenuProps {
-  triggerLabel?: string;
-  triggerIcon?: IconName;
-  'aria-label'?: string;
-  items: (
-    | {
-        value: string;
-        label: string;
-        icon?: IconName;
-        danger?: boolean;
-        disabled?: boolean;
-        hint?: string;
-      }
-    | { separator: true }
-    | { label: string; icon?: IconName; items: { value: string; label: string }[] }
-  )[];
 }
 
 interface FieldProps {
@@ -460,7 +443,6 @@ export declare const Icon: (props: IconProps) => unknown;
 export declare const Tabs: (props: TabsProps) => unknown;
 export declare const Dialog: (props: DialogProps) => unknown;
 export declare const Popover: (props: PopoverProps) => unknown;
-export declare const Menu: (props: MenuProps) => unknown;
 export declare const Select: (props: SelectProps) => unknown;
 export declare const Combobox: (props: ComboboxProps) => unknown;
 export declare const NumberInput: (props: NumberInputProps) => unknown;

@@ -30,9 +30,16 @@ export interface ClinicSwitchOptions {
   reload: () => void;
   askBranch: (tenantId: string) => void;
   backToClinics: () => void;
+  /** After the session names the new clinic (the header switcher's «أنت الآن في …»). */
+  onSwitched?: (tenantId: string, branchId: string | null) => void;
 }
 
-export function useClinicSwitch({ reload, askBranch, backToClinics }: ClinicSwitchOptions) {
+export function useClinicSwitch({
+  reload,
+  askBranch,
+  backToClinics,
+  onSwitched,
+}: ClinicSwitchOptions) {
   const { shell } = useShell();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
@@ -58,6 +65,7 @@ export function useClinicSwitch({ reload, askBranch, backToClinics }: ClinicSwit
       if (data) {
         const next = await fetchSession(shell);
         queryClient.setQueryData(sessionQueryKey, next);
+        onSwitched?.(choice.tenantId, choice.branchId);
         await navigate({ to: '/' });
         return;
       }

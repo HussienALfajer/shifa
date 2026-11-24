@@ -14,7 +14,12 @@ import type { IconName } from '../../src/icons/icon.tsx';
 import {
   Menu as CodeMenu,
   MenuContent,
+  MenuGroup,
   MenuItem,
+  MenuNote,
+  type MenuPresentation,
+  MenuRadioGroup,
+  MenuRadioItem,
   MenuSeparator,
   MenuTrigger,
   Submenu,
@@ -51,6 +56,10 @@ export const PARTS: Record<string, string> = {
   MenuItem: 'Menu',
   MenuSeparator: 'Menu',
   Submenu: 'Menu',
+  MenuGroup: 'Menu',
+  MenuNote: 'Menu',
+  MenuRadioGroup: 'Menu',
+  MenuRadioItem: 'Menu',
   Radio: 'RadioGroup',
   FormField: 'Form',
   FormSubmit: 'Form',
@@ -157,18 +166,68 @@ type MenuEntry =
       hint?: string;
     }
   | { separator: true }
-  | { label: string; icon?: IconName; items: { value: string; label: string }[] };
+  | { label: string; icon?: IconName; items: { value: string; label: string }[] }
+  | {
+      /** A radio group (A-01-08): the current row checked. */
+      group: string;
+      value: string | null;
+      radios: {
+        value: string;
+        label: string;
+        avatar?: string;
+        icon?: IconName;
+        description?: string;
+        badge?: string;
+        disabled?: boolean;
+        busy?: boolean;
+      }[];
+    }
+  | {
+      /** Note rows under a label (A-01-08): information only. */
+      group: string;
+      notes: { label: string; icon?: IconName; description?: string }[];
+    };
 
 export interface MenuData {
   /** A label, or an icon with `aria-label` for an icon-only trigger. */
   triggerLabel?: string;
   triggerIcon?: IconName;
   'aria-label'?: string;
+  /** `sheet`: the rows rising from the bottom, as on a phone, under `title`. */
+  presentation?: MenuPresentation;
+  title?: string;
   items: MenuEntry[];
 }
 
 function entry(item: MenuEntry, index: number) {
   if ('separator' in item) return <MenuSeparator key={`separator-${String(index)}`} />;
+  if ('radios' in item) {
+    return (
+      <MenuRadioGroup
+        key={item.group}
+        label={item.group}
+        value={item.value}
+        onValueChange={() => undefined}
+      >
+        {item.radios.map(({ label, ...radio }) => (
+          <MenuRadioItem key={radio.value} {...radio}>
+            {label}
+          </MenuRadioItem>
+        ))}
+      </MenuRadioGroup>
+    );
+  }
+  if ('notes' in item) {
+    return (
+      <MenuGroup key={item.group} label={item.group}>
+        {item.notes.map((note) => (
+          <MenuNote key={note.label} icon={note.icon} description={note.description}>
+            {note.label}
+          </MenuNote>
+        ))}
+      </MenuGroup>
+    );
+  }
   if ('items' in item) {
     return (
       <Submenu key={item.label} label={item.label} icon={item.icon}>
@@ -194,15 +253,15 @@ function entry(item: MenuEntry, index: number) {
   );
 }
 
-export function Menu({ triggerLabel, triggerIcon, items, ...aria }: MenuData) {
+export function Menu({ triggerLabel, triggerIcon, presentation, title, items, ...aria }: MenuData) {
   return (
-    <CodeMenu>
+    <CodeMenu presentation={presentation}>
       {triggerLabel === undefined ? (
         <MenuTrigger icon={triggerIcon ?? 'dots'} aria-label={aria['aria-label'] ?? 'إجراءات'} />
       ) : (
         <MenuTrigger icon={triggerIcon}>{triggerLabel}</MenuTrigger>
       )}
-      <MenuContent>{items.map(entry)}</MenuContent>
+      <MenuContent title={title}>{items.map(entry)}</MenuContent>
     </CodeMenu>
   );
 }
