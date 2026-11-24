@@ -1,5 +1,6 @@
 // The journeys' people (slice A-01-06): the super admin through seedSuperAdmin() and two clinics
-// with their owners through createClinic(), on the platform path like the real commands. Names
+// with their owners through createClinic(), on the platform path like the real commands; a second
+// super admin for the entry-path journeys (A-01-07), who creates their clinics through the API. Names
 // and phones come from @shifa/testing only. The one-time tokens stay in memory.
 import { createAuthDb, createClinic, createPlatformDb } from '@shifa/db';
 import { createRandom, fullName, generatePersonName, generatePhone } from '@shifa/testing';
@@ -32,8 +33,19 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       clinicWebUrl: urls.clinicWebUrl,
     });
     const adminToken = new URL(admin.setupUrl).hash.slice(1);
+    // The A-01-07 journeys' super admin: its link is opened in the page, not consumed by the API.
+    const journeyPhone = generatePhone(random, 'SY');
+    const journey = await seedSuperAdmin({
+      authDb,
+      platformDb,
+      phone: journeyPhone,
+      name: person(),
+      clinicWebUrl: urls.clinicWebUrl,
+    });
+    const journeyToken = new URL(journey.setupUrl).hash.slice(1);
     const clinics: Seeded['clinics'] = [];
-    for (const name of ['عيادة الرحلات الأولى', 'عيادة الرحلات الثانية']) {
+    // The third clinic's owner walks the screens by keyboard (A-01-07 checkpoint 5).
+    for (const name of ['عيادة الرحلات الأولى', 'عيادة الرحلات الثانية', 'عيادة الرحلات الثالثة']) {
       const phone = generatePhone(random, 'SY');
       const { token, hash } = newLinkToken();
       const created = await platformDb.withPlatformAdmin(
@@ -55,7 +67,11 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       );
       clinics.push({ tenantId: created.tenantId, owner: { phone, token } });
     }
-    return { superAdmin: { phone: adminPhone, token: adminToken }, clinics };
+    return {
+      superAdmin: { phone: adminPhone, token: adminToken },
+      journeyAdmin: { phone: journeyPhone, token: journeyToken },
+      clinics,
+    };
   } finally {
     await authDb.close();
     await platformDb.close();

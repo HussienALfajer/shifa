@@ -6,25 +6,50 @@ import type { SessionView } from '@shifa/contracts';
 import pg from 'pg';
 import { urls } from './run.ts';
 
-interface Answer {
+export interface Answer {
   status: number;
   body: unknown;
 }
 
-async function postInPage(page: Page, path: string, body: unknown): Promise<Answer> {
+/** Any API call from the page; the body (never logged) is returned to the journey. */
+export async function callInPage(
+  page: Page,
+  method: 'GET' | 'POST' | 'PATCH',
+  path: string,
+  body?: unknown,
+): Promise<Answer> {
   return page.evaluate(
-    async ({ path, body }) => {
+    async ({ method, path, body }) => {
       const res = await fetch(`/api${path}`, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(body),
+        method,
+        headers: body === undefined ? {} : { 'content-type': 'application/json' },
+        ...(body === undefined ? {} : { body: JSON.stringify(body) }),
       });
       const text = await res.text();
       return { status: res.status, body: text ? (JSON.parse(text) as unknown) : null };
     },
-    { path, body },
+    { method, path, body },
   );
 }
+
+/** The body of a call that must succeed with `status`; only the status is told on failure. */
+export async function expectCall<T>(
+  page: Page,
+  status: number,
+  method: 'GET' | 'POST' | 'PATCH',
+  path: string,
+  body?: unknown,
+): Promise<T> {
+  const answer = await callInPage(page, method, path, body);
+  if (answer.status !== status) {
+    const code = (answer.body as { error?: { code?: string } } | null)?.error?.code ?? '';
+    throw new Error(`${method} ${path} answered ${String(answer.status)} ${code}`);
+  }
+  return answer.body as T;
+}
+
+const postInPage = (page: Page, path: string, body: unknown) =>
+  callInPage(page, 'POST', path, body);
 
 function expectSession(answer: Answer, what: string): SessionView {
   // Never the body: it could carry a token on another route.

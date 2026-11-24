@@ -135,7 +135,7 @@ describe('the clinic chooser', () => {
   it('a session without a clinic goes to /choose, greets the person and lists the clinics', async () => {
     const r = await open(api());
     expect(r.router.state.location.pathname).toBe('/choose');
-    expect(r.container.querySelector('h1, h2')?.textContent).toContain(`أهلاً ${NAME}`);
+    expect(r.container.querySelector('h1')?.textContent).toContain(`أهلاً ${NAME}`);
     expect(text(r)).toContain('اختر العيادة التي تعمل فيها الآن');
     // Selectable clinics first, in the server's order (last used first); the suspended one last.
     expect(cards(r).map((c) => c.textContent.includes(CLINIC_A))).toEqual([true, false, false]);
@@ -212,7 +212,7 @@ describe('the clinic chooser', () => {
     await click(cardOf(r, CLINIC_A));
     await until(r, () => branchCards(r).length === 2);
     expect(fake.calls).not.toContain('POST /api/me/switch');
-    expect(r.container.querySelector('h2')?.textContent).toContain('اختر الفرع');
+    expect(r.container.querySelector('h1')?.textContent).toContain('اختر الفرع');
     expect(text(r)).toContain(CLINIC_A);
     expect(branchCards(r).map((b) => b.textContent.includes('الفرع الثاني'))).toEqual([
       false,
@@ -277,7 +277,7 @@ describe('the clinic chooser', () => {
     const r = await open(fake);
     await click(cardOf(r, CLINIC_B));
     await until(r, () => branchCards(r).length === 2);
-    expect(r.container.querySelector('h2')?.textContent).toContain('اختر الفرع');
+    expect(r.container.querySelector('h1')?.textContent).toContain('اختر الفرع');
   });
 
   it('404 on the switch: the list is loaded again', async () => {
