@@ -8,6 +8,10 @@ After [A-01-07](A-01-07-ui-sign-in-screens.md) (merged); may run beside [A-01-10
 ## Goal
 The owner manages the team and branches from clinic-web; a person in several clinics switches clinic and branch from the header; invitations are accepted or declined on their link.
 
+## Added by A-01-07 checkpoint 1 (owner, 2026-11-24)
+- The member detail gains «إعادة ضبط التحقق بخطوتين» for the owner (OD-95; route built in A-01-09): confirmed with an AlertDialog, ends the member's sessions, audited; a shared account answers `account_shared` (super admin). Drawn with this batch's screens.
+- Use the approved Callout for page messages (A-01-07 sheet).
+
 ## Plan
 ### Checkpoint 1 — draw, analyse, owner approval (ADR-0042, OD-80); no code before approval
 - Shifa Design System README read first; Shifa Guide rules kept; "Shifa Screens · Clinic web", page "A-01 Foundation" (drafts of 2026-11-23 reviewed and updated).
