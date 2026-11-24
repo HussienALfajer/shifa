@@ -39,8 +39,11 @@ function writeRemembered(phone: string | null): void {
   }
 }
 
-/** Examples in the phone hint (synthetic, `00` marker numbers of the plan). */
-const EXAMPLES = { local: '0930012345', international: '‎+905300012345' };
+/**
+ * Examples in the phone hint (synthetic numbers). Each is isolated left to right (LRI … PDI), so
+ * the `+` stays before the digits inside the Arabic sentence.
+ */
+const EXAMPLES = { local: '⁦0930012345⁩', international: '⁦+905300012345⁩' };
 
 type Failure =
   | { kind: 'invalid' }
