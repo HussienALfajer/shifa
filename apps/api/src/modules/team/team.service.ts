@@ -92,6 +92,8 @@ export class TeamService {
         purpose,
         tokenHash: link.tokenHash,
         expiresAt: link.expiresAt,
+        // An invitation also shows in that person's clinic chooser (OD-90).
+        invitedPhone: purpose === 'invitation' ? phone.e164 : null,
       });
       await audit(tx, scope, 'member.added', row.id, requestId);
       return { member: await this.#detail(tx, row), link: link.issued };
@@ -217,6 +219,7 @@ export class TeamService {
         purpose,
         tokenHash: link.tokenHash,
         expiresAt: link.expiresAt,
+        invitedPhone: purpose === 'invitation' ? row.phoneE164 : null,
       });
       await audit(tx, scope, 'member.link_issued', row.id, requestId);
       if (row.userId) await this.accounts.resetPassword(row.userId, scope.tenantId, by);

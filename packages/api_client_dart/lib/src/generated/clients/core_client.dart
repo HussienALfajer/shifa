@@ -5,6 +5,7 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/retrofit.dart';
 
+import '../models/active_clinic.dart';
 import '../models/add_member_request.dart';
 import '../models/archive_branch_preview.dart';
 import '../models/branch.dart';
@@ -24,6 +25,7 @@ import '../models/member_detail.dart';
 import '../models/member_link_issued.dart';
 import '../models/member_list.dart';
 import '../models/mfa_enrolled.dart';
+import '../models/my_clinics.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
 import '../models/set_password_request.dart';
@@ -31,6 +33,7 @@ import '../models/setup_link_issued.dart';
 import '../models/setup_link_request.dart';
 import '../models/setup_link_view.dart';
 import '../models/sign_in_request.dart';
+import '../models/switch_request.dart';
 import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
 import '../models/totp_enrol_start.dart';
@@ -150,6 +153,22 @@ abstract class CoreClient {
   Future<InvitationView> invitationView({
     @Body() required InvitationRequest body,
   });
+
+  /// The signed-in person’s clinics and pending invitations (clinic chooser)
+  @GET('/me/clinics')
+  Future<MyClinics> meClinics();
+
+  /// Accept a pending invitation from the clinic chooser
+  @POST('/me/invitations/{id}/accept')
+  Future<void> meAcceptInvitation({@Path('id') required String id});
+
+  /// Decline a pending invitation from the clinic chooser
+  @POST('/me/invitations/{id}/decline')
+  Future<void> meDeclineInvitation({@Path('id') required String id});
+
+  /// Switch the session to one of the person’s clinics and branches
+  @POST('/me/switch')
+  Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});
 
   /// Clinics, newest first; search by name
   @GET('/platform/clinics')

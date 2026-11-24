@@ -202,13 +202,15 @@ export async function buildTestApp({
   }
   const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestFastifyApplication>(createAdapter(logger));
-  const registered: { method: string; url: string }[] = [];
+  const registered: RegisteredRoute[] = [];
   app
     .getHttpAdapter()
     .getInstance()
     .addHook('onRoute', (route) => {
       const methods = Array.isArray(route.method) ? route.method : [route.method];
-      for (const method of methods) registered.push({ method, url: route.url });
+      for (const method of methods) {
+        registered.push({ method, url: route.url, handler: route.handler });
+      }
     });
   beforeInit?.(app.getHttpAdapter().getInstance());
   await configureApp(app, logger);
@@ -222,10 +224,20 @@ export function mergeGrants(production: RoleGrants, extra: RoleGrants): RoleGran
   ) as unknown as RoleGrants;
 }
 
-/** `METHOD /url` per route, leaving out only the HEAD twins Fastify adds to GET routes. */
-export function routeList(registered: readonly { method: string; url: string }[]): string[] {
-  const gets = new Set(registered.filter((r) => r.method === 'GET').map((r) => r.url));
-  return registered
-    .filter((r) => !(r.method === 'HEAD' && gets.has(r.url)))
-    .map((r) => `${r.method} ${r.url}`);
+export interface RegisteredRoute {
+  method: string;
+  url: string;
+  handler: unknown;
+}
+
+/**
+ * `METHOD /url` per route, leaving out only the HEAD twins Fastify adds to GET routes: a HEAD
+ * with the same URL and the same handler as a GET. An explicit HEAD (its own handler, declared
+ * before the GET) keeps its row (backlog L8).
+ */
+export function routeList(registered: readonly RegisteredRoute[]): string[] {
+  const gets = registered.filter((r) => r.method === 'GET');
+  const twin = (r: RegisteredRoute) =>
+    r.method === 'HEAD' && gets.some((g) => g.url === r.url && g.handler === r.handler);
+  return registered.filter((r) => !twin(r)).map((r) => `${r.method} ${r.url}`);
 }

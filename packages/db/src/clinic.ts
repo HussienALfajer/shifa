@@ -117,6 +117,8 @@ export async function createClinic(tx: PlatformTx, input: NewClinic): Promise<Cr
         purpose: owner.link.purpose,
         tokenHash: owner.link.tokenHash,
         expiresAt: owner.link.expiresAt,
+        // An invitation also shows in the person's clinic chooser (A-01-05, OD-90).
+        invitedPhone: owner.link.purpose === 'invitation' ? owner.phoneE164 : null,
       });
     }
   });
@@ -155,12 +157,20 @@ export async function issueOwnerLink(tx: PlatformTx, link: OwnerLink): Promise<v
           isNull(setupLink.replacedAt),
         ),
       );
+    const [owner] =
+      link.purpose === 'invitation'
+        ? await sp
+            .select({ phone: membership.phoneE164 })
+            .from(membership)
+            .where(eq(membership.id, link.membershipId))
+        : [];
     await sp.insert(setupLink).values({
       tenantId: link.tenantId,
       membershipId: link.membershipId,
       purpose: link.purpose,
       tokenHash: link.tokenHash,
       expiresAt: link.expiresAt,
+      invitedPhone: owner?.phone ?? null,
     });
   });
 }

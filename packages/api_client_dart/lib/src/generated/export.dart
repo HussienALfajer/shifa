@@ -5,6 +5,7 @@
 // Clients
 export 'clients/core_client.dart';
 // Data classes
+export 'models/active_clinic.dart';
 export 'models/add_member_request.dart';
 export 'models/archive_branch_preview.dart';
 export 'models/archived_member.dart';
@@ -39,6 +40,10 @@ export 'models/member_summary.dart';
 export 'models/membership_status.dart';
 export 'models/mfa_enrolled.dart';
 export 'models/mfa_state.dart';
+export 'models/my_branch.dart';
+export 'models/my_clinic.dart';
+export 'models/my_clinics.dart';
+export 'models/my_invitation.dart';
 export 'models/permission_key_name.dart';
 export 'models/permission_switch.dart';
 export 'models/role_scope_input.dart';
@@ -55,6 +60,7 @@ export 'models/setup_link_role.dart';
 export 'models/setup_link_token.dart';
 export 'models/setup_link_view.dart';
 export 'models/sign_in_request.dart';
+export 'models/switch_request.dart';
 export 'models/totp_challenge.dart';
 export 'models/totp_challenge_method.dart';
 export 'models/totp_code.dart';

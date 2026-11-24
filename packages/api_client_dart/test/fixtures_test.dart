@@ -26,6 +26,8 @@ final _decoders = <String, Object Function(_Json)>{
   'BranchList': (json) => BranchList.fromJson(json).toJson(),
   'ArchiveBranchPreview': (json) =>
       ArchiveBranchPreview.fromJson(json).toJson(),
+  'MyClinics': (json) => MyClinics.fromJson(json).toJson(),
+  'ActiveClinic': (json) => ActiveClinic.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

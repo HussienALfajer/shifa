@@ -45,6 +45,10 @@ export const ErrorCode = z
     // branches (A-01-05)
     'last_branch',
     'branch_archived',
+    // clinic switcher (A-01-05)
+    'clinic_suspended',
+    'no_clinic',
+    'branch_not_held',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -135,6 +139,9 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   permission_not_sensitive: 'Only sensitive permissions can be switched per member',
   last_branch: 'The clinic must keep at least one active branch',
   branch_archived: 'This branch is archived',
+  clinic_suspended: 'This clinic account is suspended',
+  no_clinic: 'No clinic is available for this account',
+  branch_not_held: 'No role in this branch',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

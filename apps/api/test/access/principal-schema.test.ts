@@ -30,7 +30,19 @@ describe('PrincipalSchema (AuthPort contract)', () => {
     expect(parsePrincipal(none)).toEqual(none);
   });
 
+  it('accepts a session whose clinic is suspended: no active clinic (A-01-05)', () => {
+    const suspended = {
+      ...valid,
+      tenantId: null,
+      branchId: null,
+      roles: [],
+      clinicSuspended: true,
+    };
+    expect(parsePrincipal(suspended)).toEqual(suspended);
+  });
+
   it.each([
+    ['a suspended clinic that is still active', { ...valid, clinicSuspended: true }],
     ['a user id that is not a UUID', { ...valid, userId: '+963940012345' }],
     ['a session id that is not a UUID', { ...valid, sessionId: 'token-abc' }],
     ['a branch without a tenant', { ...valid, tenantId: null, roles: [] }],

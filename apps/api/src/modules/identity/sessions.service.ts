@@ -5,9 +5,7 @@ import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import type { SessionList, SessionView } from '@shifa/contracts';
 import {
   type AuthDb,
-  branch,
   membership,
-  permissionOverride,
   platformAdmin,
   roleAssignment,
   type ShifaDb,
@@ -26,9 +24,14 @@ import {
 } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
+import { activeAtSignIn } from './clinic-choices.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
 import { SESSION_ABSOLUTE_MS } from './session-cookie.ts';
+import { NO_CLINIC_IDLE_MINUTES, tenantView } from './tenant-view.ts';
 import { AUTH_DB } from './tokens.ts';
+
+export { NO_CLINIC_IDLE_MINUTES };
+
 import { describeUserAgent } from './user-agent.ts';
 
 /** Is the person a super admin, and have they a confirmed TOTP enrolment? */
@@ -71,21 +74,9 @@ async function accountFactors(
   };
 }
 
-/** Idle limit without an active clinic: super admins, and people between clinics (OD-77). */
-export const NO_CLINIC_IDLE_MINUTES = 15;
-
 const MINUTE_MS = 60_000;
 
 type SessionRow = typeof session.$inferSelect;
-
-/** What the active tenant says about this person, read under its RLS. */
-interface TenantView {
-  active: boolean;
-  idleMinutes: number;
-  branchId: string | null;
-  roles: Principal['roles'];
-  overrides: { key: string; granted: boolean }[];
-}
 
 @Injectable()
 export class SessionsService {
@@ -97,27 +88,11 @@ export class SessionsService {
   ) {}
 
   /**
-   * The clinic and branch a new session starts in: the only active membership, and that clinic's
-   * only branch; otherwise none (the chooser comes in A-01-05).
+   * The clinic and branch a new session starts in: the only selectable clinic (not suspended, a
+   * role left) and the only branch the person holds there; otherwise none (the chooser).
    */
-  async activeAtSignIn(
-    userId: string,
-  ): Promise<{ tenantId: string | null; branchId: string | null }> {
-    const memberships = await this.authDb.withUser(userId, (tx) =>
-      tx
-        .select({ tenantId: membership.tenantId })
-        .from(membership)
-        .where(and(eq(membership.userId, userId), eq(membership.status, 'active'))),
-    );
-    const [only, ...others] = memberships;
-    if (!only || others.length > 0) return { tenantId: null, branchId: null };
-    const branches = await this.db.withTenant({ tenantId: only.tenantId, userId }, (tx) =>
-      tx.select({ id: branch.id }).from(branch).where(isNull(branch.archivedAt)),
-    );
-    return {
-      tenantId: only.tenantId,
-      branchId: branches.length === 1 ? (branches[0]?.id ?? null) : null,
-    };
+  activeAtSignIn(userId: string): Promise<{ tenantId: string | null; branchId: string | null }> {
+    return activeAtSignIn(this.authDb, this.db, userId);
   }
 
   /**
@@ -131,8 +106,8 @@ export class SessionsService {
       tx.select().from(session).where(eq(session.token, token)).limit(1),
     );
     if (!row) return null;
-    const tenantView = await this.#tenantView(row.userId, row.activeTenantId, row.activeBranchId);
-    const reason = this.#expiry(row, tenantView.idleMinutes, now);
+    const view = await tenantView(this.db, row.userId, row.activeTenantId, row.activeBranchId);
+    const reason = this.#expiry(row, view.idleMinutes, now);
     if (reason) {
       await this.end(row.userId, [row.id], reason, requestId);
       throw new SessionExpiredError();
@@ -141,7 +116,7 @@ export class SessionsService {
       await tx.update(session).set({ lastActiveAt: now }).where(eq(session.id, row.id));
       return accountFactors(tx, row.userId);
     });
-    if (tenantView.active && row.activeTenantId) {
+    if (view.active && row.activeTenantId) {
       await this.#touchMember(row.userId, row.activeTenantId, now);
     }
     const mfa: MfaState = !factors.totpEnrolled
@@ -152,22 +127,22 @@ export class SessionsService {
     return parsePrincipal({
       userId: row.userId,
       sessionId: row.id,
-      tenantId: tenantView.active ? row.activeTenantId : null,
-      branchId: tenantView.active ? tenantView.branchId : null,
-      roles: tenantView.active ? tenantView.roles : [],
+      tenantId: view.active ? row.activeTenantId : null,
+      branchId: view.active ? view.branchId : null,
+      roles: view.active ? view.roles : [],
       platformAdmin: factors.platformAdmin,
       mfa,
-      ...(tenantView.active && tenantView.overrides.length > 0
-        ? { overrides: tenantView.overrides }
-        : {}),
+      ...(view.active && view.overrides.length > 0 ? { overrides: view.overrides } : {}),
       ...(factors.ownsClinic ? { ownsClinic: true } : {}),
+      // The data stays; every tenant route answers 403 clinic_suspended (criterion 11).
+      ...(view.suspended ? { clinicSuspended: true } : {}),
     });
   }
 
   /** The current session as the client sees it (criterion 9: when it ends). */
   async view(principal: Principal): Promise<SessionView> {
     const row = await this.own(principal);
-    const idleMinutes = (await this.#tenantView(principal.userId, principal.tenantId, null))
+    const idleMinutes = (await tenantView(this.db, principal.userId, principal.tenantId, null))
       .idleMinutes;
     const lastActive = row.lastActiveAt ?? row.createdAt;
     return {
@@ -318,10 +293,6 @@ export class SessionsService {
   }
 
   /**
-   * Inside the active tenant (shifa_app, its RLS): is the person still an active member, the
-   * clinic's idle minutes, the active branch if it is still one of the clinic's, and their roles.
-   */
-  /**
    * The member's last activity in the clinic (the team list, A-01b), written at most once a
    * minute so a busy session does not write on every request.
    */
@@ -339,56 +310,6 @@ export class SessionsService {
           ),
         ),
     );
-  }
-
-  async #tenantView(
-    userId: string,
-    tenantId: string | null,
-    branchId: string | null,
-  ): Promise<TenantView> {
-    const none: TenantView = {
-      active: false,
-      idleMinutes: NO_CLINIC_IDLE_MINUTES,
-      branchId: null,
-      roles: [],
-      overrides: [],
-    };
-    if (tenantId === null) return none;
-    return this.db.withTenant({ tenantId, userId }, async (tx) => {
-      const [clinic] = await tx
-        .select({ idleMinutes: tenant.idleMinutes })
-        .from(tenant)
-        .where(eq(tenant.id, tenantId));
-      const roles = await tx
-        .select({ role: roleAssignment.role, branchId: roleAssignment.branchId })
-        .from(roleAssignment)
-        .innerJoin(membership, eq(membership.id, roleAssignment.membershipId))
-        .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
-      const [member] = await tx
-        .select({ id: membership.id })
-        .from(membership)
-        .where(and(eq(membership.userId, userId), eq(membership.status, 'active')));
-      if (!clinic || !member) return none;
-      // A member without a role holds nothing in the clinic: no clinic for the session.
-      if (roles.length === 0) return none;
-      const overrides = await tx
-        .select({ key: permissionOverride.key, granted: permissionOverride.granted })
-        .from(permissionOverride)
-        .where(eq(permissionOverride.membershipId, member.id));
-      const [current] = branchId
-        ? await tx
-            .select({ id: branch.id })
-            .from(branch)
-            .where(and(eq(branch.id, branchId), isNull(branch.archivedAt)))
-        : [];
-      return {
-        active: true,
-        idleMinutes: clinic.idleMinutes,
-        branchId: current?.id ?? null,
-        roles: roles.map((r) => ({ role: r.role, tenantId, branchId: r.branchId })),
-        overrides,
-      };
-    });
   }
 }
 

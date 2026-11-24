@@ -34,14 +34,26 @@ describe('mergeGrants', () => {
 });
 
 describe('routeList', () => {
+  const get = () => 'get';
+  const head = () => 'head';
+
   it('drops only the HEAD twins of GET routes', () => {
     expect(
       routeList([
-        { method: 'GET', url: '/a' },
-        { method: 'HEAD', url: '/a' },
-        { method: 'HEAD', url: '/b' },
+        { method: 'GET', url: '/a', handler: get },
+        { method: 'HEAD', url: '/a', handler: get },
+        { method: 'HEAD', url: '/b', handler: head },
       ]),
     ).toEqual(['GET /a', 'HEAD /b']);
+  });
+
+  it('keeps an explicit HEAD declared before the GET of the same URL (backlog L8)', () => {
+    expect(
+      routeList([
+        { method: 'HEAD', url: '/c', handler: head },
+        { method: 'GET', url: '/c', handler: get },
+      ]),
+    ).toEqual(['HEAD /c', 'GET /c']);
   });
 });
 

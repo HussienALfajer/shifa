@@ -102,6 +102,8 @@ export const membership = pgTable(
     unique('membership_tenant_id_id_key').on(t.tenantId, t.id),
     unique('membership_tenant_id_phone_e164_key').on(t.tenantId, t.phoneE164),
     unique('membership_tenant_id_user_id_key').on(t.tenantId, t.userId),
+    // Target of setup_link's invited phone (A-01-05): an invitation names its member's phone.
+    unique('membership_tenant_id_id_phone_e164_key').on(t.tenantId, t.id, t.phoneE164),
     check('membership_phone_e164_check', sql`${t.phoneE164} ~ ${sql.raw(E164_CHECK)}`),
     check(
       'membership_display_name_check',
@@ -193,6 +195,11 @@ export const setupLink = pgTable(
     expiresAt: at('expires_at').notNull(),
     usedAt: at('used_at'),
     replacedAt: at('replaced_at'),
+    /**
+     * An invitation's phone, the member's own (foreign key): the signed-in account with this phone
+     * sees and answers it from the clinic chooser without the link (A-01-05, OD-90).
+     */
+    invitedPhone: text('invited_phone'),
     createdAt: createdAt(),
   },
   (t) => [
@@ -201,6 +208,15 @@ export const setupLink = pgTable(
       columns: [t.tenantId, t.membershipId],
       foreignColumns: [membership.tenantId, membership.id],
     }).onDelete('cascade'),
+    foreignKey({
+      name: 'setup_link_invited_phone_fk',
+      columns: [t.tenantId, t.membershipId, t.invitedPhone],
+      foreignColumns: [membership.tenantId, membership.id, membership.phoneE164],
+    }).onDelete('cascade'),
+    check(
+      'setup_link_invited_phone_check',
+      sql`${t.invitedPhone} is null or ${t.purpose} = 'invitation'`,
+    ),
     index('setup_link_tenant_id_token_hash_idx').on(t.tenantId, t.tokenHash),
     index('setup_link_tenant_id_membership_id_idx').on(t.tenantId, t.membershipId),
     check(

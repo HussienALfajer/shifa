@@ -1,0 +1,166 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "1bbafcad-19f6-437a-8b79-11942582e653",
+  "prevIds": [
+    "640bb5f7-2a4d-4cff-92db-924e9d089a27"
+  ],
+  "footprints": [
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "setup_link",
+        "invited_phone"
+      ],
+      "writes": [
+        "s|col|public.setup_link.invited_phone",
+        "n|col|public.setup_link.invited_phone",
+        "e|col|public.setup_link.invited_phone"
+      ],
+      "reads": [
+        "n|tbl|public.setup_link",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_unique",
+      "statementTarget": [
+        "table",
+        "public",
+        "membership"
+      ],
+      "writes": [
+        "s|uq|public.membership.membership_tenant_id_id_phone_e164_key",
+        "n|uq|public.membership.membership_tenant_id_id_phone_e164_key",
+        "e|uq|public.membership.membership_tenant_id_id_phone_e164_key",
+        "n|con|public.membership.membership_tenant_id_id_phone_e164_key",
+        "n|rel|public.membership_tenant_id_id_phone_e164_key"
+      ],
+      "reads": [
+        "n|tbl|public.membership",
+        "n|sch|public",
+        "n|col|public.membership.tenant_id",
+        "n|col|public.membership.id",
+        "n|col|public.membership.phone_e164"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "setup_link"
+      ],
+      "writes": [
+        "s|fk|public.setup_link.setup_link_invited_phone_fk",
+        "n|fk|public.setup_link.setup_link_invited_phone_fk",
+        "e|fk|public.setup_link.setup_link_invited_phone_fk",
+        "n|con|public.setup_link.setup_link_invited_phone_fk"
+      ],
+      "reads": [
+        "n|tbl|public.setup_link",
+        "n|sch|public",
+        "n|tbl|public.membership",
+        "n|sch|public",
+        "n|col|public.setup_link.tenant_id",
+        "n|col|public.setup_link.membership_id",
+        "n|col|public.setup_link.invited_phone",
+        "n|col|public.membership.tenant_id",
+        "n|col|public.membership.id",
+        "n|col|public.membership.phone_e164",
+        "e|uniqueness|public.membership.id.phone_e164.tenant_id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "setup_link"
+      ],
+      "writes": [
+        "s|ck|public.setup_link.setup_link_invited_phone_check",
+        "n|ck|public.setup_link.setup_link_invited_phone_check",
+        "e|ck|public.setup_link.setup_link_invited_phone_check",
+        "n|con|public.setup_link.setup_link_invited_phone_check"
+      ],
+      "reads": [
+        "n|tbl|public.setup_link",
+        "n|sch|public",
+        "n|col|public.setup_link.invited_phone",
+        "n|col|public.setup_link.purpose"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setup_link",
+        "name": "invited_phone",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setup_link",
+        "name": "setup_link_invited_phone_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "membership_id",
+          "invited_phone"
+        ],
+        "schemaTo": "public",
+        "tableTo": "membership",
+        "columnsTo": [
+          "tenant_id",
+          "id",
+          "phone_e164"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "CASCADE",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "membership",
+        "name": "membership_tenant_id_id_phone_e164_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "id",
+          "phone_e164"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setup_link",
+        "name": "setup_link_invited_phone_check",
+        "value": "\"invited_phone\" is null or \"purpose\" = 'invitation'",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

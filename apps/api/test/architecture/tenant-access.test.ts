@@ -16,17 +16,29 @@ const ALLOWED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     'identity/sessions.service.ts': 'builds the principal before any scope exists (AuthPort)',
     'identity/setup-links.service.ts': 'a link page reads its roles in the link’s clinic',
     'identity/invitations.service.ts': 'answering an invitation writes the clinic’s audit row',
+    'identity/my-invitations.service.ts':
+      'an invitation answered from the chooser writes the clinic’s audit row (OD-90)',
+    'identity/switcher.service.ts':
+      'a switch, checked against the person’s own clinics, writes the clinic’s audit row',
   },
   withTenant: {
-    'identity/sessions.service.ts': 'builds the principal before any scope exists (AuthPort)',
+    'identity/sessions.service.ts': 'the member’s last activity, for the principal (AuthPort)',
+    'identity/tenant-view.ts': 'builds the principal before any scope exists (AuthPort)',
+    'identity/clinic-choices.ts':
+      'active branches of the person’s own clinics, found on the auth path first (A-01b 10)',
+    'identity/switcher.service.ts':
+      'clinic.switched and the archived-branch check, in a clinic found as the person’s own',
   },
   linkScope: {
     'identity/setup-links.service.ts': 'a link page, nobody signed in there',
     'identity/invitations.service.ts': 'the invited person is not yet a member there',
+    'identity/my-invitations.service.ts':
+      'the invited person is not yet a member there; the invitation found on the auth path by id and phone',
   },
   withScope: {
     'identity/setup-links.service.ts': 'with linkScope()',
     'identity/invitations.service.ts': 'with linkScope()',
+    'identity/my-invitations.service.ts': 'with linkScope()',
   },
 };
 
