@@ -96,6 +96,11 @@ function compactBlock(): string {
 
 export async function buildBundle(out: string): Promise<void> {
   const tmp = mkdtempSync(join(tmpdir(), 'shifa-bundle-build-'));
+  // Vite takes `isProduction` from NODE_ENV, not from `mode`, and the React plugin compiles JSX to
+  // `jsxDEV` when it is not production; production React has no `jsxDEV`, so every preview would
+  // stay empty. The variable is set for the build only and restored after it.
+  const callerNodeEnv = process.env['NODE_ENV'];
+  process.env['NODE_ENV'] = 'production';
   try {
     await build({
       configFile: false,
@@ -149,6 +154,8 @@ export async function buildBundle(out: string): Promise<void> {
       }
     }
   } finally {
+    if (callerNodeEnv === undefined) delete process.env['NODE_ENV'];
+    else process.env['NODE_ENV'] = callerNodeEnv;
     rmSync(tmp, { recursive: true, force: true });
   }
 }
