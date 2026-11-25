@@ -780,6 +780,9 @@ importers:
       playwright:
         specifier: 1.65.1
         version: 1.65.1
+      postcss:
+        specifier: 8.5.32
+        version: 8.5.32
       storybook:
         specifier: 10.6.7
         version: 10.6.7(@types/react@19.3.0)(prettier@3.10.1)(react@19.3.1)
@@ -859,6 +862,9 @@ importers:
       happy-dom:
         specifier: 21.0.4
         version: 21.0.4
+      playwright:
+        specifier: 1.65.1
+        version: 1.65.1
       typescript:
         specifier: 6.0.3
         version: 6.0.3
@@ -955,7 +961,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 5.1.0
-        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
   spikes/s1-offline/web:
     dependencies:
@@ -1059,7 +1065,7 @@ importers:
         version: 6.0.3
       vitest:
         specifier: 5.1.0
-        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@24.19.2)(jiti@2.7.0)(yaml@2.9.1))
+        version: 5.1.0(@opentelemetry/api@1.10.0)(@types/node@24.19.2)(@vitest/browser-playwright@5.1.0)(@vitest/ui@5.1.0)(happy-dom@21.0.4)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
 
   spikes/s3-arabic-output/search:
     dependencies:

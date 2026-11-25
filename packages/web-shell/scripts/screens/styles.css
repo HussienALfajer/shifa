@@ -1,0 +1,9 @@
+/* The styles of clinic web, as apps/clinic-web/src/styles.css builds them: Shifa's components and
+ * tokens, the self-hosted fonts and the shell's own page classes. */
+@import "@shifa/ui/styles.css";
+@source "../../src";
+
+html,
+body {
+  margin: 0;
+}

@@ -11,7 +11,9 @@
   "scripts": {
     "typecheck": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "screens:check": "node scripts/screens/check.ts",
+    "screens:canvas": "node scripts/screens/canvas.ts"
   },
   "dependencies": {
     "@shifa/api-client-ts": "workspace:*",
@@ -36,6 +38,7 @@
     "@types/react-dom": "19.3.0",
     "eslint": "10.14.0",
     "happy-dom": "21.0.4",
+    "playwright": "1.65.1",
     "typescript": "6.0.3",
     "vite": "8.3.8",
     "vitest": "5.1.0"
