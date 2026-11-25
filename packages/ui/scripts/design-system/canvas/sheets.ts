@@ -43,7 +43,7 @@ ${links}
     title: 'Shifa Components',
     w: WIDTH,
     h,
-    vals: {},
+    logic: '    return { v: {} };',
     body: `<div data-theme="light" style="width: ${String(WIDTH)}px; height: ${String(h)}px; box-sizing: border-box; padding: 64px 80px; display: flex; flex-direction: column; gap: 32px; background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); font-family: var(--font-sans);">
   <div style="display: flex; flex-direction: column; gap: 12px; max-width: 980px;">
     <p style="margin: 0; font-size: 14px; font-weight: 500; ${MUTED}">SHIFA DESIGN SYSTEM · WEB</p>

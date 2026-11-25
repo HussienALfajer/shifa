@@ -1,13 +1,16 @@
-// Writes the "Shifa Components" canvas from the code (ADR-0048): one artboard per sheet and open
-// view, the index board, `support/states.css` and `canvas.json` laid out by group, with the
+// Writes the "Shifa Components" canvas from the code (ADR-0048): one artboard per component
+// (board.ts: playground, every copy, open views; theme, density, direction and view in Tweaks),
+// the index board, `support/states.css` and `canvas.json` laid out by group, with the
 // system's files (`ds/shifa/`) copied from `pnpm design-system:build`. Heights come from check.ts
 // (heights.json; run it on the written project, then write again with the heights).
 // Usage: node scripts/design-system/canvas/canvas.ts <project-dir> <current canvas.json> <heights.json>
 import { cpSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { GROUPS, makeOpen, makeSheet, WIDTH } from './page.ts';
+import { makeBoard } from './board.ts';
+import { GROUPS, WIDTH } from './page.ts';
 import { makeMain, SHEETS } from './sheets.ts';
 import { forcedStates } from './states.ts';
+import type { SheetSpec } from './types.ts';
 
 /** Sheets with nothing to press: not interactive in Play. */
 const STATIC = new Set(['Icon', 'Badge', 'CountBadge', 'Avatar', 'QrCode', 'Skeleton']);
@@ -44,38 +47,28 @@ interface Placed {
   interactive: boolean;
 }
 
-/** Every artboard of the page with its contents, at the heights measured. */
+/** A board's height: its sheet as measured (the tallest tweak) or its tallest open view. */
+export function boardHeight(spec: SheetSpec, heights: Record<string, number>): number {
+  const sheet = spec.openOnly ? 0 : (heights[spec.name] ?? 1200);
+  return Math.max(sheet, ...(spec.open ?? []).map((o) => o.h));
+}
+
+/** One artboard per component, with its contents, at the heights measured. */
 export function artboards(
   heights: Record<string, number>,
 ): (Placed & { group: string; html: string })[] {
-  const out: (Placed & { group: string; html: string })[] = [];
-  for (const s of SHEETS) {
-    if (!s.openOnly) {
-      const h = heights[s.name] ?? 1200;
-      out.push({
-        file: `${s.name}.dc.html`,
-        w: WIDTH,
-        h,
-        title: s.name,
-        interactive: !STATIC.has(s.name),
-        group: s.group,
-        html: makeSheet(s, h),
-      });
-    }
-    for (const o of s.open ?? []) {
-      const title = `${s.name} · ${o.cap.split(' · ').slice(0, 3).join(' · ')}`;
-      out.push({
-        file: `${s.name}${o.suffix}.dc.html`,
-        w: o.w,
-        h: o.h,
-        title,
-        interactive: true,
-        group: s.group,
-        html: makeOpen(s, o),
-      });
-    }
-  }
-  return out;
+  return SHEETS.map((s) => {
+    const h = boardHeight(s, heights);
+    return {
+      file: `${s.name}.dc.html`,
+      w: WIDTH,
+      h,
+      title: s.name,
+      interactive: !STATIC.has(s.name),
+      group: s.group,
+      html: makeBoard(s, h),
+    };
+  });
 }
 
 export function writeCanvas(
@@ -83,7 +76,7 @@ export function writeCanvas(
   current: Record<string, unknown>,
   heights: Record<string, number>,
   bundleCss: string,
-) {
+): Record<string, unknown> & { order: string[] } {
   mkdirSync(join(project, 'support'), { recursive: true });
   writeFileSync(join(project, 'support', 'states.css'), forcedStates(bundleCss));
   const boards: Record<string, unknown> = {};
@@ -171,5 +164,5 @@ if (import.meta.main && projectArg && indexArg && heightsArg) {
     ];
   }
   writeFileSync(join(project, 'canvas.json'), `${JSON.stringify(index, null, 1)}\n`);
-  console.log(`${String((index.order as string[]).length)} boards`);
+  process.stdout.write(`${String(index.order.length)} boards\n`);
 }

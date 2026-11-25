@@ -28,16 +28,20 @@ export type Block =
   | { label: string; items: Item[]; cols?: number }
   | { label: string; matrix: Matrix };
 
-/** A board beside the sheet with an overlay open (a modal covers its whole frame). */
+/**
+ * The overlay open, chosen in Tweaks (`view`) instead of the sheet: a modal covers its whole
+ * board. Theme, density and direction are the board's own tweaks.
+ */
 export interface OpenView {
+  /** The tweak's value, e.g. `OpenError`. */
   suffix: string;
-  theme: Theme;
-  density: Density;
-  w: number;
+  /** The tweak's label (Arabic). */
+  label: string;
+  /** The board is at least this tall while it is open. */
   h: number;
   p: Props;
+  /** What the view shows (English, the board's caption). */
   cap: string;
-  inline?: boolean;
 }
 
 export interface SheetSpec {

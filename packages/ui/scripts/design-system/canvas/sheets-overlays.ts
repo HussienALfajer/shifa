@@ -1,25 +1,15 @@
-// Sheets of the Overlays group; each has open views on boards beside it (a modal covers its frame).
+// Sheets of the Overlays group; each shows its overlay open when Tweaks' `view` asks for it (a
+// modal covers its whole board).
 import { ALERT, ALERT2, DIALOG, DIALOG2, DRAWER, TOASTS, TOASTS2 } from './data.ts';
-import type { Density, OpenView, Props, SheetSpec, Theme } from './types.ts';
+import type { OpenView, Props, SheetSpec } from './types.ts';
 import { st } from './types.ts';
 
-const view = (
-  suffix: string,
-  theme: Theme,
-  density: Density,
-  size: [number, number],
-  p: Props,
-  cap: string,
-  inline = false,
-): OpenView => ({
+const view = (suffix: string, label: string, h: number, p: Props, cap: string): OpenView => ({
   suffix,
-  theme,
-  density,
-  w: size[0],
-  h: size[1],
+  label,
+  h,
   p,
   cap,
-  ...(inline ? { inline } : {}),
 });
 
 const NOTE = {
@@ -29,6 +19,7 @@ const NOTE = {
   text: 'يفضّل موعداً بعد الظهر.',
 };
 const SHOW = 'إظهار الإشعارات';
+const open = { defaultOpen: true };
 
 export const OVERLAYS: SheetSpec[] = [
   {
@@ -43,21 +34,13 @@ export const OVERLAYS: SheetSpec[] = [
       },
     ],
     open: [
+      view('OpenDelete', 'مفتوحة · حذف', 560, { ...DIALOG, ...open }, 'Open: a deletion'),
       view(
-        'OpenLight',
-        'light',
-        'comfortable',
-        [1100, 560],
-        { ...DIALOG, defaultOpen: true },
-        'Open · light · comfortable',
-      ),
-      view(
-        'OpenDark',
-        'dark',
-        'compact',
-        [1100, 560],
-        { ...DIALOG2, defaultOpen: true },
-        'Open · dark · compact',
+        'OpenConfirm',
+        'مفتوحة · تأكيد عادي',
+        560,
+        { ...DIALOG2, ...open },
+        'Open: an ordinary confirmation',
       ),
     ],
   },
@@ -70,29 +53,20 @@ export const OVERLAYS: SheetSpec[] = [
       { label: 'Triggers', items: [st(ALERT, 'danger'), st(ALERT2, 'info, primary action')] },
     ],
     open: [
+      view('OpenDanger', 'مفتوحة · خطر', 560, { ...ALERT, ...open }, 'Open: danger'),
       view(
-        'OpenLight',
-        'light',
-        'comfortable',
-        [1100, 560],
-        { ...ALERT, defaultOpen: true },
-        'Open · danger · light · comfortable',
-      ),
-      view(
-        'OpenDark',
-        'dark',
-        'compact',
-        [1100, 560],
-        { ...ALERT2, defaultOpen: true },
-        'Open · info · dark · compact',
+        'OpenInfo',
+        'مفتوحة · معلومة',
+        560,
+        { ...ALERT2, ...open },
+        'Open: info, primary action',
       ),
       view(
         'OpenError',
-        'light',
-        'compact',
-        [1100, 560],
-        { ...ALERT, errorText: 'تعذّر الحذف. حاول مرة أخرى.', defaultOpen: true },
-        'Open · with an error · light · compact',
+        'مفتوحة · مع خطأ',
+        560,
+        { ...ALERT, errorText: 'تعذّر الحذف. حاول مرة أخرى.', ...open },
+        'Open: the action failed',
       ),
     ],
   },
@@ -116,28 +90,25 @@ export const OVERLAYS: SheetSpec[] = [
     ],
     open: [
       view(
-        'OpenLight',
-        'light',
-        'comfortable',
-        [1100, 640],
-        { ...DRAWER, triggerLabel: 'تعديل', defaultOpen: true },
-        'Open · end · light · comfortable',
+        'OpenEnd',
+        'مفتوح · من النهاية',
+        640,
+        { ...DRAWER, triggerLabel: 'تعديل', ...open },
+        'Open: from the end',
       ),
       view(
-        'OpenDark',
-        'dark',
-        'compact',
-        [1100, 640],
-        { ...DRAWER, triggerLabel: 'تعديل', side: 'start', defaultOpen: true },
-        'Open · start · dark · compact',
+        'OpenStart',
+        'مفتوح · من البداية',
+        640,
+        { ...DRAWER, triggerLabel: 'تعديل', side: 'start', ...open },
+        'Open: from the start',
       ),
       view(
         'OpenBottom',
-        'light',
-        'comfortable',
-        [768, 760],
-        { ...DRAWER, triggerLabel: 'تعديل', side: 'bottom', defaultOpen: true },
-        'Open · bottom (tablet) · light',
+        'مفتوح · من الأسفل',
+        760,
+        { ...DRAWER, triggerLabel: 'تعديل', side: 'bottom', ...open },
+        'Open: from the bottom (tablets and phones)',
       ),
     ],
   },
@@ -147,26 +118,7 @@ export const OVERLAYS: SheetSpec[] = [
     desc: 'A small panel under a button, at its logical start; Esc or a press outside closes it.',
     play: 'Press the trigger to open and close.',
     blocks: () => [{ label: 'States', items: [st(NOTE, 'closed')] }],
-    open: [
-      view(
-        'OpenLight',
-        'light',
-        'comfortable',
-        [720, 360],
-        { ...NOTE, defaultOpen: true },
-        'Open · light · comfortable',
-        true,
-      ),
-      view(
-        'OpenDark',
-        'dark',
-        'compact',
-        [720, 360],
-        { ...NOTE, defaultOpen: true },
-        'Open · dark · compact',
-        true,
-      ),
-    ],
+    open: [view('Open', 'مفتوحة', 360, { ...NOTE, ...open }, 'Open')],
   },
   {
     name: 'Tooltip',
@@ -191,22 +143,18 @@ export const OVERLAYS: SheetSpec[] = [
     ],
     open: [
       view(
-        'OpenLight',
-        'light',
-        'comfortable',
-        [720, 300],
-        { content: 'طباعة الوصفة', triggerIcon: 'printer', defaultOpen: true },
-        'Open · light · comfortable',
-        true,
+        'OpenIcon',
+        'مفتوح · زر أيقونة',
+        300,
+        { content: 'طباعة الوصفة', triggerIcon: 'printer', ...open },
+        'Open: names an icon button',
       ),
       view(
-        'OpenDark',
-        'dark',
-        'compact',
-        [720, 300],
-        { content: 'إرسال تذكير عبر واتساب', triggerLabel: 'إرسال تذكير', defaultOpen: true },
-        'Open · dark · compact',
-        true,
+        'OpenText',
+        'مفتوح · زر نصي',
+        300,
+        { content: 'إرسال تذكير عبر واتساب', triggerLabel: 'إرسال تذكير', ...open },
+        'Open: describes a text button',
       ),
     ],
   },
@@ -219,36 +167,18 @@ export const OVERLAYS: SheetSpec[] = [
     blocks: () => [],
     open: [
       view(
-        '',
-        'light',
-        'comfortable',
-        [1100, 520],
+        'Status',
+        'نجاح ومعلومة وتحذير',
+        520,
         { toasts: TOASTS, triggerLabel: SHOW },
-        'Light · comfortable · success, info with an action, warning',
+        'Success, info with an action, warning',
       ),
       view(
-        'Dark',
-        'dark',
-        'comfortable',
-        [1100, 520],
+        'Error',
+        'خطأ وإشعار عادي',
+        520,
         { toasts: TOASTS2, triggerLabel: SHOW },
-        'Dark · comfortable · error (stays until closed), default',
-      ),
-      view(
-        'CompactLight',
-        'light',
-        'compact',
-        [1100, 520],
-        { toasts: TOASTS2, triggerLabel: SHOW },
-        'Light · compact · error, default',
-      ),
-      view(
-        'CompactDark',
-        'dark',
-        'compact',
-        [1100, 520],
-        { toasts: TOASTS, triggerLabel: SHOW },
-        'Dark · compact · success, info, warning',
+        'Error (stays until closed), default',
       ),
     ],
   },

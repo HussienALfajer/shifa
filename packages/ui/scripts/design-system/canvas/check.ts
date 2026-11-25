@@ -1,17 +1,22 @@
-// Opens every artboard of the "Shifa Components" canvas in Chromium as the canvas does (x-import →
-// the bundle's component in a display:contents span, with the project's tokens, bundle and states
-// stylesheet) and reports a missing component or value, an error, content wider than its panel,
-// and content taller than its board. With --measure it writes each board's natural height to
-// heights.json for canvas.ts. Usage:
+// Opens every board of the "Shifa Components" canvas in Chromium as the canvas does, for every
+// combination its Tweaks reach: each view, theme, density and direction (the playground at its
+// defaults), and once more with the playground's props changed. The board's logic class runs with
+// those props; `<sc-if>` branches and `{{ }}` holes are resolved; each x-import becomes the
+// bundle's component in a display:contents span. Reports a missing component or value, an error,
+// content wider than its panel and content taller than its board. With --measure it writes each
+// board's natural height (its tallest combination) to heights.json for canvas.ts. Usage:
 // node scripts/design-system/canvas/check.ts <project-dir> <heights.json> [--measure] [name-prefix…]
 import { createReadStream, existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { extname, join, resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { combinations, type Tweaks } from './combinations.ts';
+import { renderBoard } from './render-board.ts';
 
 const [projectArg, heightsArg, ...flags] = process.argv.slice(2);
-if (!projectArg || !heightsArg)
+if (!projectArg || !heightsArg) {
   throw new Error('usage: check.ts <project-dir> <heights.json> [--measure] [prefix…]');
+}
 const project = resolve(projectArg);
 const measure = flags.includes('--measure');
 const only = flags.filter((f) => !f.startsWith('--'));
@@ -35,17 +40,10 @@ await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
 const address = server.address();
 const base = `http://127.0.0.1:${String(typeof address === 'object' && address ? address.port : 0)}/`;
 
-interface Result {
-  missing: string[];
-  over: string[];
-  natural: number | null;
-  content: number;
-  frame: number;
-}
-
 const browser = await chromium.launch();
 const heights: Record<string, number> = {};
 let problems = 0;
+let runs = 0;
 const files = readdirSync(project).filter(
   (f) => f.endsWith('.dc.html') && (only.length === 0 || only.some((o) => f.startsWith(o))),
 );
@@ -57,109 +55,54 @@ for (const f of files) {
     '',
   );
   const script = /<script type="text\/x-dc"[^>]*>([\s\S]*?)<\/script>/.exec(html)?.[1] ?? '';
-  const preview = (
-    JSON.parse(/data-props='([^']*)'/.exec(html)?.[1] ?? '{}') as {
-      $preview: { width: number; height: number };
-    }
-  ).$preview;
-  const page = await browser.newPage({
-    viewport: { width: preview.width, height: preview.height },
-  });
-  const errors: string[] = [];
-  page.on('pageerror', (e) => errors.push(e.message));
-  page.on('console', (m) => {
-    if (m.type() === 'error' || m.type() === 'warning')
-      errors.push(`${m.type()}: ${m.text().slice(0, 200)}`);
-  });
-  await page.goto(`${base}ds/shifa/tokens.css`);
-  await page.setContent(
-    `<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="${base}"><link rel="stylesheet" href="ds/shifa/tokens.css"><link rel="stylesheet" href="ds/shifa/components/bundle.css"><link rel="stylesheet" href="support/states.css"><script src="ds/shifa/components/bundle.js"></script>${helmet}</head><body><template id="t">${body}</template><div id="root"></div></body></html>`,
-  );
-  await page.waitForLoadState('load');
-  await page.evaluate(async () => {
-    await Promise.all([...document.fonts].map((x) => x.load()));
-  });
-  // Runs in the page: mounts each x-import as the canvas runtime does, then measures.
-  const result = await page.evaluate(
-    async ({ src, measureHeight }: { src: string; measureHeight: boolean }): Promise<Result> => {
-      class DCLogic {}
-      (globalThis as unknown as { DCLogic: typeof DCLogic }).DCLogic = DCLogic;
-      // biome-ignore lint/security/noGlobalEval: the artboard's own logic class, as the canvas runs it
-      const Logic = (0, eval)(
-        `(${src.replace('class Component extends DCLogic', 'class extends DCLogic')})`,
-      ) as new () => {
-        renderVals: () => { v?: Record<string, unknown> };
-      };
-      const vals = new Logic().renderVals().v ?? {};
-      const root = document.getElementById('root') as HTMLElement;
-      root.append((document.getElementById('t') as HTMLTemplateElement).content.cloneNode(true));
-      const camel = (k: string) =>
-        k.startsWith('aria-') || k.startsWith('data-')
-          ? k
-          : k.replace(/-([a-z])/g, (_, c: string) => c.toUpperCase());
-      const shifa = (
-        globalThis as unknown as {
-          Shifa: Record<string, unknown> & { mount: (e: Element, n: string, p: object) => void };
-        }
-      ).Shifa;
-      const missing: string[] = [];
-      for (const el of [...root.querySelectorAll('x-import')]) {
-        const name = (el.getAttribute('component-from-global-scope') ?? '').replace('Shifa.', '');
-        const props: Record<string, unknown> = {};
-        for (const a of el.attributes) {
-          if (a.name === 'component-from-global-scope' || a.name === 'style') continue;
-          const bound = /^\{\{\s*v\.(\w+)\s*\}\}$/.exec(a.value)?.[1];
-          if (bound !== undefined && !(bound in vals)) missing.push(bound);
-          props[camel(a.name)] = bound === undefined ? a.value : vals[bound];
-        }
-        if ((el.textContent ?? '').trim()) props['children'] = el.textContent;
-        const span = document.createElement('span');
-        span.style.display = 'contents';
-        el.replaceWith(span);
-        if (!shifa[name]) missing.push(`component ${name}`);
-        shifa.mount(span, name, props);
-      }
-      await new Promise((r) => setTimeout(r, 900));
-      const frame = root.firstElementChild as HTMLElement;
-      const top = frame.getBoundingClientRect().top;
-      const over = new Set<string>();
-      for (const el of frame.querySelectorAll('section, section *')) {
-        if (el.closest('[popover]')) continue;
-        const panel = (el.closest('section') as HTMLElement).getBoundingClientRect();
-        const r = el.getBoundingClientRect();
-        if (r.width > 0 && (r.right > panel.right + 0.5 || r.left < panel.left - 0.5)) {
-          over.add(`${el.tagName} «${(el.textContent ?? '').trim().slice(0, 24)}»`);
-        }
-      }
-      let natural: number | null = null;
-      if (measureHeight) {
-        const keep = frame.style.height;
-        frame.style.height = 'auto';
-        natural = Math.ceil(frame.getBoundingClientRect().height);
-        frame.style.height = keep;
-      }
-      const content =
-        Math.max(...[...frame.children].map((e) => e.getBoundingClientRect().bottom)) - top;
-      return {
-        missing,
-        over: [...over].slice(0, 6),
-        natural,
-        content: Math.round(content),
-        frame: frame.getBoundingClientRect().height,
-      };
-    },
-    { src: script, measureHeight: measure },
-  );
+  const attr = /data-props='([^']*)'/.exec(html)?.[1] ?? '{}';
+  const declared = JSON.parse(attr.replaceAll('&#39;', "'").replaceAll('&amp;', '&')) as Tweaks & {
+    $preview: { width: number; height: number };
+  };
+  const { $preview: preview, ...tweaks } = declared;
   const key = f.replace('.dc.html', '');
-  if (result.natural !== null) heights[key] = result.natural;
-  const taller = !measure && result.content > result.frame + 1;
-  if (result.missing.length > 0 || result.over.length > 0 || errors.length > 0 || taller) {
-    problems += 1;
-    console.log(
-      `${key}: ${[...result.missing.map((m) => `missing ${m}`), ...result.over.map((o) => `over ${o}`), ...errors, ...(taller ? ['taller than its board'] : [])].join(' | ')}`,
+  for (const combo of combinations(tweaks)) {
+    runs += 1;
+    const page = await browser.newPage({
+      viewport: { width: preview.width, height: preview.height },
+    });
+    const errors: string[] = [];
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (m) => {
+      if (m.type() === 'error' || m.type() === 'warning') {
+        errors.push(`${m.type()}: ${m.text().slice(0, 200)}`);
+      }
+    });
+    await page.goto(`${base}ds/shifa/tokens.css`);
+    await page.setContent(
+      `<!doctype html><html lang="en"><head><meta charset="utf-8"><base href="${base}"><link rel="stylesheet" href="ds/shifa/tokens.css"><link rel="stylesheet" href="ds/shifa/components/bundle.css"><link rel="stylesheet" href="support/states.css"><script src="ds/shifa/components/bundle.js"></script>${helmet}</head><body><template id="t">${body}</template><div id="root"></div></body></html>`,
     );
+    await page.waitForLoadState('load');
+    await page.evaluate(async () => {
+      await Promise.all([...document.fonts].map((x) => x.load()));
+    });
+    const result = await page.evaluate(renderBoard, {
+      src: script,
+      props: combo.props,
+      measureHeight: measure,
+    });
+    if (combo.sheet && result.natural !== null)
+      heights[key] = Math.max(heights[key] ?? 0, result.natural);
+    const taller = !measure && result.content > result.frame + 1;
+    const found = [
+      ...result.missing.map((m) => `missing ${m}`),
+      ...result.over.map((o) => `over ${o}`),
+      ...errors,
+      ...(taller
+        ? [`taller than its board (${String(result.content)} > ${String(result.frame)})`]
+        : []),
+    ];
+    if (found.length > 0) {
+      problems += 1;
+      process.stdout.write(`${key} [${combo.name}]: ${found.join(' | ')}\n`);
+    }
+    await page.close();
   }
-  await page.close();
 }
 await browser.close();
 server.close();
@@ -170,5 +113,7 @@ if (measure) {
     : {};
   writeFileSync(file, `${JSON.stringify({ ...before, ...heights }, null, 1)}\n`);
 }
-console.log(`${String(files.length)} boards, ${String(problems)} with problems`);
+process.stdout.write(
+  `${String(files.length)} boards, ${String(runs)} combinations, ${String(problems)} with problems\n`,
+);
 if (problems > 0) process.exitCode = 1;
