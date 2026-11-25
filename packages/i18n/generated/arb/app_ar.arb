@@ -137,10 +137,13 @@
   "@commonBranchArchiveAction": {
     "description": "common.branchArchiveAction"
   },
-  "commonBranchArchiveEnds": "تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.",
+  "commonBranchArchiveEnds": "{count, plural, zero {لن تنتهي جلسة أحد.} one {تنتهي جلسة {names} هنا لأنه لا فرع نشط له غيره.} two {تنتهي جلستا {names} هنا لأنه لا فرع نشط لهما غيره.} few {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.} many {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.} other {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.}}",
   "@commonBranchArchiveEnds": {
     "description": "common.branchArchiveEnds",
     "placeholders": {
+      "count": {
+        "type": "num"
+      },
       "names": {
         "type": "String"
       }

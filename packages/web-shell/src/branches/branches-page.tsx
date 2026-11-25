@@ -52,11 +52,16 @@ function BranchCard({
   const text = useText();
   const navigate = useNavigate();
   const reasonId = useId();
+  const titleId = useId();
   return (
-    <div data-testid="branch-card">
+    // A group named by the branch: its buttons share names across cards (review N5).
+    <div data-testid="branch-card" role="group" aria-labelledby={titleId}>
       <Card className="h-full gap-3 p-(--shifa-card-padding)">
         <div className="flex items-start gap-2">
-          <h2 className="m-0 min-w-0 flex-1 text-heading-sm leading-heading font-semibold">
+          <h2
+            id={titleId}
+            className="m-0 min-w-0 flex-1 text-heading-sm leading-heading font-semibold"
+          >
             {branch.name}
           </h2>
           <IconButton icon="pencil" label={text('branchEdit')} variant="ghost" onClick={onEdit} />
@@ -166,29 +171,38 @@ function Branches({
     void changed();
   };
 
-  async function restore(branch: Branch) {
-    setNote(null);
+  async function answerOf(branch: Branch): Promise<PageNote> {
     try {
-      const { data: back, error } = await shell.api.POST('/branches/{id}/restore', {
+      const {
+        data: back,
+        error,
+        response,
+      } = await shell.api.POST('/branches/{id}/restore', {
         params: { path: { id: branch.id } },
       });
-      if (back) setNote({ tone: 'success', title: text('branchRestored', { name: back.name }) });
-      else if (errorFacts(error).code === 'branch_not_archived') {
-        setNote({
+      if (back) return { tone: 'success', title: text('branchRestored', { name: back.name }) };
+      if (errorFacts(error).code === 'branch_not_archived') {
+        return {
           tone: 'warning',
           title: text('branchNotArchivedTitle'),
           text: text('branchNotArchivedText'),
-        });
-      } else
-        setNote({
-          tone: 'danger',
-          title: text('actionFailedTitle'),
-          text: text('serverErrorText'),
-        });
+        };
+      }
+      if (response.status === 404) {
+        return { tone: 'warning', title: text('branchGoneTitle'), text: text('branchGoneText') };
+      }
+      return { tone: 'danger', title: text('actionFailedTitle'), text: text('serverErrorText') };
     } catch {
-      setNote({ tone: 'danger', title: text('unreachableTitle'), text: text('branchNetworkText') });
+      return { tone: 'danger', title: text('unreachableTitle'), text: text('branchNetworkText') };
     }
-    void changed();
+  }
+
+  async function restore(branch: Branch) {
+    setNote(null);
+    const answer = await answerOf(branch);
+    // The row stays busy until the list is read again, so it is not pressed twice (review N2).
+    await changed().catch(() => undefined);
+    setNote(answer);
   }
 
   const add = (
@@ -263,12 +277,14 @@ function Branches({
         <ArchiveDialog
           tenantId={tenantId}
           branch={target.branch}
-          onArchived={(b) => {
+          onArchived={async (b) => {
+            // The confirmation stays busy until the list is read again (review N2).
+            await changed().catch(() => undefined);
             setTarget(null);
             setNote({ tone: 'success', title: text('branchArchived', { name: b.name }) });
-            void changed();
           }}
           onRefused={refused}
+          onStale={() => void changed()}
           onClose={() => {
             setTarget(null);
           }}
@@ -297,12 +313,15 @@ function Branches({
 export function BranchesPage() {
   const session = useSignedIn();
   const clinic = useActiveClinic(session);
-  const list = useBranchList(session?.tenantId ?? '');
+  // Read for the owner of a clinic only (review N6).
+  const list = useBranchList(session?.tenantId ?? '', isOwner(session) && !!session?.tenantId);
   // Whether the clinic is solo is taken once, on entry: archiving down to one branch while here
-  // keeps the page with its last-branch state (spec gap 2); only the menu drops it.
+  // keeps the page with its last-branch state (spec gap 2); only the menu drops it. The fresh
+  // list counts too: clinics read before a branch was added still say solo (review N8).
   const soloOnEntry = useRef<boolean | null>(null);
   if (soloOnEntry.current === null && clinic !== undefined && list.data !== undefined) {
-    soloOnEntry.current = clinic.solo && list.data.archived.length === 0;
+    soloOnEntry.current =
+      clinic.solo && list.data.active.length <= 1 && list.data.archived.length === 0;
   }
   if (!session) return null;
   if (!isOwner(session) || session.tenantId === null) return <Navigate to="/account" replace />;

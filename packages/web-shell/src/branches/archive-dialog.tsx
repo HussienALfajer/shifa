@@ -13,7 +13,7 @@ import {
   SkeletonText,
 } from '@shifa/ui';
 import { useQuery } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { listOf } from '../chooser/chooser-text.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
@@ -26,32 +26,52 @@ export function ArchiveDialog({
   branch,
   onArchived,
   onRefused,
+  onStale,
   onClose,
 }: {
   tenantId: string;
   branch: Branch;
-  onArchived: (archived: Branch) => void;
+  onArchived: (archived: Branch) => Promise<void>;
+  /** The branch is archived already or gone: the confirmation closes, the page names it. */
   onRefused: (note: PageNote) => void;
+  /** Another branch was archived meanwhile: the page reads its list again (review N3). */
+  onStale: () => void;
   onClose: () => void;
 }) {
   const text = useText();
   const { shell } = useShell();
   const [failure, setFailure] = useState('');
+  // The same refusal for the preview and the archive (review B1): archived already, or gone.
+  const gone = (code: string, status: number): PageNote | null =>
+    code === 'branch_archived'
+      ? { tone: 'warning', title: text('branchArchived', { name: branch.name }) }
+      : status === 404
+        ? { tone: 'warning', title: text('branchGoneTitle'), text: text('branchGoneText') }
+        : null;
   // Read on every opening: who is left without a branch changes with the team.
   const preview = useQuery({
     queryKey: ['clinic', tenantId, 'branches', 'archive-preview', branch.id],
     queryFn: async () => {
-      const { data } = await shell.api.GET('/branches/{id}/archive-preview', {
+      const { data, error, response } = await shell.api.GET('/branches/{id}/archive-preview', {
         params: { path: { id: branch.id } },
       });
-      if (!data) throw new Error('GET archive-preview failed');
-      return data;
+      if (data) return { ...data, refused: null };
+      const refused = gone(errorFacts(error).code, response.status);
+      if (refused) return { lastBranch: false, members: [], refused };
+      throw new Error('GET archive-preview failed');
     },
     gcTime: 0,
     retry: false,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
   });
+  const refused = preview.data?.refused ?? null;
+  const last = preview.data?.lastBranch === true;
+  useEffect(() => {
+    if (refused) onRefused(refused);
+    else if (last) onStale();
+    // Once per answer: the callbacks change with every render of the page.
+  }, [refused, last]);
 
   async function archive() {
     setFailure(`${text('unreachableTitle')}. ${text('branchNetworkText')}`);
@@ -59,24 +79,21 @@ export function ArchiveDialog({
       params: { path: { id: branch.id } },
     });
     if (data) {
-      onArchived(data);
+      await onArchived(data);
       return;
     }
     const { code } = errorFacts(error);
-    if (code === 'branch_archived' || response.status === 404) {
+    const note = gone(code, response.status);
+    if (note) {
       // Resolved: the confirmation closes; the page names it and reads the list again.
-      onRefused(
-        code === 'branch_archived'
-          ? { tone: 'warning', title: text('branchArchived', { name: branch.name }) }
-          : { tone: 'warning', title: text('branchGoneTitle'), text: text('branchGoneText') },
-      );
+      onRefused(note);
       return;
     }
+    if (code === 'last_branch') onStale();
     setFailure(code === 'last_branch' ? text('branchLastActive') : text('serverErrorText'));
     throw new Error(`archive answered ${String(response.status)}`);
   }
 
-  const last = preview.data?.lastBranch === true;
   const members = preview.data?.members ?? [];
   const body = preview.isPending ? (
     <SkeletonGroup label={text('branchArchiveReading')}>
@@ -91,7 +108,10 @@ export function ArchiveDialog({
         ? text('branchLastActive')
         : members.length === 0
           ? text('branchArchiveNobody')
-          : text('branchArchiveEnds', { names: listOf(members.map((m) => m.name)) })}
+          : text('branchArchiveEnds', {
+              count: members.length,
+              names: listOf(members.map((m) => m.name)),
+            })}
     </>
   );
   return (

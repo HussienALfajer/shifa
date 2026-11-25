@@ -115,9 +115,10 @@ export function usePermissionDefaults(tenantId: string) {
   });
 }
 
-function useBranchQuery<T>(tenantId: string, select: (list: BranchList) => T) {
+function useBranchQuery<T>(tenantId: string, select: (list: BranchList) => T, enabled = true) {
   const { shell } = useShell();
   return useQuery({
+    enabled,
     queryKey: branchesKey(tenantId),
     queryFn: async (): Promise<BranchList> => {
       const { data } = await shell.api.GET('/branches');
@@ -142,6 +143,6 @@ export function useBranches(tenantId: string) {
 }
 
 /** Active and archived branches (the branches page, checkpoint 4); one read with the above. */
-export function useBranchList(tenantId: string) {
-  return useBranchQuery(tenantId, whole);
+export function useBranchList(tenantId: string, enabled = true) {
+  return useBranchQuery(tenantId, whole, enabled);
 }
