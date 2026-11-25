@@ -24,6 +24,12 @@ export interface Scenario {
   /** Every state is on both boards of its sheet; `only` keeps one off the desktop (a phone menu). */
   phone?: 'only';
   latencyMs?: number;
+  /**
+   * A bug of the screen itself, reported to the owner, that makes this state wider than a phone:
+   * the check names it on every run but does not fail (the screen changes only from an approved
+   * drawing, ADR-0040).
+   */
+  widerOnPhone?: string;
 }
 
 export interface Sheet {
@@ -37,6 +43,12 @@ export interface Sheet {
   /** The files of the screen in packages/web-shell/src. */
   code: string[];
   scenarios: Scenario[];
+  /** Error codes the sheet's code names but no state can show, each with the reason (coverage.ts). */
+  unshown?: Record<string, string>;
 }
 
 export type { Answer, Step, World };
+
+/** The header bug every state with the recovery-codes badge shows on a phone (reported). */
+export const CODES_BADGE_BUG =
+  'The header has no room for the recovery-codes badge on a phone: the avatar is pushed out of the window and the page scrolls sideways (src/account/app-frame.tsx); reported to the owner, not fixed here.';

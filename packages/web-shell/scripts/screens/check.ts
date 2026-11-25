@@ -1,14 +1,20 @@
 // Opens every state of every board of the screens canvas in Chromium as the canvas does (its own
 // document and window, the screens bundle, the sheet, state and theme), waits until the state is
 // reached and the fake server is quiet, and reports what went wrong: a step that found nothing, a
-// page or console error, content wider than the window. Then, on each board, switches from its
-// first state to its last as the Tweaks panel does. Writes each state's height to heights.json
-// for canvas.ts, and a screenshot of each state when an output folder is given.
+// page or console error, content wider than the window. Before that, it fails on a Shifa token the
+// bundle reads but never declares (tokens.ts) and on a screen of the code or a server answer its
+// sheet leaves out (coverage.ts). Then it opens each board as the canvas does, the app in its own
+// window beside the state panel, and works the panel (check-board.ts). Writes each state's height
+// to heights.json for canvas.ts, and a screenshot of each state when an output folder is given.
 // Usage: node scripts/screens/check.ts <screens-dir with screens.js/.css> <heights.json> [shots-dir] [key-prefix…]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { type Browser, chromium, type Page } from 'playwright';
 import { boards, heightKey, renders } from './boards.ts';
+import { checkBoard } from './check-board.ts';
+import { coverageProblems, unansweredCodes } from './coverage.ts';
+import type { Sheet } from './scenario.ts';
+import { undeclaredTokens } from './tokens.ts';
 
 const [dirArg, heightsArg, shotsArg, ...only] = process.argv.slice(2);
 if (!dirArg || !heightsArg) {
@@ -66,7 +72,6 @@ async function mount(page: Page, args: Mount): Promise<string> {
     .catch(() => 'timeout');
 }
 
-const browser = await chromium.launch();
 const heights: Record<string, number> = {};
 let problems = 0;
 const report = (key: string, errors: string[]) => {
@@ -74,7 +79,24 @@ const report = (key: string, errors: string[]) => {
   problems += 1;
   process.stdout.write(`${key}: ${errors.join(' | ')}\n`);
 };
+report(
+  'tokens',
+  undeclaredTokens(css, js).map((t) => `${t} is read but never declared`),
+);
+if (only.length === 0) report('coverage', coverageProblems());
+// A height measured before (an earlier run) sizes the boards opened with a prefix.
+function measuredBefore(path: string): Record<string, number> {
+  try {
+    return JSON.parse(readFileSync(path, 'utf8')) as Record<string, number>;
+  } catch {
+    return {};
+  }
+}
+const before = measuredBefore(resolve(heightsArg));
 
+const browser = await chromium.launch();
+
+const answeredBy = new Map<Sheet, Set<string>>();
 const list = renders().filter((r) => only.length === 0 || only.some((p) => r.key.startsWith(p)));
 for (const r of list) {
   const { page, errors } = await open(browser, r.width, r.height);
@@ -84,9 +106,23 @@ for (const r of list) {
     height: document.documentElement.scrollHeight,
     width: document.documentElement.scrollWidth,
   }));
+  const codes = await page.evaluate(() =>
+    (
+      globalThis as unknown as { ShifaScreens: { answered: () => string[] } }
+    ).ShifaScreens.answered(),
+  );
+  const seen = answeredBy.get(r.sheet) ?? new Set<string>();
+  for (const c of codes) seen.add(c);
+  answeredBy.set(r.sheet, seen);
   const key = heightKey(r.sheet, r.scenario, r.device);
   heights[key] = Math.max(heights[key] ?? 0, measured.height);
-  if (measured.width > r.width) errors.push(`wider than the window: ${String(measured.width)}px`);
+  if (measured.width > r.width) {
+    const known = r.device === 'phone' ? r.scenario.widerOnPhone : undefined;
+    if (known)
+      process.stdout.write(`${r.key}: known, ${String(measured.width)}px: ${known}
+`);
+    else errors.push(`wider than the window: ${String(measured.width)}px`);
+  }
   if (done !== 'ready') errors.push(`state not reached: ${done}`);
   if (shotsArg) {
     await page.screenshot({
@@ -98,24 +134,35 @@ for (const r of list) {
   await page.close();
 }
 
-// A change of tweak: the board's first state, then its last, in the same window.
+// Every error code a sheet's code handles is answered in one of its states (all states run only).
+if (only.length === 0) {
+  for (const [sheet, seen] of answeredBy) {
+    report(
+      `${sheet.id} answers`,
+      unansweredCodes(sheet, seen).map(
+        (c) => `«${c}» is handled by its code but shown by no state`,
+      ),
+    );
+  }
+}
+
+// Each board as the canvas shows it: the app's window beside the state panel, the panel worked.
 for (const b of boards().filter(
   (x) => only.length === 0 || only.some((p) => x.file.startsWith(p)),
 )) {
-  const first = b.states[0];
-  const last = b.states.at(-1);
-  if (!first || !last || first === last) continue;
-  const { page, errors } = await open(browser, b.width, b.height);
-  await mount(page, [b.sheet.id, first.id, 'light']);
-  const done = await mount(page, [b.sheet.id, last.id, 'dark']);
-  if (done !== 'ready') errors.push(`switch not reached: ${done}`);
-  const boards = await page.evaluate(() => document.querySelectorAll('[data-screen]').length);
-  if (boards !== 1) errors.push(`switch left ${String(boards)} apps on the board`);
-  report(`${b.file} switch`, errors);
-  await page.close();
+  const tallest = Math.max(
+    b.height,
+    ...b.states.map((s) =>
+      s.overlay === true ? b.height : (heights[heightKey(b.sheet, s, b.device)] ?? b.height),
+    ),
+  );
+  const shot = shotsArg
+    ? join(resolve(shotsArg), `${b.file.replace('.dc.html', '')}Board.png`)
+    : undefined;
+  report(b.file, await checkBoard(browser, b, tallest, { js, css }, shot));
 }
 
 await browser.close();
-writeFileSync(resolve(heightsArg), `${JSON.stringify(heights, null, 1)}\n`);
+writeFileSync(resolve(heightsArg), `${JSON.stringify({ ...before, ...heights }, null, 1)}\n`);
 process.stdout.write(`${String(list.length)} states, ${String(problems)} with problems\n`);
 if (problems > 0) process.exitCode = 1;

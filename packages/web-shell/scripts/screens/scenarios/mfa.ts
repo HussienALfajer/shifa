@@ -12,6 +12,11 @@ const pending = (w: World) => {
 const none = (w: World) => {
   w.session = ownerSession({ mfa: 'none', tenantId: null, branchId: null, roles: [] });
 };
+/** The second factor done in another tab: the server's session moved on, this page did not. */
+const passedElsewhere = (w: World, code: string) => {
+  if (w.session) w.session = { ...w.session, mfa: 'verified' };
+  return fail(409, code);
+};
 const challenge = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/mfa', world: pending, ...s });
 const enrol = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/mfa', world: none, ...s });
 const code = (value: string): Step => ({ fill: 'challengeTitle', value });
@@ -26,9 +31,20 @@ export const mfaChallenge: Sheet = {
   title: 'التحقق بخطوتين · طلب الرمز',
   route: '/mfa',
   note: 'The challenge after the password: the code from the app (greeting the person by name), a wrong code, sending, the lock after too many codes, a recovery code instead (empty, wrong), no network and a server error.',
-  code: ['auth/mfa.tsx', 'auth/mfa-challenge.tsx', 'auth/me.ts', 'auth/lock.ts'],
+  code: [
+    'auth/mfa.tsx',
+    'auth/mfa-challenge.tsx',
+    'auth/me.ts',
+    'auth/lock.ts',
+    'auth/lock-callout.tsx',
+  ],
   scenarios: [
     challenge({ id: 'Code', title: 'رمز التطبيق' }),
+    challenge({
+      id: 'NoName',
+      title: 'دون اسم الشخص (تعذّرت قراءته)',
+      answers: { 'GET /me': fail(500, 'internal_error') },
+    }),
     challenge({ id: 'Wrong', title: 'رمز خاطئ', steps: [code('654321')] }),
     challenge({
       id: 'Sending',
@@ -56,6 +72,23 @@ export const mfaChallenge: Sheet = {
         { fill: 'challengeRecoveryLabel', value: '00000-11111' },
         { press: 'confirm' },
       ],
+    }),
+    challenge({
+      id: 'RecoveryLocked',
+      title: 'رمز استرداد: إيقاف مؤقت',
+      answers: { 'POST /auth/mfa/challenge': () => lockFor('mfa_locked', 9 * MINUTE) },
+      steps: [
+        recovery,
+        { fill: 'challengeRecoveryLabel', value: '00000-11111' },
+        { press: 'confirm' },
+      ],
+    }),
+    challenge({
+      id: 'NotOwed',
+      title: 'لم يعد التحقق مطلوبًا (جلسة أخرى أتمّته)',
+      // Passed in another tab meanwhile: the page reads the session again and goes on.
+      answers: { 'POST /auth/mfa/challenge': (_r, w) => passedElsewhere(w, 'mfa_not_owed') },
+      steps: [code(PLAY_CODE)],
     }),
     challenge({
       id: 'Offline',
@@ -97,7 +130,51 @@ export const mfaEnrol: Sheet = {
       answers: { 'POST /auth/mfa/enrol/start': [fail(500, 'internal_error')] },
       steps: [toKey, { until: 'enrolStartFailedTitle' }],
     }),
+    enrol({
+      id: 'KeyPhone',
+      title: 'الخطوة 2 على الهاتف: إظهار رمز QR',
+      phone: 'only',
+      steps: [toKey, { wait: 900 }, { press: 'enrolShowQr' }],
+    }),
+    enrol({
+      id: 'StartLocked',
+      title: 'الخطوة 2: إيقاف مؤقت قبل المفتاح',
+      answers: { 'POST /auth/mfa/enrol/start': () => lockFor('mfa_locked', 9 * MINUTE) },
+      steps: [toKey],
+    }),
+    enrol({
+      id: 'AlreadyEnrolled',
+      title: 'الخطوة 2: الربط تمّ من جلسة أخرى',
+      answers: {
+        'POST /auth/mfa/enrol/start': (_r, w) => passedElsewhere(w, 'mfa_already_enrolled'),
+      },
+      steps: [toKey],
+    }),
     enrol({ id: 'Code', title: 'الخطوة 3: الرمز من التطبيق', steps: toCode }),
+    enrol({
+      id: 'Confirming',
+      title: 'الخطوة 3: جارٍ التحقق',
+      answers: { 'POST /auth/mfa/enrol/confirm': 'hold' },
+      steps: [...toCode, enrolCode(PLAY_CODE)],
+    }),
+    enrol({
+      id: 'NotStarted',
+      title: 'الخطوة 3: انتهت جلسة الربط',
+      answers: { 'POST /auth/mfa/enrol/confirm': [fail(409, 'mfa_not_started')] },
+      steps: [...toCode, enrolCode(PLAY_CODE)],
+    }),
+    enrol({
+      id: 'ConfirmOffline',
+      title: 'الخطوة 3: لا اتصال',
+      answers: { 'POST /auth/mfa/enrol/confirm': ['offline'] },
+      steps: [...toCode, enrolCode(PLAY_CODE)],
+    }),
+    enrol({
+      id: 'ConfirmServerError',
+      title: 'الخطوة 3: خطأ في الخادم',
+      answers: { 'POST /auth/mfa/enrol/confirm': [fail(500, 'internal_error')] },
+      steps: [...toCode, enrolCode(PLAY_CODE)],
+    }),
     enrol({ id: 'Wrong', title: 'الخطوة 3: رمز خاطئ', steps: [...toCode, enrolCode('654321')] }),
     enrol({
       id: 'ClockSkew',

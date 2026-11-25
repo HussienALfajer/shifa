@@ -33,6 +33,10 @@ export const signIn: Sheet = {
     'auth/lock.ts',
     'auth/remembered-phone.ts',
   ],
+  unshown: {
+    mfa_locked:
+      'auth/lock.ts is shared with the second factor; sign-in is locked by phone_locked and ip_blocked only.',
+  },
   scenarios: [
     { id: 'Empty', title: 'فارغة', path: '/sign-in', world: signedOut },
     {
@@ -115,6 +119,47 @@ export const signIn: Sheet = {
       world: signedOut,
       answers: { 'POST /auth/sign-in': [fail(500, 'internal_error')] },
       steps: send,
+    },
+    {
+      id: 'ForgetPhone',
+      title: 'نسيان الرقم المحفوظ',
+      path: '/sign-in',
+      world: signedOut,
+      storage: {
+        'shifa.signIn.phone': local(NEW_PHONE),
+        'shifa.signIn.phoneAt': String(Date.now()),
+      },
+      steps: [{ press: 'signInForgetPhone' }],
+    },
+    {
+      id: 'Invalid',
+      title: 'رقم بصيغة لا يقبلها الخادم',
+      path: '/sign-in',
+      world: signedOut,
+      answers: {
+        'POST /auth/sign-in': [
+          fail(400, 'validation_failed', {
+            details: [{ path: 'body.phone', code: 'invalid_format' }],
+          }),
+        ],
+      },
+      steps: send,
+    },
+    {
+      id: 'RateLimited',
+      title: 'طلبات كثيرة (429 دون قفل)',
+      path: '/sign-in',
+      world: signedOut,
+      answers: { 'POST /auth/sign-in': [fail(429, 'too_many_requests')] },
+      steps: send,
+    },
+    {
+      id: 'Retrying',
+      title: 'إعادة المحاولة بعد خطأ',
+      path: '/sign-in',
+      world: signedOut,
+      answers: { 'POST /auth/sign-in': [fail(500, 'internal_error'), 'hold'] },
+      steps: [...send, { press: 'retry' }],
     },
     reason('ReasonIdle', 'خرجت لعدم النشاط (15 دقيقة)', 'reason=idle&minutes=15'),
     reason('ReasonIdleServer', 'خرجت لعدم النشاط (من الخادم)', 'reason=idle'),

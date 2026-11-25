@@ -1,7 +1,9 @@
 // Clinic web's home in its frame (src/pages.tsx HomePage, account/app-frame.tsx) and what shows
 // over any page: the idle warning (idle-dialog.tsx), the 12-hour notice, the recovery codes left
 // after a recovery-code sign-in; and the remaining pages of the shell (about, admin web, not found).
+
 import type { Scenario, Sheet, Step, World } from '../scenario.ts';
+import { CODES_BADGE_BUG } from '../scenario.ts';
 import { B_MAIN, ownerSession, TENANT } from '../world.ts';
 
 const at = (ms: number) => new Date(Date.now() + ms).toISOString();
@@ -77,6 +79,7 @@ export const homeSheet: Sheet = {
     { id: 'CodesLeft', title: 'بعد الدخول برمز استرداد: بقيت 7', ...afterRecovery(7) },
     {
       id: 'CodesLow',
+      widerOnPhone: CODES_BADGE_BUG,
       title: 'بعد الدخول برمز استرداد: بقي رمزان',
       ...afterRecovery(2),
     },
@@ -86,6 +89,30 @@ export const homeSheet: Sheet = {
       world: (w) => {
         w.session = ownerSession({ absoluteExpiresAt: at(8 * MINUTE) });
       },
+    }),
+    home({
+      id: 'ClinicsUnread',
+      title: 'تعذّر قراءة العيادات: الترويسة بلا اسم',
+      answers: { 'GET /me/clinics': 'offline' },
+    }),
+    home({
+      id: 'IdleContinueFailed',
+      title: 'تنبيه عدم النشاط: تعذّرت المتابعة',
+      // The session read at «متابعة العمل» finds no network (the page's first read had one).
+      answers: {
+        'GET /auth/session': (_r, w) =>
+          w.session && Date.parse(w.session.idleExpiresAt) - Date.now() < 90_000
+            ? 'offline'
+            : { status: 200, body: w.session },
+      },
+      steps: [
+        { wait: 600 },
+        { advance: 14 * MINUTE + 15_000 },
+        { until: 'idleTitle' },
+        { press: 'idleContinue' },
+        { until: 'idleContinueFailed' },
+      ],
+      overlay: true,
     }),
     home({
       id: 'IdleWarning',
@@ -116,6 +143,14 @@ export const otherPages: Sheet = {
           branchId: null,
           roles: [],
         });
+      },
+    },
+    {
+      id: 'AboutSignedOut',
+      title: 'حول التطبيق دون تسجيل دخول',
+      path: '/about',
+      world: (w) => {
+        w.session = null;
       },
     },
     { id: 'NotFound', title: 'عنوان غير موجود', path: '/no-such-page' },

@@ -60,6 +60,19 @@ export const setupLink: Sheet = {
       world: owner,
     }),
     setupState({
+      id: 'Admin',
+      title: 'رابط مدير المنصة',
+      world: (w) => {
+        w.session = null;
+        w.setupView = {
+          ...w.setupView,
+          purpose: 'admin_setup',
+          role: 'platform_admin',
+          clinicName: null,
+        };
+      },
+    }),
+    setupState({
       id: 'Typing',
       title: 'قاعدة الطول محققة أثناء الكتابة',
       steps: [{ fill: 'setupNewPassword', value: GOOD }],
@@ -100,6 +113,18 @@ export const setupLink: Sheet = {
       steps: [...both(GOOD), save],
     }),
     setupState({
+      id: 'SaveInvalid',
+      title: 'انتهى الرابط أثناء الكتابة',
+      answers: { 'POST /auth/setup-link/consume': [fail(404, 'link_invalid')] },
+      steps: [...both(GOOD), save],
+    }),
+    setupState({
+      id: 'SaveServerError',
+      title: 'تعذّر الحفظ: خطأ في الخادم',
+      answers: { 'POST /auth/setup-link/consume': [fail(500, 'internal_error')] },
+      steps: [...both(GOOD), save],
+    }),
+    setupState({
       id: 'SaveOffline',
       title: 'تعذّر الإرسال: لا اتصال',
       answers: { 'POST /auth/setup-link/consume': ['offline'] },
@@ -127,6 +152,12 @@ export const invitation: Sheet = {
   route: '/setup#token',
   note: 'An invitation to join another clinic, on its setup link: read while signed out (sign in first) or signed in; the decline question; accepted and declined; another person’s phone; reading it, an invalid link and a failed answer.',
   code: ['auth/invitation.tsx', 'auth/setup-link.tsx', 'auth/held-invitation.ts'],
+  unshown: {
+    owner_setup_pending:
+      'Answered when a setup link is used to set a password (SetupLink sheet); an invitation sets none.',
+    conflict:
+      'Answered when a setup link is used to set a password (SetupLink sheet); an invitation sets none.',
+  },
   scenarios: [
     invite({ id: 'Reading', title: 'قراءة الدعوة', answers: { 'POST /invitations/view': 'hold' } }),
     invite({
@@ -163,6 +194,47 @@ export const invitation: Sheet = {
       title: 'الدعوة لرقم آخر',
       answers: { 'POST /invitations/accept': fail(403, 'invitation_other_phone') },
       steps: [{ press: 'inviteAccept' }],
+    }),
+    invite({
+      id: 'ReadOffline',
+      title: 'قراءة الدعوة: لا اتصال',
+      answers: { 'POST /invitations/view': 'offline' },
+    }),
+    invite({
+      id: 'ReadServerError',
+      title: 'قراءة الدعوة: خطأ في الخادم',
+      answers: { 'POST /invitations/view': fail(500, 'internal_error') },
+    }),
+    invite({
+      id: 'Accepting',
+      title: 'جارٍ القبول',
+      answers: { 'POST /invitations/accept': 'hold' },
+      steps: [{ press: 'inviteAccept' }],
+    }),
+    invite({
+      id: 'AnswerServerError',
+      title: 'تعذّر الجواب: خطأ في الخادم',
+      answers: { 'POST /invitations/accept': [fail(500, 'internal_error')] },
+      steps: [{ press: 'inviteAccept' }],
+    }),
+    invite({
+      id: 'DeclineOffline',
+      title: 'الرفض: لا اتصال',
+      overlay: true,
+      answers: { 'POST /invitations/decline': ['offline'] },
+      steps: [{ press: 'inviteDecline' }, { press: 'inviteDeclineConfirm' }],
+    }),
+    invite({
+      id: 'OpenRefused',
+      title: 'فتح العيادة بعد القبول: مرفوض',
+      answers: { 'POST /me/switch': [fail(403, 'clinic_suspended')] },
+      steps: [{ press: 'inviteAccept' }, { until: 'inviteOpen' }, { press: 'inviteOpen' }],
+    }),
+    invite({
+      id: 'OpenOffline',
+      title: 'فتح العيادة بعد القبول: لا اتصال',
+      answers: { 'POST /me/switch': ['offline'] },
+      steps: [{ press: 'inviteAccept' }, { until: 'inviteOpen' }, { press: 'inviteOpen' }],
     }),
     invite({
       id: 'AnswerOffline',

@@ -13,6 +13,12 @@ export const WINDOW: Record<Device, { width: number; height: number }> = {
   phone: { width: 390, height: 844 },
 };
 
+/** The state panel at the right of each board (panel.tsx): its width and its gap from the window. */
+export const PANEL_WIDTH = 340;
+export const PANEL_GAP = 24;
+/** A board's width on the canvas: the device's window, then the panel. */
+export const boardWidth = (device: Device) => WINDOW[device].width + PANEL_GAP + PANEL_WIDTH;
+
 const cap = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /** The states of a sheet on a device: a phone-only state is not drawn on a desktop. */

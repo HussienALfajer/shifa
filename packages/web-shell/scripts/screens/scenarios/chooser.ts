@@ -3,7 +3,7 @@
 // POST /me/switch.
 import type { Scenario, Sheet, Step, World } from '../scenario.ts';
 import { fail } from '../server.ts';
-import { B_SECOND, CLINIC, OTHER_CLINIC, ownerSession } from '../world.ts';
+import { at, B_SECOND, CLINIC, OTHER_CLINIC, ownerSession } from '../world.ts';
 
 const noClinicYet = (w: World) => {
   w.session = ownerSession({ tenantId: null, branchId: null, roles: [] });
@@ -36,6 +36,45 @@ export const chooser: Sheet = {
       answers: { 'GET /me/clinics': ['offline'] },
     }),
     choose({
+      id: 'ListServerError',
+      title: 'تحميل العيادات: خطأ في الخادم',
+      answers: { 'GET /me/clinics': [fail(500, 'internal_error')] },
+    }),
+    choose({
+      id: 'NoName',
+      title: 'دون اسم الشخص (تعذّرت قراءته)',
+      answers: { 'GET /me': fail(500, 'internal_error') },
+    }),
+    choose({
+      id: 'Trial',
+      title: 'عيادة في فترة التجربة',
+      world: (w) => {
+        noClinicYet(w);
+        const [first, ...rest] = w.clinics;
+        if (first) w.clinics = [{ ...first, status: 'trial' }, ...rest];
+      },
+    }),
+    choose({
+      id: 'OnlyInvitations',
+      title: 'دعوات فقط، بلا عيادة بعد',
+      world: (w) => {
+        noClinicYet(w);
+        w.clinics = [];
+      },
+    }),
+    choose({
+      id: 'SessionEnds',
+      title: 'تنتهي الساعات الاثنتا عشرة قريبًا',
+      world: (w) => {
+        w.session = ownerSession({
+          tenantId: null,
+          branchId: null,
+          roles: [],
+          absoluteExpiresAt: at(8 * 60_000),
+        });
+      },
+    }),
+    choose({
       id: 'NoClinic',
       title: 'لا عيادة ولا دعوة',
       world: (w) => {
@@ -63,6 +102,16 @@ export const chooser: Sheet = {
       { pressIn: 'فرع الفرقان' },
     ]),
     refused('Gone', 'لم تعد العيادة من عياداتك', fail(404, 'not_found'), [{ pressIn: CLINIC }]),
+    refused('BranchRequired', 'الخادم يطلب اختيار الفرع', fail(400, 'branch_required'), [
+      { pressIn: CLINIC },
+    ]),
+    refused('Refused', 'تبديل مرفوض لسبب آخر', fail(403, 'forbidden'), [{ pressIn: CLINIC }]),
+    choose({
+      id: 'BranchOffline',
+      title: 'خطوة الفرع: لا اتصال',
+      answers: { 'POST /me/switch': ['offline'] },
+      steps: [...branchStep, { pressIn: 'فرع الفرقان' }],
+    }),
     choose({
       id: 'Offline',
       title: 'لا اتصال بالخادم',
@@ -75,6 +124,14 @@ export const chooser: Sheet = {
 
 const openMenu: Step = { click: 'header [aria-haspopup="menu"]' };
 const home = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/', ...s });
+const toSecond: Step[] = [openMenu, { pressIn: B_SECOND.name }];
+const toOther: Step[] = [openMenu, { pressIn: OTHER_CLINIC }, { pressIn: 'فرع الفرقان' }];
+const switchRefused = (
+  id: string,
+  title: string,
+  answer: ReturnType<typeof fail>,
+  steps: Step[],
+): Scenario => home({ id, title, answers: { 'POST /me/switch': [answer] }, steps, overlay: true });
 
 export const switcher: Sheet = {
   id: 'Switcher',
@@ -112,6 +169,39 @@ export const switcher: Sheet = {
       title: 'تبديل مرفوض: العيادة موقوفة',
       answers: { 'POST /me/switch': [fail(403, 'clinic_suspended')] },
       steps: [openMenu, { pressIn: OTHER_CLINIC }, { pressIn: 'فرع الفرقان' }],
+      overlay: true,
+    }),
+    switchRefused('Archived', 'تبديل مرفوض: الفرع أُرشف', fail(409, 'branch_archived'), toOther),
+    switchRefused(
+      'NotHeld',
+      'تبديل مرفوض: لم يعد لك دور في الفرع',
+      fail(403, 'branch_not_held'),
+      toOther,
+    ),
+    switchRefused(
+      'BranchRequired',
+      'الخادم يطلب اختيار الفرع',
+      fail(400, 'branch_required'),
+      toSecond,
+    ),
+    switchRefused('Gone', 'تبديل مرفوض: العيادة لم تعد لك', fail(404, 'not_found'), toSecond),
+    switchRefused('Other', 'تبديل مرفوض لسبب آخر', fail(400, 'bad_request'), toSecond),
+    switchRefused('ServerError', 'تبديل: خطأ في الخادم', fail(500, 'internal_error'), toSecond),
+    home({
+      id: 'Offline',
+      title: 'تبديل: لا اتصال',
+      answers: { 'POST /me/switch': ['offline'] },
+      steps: toSecond,
+      overlay: true,
+    }),
+    home({
+      id: 'OneClinicBranches',
+      title: 'عيادة واحدة بعدة فروع',
+      world: (w) => {
+        w.clinics = w.clinics.slice(0, 1);
+        w.invitations = [];
+      },
+      steps: [openMenu],
       overlay: true,
     }),
     home({

@@ -282,13 +282,18 @@ export function recoveryCodes(): string[] {
   });
 }
 
-/** A TOTP key for the QR code and the manual entry (synthetic, never a real account's). */
-export const TOTP_KEY = 'JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP';
-export const OTPAUTH = `otpauth://totp/Shifa:${encodeURIComponent('شفاء')}?secret=${TOTP_KEY.replaceAll(' ', '')}&issuer=Shifa`;
+/**
+ * A TOTP key for the QR code and the manual entry (synthetic, never a real account's): unspaced
+ * base32, as the API sends it; the page groups it in fours itself.
+ */
+export const TOTP_KEY = 'JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP';
+export const OTPAUTH = `otpauth://totp/Shifa:${encodeURIComponent('شفاء')}?secret=${TOTP_KEY}&issuer=Shifa`;
 
 /** The person a setup link or an invitation is for. */
 export const NEW_PERSON = person('female').short;
 export const NEW_PHONE = phone();
+/** A number no member of the team has (a phone fixed to it is accepted). */
+export const FREE_PHONE = phone();
 /**
  * A setup link's token: 43 base64url characters, as the page expects. Plainly synthetic words,
  * so no secret scanner takes it for a key; no server ever issued it.

@@ -79,6 +79,12 @@ export interface Server {
   settled: () => Promise<void>;
 }
 
+/**
+ * The error codes and network failures this window's server has answered since the state began,
+ * read by the check to hold each sheet to every answer its code handles (coverage.ts).
+ */
+export const answered = new Set<string>();
+
 export function createServer({ world, answers = {}, latencyMs = 350 }: ServerOptions): Server {
   const queue = new Map<string, Reply[]>();
   for (const [key, answer] of Object.entries(answers)) {
@@ -119,6 +125,18 @@ export function createServer({ world, answers = {}, latencyMs = 350 }: ServerOpt
     else {
       const handler = route ? ROUTES[route.key] : undefined;
       if (handler) reply = handler(request, world);
+    }
+    // Every answered request is activity to the server: the idle limit starts again (the API's
+    // sliding window), so «متابعة العمل» and Play keep a session alive as in the app.
+    if (reply !== 'hold' && reply !== 'offline' && reply.status < 400 && world.session) {
+      const ms = world.session.idleMinutes * 60_000;
+      // In place: the reply may hold this very session (GET /auth/session), and must carry it.
+      world.session.idleExpiresAt = new Date(Date.now() + ms).toISOString();
+    }
+    if (reply === 'offline') answered.add('offline');
+    else if (reply !== 'hold') {
+      const code = (reply.body as { error?: { code?: unknown } } | undefined)?.error?.code;
+      if (typeof code === 'string') answered.add(code);
     }
     await new Promise((resolve) => setTimeout(resolve, latencyMs));
     // A held request never answers, and is not waited for: the board shows it loading.
