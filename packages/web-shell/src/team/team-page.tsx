@@ -146,13 +146,16 @@ function Team({
       {add}
     </div>
   );
+  // Under the page's h1, or under the branch filter's h2 (axe heading-order, checkpoint 5).
+  const headingLevel = onlyBranch === undefined ? (2 as const) : (3 as const);
   const empty =
     typed.trim() === ''
-      ? { title: text('teamNoneInStatus'), icon: 'magnifying-glass' as const }
+      ? { title: text('teamNoneInStatus'), icon: 'magnifying-glass' as const, headingLevel }
       : {
           title: text('teamNoMatchTitle'),
           description: text('teamNoMatchText'),
           icon: 'magnifying-glass' as const,
+          headingLevel,
         };
   return (
     <AppFrame
@@ -183,6 +186,7 @@ function Team({
         <EmptyState
           title={text('teamEmptyTitle')}
           description={text('teamEmptyText')}
+          headingLevel={2}
           actions={add}
         />
       ) : phone ? (

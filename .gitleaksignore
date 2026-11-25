@@ -39,3 +39,7 @@ cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/src/modules/identity/common-pa
 # invitation page tests); no link, no server ever issued them.
 39c774803d32ef1dba935209df878b983a9b9755:packages/web-shell/test/invitation.test.tsx:generic-api-key:15
 99d9231308f10809f2483018a95d227637a75606:packages/web-shell/test/checkpoint2-review.test.tsx:generic-api-key:20
+
+# A-01-08 checkpoint 5: the same synthetic invitation token ("ZyXwVu…", the reversed alphabet
+# and digits) copied into the heading tests; no link, no server ever issued it.
+ace4c3c5b3c1eacdb552a728dd330298b7060b8d:packages/web-shell/test/invitation-headings.test.tsx:generic-api-key:10

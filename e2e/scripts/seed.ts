@@ -1,6 +1,7 @@
 // The journeys' people (slice A-01-06): the super admin through seedSuperAdmin() and two clinics
 // with their owners through createClinic(), on the platform path like the real commands; a second
-// super admin for the entry-path journeys (A-01-07), who creates their clinics through the API. Names
+// super admin for the entry-path journeys (A-01-07), who creates their clinics through the API, a
+// third for A-01-10 and a fourth for the team journeys (A-01-08). Names
 // and phones come from @shifa/testing only. The one-time tokens stay in memory.
 import { createAuthDb, createClinic, createPlatformDb } from '@shifa/db';
 import { createRandom, fullName, generatePersonName, generatePhone } from '@shifa/testing';
@@ -53,6 +54,16 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       clinicWebUrl: urls.clinicWebUrl,
     });
     const accountToken = new URL(account.setupUrl).hash.slice(1);
+    // The A-01-08 journeys' super admin: creates the team journeys' clinics through the API.
+    const teamPhone = generatePhone(random, 'SY');
+    const team = await seedSuperAdmin({
+      authDb,
+      platformDb,
+      phone: teamPhone,
+      name: person(),
+      clinicWebUrl: urls.clinicWebUrl,
+    });
+    const teamToken = new URL(team.setupUrl).hash.slice(1);
     const clinics: Seeded['clinics'] = [];
     // A-01-07 checkpoint 5: the third clinic's owner walks the screens by keyboard; the fourth's
     // link checks the browser history and the used-link page (refusals.spec.ts).
@@ -87,6 +98,7 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       superAdmin: { phone: adminPhone, token: adminToken },
       journeyAdmin: { phone: journeyPhone, token: journeyToken },
       accountAdmin: { phone: accountPhone, token: accountToken },
+      teamAdmin: { phone: teamPhone, token: teamToken },
       clinics,
     };
   } finally {

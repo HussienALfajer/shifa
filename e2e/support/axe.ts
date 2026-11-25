@@ -32,9 +32,13 @@ export async function expectPageAxeClean(page: Page, what: string): Promise<void
       });
     await frame();
     await frame();
-    const ending = document
-      .getAnimations()
-      .filter((animation) => animation.effect?.getComputedTiming().endTime !== Infinity);
+    // Running, time-based ones with an end only (A-01-08 checkpoint 5, the phone's switcher
+    // sheet): a paused animation (a toast's timer held while it has the pointer or the focus)
+    // and a scroll-driven one (its end a percentage, not a number) never settle `finished`.
+    const ending = document.getAnimations().filter((animation) => {
+      const end: unknown = animation.effect?.getComputedTiming().endTime;
+      return animation.playState === 'running' && typeof end === 'number' && Number.isFinite(end);
+    });
     await Promise.allSettled(ending.map((animation) => animation.finished));
   });
   if (!(await page.evaluate(() => 'axe' in window))) await page.addScriptTag({ path: AXE });
