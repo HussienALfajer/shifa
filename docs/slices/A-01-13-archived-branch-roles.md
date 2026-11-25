@@ -20,9 +20,17 @@ Archiving a branch keeps the role assignments that point at it, so a restore giv
 
 Web: `packages/web-shell/test/team-review.test.tsx` B2 cases changed with the owner's decision (OD-107): the save sends the held archived role back with the new one; a 409 `branch_archived` is the plain «أُغلق أحد الفروع المختارة».
 
+## Security review (2026-11-25)
+- **B1 (blocking, fixed):** `z.uuid()` accepts upper case and the database answers ids lower-cased, so an upper-case branch id slipped a new role into an archived branch past the check (edit and add). `validRoles()` now lower-cases ids before removing duplicates; one compared form for `branchIds`, `archived` and `kept`.
+- **N1 (fixed):** an edit leaving only archived-branch roles kept the member's sessions here; `validRoles()` returns `live` (a clinic-wide role or one in an active branch) and the edit ends the sessions when none is left, as archiving would have.
+- **N2 (fixed):** the branch rows are locked `FOR SHARE` in id order, as archiving locks them, so a role edit naming two branches cannot deadlock with an archive.
+- **N3 (fixed, older):** a role edit takes the owners' lock before the rename's row lock, the order deactivation uses.
+- Tests: `apps/api/test/team/archived-roles-review.test.ts` (5; red first, 4 failing). One owner decision while fixing (2026-11-25): the N1 case gained a `POST /me/switch` into the main branch before the archive (a member with two branches had not entered the clinic, so no session was here to end); no expectation changed. Earlier, the owner approved a lint-only change to the locked `archived-roles.test.ts` helper (`branchId ?? ''` in a sort key).
+
 ## Stopped at
-Built and verified; `security-reviewer` run (see Evidence). Ships in the A-01-08 checkpoint 4 PR.
+Built, security-reviewed and fixed. Ships in the A-01-08 checkpoint 4 PR.
 
 ## Evidence
-- `pnpm exec vitest run test/team test/branches` (apps/api): 15 files, 105 tests passed.
+- `pnpm exec vitest run --maxWorkers=8` (apps/api): 92 files, 612 tests passed.
 - `pnpm exec vitest run test/team-review.test.tsx test/member-drawer.test.tsx` (web-shell): 24 passed.
+- `pnpm verify` on this Windows machine (32 cores): the API's database tests ran out of PostgreSQL connection slots ("remaining connection slots are reserved for roles with the SUPERUSER attribute") with the default worker count, in unrelated identity files; with 8 workers the whole API suite passes. CI's `verify (full)` is the gate.
