@@ -118,6 +118,8 @@ export interface DrawerContentProps {
   className?: string | undefined;
   /** The body; DrawerActions last. */
   children?: ReactNode;
+  /** `data-*` hooks for the page (tests, journeys) go onto the panel. */
+  [data: `data-${string}`]: string | undefined;
 }
 
 export function DrawerContent({
@@ -127,6 +129,7 @@ export function DrawerContent({
   handleLabel = 'اسحب لتغيير الحجم أو للإغلاق',
   className,
   children,
+  ...data
 }: DrawerContentProps) {
   const side = useContext(SideContext);
   const ref = useRef<HTMLDivElement>(null);
@@ -134,6 +137,7 @@ export function DrawerContent({
     <>
       <BaseDrawerBackdrop className="fixed inset-0 bg-bg-overlay" />
       <BaseDrawerContent
+        {...data}
         ref={ref}
         initialFocus={() => initialFocus(ref.current)}
         className={cn(

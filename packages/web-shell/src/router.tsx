@@ -45,6 +45,8 @@ export interface ShellPages {
   /** Clinic web only: My account and the clinic's settings (A-01-10 checkpoint 2). */
   account?: ComponentType;
   settings?: ComponentType;
+  /** Clinic web only: the owner's team (A-01-08 checkpoint 3); `?branch=` from a branch card. */
+  team?: ComponentType;
   /** Admin web only: the clinics list (its home), «إنشاء عيادة» and a clinic (A-01-10 checkpoint 3). */
   clinics?: ComponentType;
   createClinic?: ComponentType;
@@ -71,6 +73,18 @@ const signInSearch = (search: Record<string, unknown>): SignInSearch => {
   return reason === 'idle' && Number.isInteger(minutes) && minutes > 0 && minutes <= 1440
     ? { reason, minutes }
     : { reason };
+};
+
+export interface TeamSearch {
+  /** A branch's id: the team of that branch only (improvement e). */
+  branch?: string;
+}
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+const teamSearch = (search: Record<string, unknown>): TeamSearch => {
+  const branch = search['branch'];
+  return typeof branch === 'string' && UUID.test(branch) ? { branch } : {};
 };
 
 const searchFor = (reason: string | undefined): SignInSearch =>
@@ -143,8 +157,21 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
     beforeLoad: guard('signed-out'),
     component: pages.signIn,
   });
+  const team =
+    app === 'clinic' && pages.team
+      ? [
+          createRoute({
+            getParentRoute: () => root,
+            path: '/team',
+            validateSearch: teamSearch,
+            beforeLoad: guard('signed-in'),
+            component: pages.team,
+          }),
+        ]
+      : [];
   const children = [
     signIn,
+    ...team,
     route('/mfa', 'mfa', pages.mfa),
     route('/', 'signed-in', app === 'admin' && pages.clinics ? pages.clinics : pages.home),
     route('/about', 'open', pages.about),
