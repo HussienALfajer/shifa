@@ -104,6 +104,14 @@ describe('design-system bundle', () => {
     expect(devHistoryMarkers(read('components/bundle.js'))).toEqual([]);
   });
 
+  // Vite reads production from NODE_ENV, not from `mode`: under NODE_ENV=development (a cloud
+  // session) or test (Vitest) the React plugin compiled JSX to `jsxDEV`, which production React
+  // lacks, and every preview on the design-system page stayed empty. This test runs under test.
+  it('compiles JSX for production React whatever NODE_ENV the caller runs with', () => {
+    expect(process.env['NODE_ENV']).not.toBe('production');
+    expect(read('components/bundle.js').includes('jsxDEV')).toBe(false);
+  });
+
   it('runs as a classic script and sets window.Shifa with mount and every component', () => {
     const window: Record<string, unknown> = {};
     const context = createContext({ window, self: window, globalThis: window, console });
