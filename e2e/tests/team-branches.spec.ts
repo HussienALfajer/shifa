@@ -94,6 +94,7 @@ async function enrolThroughApi(page: Page, base: string, url: string): Promise<v
 }
 
 async function createClinic(
+  browser: Browser,
   name: string,
   type: 'solo' | 'multi_branch',
 ): Promise<{ id: string; ownerPage: Page }> {
@@ -104,7 +105,7 @@ async function createClinic(
     ownerName: person(),
     ownerPhone: generatePhone(random, 'SY'),
   });
-  const page = await personPage(admin.context().browser() as Browser);
+  const page = await personPage(browser);
   await enrolThroughApi(page, urls().clinic, created.ownerLink.url);
   return { id: created.clinic.id, ownerPage: page };
 }
@@ -117,7 +118,7 @@ test('(1) the owner adds a receptionist for one branch; the link signs them in w
   const { teamAdmin } = seeded();
   await enrolThroughApi(admin, urls().admin, `${urls().admin}/setup#${teamAdmin.token}`);
 
-  const a = await createClinic(clinicA.name, 'multi_branch');
+  const a = await createClinic(browser, clinicA.name, 'multi_branch');
   clinicA.id = a.id;
   ownerPage = a.ownerPage;
   const branches = await expectCall<BranchList>(ownerPage, 200, 'GET', '/branches');
@@ -204,7 +205,8 @@ test('(1) the owner adds a receptionist for one branch; the link signs them in w
   expect(session.roles).toEqual([
     expect.objectContaining({ role: 'receptionist', branchId: second.id }),
   ]);
-  // A receptionist has neither «الفريق» nor «الفروع».
+  // A receptionist has neither «الفريق» nor «الفروع» (once the frame is drawn).
+  await expect(receptionistPage.getByRole('link', { name: 'حسابي' })).toBeVisible();
   await expect(receptionistPage.getByRole('link', { name: 'الفريق' })).toHaveCount(0);
   await expect(receptionistPage.getByRole('link', { name: 'الفروع' })).toHaveCount(0);
 
@@ -236,7 +238,7 @@ test('(2) a doctor of two branches accepts a second clinic’s invitation and op
   // Two branches and no tenant-wide role: the doctor chooses.
   await expect(doctorPage).toHaveURL(`${base}/choose`);
 
-  const b = await createClinic(clinicB.name, 'solo');
+  const b = await createClinic(browser, clinicB.name, 'solo');
   clinicB.id = b.id;
   const invited = await expectCall<MemberAdded>(b.ownerPage, 201, 'POST', '/team/members', {
     name: doctor.name,
@@ -247,11 +249,13 @@ test('(2) a doctor of two branches accepts a second clinic’s invitation and op
   await openSecretLink(doctorPage, invited.link.url);
   await expect(doctorPage.getByRole('heading', { name: clinicB.name, level: 1 })).toBeVisible();
   await expect(doctorPage.getByText('دعوة للانضمام إلى فريق')).toBeVisible();
+  await expect(doctorPage.getByText('طبيب', { exact: true })).toBeVisible();
   await lookAtSizes(doctorPage, 'invitation', async () => {
     await expect(doctorPage.getByRole('button', { name: 'قبول الدعوة' })).toBeVisible();
   });
   await doctorPage.getByRole('button', { name: 'رفض' }).click();
   const decline = doctorPage.getByRole('alertdialog', { name: `رفض دعوة ${clinicB.name}؟` });
+  await expect(decline).toBeVisible();
   await look(doctorPage, 'invitation-decline-confirm');
   await decline.getByRole('button', { name: 'تراجع' }).click();
   await expect(decline).toBeHidden();
@@ -353,7 +357,12 @@ test('(4) the owner deactivates the receptionist; the next request signs them ou
   expect((await callInPage(receptionistPage, 'GET', '/auth/session')).status).toBe(401);
   await receptionistPage.goto(`${base}/`);
   await expect(receptionistPage).toHaveURL(new RegExp(`${base}/sign-in`));
-  // And signing in again is refused while deactivated.
+  // Signing in again works (the password is the person's), but no clinic is left: the
+  // no-clinic page (A-01b criterion 11), never this clinic.
   await signInThroughScreen(receptionistPage, base, receptionist.phone, PASSWORD);
-  await expect(receptionistPage).toHaveURL(new RegExp(`${base}/sign-in`));
+  await expect(receptionistPage).toHaveURL(`${base}/choose`);
+  await expect(
+    receptionistPage.getByRole('heading', { name: 'لا توجد عيادة متاحة لحسابك' }),
+  ).toBeVisible();
+  expect((await sessionOf(receptionistPage)).tenantId).toBeNull();
 });

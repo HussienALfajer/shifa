@@ -2,7 +2,7 @@
 // `h3` right under the page's `h1` (heading-order). The page's empty states are `h2`.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { flush, type Rendered, type as typeInto } from './render.tsx';
-import { openTeam, SELF, teamApi } from './team-support.ts';
+import { B_SECOND, openTeam, SELF, teamApi } from './team-support.ts';
 
 let shown: Rendered | undefined;
 afterEach(async () => {
@@ -30,5 +30,17 @@ describe('team page headings', () => {
     await typeInto(search, 'لا أحد بهذا');
     await flush(20);
     expect(headingOf('لا أحد بهذا الاسم أو الرقم')?.tagName).toBe('H2');
+  });
+
+  it('under the branch filter’s h2, a search with no match is an h3', async () => {
+    shown = await openTeam(teamApi(), `/team?branch=${B_SECOND.id}`);
+    expect(headingOf(`فريق ${B_SECOND.name}`)?.tagName).toBe('H2');
+    const search = shown.container.querySelector<HTMLInputElement>(
+      'input[aria-label="ابحث بالاسم أو الرقم"]',
+    );
+    if (!search) throw new Error('no search field');
+    await typeInto(search, 'لا أحد بهذا');
+    await flush(20);
+    expect(headingOf('لا أحد بهذا الاسم أو الرقم')?.tagName).toBe('H3');
   });
 });

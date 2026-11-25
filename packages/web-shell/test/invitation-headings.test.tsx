@@ -1,8 +1,7 @@
 // Slice A-01-08 checkpoint 5: axe on the real backend found the invitation page without an h1
 // once answered (page-has-heading-one): the accepted, declined and invalid states showed only the
 // EmptyState's h2. Each state keeps one h1 naming the page, the drawn title staying the h2.
-import { generatePhone } from '@shifa/testing';
-import { createRandom } from '@shifa/testing';
+import { createRandom, generatePhone } from '@shifa/testing';
 import { afterEach, describe, expect, it } from 'vitest';
 import { button, click, flush, type Rendered, renderShell } from './render.tsx';
 import { errorAnswer, type FakeApi, fakeApi, json, SESSION } from './support.ts';
