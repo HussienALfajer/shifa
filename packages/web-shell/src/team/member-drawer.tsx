@@ -174,7 +174,7 @@ function MemberPanel({
   const shown: MemberLinkShown | null = link && { ...link, member: member.name };
   const formKey = JSON.stringify([member.name, member.roles, member.permissions, member.status]);
   return (
-    <Panel title={member.name} description={text(STATUS_WORD[member.status])}>
+    <Panel title={member.name}>
       <div className="flex flex-wrap items-center gap-2">
         <Badge tone={STATUS_TONE[member.status]}>{text(STATUS_WORD[member.status])}</Badge>
         {member.isSelf && <Badge tone="brand">{text('teamSelf')}</Badge>}

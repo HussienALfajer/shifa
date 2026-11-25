@@ -15,6 +15,7 @@ import {
   isOn,
   MEMBERS_PATH,
   type Member,
+  NEW_PHONE,
   NOTES,
   openTeam,
   roleGroup,
@@ -28,14 +29,14 @@ afterEach(async () => {
 });
 
 const NAME = 'رامي الحلبي';
-const PHONE = '+963 933 123 456';
+const PHONE = NEW_PHONE;
 const NOTES_LABEL = 'رؤية الملاحظات السريرية';
 const SUBMIT = 'إضافة وإصدار الرابط';
 
 const ADDED: Member = {
   id: '7a1f4c1e-4a43-4f0e-9f61-3c3b1f6f0e40',
   name: NAME,
-  phone: '+963933123456',
+  phone: NEW_PHONE,
   status: 'pending',
   roles: [{ role: 'receptionist', branchId: B_SECOND.id, branchName: B_SECOND.name }],
   lastActiveAt: null,

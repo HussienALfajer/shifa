@@ -199,7 +199,9 @@ export function DrawerActions({
     <div
       className={cn(
         // Pinned under the scrolling body: the body's padding is cancelled at its sides and end.
-        'sticky bottom-0 -mx-6 -mb-6 mt-auto flex flex-wrap justify-end gap-3 border-t border-border-default bg-bg-surface px-6 py-4',
+        // A sticky box stops at the scroll box's padding: `-bottom-6` takes it to the very edge,
+        // so nothing scrolls into view under the actions (A-01-08 checkpoint 3).
+        'sticky -bottom-6 -mx-6 -mb-6 mt-auto flex flex-wrap justify-end gap-3 border-t border-border-default bg-bg-surface px-6 py-4',
         className,
       )}
     >

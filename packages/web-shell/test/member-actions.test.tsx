@@ -20,6 +20,7 @@ import {
   nameLink,
   openTeam,
   RECEPTION,
+  RIGHT_PHONE,
   SELF,
   teamApi,
 } from './team-support.ts';
@@ -237,9 +238,9 @@ describe('Member drawer: a pending member’s phone (OD-103)', () => {
   it('the right phone: the earlier link stops; the new link shown once', async () => {
     const api = teamApi();
     api.answers[`${memberPath(RECEPTION.id)}/phone`] = () => json(200, LINK);
-    await fixPhone(api, '+963 944 000 111');
+    await fixPhone(api, RIGHT_PHONE);
     expect(api.bodies[`${memberPath(RECEPTION.id)}/phone`]?.at(-1)).toEqual({
-      phone: '+963 944 000 111',
+      phone: RIGHT_PHONE,
     });
     expect(linkValue(drawer())).toBe(LINK.url);
   });

@@ -59,7 +59,8 @@ export function LinkShown({
     member === null ? text(invitation ? 'linkInvitation' : 'linkSetup') : text('memberLink');
   return (
     <div data-testid="link-shown" className="flex flex-wrap items-start gap-5">
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
+      {/* At least 240 px: in a narrow place (the member drawer) the QR code goes below. */}
+      <div className="flex min-w-(--shifa-width-60) flex-1 flex-col gap-3">
         <p className="m-0 text-data leading-body text-text-muted">{note}</p>
         <CopyField
           value={link.url}

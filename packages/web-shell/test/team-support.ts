@@ -113,6 +113,10 @@ export const LEFT: Member = {
 };
 export const MEMBERS = [SELF, DOCTOR, ASSISTANT, RECEPTION, EXPIRED, LEFT];
 
+/** A phone typed for a new member, and the right phone of a pending one (synthetic). */
+export const NEW_PHONE = phone();
+export const RIGHT_PHONE = phone();
+
 /** Doctor and assistant on, the others off (A-01b criterion 6). */
 const NOTES_ROLES: Role[] = ['doctor', 'assistant'];
 
