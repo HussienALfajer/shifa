@@ -182,9 +182,7 @@ test('(1) the owner adds a receptionist for one branch; the link signs them in w
   await ownerPage.keyboard.press('Escape');
   const leave = ownerPage.getByRole('alertdialog', { name: 'لم تنسخ الرابط بعد' });
   await expect(leave).toBeVisible();
-  // Not looked at: a confirmation over the drawer makes the drawer's content inert, and axe then
-  // counts its scroll box as a scrollable region with nothing to focus (scrollable-region-
-  // focusable). A @shifa/ui Drawer follow-up (docs/backlog.md), not silenced here.
+  await look(ownerPage, 'team-link-leave-confirm');
   await leave.getByRole('button', { name: 'البقاء هنا' }).click();
   await shown.getByRole('button', { name: 'نسخ' }).click();
   await expect(shown.getByRole('button', { name: 'نُسخ' })).toBeVisible();
@@ -344,9 +342,7 @@ test('(4) the owner deactivates the receptionist; the next request signs them ou
   await expect(
     confirm.getByText('تنتهي جلساته في هذه العيادة عند طلبه التالي.', { exact: false }),
   ).toBeVisible();
-  // Not looked at: a confirmation over the drawer makes the drawer's content inert, and axe then
-  // counts its scroll box as a scrollable region with nothing to focus (scrollable-region-
-  // focusable). A @shifa/ui Drawer follow-up (docs/backlog.md), not silenced here.
+  await look(ownerPage, 'team-member-deactivate-confirm');
   await confirm.getByRole('button', { name: 'إيقاف الحساب' }).click();
   await expect(confirm).toBeHidden();
   await expect(drawer.getByText('موقوف').first()).toBeVisible();
