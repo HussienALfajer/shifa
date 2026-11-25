@@ -1,6 +1,6 @@
 # Design directions (slice 0.4-02)
 
-Four interactive prototypes of Shifa's design language, each on the same three screens, so the owner can compare them and pick one (spec 0.4, criterion 4; OD-57). They were drawn in a design canvas of the owner's account ("Shifa Design Directions"), and are kept here as static builds, as the record of the decision. The three not chosen stay.
+Four interactive prototypes of Shifa's design language, each on the same three screens, so the owner can compare them and pick one (spec 0.4, criterion 4; OD-57). They are kept here as static builds, the only record of the decision. The three not chosen stay.
 
 | Folder | Direction | Brief |
 |---|---|---|
@@ -23,7 +23,7 @@ The bar at the top of each page links the four screens and switches theme (`data
 
 ## How the builds are made
 
-`source/` holds the sixteen artboards as drawn in the design canvas (`*.dc.html`; `Main.dc.html` is direction D's reception queue). `node scripts/design-directions-build.mjs` turns them into the builds: the first state rendered as plain HTML, a small `runtime.js` for the clicks, and the fonts of `packages/tokens/fonts/`. Change a source file and run the script again. The sources name the UI font Shifa Sans Arabic, the renamed subsets of IBM Plex Sans Arabic (OD-59, slice 0.4-10): look at the builds, since a source opened on its own falls back to the system font.
+`source/` holds the sixteen source artboards (`*.dc.html`; `Main.dc.html` is direction D's reception queue). `node scripts/design-directions-build.mjs` turns them into the builds: the first state rendered as plain HTML, a small `runtime.js` for the clicks, and the fonts of `packages/tokens/fonts/`. Change a source file and run the script again. The sources name the UI font Shifa Sans Arabic, the renamed subsets of IBM Plex Sans Arabic (OD-59, slice 0.4-10): look at the builds, since a source opened on its own falls back to the system font.
 
 ## Rules for a build
 

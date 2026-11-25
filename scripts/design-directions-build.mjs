@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // Builds the static record of the design directions (spec 0.4 criterion 4, slice 0.4-02):
-// design/directions/source/*.dc.html (the artboards as drawn in the design canvas)
+// design/directions/source/*.dc.html (the sixteen source artboards)
 //   -> design/directions/<a|b|c|d>/<screen>.html, runtime.js and fonts/.
 // Each page holds its first state as plain HTML, opens from disk without a server and makes no
 // network request. Run it again after changing a source file; never edit the builds by hand.
@@ -25,7 +25,7 @@ const SCREENS = [
   },
   { stem: 'Booking', file: 'patient-booking.html', label: 'حجز المريض', fixed: true },
 ];
-/** The canvas names its entry artboard Main; it is direction D's reception queue. */
+/** The entry artboard is named Main; it is direction D's reception queue. */
 const sourceName = (id, stem) =>
   id === 'd' && stem === 'Queue' ? 'Main.dc.html' : `${id.toUpperCase()}-${stem}.dc.html`;
 
