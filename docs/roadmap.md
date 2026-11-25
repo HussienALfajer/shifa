@@ -137,7 +137,7 @@ Specs in order ("clinic day first", owner 2026-11-23, OD-75); each is split into
 |---|---|---|
 | A-01a | Clinic, owner and sign-in: tenant model, super admin creates a clinic and owner, setup links, phone + password, TOTP, sessions and idle sign-out, identity audit ([spec](specs/platform/A-01a-clinic-owner-sign-in.md)) | Done 2026-11-25: accepted by the owner (screens compared with the approved drawings); built as slices A-01-01 to A-01-13 (below) |
 | A-01b | Team, roles, branches and the clinic switcher: members and invitations, roles per clinic or branch, sensitive toggles, scope binding ([spec](specs/platform/A-01b-team-roles-branches-switcher.md)) | Done 2026-11-25: accepted by the owner; built with A-01a (below) |
-| A-02 | Settings cascade, entitlements and limits, flags, basic super-admin console (support access, cities, announcements, usage) | Not started |
+| A-02 | Settings cascade, entitlements and limits, flags, basic super-admin console (support access, cities, announcements, usage) ([spec](specs/platform/A-02-settings-entitlements-console.md); OD-108 to OD-116) | Spec approved by the owner 2026-11-25; next `/slice-plan` |
 | A-03 | Patients: registration, search, duplicates, family, summary, custom fields, Excel import, chart-read audit | Not started |
 | A-04 | Appointments: working hours, exceptions, types, slot and queue-number modes, double-booking prevention | Not started |
 | A-05 | Queue and reception day: daily queue, offline reception, thermal ticket, waiting-room screen | Not started |
