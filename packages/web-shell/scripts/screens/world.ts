@@ -289,8 +289,11 @@ export const OTPAUTH = `otpauth://totp/Shifa:${encodeURIComponent('شفاء')}?s
 /** The person a setup link or an invitation is for. */
 export const NEW_PERSON = person('female').short;
 export const NEW_PHONE = phone();
-/** A setup link's token: 43 base64url characters, as the page expects (synthetic). */
-export const SETUP_TOKEN = 'Zk3vQ9pL2xR7mN4tB8wC1yH6sD5fG0aJk2Lm3Np4Qr5';
+/**
+ * A setup link's token: 43 base64url characters, as the page expects. Plainly synthetic words,
+ * so no secret scanner takes it for a key; no server ever issued it.
+ */
+export const SETUP_TOKEN = 'synthetic-setup-token-for-the-canvas-only-0';
 
 /** A Syrian number as a person types it (0 then nine digits). */
 export const local = (e164: string) => `0${e164.slice(4)}`;

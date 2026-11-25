@@ -43,3 +43,8 @@ cc53974dc248f166506b179ee2806af1be29dcf7:apps/api/src/modules/identity/common-pa
 # A-01-08 checkpoint 5: the same synthetic invitation token ("ZyXwVu…", the reversed alphabet
 # and digits) copied into the heading tests; no link, no server ever issued it.
 ace4c3c5b3c1eacdb552a728dd330298b7060b8d:packages/web-shell/test/invitation-headings.test.tsx:generic-api-key:10
+
+# Clinic screens canvas (ADR-0049): a synthetic setup-link token for the canvas's fake server
+# ("Zk3vQ9pL…", typed by hand, 43 base64url characters); no server ever issued it. Replaced by
+# plain synthetic words in the next commits.
+d3ce4b77eec7e2194253ed3930b2aeadb592ec38:packages/web-shell/scripts/screens/world.ts:generic-api-key:293
