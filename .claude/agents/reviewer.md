@@ -20,6 +20,7 @@ Always check:
 - Money: integer minor units, explicit currency, rate snapshot per transaction, rounding as the billing doc says.
 - Clinical safety: laterality, tooth numbering and signed-note immutability.
 - Permissions: new routes appear in the permission matrix with the right roles.
+- Screen-to-API contract (ADR-0047): every contract row the slice file names is delivered as drawn (fields, errors, statuses) and proven by a contract test; a UI code slice uses each row and works around none in the client.
 - Migrations follow expand → migrate → contract; nothing destructive.
 - Tests assert behaviour, not implementation, and would fail if the feature broke.
 

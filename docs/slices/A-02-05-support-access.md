@@ -1,9 +1,10 @@
-# A-02-04 Read-only support access
+# A-02-05 Read-only support access
 
-Status: Planned · Tier: T0 · Branch: `feat/A-02-04-support-access`
+Status: Planned · Tier: T0 · Branch: `feat/A-02-05-support-access`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 11–14 · Requirements: PLT-14, PLT-46 (`support.elevate` reserved), PLT-47 · Decisions: OD-111, OD-112, ADR-0043, ADR-0044; new ADR (support grant mechanism)
 
-After [A-02-03](A-02-03-settings-cascade.md) (merged), so every A-02 write route is in the support matrix.
+After [A-02-04](A-02-04-settings-cascade.md) (merged), so every A-02 write route before it is in the support matrix; later write routes join the matrix automatically.
+Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
 
 ## Goal
 A super admin opens time-boxed, reasoned, read-only access to one clinic and reads clinic web as its owner sees it; every owner sees it happening and can end it; every request is audited.
@@ -20,11 +21,11 @@ A super admin opens time-boxed, reasoned, read-only access to one clinic and rea
 - `GET /clinic/support-access` (owner, `clinic.settings.manage`): the open grant (admin's name, reason, end) for the banner, and every grant for the log. `GET /platform/clinics/:id/support` for admin web: open grant with time left and past grants; 409 `support_active`.
 - Audit: `support.opened` (duration; reason only on the grant row), `support.ended` (by whom), `support.expired`, and one `support.request` row per request in a support session (route template, target id, no body, no query).
 - Logs and spans carry the grant id only; reasons never.
-4. **Web, Flutter** — none (admin side A-02-07; clinic web frame and banner A-02-09).
+4. **Web, Flutter** — none (admin side A-02-08; clinic web frame and banner A-02-10).
 5. **End-to-end** — API journey: open → hand-off → owner read 200 → a write 403 → owner ends → 401 `support_ended`.
 
 Tests written first: reason 10–500 and durations 30 min, 1, 2, 4 h only; second open grant 409 `support_active` (11); route matrix in a support session: every non-GET route 403 `support_read_only`, every owner GET 200 (12); a write forced past the guard fails on the read-only transaction (12); three ways to end, then 401 `support_ended` (12); owner banner and log data, another clinic's owner sees nothing (13); audit rows per event and per request without bodies (14); suspended clinic opens (14); hand-off token single-use and expiring; isolation case; leak test (no reason in logs).
-Estimated hand-written lines: ~3,900 (ADR ~150, database ~500, principal and guard ~600, grants and hand-off ~700, owner and console routes ~350, contracts ~200, tests ~1,400).
+Estimated hand-written lines: ~3,900 (ADR ~150, database ~500, principal and guard ~600, grants and hand-off ~700, owner and console routes ~350, contracts ~200, tests ~1,400). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
 
 ## Stopped at
 Planned.

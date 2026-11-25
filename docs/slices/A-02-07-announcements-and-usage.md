@@ -1,9 +1,10 @@
-# A-02-06 Announcements and daily usage
+# A-02-07 Announcements and daily usage
 
-Status: Planned · Tier: T0 · Branch: `feat/A-02-06-announcements-and-usage`
+Status: Planned · Tier: T0 · Branch: `feat/A-02-07-announcements-and-usage`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 16–18 · Requirements: PLT-16, PLT-18, PLT-47 · Decisions: OD-115, OD-116
 
-After [A-02-05](A-02-05-cities-areas-branch-place.md) (merged). Last backend slice of A-02.
+After [A-02-06](A-02-06-cities-areas-branch-place.md) (merged). Last API slice of A-02.
+Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
 
 ## Goal
 The super admin posts plain-text announcements to all or selected clinics and every targeted member sees and dismisses them; the platform keeps a daily counter per clinic and the clinics list shows last activity and sign-ins.
@@ -19,11 +20,11 @@ The super admin posts plain-text announcements to all or selected clinics and ev
    - Usage keys in code (`USAGE_KEYS`, later specs add theirs): `sign_ins`, `members_signed_in` (distinct per day, no list of people kept beyond the day), `active_members`, `active_branches`; counted on sign-in (auth path, the sign-in's clinic) and when members or branches change; last activity on the principal's request touch (at most once a minute, as `membership.last_active_at`).
    - Platform: `GET /platform/clinics/:id/usage` (30 days); clinics list gains the two columns.
    - Audit: `announcement.created`, `announcement.edited`, `announcement.ended` (ids, level, target count; never the body).
-4. **Web, Flutter** — none (A-02-07, A-02-08, A-02-09).
+4. **Web, Flutter** — none (UI code slices A-02-08, A-02-09, A-02-10).
 5. **End-to-end** — none.
 
 Tests written first: body rules (length, a link, markup refused) (16); targeting all and selected, scheduled not shown, ended not shown (16); dismissal per person across two sessions and kept across clinics (16); end early and edit (16); usage counters against seeded sign-ins, the Damascus day boundary on a fake clock, distinct members (17); clinics list columns and 30-day series (17); audit rows without the body (18); isolation cases for `announcement_target`, `announcement_dismissal`, `usage_daily`.
-Estimated hand-written lines: ~3,300 (contracts ~300, database ~500, announcements ~800, usage ~600, tests ~1,100).
+Estimated hand-written lines: ~3,300 (contracts ~300, database ~500, announcements ~800, usage ~600, tests ~1,100). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
 
 ## Stopped at
 Planned.
@@ -34,4 +35,4 @@ Planned.
 - Reviewer findings fixed: —; deferred to backlog: —
 
 ## Notes for the next session
-- After this slice every A-02 route exists: the three UI batches can draw.
+- After this slice every A-02 route exists: the three UI code slices can start; their drawings are already approved (A-02-01).

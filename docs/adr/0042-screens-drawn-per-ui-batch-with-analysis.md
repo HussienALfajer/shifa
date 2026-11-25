@@ -1,6 +1,6 @@
 # ADR-0042: Screens are drawn at the start of each UI batch, after the API, with a full analysis
 
-Status: Accepted (owner, 2026-11-23) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0040](0040-design-first-in-claude-design-code-as-source.md) (when screens are drawn)
+Status: Accepted (owner, 2026-11-23); when screens are drawn amended by [ADR-0047](0047-screens-drawn-before-the-api-with-a-contract.md) (before the API, with a contract) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0040](0040-design-first-in-claude-design-code-as-source.md) (when screens are drawn)
 
 ## Context
 ADR-0040 has `/spec` draw every screen of a feature and the owner approve the screens with the spec. The first Phase A spec (A-01, OD-75) showed the cost: about twenty screens drawn weeks before any of them is built, one large approval, and drawings that age while the API, the design system and the owner's decisions move. Its slices start with tables, permissions and the API anyway, which need no drawing.
