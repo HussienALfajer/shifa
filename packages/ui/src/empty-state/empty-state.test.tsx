@@ -49,6 +49,25 @@ describe.each(DIRS)('Empty state in %s', (dir) => {
     await screen.unmount();
   });
 
+  it('is the page h1 on a whole empty screen, looking as level 2 does', async () => {
+    const two = await renderDir(
+      <EmptyState size="page" art="star" title="لا عيادة" headingLevel={2} />,
+      {
+        dir,
+      },
+    );
+    const twoSize = getComputedStyle(two.getByRole('heading').element()).fontSize;
+    await two.unmount();
+    const screen = await renderDir(
+      <EmptyState size="page" art="star" title="لا عيادة" headingLevel={1} />,
+      { dir },
+    );
+    const h1 = screen.getByRole('heading', { level: 1, name: 'لا عيادة' }).element();
+    expect(getComputedStyle(h1).fontSize).toBe(twoSize);
+    await expectAxeClean(document.body);
+    await screen.unmount();
+  });
+
   it('an icon instead of a drawing, for search and errors', async () => {
     const screen = await renderDir(<EmptyState icon="warning" title="تعذّر تحميل الفواتير" />, {
       dir,

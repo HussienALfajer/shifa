@@ -81,8 +81,8 @@ export interface EmptyStateProps {
   actions?: ReactNode;
   /** panel (default) inside a card or table; page for a whole empty screen. */
   size?: EmptyStateSize;
-  /** The title's heading level (3 by default). */
-  headingLevel?: 2 | 3 | 4;
+  /** The title's heading level (3 by default); 1 when it is a whole page's title. */
+  headingLevel?: 1 | 2 | 3 | 4;
   className?: string;
 }
 
