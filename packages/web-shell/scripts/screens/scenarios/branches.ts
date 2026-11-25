@@ -20,9 +20,9 @@ export const branchesSheet: Sheet = {
     'branches/branch-note.tsx',
   ],
   scenarios: [
-    branches({ id: 'List', title: 'الفروع الفعّالة والمؤرشفة', phone: true }),
+    branches({ id: 'List', title: 'الفروع الفعّالة والمؤرشفة' }),
     branches({ id: 'Loading', title: 'تحميل الفروع', answers: { 'GET /branches': 'hold' } }),
-    branches({ id: 'Add', title: 'إضافة فرع', steps: addDialog, overlay: true, phone: true }),
+    branches({ id: 'Add', title: 'إضافة فرع', steps: addDialog, overlay: true }),
     branches({
       id: 'AddMissing',
       title: 'إضافة فرع: الاسم فارغ',

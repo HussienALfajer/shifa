@@ -41,7 +41,6 @@ export const setupLink: Sheet = {
       id: 'Invalid',
       title: 'رابط غير صالح أو مستخدم',
       answers: { 'POST /auth/setup-link/view': fail(404, 'link_invalid') },
-      phone: true,
     }),
     setupState({ id: 'NoToken', title: 'فُتح دون رمز', path: '/setup' }),
     setupState({
@@ -54,12 +53,11 @@ export const setupLink: Sheet = {
       title: 'خطأ في الخادم',
       answers: { 'POST /auth/setup-link/view': fail(500, 'internal_error') },
     }),
-    setupState({ id: 'Member', title: 'رابط موظف (طبيب)', phone: true }),
+    setupState({ id: 'Member', title: 'رابط موظف (طبيب)' }),
     setupState({
       id: 'Owner',
       title: 'رابط مالك العيادة (يتبعه التحقق بخطوتين)',
       world: owner,
-      phone: true,
     }),
     setupState({
       id: 'Typing',
@@ -138,9 +136,8 @@ export const invitation: Sheet = {
         invitationLink(w);
         w.session = null;
       },
-      phone: true,
     }),
-    invite({ id: 'Open', title: 'الدعوة: قبول أو رفض', phone: true }),
+    invite({ id: 'Open', title: 'الدعوة: قبول أو رفض' }),
     invite({
       id: 'DeclineAsk',
       title: 'سؤال قبل الرفض',

@@ -28,7 +28,7 @@ export const chooser: Sheet = {
   note: 'After sign-in without a clinic: the person’s clinics (last used first, a suspended one listed but off) and pending invitations, the branch step for roles in two or more branches, opening a clinic, no clinic at all, and every refusal of the switch (suspended, branch archived, branch not held, clinic gone, no network, server error).',
   code: ['chooser/clinic-chooser.tsx', 'chooser/chooser-cards.tsx', 'chooser/use-clinic-switch.ts'],
   scenarios: [
-    choose({ id: 'List', title: 'العيادات والدعوات', phone: true }),
+    choose({ id: 'List', title: 'العيادات والدعوات' }),
     choose({ id: 'Loading', title: 'تحميل العيادات', answers: { 'GET /me/clinics': 'hold' } }),
     choose({
       id: 'LoadFailed',
@@ -43,9 +43,8 @@ export const chooser: Sheet = {
         w.clinics = [];
         w.invitations = [];
       },
-      phone: true,
     }),
-    choose({ id: 'Branch', title: 'اختيار الفرع', steps: branchStep, phone: true }),
+    choose({ id: 'Branch', title: 'اختيار الفرع', steps: branchStep }),
     choose({
       id: 'Opening',
       title: 'جارٍ فتح العيادة',
@@ -84,7 +83,7 @@ export const switcher: Sheet = {
   note: 'The switcher in the header of every signed-in page: closed, open (clinics, the branches of this clinic, invitations), the branch step, switching, the «you are now in» toast, and a refused switch; a person with one clinic and one branch sees the clinic’s name only.',
   code: ['switcher/clinic-switcher.tsx', 'chooser/use-clinic-switch.ts', 'account/app-frame.tsx'],
   scenarios: [
-    home({ id: 'Open', title: 'القائمة مفتوحة', steps: [openMenu], overlay: true, phone: true }),
+    home({ id: 'Open', title: 'القائمة مفتوحة', steps: [openMenu], overlay: true }),
     home({
       id: 'BranchStep',
       title: 'خطوة الفرع في عيادة أخرى',

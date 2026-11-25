@@ -28,7 +28,7 @@ export const mfaChallenge: Sheet = {
   note: 'The challenge after the password: the code from the app (greeting the person by name), a wrong code, sending, the lock after too many codes, a recovery code instead (empty, wrong), no network and a server error.',
   code: ['auth/mfa.tsx', 'auth/mfa-challenge.tsx', 'auth/me.ts', 'auth/lock.ts'],
   scenarios: [
-    challenge({ id: 'Code', title: 'رمز التطبيق', phone: true }),
+    challenge({ id: 'Code', title: 'رمز التطبيق' }),
     challenge({ id: 'Wrong', title: 'رمز خاطئ', steps: [code('654321')] }),
     challenge({
       id: 'Sending',
@@ -41,7 +41,6 @@ export const mfaChallenge: Sheet = {
       title: 'إيقاف مؤقت بعد محاولات كثيرة',
       answers: { 'POST /auth/mfa/challenge': () => lockFor('mfa_locked', 9 * MINUTE + 40_000) },
       steps: [code('654321')],
-      phone: true,
     }),
     challenge({ id: 'Recovery', title: 'رمز استرداد بدل التطبيق', steps: [recovery] }),
     challenge({
@@ -80,7 +79,7 @@ export const mfaEnrol: Sheet = {
   note: 'Enrolment, required of owners: step 1 the app, step 2 the QR code and the key (folded on a phone), step 3 the code; the key that failed to load, a wrong code, the device clock off, the lock; then the ten recovery codes, shown once, to copy or print, and the box that lets the person go on.',
   code: ['auth/mfa.tsx', 'auth/mfa-enrol.tsx', 'auth/recovery-codes.tsx'],
   scenarios: [
-    enrol({ id: 'App', title: 'الخطوة 1: تطبيق المصادقة', phone: true }),
+    enrol({ id: 'App', title: 'الخطوة 1: تطبيق المصادقة' }),
     enrol({
       id: 'KeyLoading',
       title: 'الخطوة 2: تحضير المفتاح',
@@ -91,7 +90,6 @@ export const mfaEnrol: Sheet = {
       id: 'Key',
       title: 'الخطوة 2: رمز QR والمفتاح',
       steps: [toKey, { wait: 900 }],
-      phone: true,
     }),
     enrol({
       id: 'KeyFailed',
@@ -99,7 +97,7 @@ export const mfaEnrol: Sheet = {
       answers: { 'POST /auth/mfa/enrol/start': [fail(500, 'internal_error')] },
       steps: [toKey, { until: 'enrolStartFailedTitle' }],
     }),
-    enrol({ id: 'Code', title: 'الخطوة 3: الرمز من التطبيق', steps: toCode, phone: true }),
+    enrol({ id: 'Code', title: 'الخطوة 3: الرمز من التطبيق', steps: toCode }),
     enrol({ id: 'Wrong', title: 'الخطوة 3: رمز خاطئ', steps: [...toCode, enrolCode('654321')] }),
     enrol({
       id: 'ClockSkew',
@@ -117,7 +115,6 @@ export const mfaEnrol: Sheet = {
       id: 'Codes',
       title: 'رموز الاسترداد (تُعرض مرة واحدة)',
       steps: [...toCode, enrolCode(PLAY_CODE), { until: 'codesTitle' }],
-      phone: true,
     }),
     enrol({
       id: 'CodesSaved',

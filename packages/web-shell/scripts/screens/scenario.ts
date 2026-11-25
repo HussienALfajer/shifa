@@ -21,8 +21,8 @@ export interface Scenario {
   storage?: Record<string, string>;
   /** A dialog or drawer over the page: the board is one window high, as a person sees it. */
   overlay?: boolean;
-  /** Also drawn on a phone (the sheet's main states); `only` when the state exists on phones only. */
-  phone?: boolean | 'only';
+  /** Every state is on both boards of its sheet; `only` keeps one off the desktop (a phone menu). */
+  phone?: 'only';
   latencyMs?: number;
 }
 

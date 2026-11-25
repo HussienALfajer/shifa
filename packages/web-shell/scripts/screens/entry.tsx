@@ -15,7 +15,7 @@ import { shellPages } from '../../src/pages.tsx';
 import { ShellProviders } from '../../src/providers.tsx';
 import { createShellRouter } from '../../src/router.tsx';
 import { THEME_STORAGE_KEY } from '../../src/theme.ts';
-import { boardStorage } from './isolate.ts';
+import { boardStorage, resetClock } from './isolate.ts';
 import { SHEETS } from './scenarios/index.ts';
 import { createServer } from './server.ts';
 import { createWorld } from './state.ts';
@@ -28,15 +28,20 @@ export interface BoardOptions {
   theme?: 'light' | 'dark';
 }
 
+/** The state chosen; an unknown one (a renamed state in an old tweak) opens the sheet's first. */
 function scenarioOf(sheet: string, state: string) {
-  const found = SHEETS.find((s) => s.id === sheet)?.scenarios.find((s) => s.id === state);
-  if (!found) throw new Error(`screens canvas: no state ${sheet}/${state}`);
+  const states = SHEETS.find((s) => s.id === sheet)?.scenarios ?? [];
+  const found = states.find((s) => s.id === state) ?? states[0];
+  if (!found) throw new Error(`screens canvas: no sheet ${sheet}`);
   return found;
 }
 
 /** Starts clinic web in `element` at the state's address; returns the unmount. */
 function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOptions): () => void {
   const scenario = scenarioOf(sheet, state);
+  // A state of its own: the previous one's steps stop, its clock and storage are gone.
+  const life = new AbortController();
+  resetClock();
   boardStorage.clear();
   boardStorage.setItem(THEME_STORAGE_KEY, theme);
   for (const [key, value] of Object.entries(scenario.storage ?? {}))
@@ -59,7 +64,11 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
     pages: shellPages,
     history: createMemoryHistory({ initialEntries: [scenario.path] }),
   });
-  const root: Root = createRoot(element);
+  // Each state in a fresh container of its own: the one before may still be unmounting.
+  const container = document.createElement('div');
+  container.style.minHeight = '100dvh';
+  element.replaceChildren(container);
+  const root: Root = createRoot(container);
   root.render(
     <StrictMode>
       <ShellProviders
@@ -72,24 +81,27 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
     </StrictMode>,
   );
   const t: Translate = (key, values) => i18n.t(`common:${key}`, values ?? {});
-  element.dataset['screen'] = 'starting';
+  container.dataset['screen'] = 'starting';
   // The page first loads what it reads, the person acts, then the answers to that arrive.
   void (async () => {
     await server.settled();
-    await runSteps(element, scenario.steps ?? [], t);
+    await runSteps(container, scenario.steps ?? [], t, life.signal);
     await server.settled();
   })().then(
     () => {
-      element.dataset['screen'] = 'ready';
+      container.dataset['screen'] = 'ready';
     },
     (error: unknown) => {
-      element.dataset['screen'] = 'failed';
+      if (life.signal.aborted) return;
+      container.dataset['screen'] = 'failed';
       console.error(error);
     },
   );
   return () => {
+    life.abort();
     root.unmount();
     dispose();
+    container.remove();
   };
 }
 
@@ -107,6 +119,7 @@ function ClinicWeb(props: BoardOptions) {
   host.useLayoutEffect(() => {
     if (!element.current) return undefined;
     const done = mount(element.current, { sheet, state, ...(theme ? { theme } : {}) });
+    // React may not unmount a root while rendering: the previous state ends just after.
     return () => {
       queueMicrotask(done);
     };

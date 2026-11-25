@@ -33,9 +33,11 @@ export type Translate = (key: CommonKey, values?: Record<string, unknown>) => st
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-async function find<T>(look: () => T | null, what: string): Promise<T> {
+async function find<T>(look: () => T | null, what: string, signal?: AbortSignal): Promise<T> {
   // Up to 15 s: a failed read shows only after the query's own retries (1 s, 2 s, 4 s).
   for (let i = 0; i < 300; i += 1) {
+    // Stopped while waiting: never pick up what the next state put on the board.
+    signal?.throwIfAborted();
     const found = look();
     if (found) return found;
     await sleep(50);
@@ -80,21 +82,29 @@ function type(control: HTMLInputElement | HTMLTextAreaElement, value: string) {
   control.dispatchEvent(new Event('input', { bubbles: true }));
 }
 
-export async function runSteps(root: HTMLElement, steps: Step[], t: Translate): Promise<void> {
+export async function runSteps(
+  root: HTMLElement,
+  steps: Step[],
+  t: Translate,
+  signal?: AbortSignal,
+): Promise<void> {
   // Dialogs and drawers open in the top layer, which may sit outside the island's element.
   const scope = root.ownerDocument;
+  const seek = <T>(look: () => T | null, what: string) => find(look, what, signal);
   for (const step of steps) {
+    // Another state was chosen meanwhile: nothing more is pressed on its behalf.
+    signal?.throwIfAborted();
     if ('fill' in step) {
       const label = t(step.fill, step.values);
-      type(await find(() => byLabel(scope, label), `field «${label}»`), step.value);
+      type(await seek(() => byLabel(scope, label), `field «${label}»`), step.value);
     } else if ('fillIn' in step) {
-      const el = await find(() => scope.querySelector(step.fillIn), step.fillIn);
+      const el = await seek(() => scope.querySelector(step.fillIn), step.fillIn);
       type(el as HTMLInputElement, step.value);
     } else if ('press' in step) {
       const name = t(step.press, step.values);
-      (await find(() => pressable(scope, name, step.nth), `button «${name}»`)).click();
+      (await seek(() => pressable(scope, name, step.nth), `button «${name}»`)).click();
     } else if ('pressText' in step) {
-      (await find(() => pressable(scope, step.pressText), `button «${step.pressText}»`)).click();
+      (await seek(() => pressable(scope, step.pressText), `button «${step.pressText}»`)).click();
     } else if ('pressIn' in step) {
       const holding = () =>
         [
@@ -103,27 +113,27 @@ export async function runSteps(root: HTMLElement, steps: Step[], t: Translate): 
           ),
         ].find((el) => !el.matches(':disabled') && clean(el.textContent).includes(step.pressIn)) ??
         null;
-      (await find(holding, `button holding «${step.pressIn}»`)).click();
+      (await seek(holding, `button holding «${step.pressIn}»`)).click();
     } else if ('check' in step) {
       const label = () =>
         [...scope.querySelectorAll<HTMLElement>(`${step.within ?? ''} label`.trim())].find((el) =>
           clean(el.textContent).startsWith(step.check),
         ) ?? null;
-      (await find(label, `choice «${step.check}»`)).click();
+      (await seek(label, `choice «${step.check}»`)).click();
     } else if ('click' in step) {
-      (await find(() => scope.querySelector<HTMLElement>(step.click), step.click)).click();
+      (await seek(() => scope.querySelector<HTMLElement>(step.click), step.click)).click();
     } else if ('key' in step) {
       const target = step.on
-        ? await find(() => scope.querySelector(step.on ?? ''), step.on)
+        ? await seek(() => scope.querySelector(step.on ?? ''), step.on)
         : (scope.activeElement ?? scope.body);
       const init = { key: step.key, bubbles: true, shiftKey: step.shift === true };
       target.dispatchEvent(new KeyboardEvent('keydown', init));
       target.dispatchEvent(new KeyboardEvent('keyup', init));
     } else if ('untilSel' in step) {
-      await find(() => scope.querySelector(step.untilSel), step.untilSel);
+      await seek(() => scope.querySelector(step.untilSel), step.untilSel);
     } else if ('until' in step) {
       const want = t(step.until, step.values);
-      await find(
+      await seek(
         () => (clean(scope.body.textContent).includes(clean(want)) ? true : null),
         `«${want}»`,
       );

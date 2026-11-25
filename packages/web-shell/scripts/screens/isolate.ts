@@ -63,6 +63,10 @@ Date.now = () => realNow() + ahead;
 export function advanceClock(ms: number): void {
   ahead += ms;
 }
+/** A new state starts at the real time. */
+export function resetClock(): void {
+  ahead = 0;
+}
 
 for (const name of ['localStorage', 'sessionStorage'] as const) {
   Object.defineProperty(globalThis, name, {

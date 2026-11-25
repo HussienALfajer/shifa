@@ -34,7 +34,7 @@ export const signIn: Sheet = {
     'auth/remembered-phone.ts',
   ],
   scenarios: [
-    { id: 'Empty', title: 'فارغة', path: '/sign-in', world: signedOut, phone: true },
+    { id: 'Empty', title: 'فارغة', path: '/sign-in', world: signedOut },
     {
       id: 'Remembered',
       title: 'رقم محفوظ على هذا الجهاز',
@@ -44,7 +44,6 @@ export const signIn: Sheet = {
         'shifa.signIn.phone': local(NEW_PHONE),
         'shifa.signIn.phoneAt': String(Date.now()),
       },
-      phone: true,
     },
     {
       id: 'Missing',
@@ -59,7 +58,6 @@ export const signIn: Sheet = {
       path: '/sign-in',
       world: signedOut,
       steps: send,
-      phone: true,
     },
     {
       id: 'Sending',
@@ -93,7 +91,6 @@ export const signIn: Sheet = {
       world: signedOut,
       answers: { 'POST /auth/sign-in': () => lockFor('phone_locked', 14 * MINUTE + 32_000) },
       steps: send,
-      phone: true,
     },
     {
       id: 'IpBlocked',

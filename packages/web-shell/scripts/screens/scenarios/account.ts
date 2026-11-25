@@ -54,7 +54,7 @@ export const accountSheet: Sheet = {
     'account/totp-key.tsx',
   ],
   scenarios: [
-    account({ id: 'Owner', title: 'المالك: الجلسات والتحقق وكلمة المرور', phone: true }),
+    account({ id: 'Owner', title: 'المالك: الجلسات والتحقق وكلمة المرور' }),
     account({
       id: 'Loading',
       title: 'تحميل الحساب',
@@ -80,7 +80,7 @@ export const accountSheet: Sheet = {
         w.mfa = { ...w.mfa, recoveryCodesLeft: 2 };
       },
     }),
-    account({ id: 'Staff', title: 'موظف دون تحقق بخطوتين', world: staff, phone: true }),
+    account({ id: 'Staff', title: 'موظف دون تحقق بخطوتين', world: staff }),
     account({
       id: 'EndOneAsk',
       title: 'إنهاء جلسة جهاز',
@@ -110,7 +110,6 @@ export const accountSheet: Sheet = {
       title: 'تغيير كلمة المرور',
       steps: [password],
       overlay: true,
-      phone: true,
     }),
     account({
       id: 'PasswordRules',
@@ -178,7 +177,6 @@ export const accountSheet: Sheet = {
       title: 'الرموز الجديدة (تُعرض مرة واحدة)',
       steps: [renew, code(PLAY_CODE), { until: 'codesCopy' }],
       overlay: true,
-      phone: true,
     }),
     account({
       id: 'Move',
@@ -225,7 +223,7 @@ export const settingsSheet: Sheet = {
   note: 'The owner’s clinic settings: the idle limit (15, 30 or 60 minutes; super admins keep 15), saving it and its failure; the branches card (or the solo clinic’s line); loading.',
   code: ['account/settings-page.tsx', 'branches/settings-branches.tsx'],
   scenarios: [
-    settings({ id: 'Settings', title: 'مهلة عدم النشاط', phone: true }),
+    settings({ id: 'Settings', title: 'مهلة عدم النشاط' }),
     settings({
       id: 'Loading',
       title: 'تحميل الإعدادات',

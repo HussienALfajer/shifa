@@ -52,7 +52,7 @@ export const teamSheet: Sheet = {
     'admin/link-shown.tsx',
   ],
   scenarios: [
-    team({ id: 'List', title: 'كل الأعضاء', phone: true }),
+    team({ id: 'List', title: 'كل الأعضاء' }),
     team({ id: 'Loading', title: 'تحميل الفريق', answers: { 'GET /team/members': 'hold' } }),
     team({
       id: 'LoadFailed',
@@ -66,7 +66,6 @@ export const teamSheet: Sheet = {
       world: (w: World) => {
         w.members = w.members.filter((m) => m.isSelf);
       },
-      phone: true,
     }),
     team({
       id: 'Pending',
@@ -84,7 +83,6 @@ export const teamSheet: Sheet = {
       title: 'درج عضو فعّال',
       steps: open(DOCTOR.name),
       overlay: true,
-      phone: true,
     }),
     team({
       id: 'NoMfa',
@@ -130,7 +128,6 @@ export const teamSheet: Sheet = {
       title: 'رابط جديد: نسخ أو واتساب',
       steps: issueLink,
       overlay: true,
-      phone: true,
     }),
     team({
       id: 'LinkLeave',
@@ -165,7 +162,7 @@ export const teamSheet: Sheet = {
       ],
       overlay: true,
     }),
-    team({ id: 'Add', title: 'إضافة موظف', steps: add, overlay: true, phone: true }),
+    team({ id: 'Add', title: 'إضافة موظف', steps: add, overlay: true }),
     team({
       id: 'AddMissing',
       title: 'إضافة: حقول ناقصة',

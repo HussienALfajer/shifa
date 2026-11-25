@@ -44,7 +44,7 @@ export const homeSheet: Sheet = {
     'use-idle.tsx',
   ],
   scenarios: [
-    home({ id: 'Owner', title: 'المالك', phone: true }),
+    home({ id: 'Owner', title: 'المالك' }),
     home({
       id: 'PhoneMenu',
       title: 'قائمة التنقل على الهاتف',
@@ -79,7 +79,6 @@ export const homeSheet: Sheet = {
       id: 'CodesLow',
       title: 'بعد الدخول برمز استرداد: بقي رمزان',
       ...afterRecovery(2),
-      phone: true,
     },
     home({
       id: 'SessionEnds',
@@ -94,7 +93,6 @@ export const homeSheet: Sheet = {
       // Fourteen minutes and a quarter without a key or a click, on a 15-minute clinic.
       steps: [{ wait: 600 }, { advance: 14 * MINUTE + 15_000 }, { until: 'idleTitle' }],
       overlay: true,
-      phone: true,
     }),
   ],
 };
