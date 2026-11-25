@@ -88,6 +88,16 @@ describe.each(DIRS)('Combobox open at rest in %s', (dir) => {
     expect(document.activeElement).toBe(input);
   });
 
+  it('open controls it: Escape asks to close, the list stays until the caller closes it', async () => {
+    const onOpenChange = vi.fn();
+    const { input } = await setup(dir, { open: true, defaultInputValue: query, onOpenChange });
+    await poll(() => options().length, 'open').toBe(matching.length);
+    input.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    expect(input.getAttribute('aria-expanded')).toBe('true');
+  });
+
   it('still closes with a press outside', async () => {
     const { screen, input } = await setup(dir, { defaultOpen: true, defaultInputValue: query });
     await poll(() => options().length, 'open').toBe(matching.length);

@@ -78,7 +78,7 @@ export interface DatePickerProps {
   /** The calendar open at mount, on the value's month (closed by default): to show it at rest. */
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((open: boolean) => void) | undefined;
-  /** What the calendar shows at mount: the days (default) or the month and year panel. */
+  /** What the calendar open at mount shows: the days (default) or the month and year panel. */
   defaultView?: 'days' | 'months' | undefined;
   className?: string | undefined;
 }
@@ -149,8 +149,10 @@ export function DatePicker({
   const shownError = hasError(error) ? error : (date.error ?? undefined);
   // The month and year panel (criterion 14): open in place of the days while the heading is
   // expanded. A ref mirrors it for the Escape check, which runs before the panel's own key.
-  const [panel, setPanelState] = useState(defaultView === 'months');
-  const panelOpen = useRef(defaultView === 'months');
+  // `defaultView` applies to the calendar open at mount only.
+  const startOnMonths = defaultView === 'months' && (defaultOpen === true || open === true);
+  const [panel, setPanelState] = useState(startOnMonths);
+  const panelOpen = useRef(startOnMonths);
   const setPanel = (open: boolean) => {
     panelOpen.current = open;
     setPanelState(open);
@@ -176,6 +178,14 @@ export function DatePicker({
   const focusNext = (to: 'days' | 'heading') => {
     setFocusTarget((last) => ({ to, n: (last?.n ?? 0) + 1 }));
   };
+  // A caller who opens or closes it through `open` gets the same resets as a press: UI SDK calls
+  // `onOpenChange` only for its own changes.
+  const [lastOpen, setLastOpen] = useState(open);
+  if (open !== lastOpen) {
+    setLastOpen(open);
+    if (open === true) date.openMonth();
+    else if (open === false) setPanel(false);
+  }
   const showMonth = (month: string) => {
     date.setMonth(month);
     setPanel(false);

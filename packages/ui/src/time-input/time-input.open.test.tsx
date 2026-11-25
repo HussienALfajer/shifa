@@ -63,8 +63,32 @@ describe.each(DIRS)('Time Input open at rest in %s', (dir) => {
     await expect.element(dialog()).not.toBeInTheDocument();
   });
 
-  it('open controls it', async () => {
-    const { dialog } = await setup(dir, { open: true });
+  it('open controls it: Escape asks to close, the list stays until the caller closes it', async () => {
+    const onOpenChange = vi.fn();
+    const { dialog } = await setup(dir, { open: true, onOpenChange });
     await expect.element(dialog()).toBeVisible();
+    dialog().element().querySelector<HTMLElement>('[aria-pressed="true"]')?.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await expect.element(dialog()).toBeVisible();
+  });
+
+  it('open={false}: the clock button asks to open, the list stays closed', async () => {
+    const onOpenChange = vi.fn();
+    const { button, dialog } = await setup(dir, { open: false, onOpenChange });
+    await userEvent.click(button);
+    expect(onOpenChange).toHaveBeenLastCalledWith(true);
+    expect(dialog().query()).toBeNull();
+  });
+
+  it.each([
+    ['read-only', { readOnly: true }],
+    ['disabled', { disabled: true }],
+  ] as const)('a %s field never shows its slots, even with defaultOpen', async (_, flags) => {
+    const onValueChange = vi.fn();
+    const { dialog } = await setup(dir, { defaultOpen: true, onValueChange, ...flags });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    expect(dialog().query()).toBeNull();
+    expect(onValueChange).not.toHaveBeenCalled();
   });
 });

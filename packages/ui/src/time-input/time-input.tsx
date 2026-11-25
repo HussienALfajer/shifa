@@ -107,8 +107,10 @@ export function TimeInput({
   const [box, setBox] = useState<HTMLDivElement | null>(null);
   // The slot list: held here even when controlled, as Menu holds its own.
   const [innerOpen, setInnerOpen] = useState(defaultOpen ?? false);
-  const slotsOpen = open ?? innerOpen;
+  // Never open on a field that cannot change: a slot press would set the time anyway.
+  const slotsOpen = isDisabled !== true && readOnly !== true && (open ?? innerOpen);
   const setOpen = (next: boolean) => {
+    if (next === slotsOpen) return;
     setInnerOpen(next);
     onOpenChange?.(next);
   };

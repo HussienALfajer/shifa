@@ -63,9 +63,14 @@ describe.each(DIRS)('Select open at rest in %s', (dir) => {
     await expect.element(screen.getByRole('listbox')).not.toBeInTheDocument();
   });
 
-  it('open controls it', async () => {
-    const { screen, field } = await setup(dir, { open: true });
+  it('open controls it: Escape asks to close, the list stays until the caller closes it', async () => {
+    const onOpenChange = vi.fn();
+    const { screen, field } = await setup(dir, { open: true, onOpenChange });
     await expect.element(screen.getByRole('listbox')).toBeVisible();
     expect(field.getAttribute('aria-expanded')).toBe('true');
+    field.focus();
+    await userEvent.keyboard('{Escape}');
+    expect(onOpenChange).toHaveBeenLastCalledWith(false);
+    await expect.element(screen.getByRole('listbox')).toBeVisible();
   });
 });
