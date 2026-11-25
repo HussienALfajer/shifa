@@ -329,6 +329,9 @@ describe('the clinic chooser', () => {
     shown = await renderShell('clinic', fake, '/choose');
     await until(shown, () => current().container.textContent.includes('لا توجد عيادة'));
     expect(text(shown)).toContain('لا توجد عيادة متاحة لحسابك');
+    // Its title is the page's one h1 (backlog: the no-clinic page had none).
+    const h1s = [...shown.container.querySelectorAll('h1')].map((h) => h.textContent);
+    expect(h1s).toEqual(['لا توجد عيادة متاحة لحسابك']);
     await click(button(shown.container, 'خروج'));
     await until(shown, () => current().router.state.location.pathname === '/sign-in');
     expect(fake.calls).toContain('POST /api/auth/sign-out');

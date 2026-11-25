@@ -243,3 +243,19 @@ describe('setup link: the password', () => {
     expect(r.router.state.location.pathname).toBe('/');
   });
 });
+
+// Backlog: the used-link page showed only the EmptyState's h2 (axe page-has-heading-one).
+describe('setup link: the invalid link keeps one h1', () => {
+  const h1s = (r: Rendered) => [...r.container.querySelectorAll('h1')].map((h) => h.textContent);
+
+  it('after 404 link_invalid', async () => {
+    const r = await open(apiWith('invalid'));
+    expect(text(r)).toContain('هذا الرابط لم يعد صالحاً');
+    expect(h1s(r)).toEqual(['إعداد الحساب']);
+  });
+
+  it('for a malformed fragment', async () => {
+    const r = await open(apiWith('owner_setup'), 'not-a-token');
+    expect(h1s(r)).toEqual(['إعداد الحساب']);
+  });
+});
