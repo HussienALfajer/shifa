@@ -12,6 +12,8 @@ import {
   foldArabic,
   Input,
   SegmentedControl,
+  SkeletonGroup,
+  SkeletonText,
   toWesternDigits,
 } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
@@ -60,10 +62,13 @@ function Team({
   tenantId,
   clinicName,
   solo,
+  known,
 }: {
   tenantId: string;
   clinicName?: string;
   solo: boolean;
+  /** GET /me/clinics answered: whether the clinic is solo is known. */
+  known: boolean;
 }) {
   const text = useText();
   const queryClient = useQueryClient();
@@ -73,7 +78,7 @@ function Team({
   const { branch } = search;
   const { data, isError, isPending, refetch } = useTeam(tenantId);
   const branches = useBranches(tenantId);
-  const { data: catalogue } = usePermissionDefaults(tenantId);
+  const defaults = usePermissionDefaults(tenantId);
   const [typed, setTyped] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
   const [target, setTarget] = useState<DrawerTarget | null>(null);
@@ -82,7 +87,14 @@ function Team({
     tenantId,
     branches: active,
     scoped: !solo && active.length >= 2,
-    catalogue,
+    catalogue: defaults.data,
+    // Branches unknown is not "no scope": a role would go out clinic-wide (review B3).
+    ready: known && (solo || branches.isSuccess) && defaults.isSuccess,
+    failed: branches.isError || defaults.isError,
+    retry: () => {
+      if (branches.isError) void branches.refetch();
+      if (defaults.isError) void defaults.refetch();
+    },
     rereadBranches: () => void branches.refetch(),
   };
   const open = (id: string) => {
@@ -176,7 +188,11 @@ function Team({
       ) : phone ? (
         <div className="flex flex-col gap-3">
           {toolbar}
-          {rows.length === 0 && !isPending ? (
+          {isPending ? (
+            <SkeletonGroup label={text('teamLoading')}>
+              <SkeletonText lines={6} />
+            </SkeletonGroup>
+          ) : rows.length === 0 ? (
             <EmptyState size="panel" {...empty} />
           ) : (
             <div role="list" aria-label={text('teamTitle')} className="flex flex-col gap-3">
@@ -205,6 +221,10 @@ function Team({
           onTarget={setTarget}
           onClose={() => {
             setTarget(null);
+            // A member reopened later is read again: the person may have accepted, set up TOTP
+            // or been changed meanwhile, and the drawer offers actions by what it last read
+            // (review B1).
+            queryClient.removeQueries({ queryKey: [...teamKey(tenantId), 'member'] });
             void queryClient.invalidateQueries({
               queryKey: teamKey(tenantId),
               exact: true,
@@ -226,6 +246,7 @@ export function TeamPage() {
       tenantId={session.tenantId}
       {...(clinic ? { clinicName: clinic.name } : {})}
       solo={clinic?.solo === true}
+      known={clinic !== undefined}
     />
   );
 }

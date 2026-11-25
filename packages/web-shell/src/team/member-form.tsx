@@ -20,7 +20,12 @@ import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
 import { type Branch, type MemberDetail, NAME_MAX } from './data.ts';
 import { GONE, type Note } from './member-account.tsx';
-import { type KeyDefault, PermissionsField, type SwitchDraft } from './permissions-field.tsx';
+import {
+  defaultOf,
+  type KeyDefault,
+  PermissionsField,
+  type SwitchDraft,
+} from './permissions-field.tsx';
 import { draftOf, RolesField, rolesProblem, sameRoles, toRoles } from './roles-field.tsx';
 
 const REFUSED: Record<string, Note> = {
@@ -37,6 +42,13 @@ const REFUSED: Record<string, Note> = {
   },
 };
 
+/** The member still holds a role in an archived branch (OD-107; the API keeps it after A-01-13). */
+const ARCHIVED_HELD: Note = {
+  tone: 'warning',
+  title: 'memberBranchArchivedTitle',
+  text: 'memberArchivedHeldText',
+};
+
 const NETWORK: Note = { tone: 'danger', title: 'memberNetworkTitle', text: 'memberNetworkText' };
 const SERVER: Note = { tone: 'danger', title: 'memberNotSavedTitle', text: 'serverErrorText' };
 
@@ -51,6 +63,7 @@ export function MemberForm({
   onSaved,
   onNote,
   rereadBranches,
+  reread,
   children,
 }: {
   member: MemberDetail;
@@ -60,6 +73,8 @@ export function MemberForm({
   onSaved: (next: MemberDetail) => void;
   onNote: (note: Note | null) => void;
   rereadBranches: () => void;
+  /** Reads the member and the list again. */
+  reread: () => void;
   /** The account part, between the toggles and «حفظ». */
   children?: ReactNode;
 }) {
@@ -79,10 +94,29 @@ export function MemberForm({
 
   const nameChanged = name.trim() !== member.name;
   const rolesChanged = !sameRoles(roles, saved);
+  // A switch that now equals the default of the roles in the form, on a key that followed the
+  // default, keeps following it: stored, it would stay off or on after a later role change while
+  // the form calls it the default (review, non-blocking 2).
+  const effective = (key: string) => {
+    const own = switches[key] ?? null;
+    return own !== null &&
+      (savedSwitches[key] ?? null) === null &&
+      own === defaultOf(catalogue, key, roles)
+      ? null
+      : own;
+  };
   const changedSwitches = Object.keys(switches).flatMap((key) =>
-    (switches[key] ?? null) === (savedSwitches[key] ?? null)
-      ? []
-      : [{ key, granted: switches[key] ?? null }],
+    effective(key) === (savedSwitches[key] ?? null) ? [] : [{ key, granted: effective(key) }],
+  );
+  const archivedNames = Object.fromEntries(
+    member.roles.flatMap((r) =>
+      r.branchId !== null && !branches.some((b) => b.id === r.branchId)
+        ? [[r.branchId, r.branchName ?? '']]
+        : [],
+    ),
+  );
+  const holdsArchived = toRoles(roles).some(
+    (r) => r.branchId !== null && r.branchId in archivedNames,
   );
   const changed = nameChanged || rolesChanged || changedSwitches.length > 0;
   const emptied = rolesChanged && toRoles(roles).length === 0;
@@ -106,7 +140,14 @@ export function MemberForm({
       }
       const { code } = errorFacts(error);
       if (code === 'branch_archived') rereadBranches();
-      onNote(response.status === 404 ? GONE : (REFUSED[code] ?? SERVER));
+      if (response.status === 404) reread();
+      onNote(
+        response.status === 404
+          ? GONE
+          : code === 'branch_archived' && holdsArchived
+            ? ARCHIVED_HELD
+            : (REFUSED[code] ?? SERVER),
+      );
     } catch {
       onNote(NETWORK);
     } finally {
@@ -149,6 +190,7 @@ export function MemberForm({
         branches={branches}
         scoped={scoped}
         lockedOwner={member.isLastOwner}
+        archivedNames={archivedNames}
         problem={problem.roles}
       />
       <PermissionsField

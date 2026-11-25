@@ -295,6 +295,8 @@ export type CommonKey =
   | 'memberAccountExistsTitle'
   | 'memberActionUnknown'
   | 'memberActive'
+  | 'memberArchivedBranch'
+  | 'memberArchivedHeldText'
   | 'memberBranchArchivedText'
   | 'memberBranchArchivedTitle'
   | 'memberCancelInvite'

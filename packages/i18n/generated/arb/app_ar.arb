@@ -1457,6 +1457,19 @@
   "@commonMemberActive": {
     "description": "common.memberActive"
   },
+  "commonMemberArchivedBranch": "{branch} · مؤرشف",
+  "@commonMemberArchivedBranch": {
+    "description": "common.memberArchivedBranch",
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberArchivedHeldText": "له دور في فرع مؤرشف. أزل علامة ذلك الفرع ثم احفظ.",
+  "@commonMemberArchivedHeldText": {
+    "description": "common.memberArchivedHeldText"
+  },
   "commonMemberBranchArchivedText": "حدّثنا الفروع؛ اختر من جديد.",
   "@commonMemberBranchArchivedText": {
     "description": "common.memberBranchArchivedText"

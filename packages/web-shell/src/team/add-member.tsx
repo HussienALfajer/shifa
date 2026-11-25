@@ -20,7 +20,7 @@ import {
   PHONE_MAX,
   teamKey,
 } from './data.ts';
-import { Panel, type TeamContext } from './panel.tsx';
+import { ChoicesPending, Panel, type TeamContext } from './panel.tsx';
 import { changedFromDefault, PermissionsField, type SwitchDraft } from './permissions-field.tsx';
 import { draftOf, RolesField, rolesProblem, toRoles } from './roles-field.tsx';
 
@@ -103,6 +103,13 @@ export function AddMember({
     invalid: 'phoneInvalid',
     'in-team': 'memberPhoneInTeam',
   };
+  if (!team.ready) {
+    return (
+      <Panel title={text('addTitle')} description={text('addText')}>
+        <ChoicesPending team={team} />
+      </Panel>
+    );
+  }
   return (
     <Panel title={text('addTitle')} description={text('addText')}>
       <form

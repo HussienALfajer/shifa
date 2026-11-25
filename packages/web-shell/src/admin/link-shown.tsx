@@ -4,6 +4,8 @@
 // `purpose` words a setup link or an invitation; a QR code beside it for an owner who is present
 // (improvement e). Leaving before a copy or a share asks first (improvement h), except for
 // sign-in: a session that ended or «خروج» always leaves. The link lives in the caller's state only.
+// Clinic web's member drawer shows a member's link with it too (A-01-08 checkpoint 3), and
+// `onSent` tells the drawer it may close without asking.
 import {
   AlertDialog,
   AlertDialogAction,

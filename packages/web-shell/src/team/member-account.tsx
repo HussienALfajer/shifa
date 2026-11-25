@@ -14,7 +14,7 @@ import {
   Badge,
   Button,
 } from '@shifa/ui';
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
@@ -64,6 +64,7 @@ export function MemberAccount({
   const { shell } = useShell();
   const [ask, setAsk] = useState<Ask | null>(null);
   const [failure, setFailure] = useState('');
+  const reasonId = useId();
   const path = { params: { path: { id: member.id } } };
   const owner = member.roles.some((r) => r.role === 'owner');
   const { status, name } = member;
@@ -177,7 +178,7 @@ export function MemberAccount({
             </div>
           )}
           {owner && member.isLastOwner && status !== 'deactivated' && (
-            <p className="m-0 text-caption leading-body text-text-muted">
+            <p id={reasonId} className="m-0 text-caption leading-body text-text-muted">
               {text('memberLastOwner')}
             </p>
           )}
@@ -201,6 +202,8 @@ export function MemberAccount({
                 variant="danger"
                 startIcon="x-circle"
                 disabled={member.isLastOwner}
+                // Read with the button by a screen reader's browse mode (review, non-blocking 6).
+                {...(member.isLastOwner ? { 'aria-describedby': reasonId } : {})}
                 onClick={open('deactivate')}
               >
                 {text(status === 'pending' ? 'memberCancelInvite' : 'memberDeactivate')}

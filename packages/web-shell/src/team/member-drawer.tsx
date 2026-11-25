@@ -35,7 +35,7 @@ import {
 import { GONE, MemberAccount, type Note } from './member-account.tsx';
 import { MemberForm } from './member-form.tsx';
 import { MemberPhoneDialog } from './member-phone-dialog.tsx';
-import { Panel, type TeamContext } from './panel.tsx';
+import { ChoicesPending, Panel, type TeamContext } from './panel.tsx';
 import type { KeyDefault } from './permissions-field.tsx';
 
 export type DrawerTarget = { kind: 'add' } | { kind: 'member'; id: string; link?: MemberLink };
@@ -132,6 +132,12 @@ function MemberPanel({
     void queryClient.invalidateQueries({ queryKey: teamKey(team.tenantId), exact: true });
   };
   const update = (next: MemberDetail) => {
+    // A cancelled invitation or a deactivation stops the link on the server; a reactivation
+    // issues none: a link still on screen would be copied and fail (review B4).
+    if (member && next.status !== member.status) {
+      setLink(null);
+      onUnsent(false);
+    }
     queryClient.setQueryData(memberKey(team.tenantId, id), next);
     void queryClient.invalidateQueries({ queryKey: teamKey(team.tenantId), exact: true });
   };
@@ -221,24 +227,29 @@ function MemberPanel({
           {text(note.text)}
         </Callout>
       )}
-      <MemberForm
-        key={formKey}
-        member={member}
-        branches={team.branches}
-        scoped={team.scoped}
-        catalogue={catalogueFor(member, team.catalogue)}
-        onSaved={update}
-        onNote={setNote}
-        rereadBranches={team.rereadBranches}
-      >
-        <MemberAccount
+      {!team.ready ? (
+        <ChoicesPending team={team} />
+      ) : (
+        <MemberForm
+          key={formKey}
           member={member}
-          onDetail={update}
-          onLink={show}
+          branches={team.branches}
+          scoped={team.scoped}
+          catalogue={catalogueFor(member, team.catalogue)}
+          onSaved={update}
           onNote={setNote}
+          rereadBranches={team.rereadBranches}
           reread={reread}
-        />
-      </MemberForm>
+        >
+          <MemberAccount
+            member={member}
+            onDetail={update}
+            onLink={show}
+            onNote={setNote}
+            reread={reread}
+          />
+        </MemberForm>
+      )}
       {fixing && (
         <MemberPhoneDialog
           memberId={member.id}

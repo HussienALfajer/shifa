@@ -59,6 +59,7 @@ export function RolesField({
   branches,
   scoped,
   lockedOwner,
+  archivedNames = {},
   problem,
 }: {
   draft: RolesDraft;
@@ -68,6 +69,8 @@ export function RolesField({
   scoped: boolean;
   /** The clinic's last active owner: the owner role cannot be removed. */
   lockedOwner: boolean;
+  /** Names of branches the member's roles still point at although archived. */
+  archivedNames?: Readonly<Record<string, string>>;
   /** Shown only once a send was refused before leaving the page. */
   problem: CommonKey | null;
 }) {
@@ -139,6 +142,23 @@ export function RolesField({
                 ))}
               </div>
             )}
+            {d.on &&
+              d.branches
+                .filter((id) => !branches.some((b) => b.id === id))
+                .map((id) => (
+                  // Held in a branch archived since (kept for a restore, OD-105, OD-107):
+                  // shown so the owner can remove it.
+                  <div key={id} className="ms-7 border-s border-border-default ps-3">
+                    <Checkbox
+                      checked
+                      onCheckedChange={(on) => {
+                        if (!on) toggleBranch(role, id, false);
+                      }}
+                    >
+                      {text('memberArchivedBranch', { branch: archivedNames[id] ?? '' })}
+                    </Checkbox>
+                  </div>
+                ))}
             {missing && <ProblemLine text={text('memberScopeMissing')} />}
           </div>
         );
