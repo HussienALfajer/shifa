@@ -169,7 +169,7 @@ A-01a and A-01b are planned together as eight sequential slices (plan approved b
 | A-01-13 | Roles held in an archived branch (OD-107, found by the A-01-08 checkpoint 3 review): `PATCH /team/members/:id` keeps archived-branch assignments the member already holds and refuses only new ones (`branch_archived`); API tests; no schema change ([slice](slices/A-01-13-archived-branch-roles.md)) | T0 | Done with A-01-08 checkpoint 4 (#163; own commit, `security-reviewer`) |
 
 A-02 is planned as ten slices, approved by the owner 2026-11-25 (OD-117, [ADR-0047](adr/0047-screens-drawn-before-the-api-with-a-contract.md)): screens are drawn before the API, so the order is design → API → UI code.
-- **A-02-01, design slice:** draws every A-02 screen and writes the screen-to-API contract. It writes no product code.
+- **A-02-01, design slice:** draws every A-02 screen and writes the screen-to-API contract. It writes no product code. It draws on a new "Proposals" page of "Shifa Screens · Clinic web" (its "Clinic Web Screens" page shows the coded screens, rebuilt from the code; ADR-0049).
 - **A-02-02 to A-02-07, API slices (T0):** each has a migration, so they are serialised in this order; each delivers and tests its contract rows.
 - **A-02-08 to A-02-10, UI code slices (T1, as in A-01):** built last, on the finished API. A-02-09 may run beside A-02-08 in its own worktree. A-02-10 comes last because its journeys start in admin web.
 

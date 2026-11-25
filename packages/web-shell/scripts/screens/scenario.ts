@@ -1,0 +1,42 @@
+// A state of a clinic-web screen on the canvas: where the app opens, what the server knows and
+// answers, and what the person did to get there. A sheet is one screen with all its states.
+import type { Answer } from './server.ts';
+import type { World } from './state.ts';
+import type { Step } from './steps.ts';
+
+export interface Scenario {
+  /** Unique within its sheet, e.g. `locked`; the board is `<Sheet><Id>`. */
+  id: string;
+  /** The board's title on the canvas (Arabic). */
+  title: string;
+  /** The address the app opens at, e.g. `/sign-in?reason=idle`. */
+  path: string;
+  /** Changes to the world before the app starts. */
+  world?: (world: World) => void;
+  /** Answers of routes that differ from the server's own (`METHOD /path/:id`). */
+  answers?: Record<string, Answer>;
+  /** What the person did, run once the page shows. */
+  steps?: Step[];
+  /** Kept on this device before the app starts (the remembered phone). */
+  storage?: Record<string, string>;
+  /** A dialog or drawer over the page: the board is one window high, as a person sees it. */
+  overlay?: boolean;
+  /** Also drawn on a phone (the sheet's main states); `only` when the state exists on phones only. */
+  phone?: boolean | 'only';
+  latencyMs?: number;
+}
+
+export interface Sheet {
+  /** PascalCase, the boards' file prefix, e.g. `SignIn`. */
+  id: string;
+  /** The screen's name on the canvas (Arabic) and its route. */
+  title: string;
+  route: string;
+  /** What the sheet shows, for the canvas note (English, like the repository). */
+  note: string;
+  /** The files of the screen in packages/web-shell/src. */
+  code: string[];
+  scenarios: Scenario[];
+}
+
+export type { Answer, Step, World };
