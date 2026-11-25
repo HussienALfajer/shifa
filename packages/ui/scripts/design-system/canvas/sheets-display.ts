@@ -1,5 +1,5 @@
-// Sheets of the Data display and Feedback groups.
-import { CODES, OTP_URI, TABLE } from './data.ts';
+// Sheets of the Data display group (the Feedback group is sheets-feedback.ts).
+import { TABLE } from './data.ts';
 import { type SheetSpec, st } from './types.ts';
 
 const QUEUE: [string, string][] = [
@@ -25,13 +25,17 @@ const LINK_CARD = {
   href: '#patient',
   body: ['رصيد مستحق 45,000 ل.س'],
 };
+/** Enough rows to scroll the table: the sticky header and pinned column show their shadows. */
+const MANY_ROWS = Array.from({ length: 4 }, (_, n) =>
+  TABLE.rows.map((row) => ({ ...row, file: `${row.file}${String(n)}` })),
+).flat();
 
 export const DISPLAY: SheetSpec[] = [
   {
     name: 'Badge',
     group: 'Data display',
     density: false,
-    desc: 'A small mark. Neutral, brand and outline follow the clinic; status and visit-queue tones are locked and always carry their icon.',
+    desc: 'A small mark. Neutral, brand and outline follow the clinic; status and visit-queue tones are locked and always carry their icon; a long word is cut with an ellipsis.',
     play: 'Static.',
     blocks: () => [
       {
@@ -41,6 +45,7 @@ export const DISPLAY: SheetSpec[] = [
           st({ tone: 'brand', children: 'أسنان' }, 'brand'),
           st({ tone: 'outline', children: 'تأمين خاص' }, 'outline'),
           st({ tone: 'brand', icon: 'tooth', children: 'أسنان' }, 'brand with icon'),
+          st({ tone: 'outline', icon: 'calendar', children: 'متابعة' }, 'outline with icon'),
         ],
       },
       {
@@ -57,10 +62,17 @@ export const DISPLAY: SheetSpec[] = [
         items: QUEUE.map(([t, w]) => st({ tone: `queue-${t}`, children: w }, t)),
       },
       {
-        label: 'Sizes',
+        label: 'Sizes and long text',
         items: [
           st({ tone: 'success', children: 'مدفوعة' }, 'sm · 24'),
           st({ tone: 'success', size: 'md', children: 'مدفوعة' }, 'md · 28'),
+          st({ tone: 'brand', size: 'md', icon: 'tooth', children: 'أسنان' }, 'md with icon'),
+          st(
+            { tone: 'info', children: 'مرسلة إلى شركة التأمين للموافقة المسبقة' },
+            'cut in 160 px',
+            null,
+            { w: 160 },
+          ),
         ],
       },
     ],
@@ -69,7 +81,7 @@ export const DISPLAY: SheetSpec[] = [
     name: 'CountBadge',
     group: 'Data display',
     density: false,
-    desc: 'Tabular Western digits, «99+» at most, nothing at 0, or a dot; named for screen readers.',
+    desc: 'Tabular Western digits, «99+» at most (or another max), nothing at 0, or a dot; named for screen readers.',
     play: 'Static.',
     blocks: () => [
       {
@@ -79,7 +91,9 @@ export const DISPLAY: SheetSpec[] = [
           st({ tone: 'danger', count: 12, label: '12 رسالة غير مقروءة' }, 'danger · 12'),
           st({ count: 7, label: '7 زيارات' }, 'neutral · 7'),
           st({ count: 140, label: '140 زيارة' }, '140 → 99+'),
-          st({ dot: true, tone: 'danger', label: 'إشعارات جديدة' }, 'dot'),
+          st({ count: 14, max: 9, tone: 'brand', label: '14 بالانتظار' }, 'max 9: 14 → 9+'),
+          st({ dot: true, tone: 'danger', label: 'إشعارات جديدة' }, 'danger dot'),
+          st({ dot: true, tone: 'brand', label: 'تحديث جديد' }, 'brand dot'),
           st({ count: 0, label: 'لا رسائل' }, '0 → nothing'),
         ],
       },
@@ -94,18 +108,18 @@ export const DISPLAY: SheetSpec[] = [
     blocks: () => [
       { label: 'Sizes', items: SIZES.map(([name, size, cap]) => st({ name, size }, cap)) },
       {
-        label: 'Hues from the name',
+        label: 'Hues and initials from the name',
         items: [
-          'روان الجاسم',
-          'بلال عطار',
-          'خديجة النجار',
-          'أحمد توران',
-          'لينا يونس',
-          'Salma Al-Masri',
-        ].map((name) => st({ name }, name)),
+          ['روان الجاسم', 'two names'],
+          ['بلال عطار', 'two names'],
+          ['خديجة النجار', '«ال» skipped'],
+          ['د. أحمد توران', 'a title skipped'],
+          ['لينا', 'one name: one letter'],
+          ['Salma Al-Masri', 'Latin'],
+        ].map(([name, cap]) => st({ name }, `${String(name)} · ${String(cap)}`)),
       },
       {
-        label: 'Group',
+        label: 'Groups',
         items: [
           st(
             {
@@ -115,6 +129,23 @@ export const DISPLAY: SheetSpec[] = [
             },
             'three shown and «+2»',
           ),
+          st(
+            {
+              label: 'فريق الاستقبال',
+              max: 4,
+              size: 'sm',
+              people: SIZES.map(([name]) => ({ name })),
+            },
+            'sm, four shown and «+1»',
+          ),
+          st(
+            {
+              label: 'الممرضون',
+              size: 'lg',
+              people: SIZES.slice(0, 3).map(([name]) => ({ name })),
+            },
+            'lg, all shown',
+          ),
         ],
       },
     ],
@@ -123,8 +154,8 @@ export const DISPLAY: SheetSpec[] = [
     name: 'Card',
     group: 'Data display',
     fill: true,
-    desc: 'A white surface with header, body and footer; a link card opens its record from anywhere on it.',
-    play: 'The footer buttons and the link card take presses and Tab.',
+    desc: 'A white surface with header, body and footer; buttons may sit at the end of the header; a link card opens its record from anywhere on it; a body-only card for a figure.',
+    play: 'The buttons and the link card take presses and Tab.',
     blocks: () => [
       {
         label: 'Kinds',
@@ -140,7 +171,27 @@ export const DISPLAY: SheetSpec[] = [
             'full card',
           ),
           st(LINK_CARD, 'link card'),
+          st(
+            {
+              title: 'بيانات الاتصال',
+              description: 'آخر تعديل 20/11/2026',
+              actions: [{ label: 'تعديل', variant: 'ghost' }],
+              body: ['الهاتف: 09xx xxx 973', 'العنوان: حلب، الجميلية'],
+            },
+            'header buttons',
+          ),
           st({ title: 'ملاحظة الاستقبال', body: ['يصل المريض مع مرافق.'] }, 'title and body'),
+          st({ body: ['مواعيد اليوم: 18', 'بالانتظار: 5'] }, 'body only (a figure)'),
+          st(
+            {
+              title: 'ملاحظات الطبيب عن الزيارة السابقة ومتابعة العلاج',
+              description: 'كتبها د. طبيب تجريبي يوم الخميس 12/11/2026 الساعة 11:40',
+              body: [
+                'يُتابع العلاج بالمضاد الحيوي سبعة أيام، ويُعاد تقييم الألم في الزيارة القادمة.',
+              ],
+            },
+            'long text',
+          ),
         ],
       },
       {
@@ -155,8 +206,8 @@ export const DISPLAY: SheetSpec[] = [
     group: 'Data display',
     fill: true,
     layout: 'stack',
-    desc: 'A dense grid of 48 px rows (32 compact) with a sticky header, the first column pinned at the logical start, sorting, selection and column visibility; one Tab stop and arrows in the reading direction.',
-    play: 'Sort by a header, select rows, arrows move between cells.',
+    desc: 'A dense grid of 48 px rows (32 compact) with a sticky header, the first column pinned at the logical start, sorting, selection and column visibility; one Tab stop and arrows in the reading direction; an empty state for no match or an error.',
+    play: 'Sort by a header, select rows, open «الأعمدة», arrows move between cells; the long table scrolls.',
     blocks: () => [
       {
         label: 'States',
@@ -170,12 +221,26 @@ export const DISPLAY: SheetSpec[] = [
               defaultSort: { columnId: 'visit', direction: 'descending' },
               ...TABLE,
             },
-            'sorted, two rows selected',
+            'sorted, two rows selected (select-all shows some)',
           ),
           st({ 'aria-label': 'قائمة المرضى (بلا تحديد)', ...TABLE }, 'plain'),
           st(
-            { 'aria-label': 'قائمة المرضى (تحميل)', ...TABLE, rows: [], loading: true },
-            'loading',
+            {
+              'aria-label': 'قائمة المرضى (أعمدة مخفية)',
+              ...TABLE,
+              defaultHiddenColumns: [TABLE.columns.at(-1)?.id ?? ''],
+            },
+            'a column hidden from «الأعمدة»',
+          ),
+          st(
+            {
+              'aria-label': 'قائمة المرضى (تحميل)',
+              ...TABLE,
+              rows: [],
+              loading: true,
+              loadingRows: 3,
+            },
+            'loading, three skeleton rows',
           ),
           st(
             {
@@ -183,204 +248,33 @@ export const DISPLAY: SheetSpec[] = [
               ...TABLE,
               rows: [],
               emptyTitle: 'لا مرضى بهذا الاسم',
+              emptyDescription: 'جرّب جزءاً من الاسم أو رقم الهاتف.',
+              emptyIcon: 'magnifying-glass',
             },
-            'empty',
+            'no match',
+          ),
+          st(
+            {
+              'aria-label': 'قائمة المرضى (خطأ)',
+              ...TABLE,
+              rows: [],
+              emptyTitle: 'تعذّر تحميل المرضى',
+              emptyDescription: 'تحقّق من الاتصال ثم أعد المحاولة.',
+              emptyIcon: 'wifi-slash',
+              emptyActions: [{ label: 'إعادة المحاولة', variant: 'primary' }],
+            },
+            'error, a way out',
           ),
         ],
       },
-    ],
-  },
-  {
-    name: 'Spinner',
-    group: 'Feedback',
-    density: false,
-    desc: 'The four jasmine petals of the logo lighting in turn, for waits without a known shape; shows after 400 ms (0 here), stays at least 400 ms, still under reduced motion; inside a busy Button it is the button’s mark.',
-    play: 'Animates; nothing to press.',
-    blocks: () => [
       {
-        label: 'Sizes',
-        items: [
-          st({ size: 'sm', delay: 0 }, 'sm · 20'),
-          st({ size: 'md', delay: 0 }, 'md · 24'),
-          st({ size: 'lg', delay: 0 }, 'lg · 40'),
-          st({ size: 'lg', delay: 0, showLabel: true }, 'lg with its label'),
-        ],
-      },
-      {
-        label: 'Inside other components',
+        label: 'Long list',
+        cols: 1,
         items: [
           st(
-            { variant: 'primary', children: 'حفظ الزيارة', loading: true },
-            'Button loading',
-            null,
-            { c: 'Button' },
+            { 'aria-label': 'قائمة المرضى (طويلة)', ...TABLE, rows: MANY_ROWS, selectable: true },
+            'more rows than fit: scroll it in Play (sticky header, pinned column)',
           ),
-          st({ label: 'رمز QR قيد التحميل' }, 'QrCode loading', null, { c: 'QrCode' }),
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Skeleton',
-    group: 'Feedback',
-    fill: true,
-    density: false,
-    desc: 'Blocks, lines and circles on the raised surface for content of a known shape; a soft pulse, still under reduced motion.',
-    play: 'Pulses; nothing to press.',
-    blocks: () => [
-      {
-        label: 'Shapes',
-        cols: 2,
-        items: [
-          st({ label: 'جارٍ تحميل بطاقة المريض', avatar: true, lines: 3 }, 'a person'),
-          st({ label: 'جارٍ تحميل الصورة', block: true, lines: 1 }, 'a picture'),
-          st({ label: 'جارٍ تحميل الملاحظات', lines: 5 }, 'text, five lines'),
-        ],
-      },
-    ],
-  },
-];
-
-export const FEEDBACK: SheetSpec[] = [
-  {
-    name: 'EmptyState',
-    group: 'Feedback',
-    fill: true,
-    desc: 'The jasmine or star line drawing (or an icon for search and errors), a title, a description, up to two buttons.',
-    play: 'The buttons take presses.',
-    blocks: () => [
-      {
-        label: 'Kinds',
-        cols: 2,
-        items: [
-          st(
-            {
-              art: 'jasmine',
-              title: 'لا مواعيد اليوم',
-              description: 'لم يُحجز أي موعد ليوم الأحد 22/11/2026.',
-              actions: [{ label: 'موعد جديد', variant: 'primary' }],
-            },
-            'empty day (jasmine)',
-          ),
-          st(
-            {
-              icon: 'warning',
-              title: 'تعذّر تحميل الفواتير',
-              description: 'انقطع الاتصال بالخادم. ما حُفظ على الجهاز لم يضِع.',
-              actions: [
-                { label: 'إعادة المحاولة', variant: 'primary' },
-                { label: 'التفاصيل', variant: 'ghost' },
-              ],
-            },
-            'failed load, two buttons',
-          ),
-          st(
-            {
-              icon: 'magnifying-glass',
-              title: 'لا نتائج لـ «زيد»',
-              description: 'جرّب جزءاً من الاسم أو رقم الهاتف.',
-            },
-            'search without results',
-          ),
-          st(
-            { art: 'star', title: 'لا وصفات بعد', description: 'تظهر الوصفات هنا بعد أول زيارة.' },
-            'star art, no button',
-          ),
-        ],
-      },
-    ],
-  },
-  {
-    name: 'Callout',
-    group: 'Feedback',
-    fill: true,
-    desc: 'A message inside the page that stays while its cause holds; locked status colours with an icon, an optional title, one or two sentences, at most one button at the end of the line, no close button.',
-    play: 'The button takes presses.',
-    blocks: () => [
-      {
-        label: 'Tones',
-        items: [
-          st(
-            {
-              tone: 'info',
-              icon: 'clock',
-              title: 'خرجت تلقائياً',
-              text: 'مرّت 30 دقيقة دون نشاط فأغلقنا الجلسة. ادخل من جديد لتتابع.',
-            },
-            'info, clock icon',
-          ),
-          st(
-            {
-              tone: 'success',
-              title: 'دخلت برمز استرداد · بقي لديك 9 رموز',
-              text: 'الرمز الذي استعملته أُلغي.',
-            },
-            'success',
-          ),
-          st(
-            {
-              tone: 'warning',
-              icon: 'clock',
-              title: 'توقّف الدخول بهذا الرقم مؤقتاً',
-              text: 'بعد 5 محاولات خاطئة. يمكنك المحاولة بعد 14:59 (الساعة 10:42).',
-            },
-            'warning: a lock',
-          ),
-          st(
-            {
-              tone: 'danger',
-              icon: 'wifi-slash',
-              title: 'تعذّر الوصول إلى الخادم',
-              text: 'تأكد من الاتصال بالإنترنت.',
-              action: 'إعادة المحاولة',
-            },
-            'danger: no connection, one button',
-          ),
-          st({ text: 'تُحفظ التغييرات عند الضغط على «حفظ».' }, 'info, no title'),
-        ].map((i) => ({ ...i, w: 600 })),
-      },
-    ],
-  },
-  {
-    name: 'CodeList',
-    group: 'Feedback',
-    fill: true,
-    desc: 'The ten recovery codes, shown once: numbered, monospaced, two columns left to right in both directions, «نسخ الكل» and «طباعة» (a light sheet with the person, the clinic and the date).',
-    play: 'Press «نسخ الكل» (it confirms) or «طباعة» (opens the print sheet).',
-    blocks: () => [
-      {
-        label: 'States',
-        cols: 2,
-        items: [
-          st(
-            {
-              codes: CODES,
-              print: {
-                title: 'رموز الاسترداد',
-                who: 'لينا زيدان · 0930 024 973',
-                date: '25/11/2026',
-                note: 'احتفظ بهذه الورقة في مكان آمن. كل رمز يعمل مرة واحدة.',
-              },
-            },
-            'with print',
-          ),
-          st({ codes: CODES }, 'copy only'),
-        ],
-      },
-    ],
-  },
-  {
-    name: 'QrCode',
-    group: 'Feedback',
-    density: false,
-    desc: 'The authenticator’s otpauth:// link as a code a camera reads, drawn in the page; a white plate with ink modules in both themes, never mirrored; a spinner in its place while it loads.',
-    play: 'Static.',
-    blocks: () => [
-      {
-        label: 'States',
-        items: [
-          st({ value: OTP_URI, label: 'رمز QR لإضافة حساب شفاء إلى تطبيق المصادقة' }, 'ready'),
-          st({ label: 'رمز QR قيد التحميل' }, 'loading'),
         ],
       },
     ],

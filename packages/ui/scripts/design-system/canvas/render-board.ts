@@ -22,6 +22,11 @@ export async function renderBoard({
 }): Promise<BoardResult> {
   class DCLogic {
     props: Record<string, unknown> = props;
+    state: Record<string, unknown> = {};
+    // The playground panel's changes; a check renders the board as Tweaks set it.
+    setState(): void {
+      // Nothing to re-render here.
+    }
   }
   (globalThis as unknown as { DCLogic: typeof DCLogic }).DCLogic = DCLogic;
   // biome-ignore lint/security/noGlobalEval: the artboard's own logic class, as the canvas runs it

@@ -1,7 +1,8 @@
 /* The stylesheet of the design-system bundle: the utilities the components use, on the token
  * theme, without Tailwind's page reset (the system's page and canvases bring their own base) and
- * without the token values (the system's tokens.css holds them). bundle.ts appends the compact
- * density values from packages/tokens. */
+ * without the token values (the system's tokens.css holds them). bundle.ts appends, from
+ * packages/tokens, the values tokens.json has no family for (motion, type scale, text) and the
+ * compact density values. */
 @layer theme, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);

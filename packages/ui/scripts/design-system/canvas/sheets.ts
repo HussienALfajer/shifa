@@ -2,7 +2,8 @@
 import { esc, GROUPS, page, WIDTH } from './page.ts';
 import { ACTIONS } from './sheets-actions.ts';
 import { CHOICES } from './sheets-choices.ts';
-import { DISPLAY, FEEDBACK } from './sheets-display.ts';
+import { DISPLAY } from './sheets-display.ts';
+import { FEEDBACK } from './sheets-feedback.ts';
 import { FIELDS } from './sheets-fields.ts';
 import { NAVIGATION } from './sheets-navigation.ts';
 import { OVERLAYS } from './sheets-overlays.ts';

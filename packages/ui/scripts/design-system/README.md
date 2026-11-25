@@ -21,7 +21,7 @@ Shifa (شفاء) is a clinic platform for Syria: the clinic web system, the wait
 | Density | Comfortable on touch (44 px controls, 48 px rows); compact on pointer devices only (32 px controls and rows). Notes say "Compact: …" where a value changes; the component stylesheet carries the compact values under `[data-density='compact']`. | `shifa-size-control-*`, `shifa-size-row` |
 | Spacing | A 4 px grid; cards pad 24, fields stack 16 apart. | `shifa-space-*`, `shifa-inset-*`, `shifa-gap-*` |
 | Focus | A 2 px green outline on every interactive element, with a soft halo outside it; it appears at once, never fades in. | `shifa-color-border-focus`, `shifa-shape-border-focus`, `shifa-shadow-focus` |
-| Motion | 150 ms hover and press, 200 ms popovers, 240 ms dialogs; ease out, 8 px rise; off under reduced motion. (Motion has no section here; the values live in code.) | `motion.*` in code |
+| Motion | 150 ms hover and press, 200 ms popovers, 240 ms dialogs; ease out, 8 px rise; off under reduced motion. (Motion has no section in tokens.json; the component stylesheet carries the values from code.) | `shifa-motion-*` |
 | Ornament | A small jasmine or eight-point star drawing, in empty states only. | — |
 
 ## Colour
@@ -105,5 +105,5 @@ Tabs, Dialog, Popover, Menu, RadioGroup, Field, Form, Tooltip, Accordion, AlertD
 
 ## Not synced yet
 
-- Motion durations and easings: this format has no motion section.
+- Motion durations and easings, the raw type scale (`shifa-font-*`) and the text tokens (`shifa-text-*`): this format has no section for them, so `components/bundle.css` declares their values from code; a canvas that loads `tokens.css` and `bundle.css` has every token the components read.
 - Compact density: shown in each token's note and in the component stylesheet, not as separate token values.

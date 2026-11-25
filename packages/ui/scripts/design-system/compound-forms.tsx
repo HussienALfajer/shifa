@@ -2,11 +2,14 @@
 // 0.4-05). A canvas hands the bundle plain values only, so each takes its content as data and
 // builds the parts of packages/ui inside. Form here draws a form in a given state (errors shown
 // as written); in code it checks a Zod schema (packages/ui/src/form/form.tsx).
+import { useState } from 'react';
 import { Button } from '../../src/button/button.tsx';
 import { Checkbox } from '../../src/checkbox/checkbox.tsx';
 import { Field as CodeField } from '../../src/field/field.tsx';
+import { FIELD_TEXT } from '../../src/field/field-shell.tsx';
 import { Icon } from '../../src/icons/icon.tsx';
 import { Input } from '../../src/input/input.tsx';
+import { cn } from '../../src/lib/cn.ts';
 import { OtpInput } from '../../src/otp-input/otp-input.tsx';
 import { PasswordInput } from '../../src/password-input/password-input.tsx';
 import { RadioGroup as CodeRadioGroup, Radio } from '../../src/radio/radio.tsx';
@@ -145,8 +148,13 @@ function control(entry: FormEntry) {
   }
 }
 
+/** How long a drawn submit stays busy. */
+const SUBMIT_MS = 1500;
+
 /** A complete form drawn in one state: fields, errors, summary and actions. */
 export function Form({ title, summary, fields, submitLabel, cancelLabel, submitting }: FormData) {
+  // A press of submit runs a drawn request: the button is busy as during the app's async submit.
+  const [busy, setBusy] = useState(false);
   const rows: FormEntry[][] = [];
   for (const entry of fields) {
     const last = rows.at(-1);
@@ -159,13 +167,20 @@ export function Form({ title, summary, fields, submitLabel, cancelLabel, submitt
       className="flex flex-col gap-4"
       onSubmit={(e) => {
         e.preventDefault();
+        setBusy(true);
+        setTimeout(() => {
+          setBusy(false);
+        }, SUBMIT_MS);
       }}
     >
       {title !== undefined && <h3 className="m-0 text-heading-sm leading-heading">{title}</h3>}
       {summary !== undefined && (
         <div
           role="alert"
-          className="flex items-start gap-2 rounded-surface border border-status-danger-border bg-status-danger-bg px-4 py-3 text-200 leading-body text-status-danger-fg"
+          className={cn(
+            'flex items-start gap-2 rounded-surface border border-status-danger-border bg-status-danger-bg px-4 py-3',
+            FIELD_TEXT.error,
+          )}
         >
           <Icon name="warning" />
           <span>{summary}</span>
@@ -183,7 +198,7 @@ export function Form({ title, summary, fields, submitLabel, cancelLabel, submitt
       ))}
       <div className="flex justify-end gap-3">
         {cancelLabel !== undefined && <Button>{cancelLabel}</Button>}
-        <Button type="submit" variant="primary" loading={submitting === true}>
+        <Button type="submit" variant="primary" loading={submitting === true || busy}>
           {submitLabel}
         </Button>
       </div>
