@@ -8,7 +8,7 @@ ADR-0040 made "Shifa Components (proposals)" the canvas where a batch of compone
 On 2026-11-25 the owner renamed the canvas "Shifa Components", deleted the seven pages and asked for one sheet per component of the Shifa Design System, every state shown and working in Play, built from the same code.
 
 ## Decision
-- **"Shifa Components" shows the coded components.** Page "Shifa Components" holds one sheet per public web component: every variant, size and state in Arabic RTL, light and dark, comfortable and compact, each copy the real component mounted from the system's bundle (`Shifa.<Name>`). Hover, pressed and focus copies use the bundle's own CSS rules switched on by a frame (`support/states.css`, generated from `bundle.css`). Modals and toasts, which cover their frame, get open views on boards beside the sheet. The canvas holds the same copy of the system as the Design System artifact and is rebuilt after each sync. A Flutter page shows the patient-app widgets of `packages/shifa_ui` from their own code.
+- **"Shifa Components" shows the coded components.** Page "Shifa Components" holds one sheet per public web component: every variant, size and state in Arabic RTL, light and dark, comfortable and compact, each copy the real component mounted from the system's bundle (`Shifa.<Name>`). Hover, pressed and focus copies use the bundle's own CSS rules switched on by a frame (`support/states.css`, generated from `bundle.css`). Modals and toasts, which cover their frame, get open views on boards beside the sheet. The canvas holds the same copy of the system as the Design System artifact and is rebuilt after each sync. A Flutter page will show the patient-app widgets of `packages/shifa_ui` from their own code, compiled for the web and mounted in the artboard; it waits for the first patient-app screen slice (owner, 2026-11-25). A trial with ShifaButton worked locally, but the canvas refuses the renderer's `.wasm` file from an account invited from outside its organization, so that slice needs an account in the owning organization, or a canvas that account owns, before it starts.
 - **A "Proposals" page holds sheets waiting for approval.** A component-only batch (no screens) draws its sheet there. Once the component is coded and synced, its proposal sheet is deleted and its sheet on the component page is built from the bundle.
 - **Batches with screens are unchanged:** a missing component is drawn beside its screens (ADR-0046, ADR-0047).
 
@@ -17,6 +17,7 @@ On 2026-11-25 the owner renamed the canvas "Shifa Components", deleted the seven
 + Approved proposals do not pile up as stale drawings next to the real components.
 − The canvas must be rebuilt after each design-system sync, or its copy falls behind the code.
 − An approved proposal sheet is deleted after the sync; the approval date stays in the slice file.
+− Until the patient app's first screen slice, the Flutter widgets are shown only by their golden images in the repository.
 
 ## Alternatives considered
 - Keep superseded proposal pages marked "superseded" (the old practice): stale drawings next to real ones. Rejected by the owner.
