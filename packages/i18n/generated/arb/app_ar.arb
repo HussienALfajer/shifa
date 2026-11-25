@@ -64,6 +64,22 @@
   "@commonActionFailedTitle": {
     "description": "common.actionFailedTitle"
   },
+  "commonAddNetworkText": "لم نعرف إن أُضيف. حدّثنا القائمة؛ إن لم يظهر فيها فأعد المحاولة.",
+  "@commonAddNetworkText": {
+    "description": "common.addNetworkText"
+  },
+  "commonAddSubmit": "إضافة وإصدار الرابط",
+  "@commonAddSubmit": {
+    "description": "common.addSubmit"
+  },
+  "commonAddText": "يصله رابط يدخل منه. يظهر الرابط مرة واحدة بعد الإضافة.",
+  "@commonAddText": {
+    "description": "common.addText"
+  },
+  "commonAddTitle": "إضافة موظف",
+  "@commonAddTitle": {
+    "description": "common.addTitle"
+  },
   "commonAdminAppName": "إدارة شفاء",
   "@commonAdminAppName": {
     "description": "common.adminAppName"
@@ -1421,6 +1437,415 @@
       }
     }
   },
+  "commonMemberAccount": "الحساب",
+  "@commonMemberAccount": {
+    "description": "common.memberAccount"
+  },
+  "commonMemberAccountExistsText": "لا يُصحَّح الرقم بعد قبول الدعوة. حدّثنا بياناته.",
+  "@commonMemberAccountExistsText": {
+    "description": "common.memberAccountExistsText"
+  },
+  "commonMemberAccountExistsTitle": "أكمل إعداد حسابه",
+  "@commonMemberAccountExistsTitle": {
+    "description": "common.memberAccountExistsTitle"
+  },
+  "commonMemberActionUnknown": "لم نعرف إن تمّ ذلك. حدّثنا بياناته؛ تحقّق منها ثم أعد المحاولة إن لزم.",
+  "@commonMemberActionUnknown": {
+    "description": "common.memberActionUnknown"
+  },
+  "commonMemberActive": "فعّال",
+  "@commonMemberActive": {
+    "description": "common.memberActive"
+  },
+  "commonMemberArchivedBranch": "{branch} · مؤرشف",
+  "@commonMemberArchivedBranch": {
+    "description": "common.memberArchivedBranch",
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberArchivedHeldText": "له دور في فرع مؤرشف. أزل علامة ذلك الفرع ثم احفظ.",
+  "@commonMemberArchivedHeldText": {
+    "description": "common.memberArchivedHeldText"
+  },
+  "commonMemberBranchArchivedText": "حدّثنا الفروع؛ اختر من جديد.",
+  "@commonMemberBranchArchivedText": {
+    "description": "common.memberBranchArchivedText"
+  },
+  "commonMemberBranchArchivedTitle": "أُغلق أحد الفروع المختارة",
+  "@commonMemberBranchArchivedTitle": {
+    "description": "common.memberBranchArchivedTitle"
+  },
+  "commonMemberCancelInvite": "إلغاء الدعوة",
+  "@commonMemberCancelInvite": {
+    "description": "common.memberCancelInvite"
+  },
+  "commonMemberCancelInviteText": "يتوقف رابطه فلا يستطيع الانضمام. تستطيع إعادة تفعيله لاحقاً.",
+  "@commonMemberCancelInviteText": {
+    "description": "common.memberCancelInviteText"
+  },
+  "commonMemberCancelInviteTitle": "إلغاء دعوة {name}؟",
+  "@commonMemberCancelInviteTitle": {
+    "description": "common.memberCancelInviteTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberDeactivate": "إيقاف الحساب",
+  "@commonMemberDeactivate": {
+    "description": "common.memberDeactivate"
+  },
+  "commonMemberDeactivateText": "تنتهي جلساته في هذه العيادة عند طلبه التالي. تبقى بياناته، وتستطيع إعادة تفعيله.",
+  "@commonMemberDeactivateText": {
+    "description": "common.memberDeactivateText"
+  },
+  "commonMemberDeactivateTitle": "إيقاف حساب {name}؟",
+  "@commonMemberDeactivateTitle": {
+    "description": "common.memberDeactivateTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberDeactivated": "موقوف",
+  "@commonMemberDeactivated": {
+    "description": "common.memberDeactivated"
+  },
+  "commonMemberDeactivatedText": "حدّثنا بياناته. أعد تفعيله أولاً.",
+  "@commonMemberDeactivatedText": {
+    "description": "common.memberDeactivatedText"
+  },
+  "commonMemberDeactivatedTitle": "هذا الحساب موقوف",
+  "@commonMemberDeactivatedTitle": {
+    "description": "common.memberDeactivatedTitle"
+  },
+  "commonMemberDetails": "البيانات",
+  "@commonMemberDetails": {
+    "description": "common.memberDetails"
+  },
+  "commonMemberFixPhone": "تصحيح الرقم",
+  "@commonMemberFixPhone": {
+    "description": "common.memberFixPhone"
+  },
+  "commonMemberFixPhoneAction": "إرسال رابط جديد",
+  "@commonMemberFixPhoneAction": {
+    "description": "common.memberFixPhoneAction"
+  },
+  "commonMemberFixPhoneField": "الرقم الصحيح",
+  "@commonMemberFixPhoneField": {
+    "description": "common.memberFixPhoneField"
+  },
+  "commonMemberFixPhoneText": "يتوقف الرابط السابق، ويظهر رابط جديد للرقم الصحيح مرة واحدة.",
+  "@commonMemberFixPhoneText": {
+    "description": "common.memberFixPhoneText"
+  },
+  "commonMemberFixPhoneTitle": "تصحيح رقم {name}",
+  "@commonMemberFixPhoneTitle": {
+    "description": "common.memberFixPhoneTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberGoneText": "حدّثنا القائمة.",
+  "@commonMemberGoneText": {
+    "description": "common.memberGoneText"
+  },
+  "commonMemberGoneTitle": "لم يعد هذا الشخص في الفريق",
+  "@commonMemberGoneTitle": {
+    "description": "common.memberGoneTitle"
+  },
+  "commonMemberLastOwner": "المالك الوحيد الفعّال للعيادة: لا يُزال دور المالك ولا يُوقف الحساب قبل أن يصبح لها مالك فعّال آخر.",
+  "@commonMemberLastOwner": {
+    "description": "common.memberLastOwner"
+  },
+  "commonMemberLastOwnerText": "هذا المالك الوحيد الفعّال للعيادة. أضف مالكاً آخر أولاً.",
+  "@commonMemberLastOwnerText": {
+    "description": "common.memberLastOwnerText"
+  },
+  "commonMemberLastOwnerTitle": "لا بد من مالك فعّال",
+  "@commonMemberLastOwnerTitle": {
+    "description": "common.memberLastOwnerTitle"
+  },
+  "commonMemberLink": "رابط الانضمام",
+  "@commonMemberLink": {
+    "description": "common.memberLink"
+  },
+  "commonMemberLinkAction": "إصدار الرابط",
+  "@commonMemberLinkAction": {
+    "description": "common.memberLinkAction"
+  },
+  "commonMemberLinkNote": "أرسله إلى {name}. يضع منه كلمة مرور، أو يقبل الدعوة إن كان له حساب في شفاء.",
+  "@commonMemberLinkNote": {
+    "description": "common.memberLinkNote",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberLinkOpen": "رابطه يعمل حتى {date}.",
+  "@commonMemberLinkOpen": {
+    "description": "common.memberLinkOpen",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberLinkQr": "رمز QR للرابط، لموظف حاضر يمسحه بهاتفه",
+  "@commonMemberLinkQr": {
+    "description": "common.memberLinkQr"
+  },
+  "commonMemberLinkQrNote": "الموظف معك؟ يمسح الرمز بكاميرا هاتفه.",
+  "@commonMemberLinkQrNote": {
+    "description": "common.memberLinkQrNote"
+  },
+  "commonMemberLinkTitle": "رابط {name}",
+  "@commonMemberLinkTitle": {
+    "description": "common.memberLinkTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberLoading": "جارٍ تحميل بيانات الموظف",
+  "@commonMemberLoading": {
+    "description": "common.memberLoading"
+  },
+  "commonMemberMfaGoneText": "حدّثنا بياناته؛ لا حاجة إلى إعادة الضبط.",
+  "@commonMemberMfaGoneText": {
+    "description": "common.memberMfaGoneText"
+  },
+  "commonMemberMfaGoneTitle": "لم يعد التحقق بخطوتين مفعّلاً لديه",
+  "@commonMemberMfaGoneTitle": {
+    "description": "common.memberMfaGoneTitle"
+  },
+  "commonMemberMfaOff": "التحقق بخطوتين غير مفعّل",
+  "@commonMemberMfaOff": {
+    "description": "common.memberMfaOff"
+  },
+  "commonMemberMfaOn": "التحقق بخطوتين مفعّل",
+  "@commonMemberMfaOn": {
+    "description": "common.memberMfaOn"
+  },
+  "commonMemberMfaOwner": "تعيد إدارة شفاء ضبط التحقق بخطوتين لمالك العيادة.",
+  "@commonMemberMfaOwner": {
+    "description": "common.memberMfaOwner"
+  },
+  "commonMemberName": "الاسم",
+  "@commonMemberName": {
+    "description": "common.memberName"
+  },
+  "commonMemberNameMissing": "اكتب الاسم.",
+  "@commonMemberNameMissing": {
+    "description": "common.memberNameMissing"
+  },
+  "commonMemberNetworkText": "لم نعرف إن وصل طلبك. اختياراتك باقية؛ أعد المحاولة.",
+  "@commonMemberNetworkText": {
+    "description": "common.memberNetworkText"
+  },
+  "commonMemberNetworkTitle": "لم نصل إلى الخادم",
+  "@commonMemberNetworkTitle": {
+    "description": "common.memberNetworkTitle"
+  },
+  "commonMemberNewLink": "إصدار رابط جديد",
+  "@commonMemberNewLink": {
+    "description": "common.memberNewLink"
+  },
+  "commonMemberNewLinkPending": "يتوقف الرابط السابق، ويظهر الجديد هنا مرة واحدة.",
+  "@commonMemberNewLinkPending": {
+    "description": "common.memberNewLinkPending"
+  },
+  "commonMemberNewLinkTitle": "إصدار رابط جديد لـ{name}؟",
+  "@commonMemberNewLinkTitle": {
+    "description": "common.memberNewLinkTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberNotDeactivatedText": "حدّثنا بياناته.",
+  "@commonMemberNotDeactivatedText": {
+    "description": "common.memberNotDeactivatedText"
+  },
+  "commonMemberNotDeactivatedTitle": "هذا الحساب غير موقوف",
+  "@commonMemberNotDeactivatedTitle": {
+    "description": "common.memberNotDeactivatedTitle"
+  },
+  "commonMemberNotSavedTitle": "لم تُحفظ التغييرات",
+  "@commonMemberNotSavedTitle": {
+    "description": "common.memberNotSavedTitle"
+  },
+  "commonMemberOwnerProtectedText": "يزيله المالك نفسه أو إدارة شفاء.",
+  "@commonMemberOwnerProtectedText": {
+    "description": "common.memberOwnerProtectedText"
+  },
+  "commonMemberOwnerProtectedTitle": "لا يُزال دور مالك آخر",
+  "@commonMemberOwnerProtectedTitle": {
+    "description": "common.memberOwnerProtectedTitle"
+  },
+  "commonMemberOwnerScope": "مالك العيادة يعمل في كل الفروع.",
+  "@commonMemberOwnerScope": {
+    "description": "common.memberOwnerScope"
+  },
+  "commonMemberPasswordLink": "رابط لكلمة مرور جديدة",
+  "@commonMemberPasswordLink": {
+    "description": "common.memberPasswordLink"
+  },
+  "commonMemberPasswordLinkText": "تُمسح كلمة مروره الحالية وتنتهي جلساته؛ يضع كلمة جديدة من الرابط.",
+  "@commonMemberPasswordLinkText": {
+    "description": "common.memberPasswordLinkText"
+  },
+  "commonMemberPasswordLinkTitle": "رابط لكلمة مرور جديدة لـ{name}؟",
+  "@commonMemberPasswordLinkTitle": {
+    "description": "common.memberPasswordLinkTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberPending": "بانتظار القبول",
+  "@commonMemberPending": {
+    "description": "common.memberPending"
+  },
+  "commonMemberPhone": "رقم الهاتف",
+  "@commonMemberPhone": {
+    "description": "common.memberPhone"
+  },
+  "commonMemberPhoneHint": "رقم الدخول الذي سيستعمله، مع رمز البلد.",
+  "@commonMemberPhoneHint": {
+    "description": "common.memberPhoneHint"
+  },
+  "commonMemberPhoneInTeam": "هذا الرقم في فريق العيادة. ابحث عنه في القائمة.",
+  "@commonMemberPhoneInTeam": {
+    "description": "common.memberPhoneInTeam"
+  },
+  "commonMemberPhoneMissing": "اكتب رقم الهاتف.",
+  "@commonMemberPhoneMissing": {
+    "description": "common.memberPhoneMissing"
+  },
+  "commonMemberReactivate": "إعادة التفعيل",
+  "@commonMemberReactivate": {
+    "description": "common.memberReactivate"
+  },
+  "commonMemberReactivateText": "يعود إلى الفريق بأدواره. إن لم يكمل إعداد حسابه فأصدر له رابطاً جديداً.",
+  "@commonMemberReactivateText": {
+    "description": "common.memberReactivateText"
+  },
+  "commonMemberReactivateTitle": "إعادة تفعيل {name}؟",
+  "@commonMemberReactivateTitle": {
+    "description": "common.memberReactivateTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberRemoveAllAction": "إزالة الأدوار",
+  "@commonMemberRemoveAllAction": {
+    "description": "common.memberRemoveAllAction"
+  },
+  "commonMemberRemoveAllText": "يخرج من هذه العيادة وتنتهي جلساته فيها. يبقى اسمه في الفريق بلا دور حتى تعطيه دوراً.",
+  "@commonMemberRemoveAllText": {
+    "description": "common.memberRemoveAllText"
+  },
+  "commonMemberRemoveAllTitle": "إزالة كل أدوار {name}؟",
+  "@commonMemberRemoveAllTitle": {
+    "description": "common.memberRemoveAllTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberResetMfa": "إعادة ضبط التحقق بخطوتين",
+  "@commonMemberResetMfa": {
+    "description": "common.memberResetMfa"
+  },
+  "commonMemberResetMfaAction": "إعادة الضبط",
+  "@commonMemberResetMfaAction": {
+    "description": "common.memberResetMfaAction"
+  },
+  "commonMemberResetMfaDone": "أُعيد ضبط التحقق بخطوتين",
+  "@commonMemberResetMfaDone": {
+    "description": "common.memberResetMfaDone"
+  },
+  "commonMemberResetMfaText": "تنتهي جلساته، ويضبط التحقق من جديد عند دخوله التالي.",
+  "@commonMemberResetMfaText": {
+    "description": "common.memberResetMfaText"
+  },
+  "commonMemberResetMfaTitle": "إعادة ضبط التحقق بخطوتين لـ{name}؟",
+  "@commonMemberResetMfaTitle": {
+    "description": "common.memberResetMfaTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberRoles": "الأدوار",
+  "@commonMemberRoles": {
+    "description": "common.memberRoles"
+  },
+  "commonMemberRolesHint": "اختر الدور، ثم الفروع التي يعمل فيها بهذا الدور.",
+  "@commonMemberRolesHint": {
+    "description": "common.memberRolesHint"
+  },
+  "commonMemberRolesMissing": "اختر دوراً واحداً على الأقل.",
+  "@commonMemberRolesMissing": {
+    "description": "common.memberRolesMissing"
+  },
+  "commonMemberSaved": "حُفظت التغييرات",
+  "@commonMemberSaved": {
+    "description": "common.memberSaved"
+  },
+  "commonMemberSavedText": "تسري من طلبه التالي.",
+  "@commonMemberSavedText": {
+    "description": "common.memberSavedText"
+  },
+  "commonMemberScopeLabel": "فروع دور {role}",
+  "@commonMemberScopeLabel": {
+    "description": "common.memberScopeLabel",
+    "placeholders": {
+      "role": {
+        "type": "String"
+      }
+    }
+  },
+  "commonMemberScopeMissing": "اختر الفروع لهذا الدور، أو «كل الفروع».",
+  "@commonMemberScopeMissing": {
+    "description": "common.memberScopeMissing"
+  },
+  "commonMemberSelfNote": "هذا حسابك: كلمة مرورك والتحقق بخطوتين في «حسابي».",
+  "@commonMemberSelfNote": {
+    "description": "common.memberSelfNote"
+  },
+  "commonMemberSensitive": "صلاحيات حساسة",
+  "@commonMemberSensitive": {
+    "description": "common.memberSensitive"
+  },
+  "commonMemberSensitiveHint": "تبدأ مما يعطيه الدور، وتستطيع فتحها أو إغلاقها لهذا الشخص.",
+  "@commonMemberSensitiveHint": {
+    "description": "common.memberSensitiveHint"
+  },
+  "commonMemberSharedText": "انتهت جلساته هنا. لا يصدر له رابط ولا يُعاد ضبطه من العيادة؛ تفعل ذلك إدارة شفاء.",
+  "@commonMemberSharedText": {
+    "description": "common.memberSharedText"
+  },
+  "commonMemberSharedTitle": "هذا الحساب يعمل في عيادة أخرى أيضاً",
+  "@commonMemberSharedTitle": {
+    "description": "common.memberSharedTitle"
+  },
   "commonMfaCardTitle": "التحقق بخطوتين",
   "@commonMfaCardTitle": {
     "description": "common.mfaCardTitle"
@@ -1518,6 +1943,10 @@
   "commonNavMenu": "القائمة",
   "@commonNavMenu": {
     "description": "common.navMenu"
+  },
+  "commonNavTeam": "الفريق",
+  "@commonNavTeam": {
+    "description": "common.navTeam"
   },
   "commonNoClinicText": "لم يعد لك دور في أي عيادة، ولا دعوة بانتظارك. اطلب من مالك العيادة رابط دعوة، أو تواصل مع إدارة شفاء.",
   "@commonNoClinicText": {
@@ -1752,6 +2181,30 @@
   "commonOwnerResetMfaTitle": "إعادة ضبط التحقق بخطوتين للمالك؟",
   "@commonOwnerResetMfaTitle": {
     "description": "common.ownerResetMfaTitle"
+  },
+  "commonPermClinicalNotesView": "رؤية الملاحظات السريرية",
+  "@commonPermClinicalNotesView": {
+    "description": "common.permClinicalNotesView"
+  },
+  "commonPermClosed": "أغلقتَها لهذا الشخص؛ دوره يعطيها.",
+  "@commonPermClosed": {
+    "description": "common.permClosed"
+  },
+  "commonPermDefaultOff": "مغلقة افتراضياً لدوره.",
+  "@commonPermDefaultOff": {
+    "description": "common.permDefaultOff"
+  },
+  "commonPermDefaultOn": "مفتوحة افتراضياً لدوره.",
+  "@commonPermDefaultOn": {
+    "description": "common.permDefaultOn"
+  },
+  "commonPermOpened": "فتحتَها لهذا الشخص؛ دوره لا يعطيها.",
+  "@commonPermOpened": {
+    "description": "common.permOpened"
+  },
+  "commonPermReset": "إعادة إلى ما يعطيه دوره",
+  "@commonPermReset": {
+    "description": "common.permReset"
   },
   "commonPhoneInvalid": "رقم الهاتف غير صحيح. اكتبه مع رمز البلد.",
   "@commonPhoneInvalid": {
@@ -2412,6 +2865,144 @@
   "commonSwitcherTitle": "العيادة والفرع",
   "@commonSwitcherTitle": {
     "description": "common.switcherTitle"
+  },
+  "commonTeamAdd": "إضافة موظف",
+  "@commonTeamAdd": {
+    "description": "common.teamAdd"
+  },
+  "commonTeamAllBranches": "كل الفروع",
+  "@commonTeamAllBranches": {
+    "description": "common.teamAllBranches"
+  },
+  "commonTeamBranchClear": "كل الفريق",
+  "@commonTeamBranchClear": {
+    "description": "common.teamBranchClear"
+  },
+  "commonTeamBranchOnly": "فريق {branch}",
+  "@commonTeamBranchOnly": {
+    "description": "common.teamBranchOnly",
+    "placeholders": {
+      "branch": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamColActive": "آخر نشاط",
+  "@commonTeamColActive": {
+    "description": "common.teamColActive"
+  },
+  "commonTeamColName": "الاسم",
+  "@commonTeamColName": {
+    "description": "common.teamColName"
+  },
+  "commonTeamColPhone": "الهاتف",
+  "@commonTeamColPhone": {
+    "description": "common.teamColPhone"
+  },
+  "commonTeamColRoles": "الأدوار",
+  "@commonTeamColRoles": {
+    "description": "common.teamColRoles"
+  },
+  "commonTeamColStatus": "الحالة",
+  "@commonTeamColStatus": {
+    "description": "common.teamColStatus"
+  },
+  "commonTeamEmptyText": "أضف الأطباء والموظفين؛ يصل كلاً منهم رابط يدخل منه.",
+  "@commonTeamEmptyText": {
+    "description": "common.teamEmptyText"
+  },
+  "commonTeamEmptyTitle": "أنت وحدك في الفريق الآن",
+  "@commonTeamEmptyTitle": {
+    "description": "common.teamEmptyTitle"
+  },
+  "commonTeamFilter": "تصفية حسب الحالة",
+  "@commonTeamFilter": {
+    "description": "common.teamFilter"
+  },
+  "commonTeamFilterActive": "فعّال ({count})",
+  "@commonTeamFilterActive": {
+    "description": "common.teamFilterActive",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamFilterAll": "الكل ({count})",
+  "@commonTeamFilterAll": {
+    "description": "common.teamFilterAll",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamFilterDeactivated": "موقوف ({count})",
+  "@commonTeamFilterDeactivated": {
+    "description": "common.teamFilterDeactivated",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamFilterPending": "بانتظار القبول ({count})",
+  "@commonTeamFilterPending": {
+    "description": "common.teamFilterPending",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamLinkExpired": "انتهى الرابط",
+  "@commonTeamLinkExpired": {
+    "description": "common.teamLinkExpired"
+  },
+  "commonTeamLoading": "جارٍ تحميل الفريق",
+  "@commonTeamLoading": {
+    "description": "common.teamLoading"
+  },
+  "commonTeamNeverIn": "لم يدخل بعد",
+  "@commonTeamNeverIn": {
+    "description": "common.teamNeverIn"
+  },
+  "commonTeamNoMatchText": "جرّب جزءاً من الاسم أو آخر أرقام الهاتف.",
+  "@commonTeamNoMatchText": {
+    "description": "common.teamNoMatchText"
+  },
+  "commonTeamNoMatchTitle": "لا أحد بهذا الاسم أو الرقم",
+  "@commonTeamNoMatchTitle": {
+    "description": "common.teamNoMatchTitle"
+  },
+  "commonTeamNoneInStatus": "لا أحد في هذه الحالة",
+  "@commonTeamNoneInStatus": {
+    "description": "common.teamNoneInStatus"
+  },
+  "commonTeamSearch": "ابحث بالاسم أو الرقم",
+  "@commonTeamSearch": {
+    "description": "common.teamSearch"
+  },
+  "commonTeamSelf": "أنت",
+  "@commonTeamSelf": {
+    "description": "common.teamSelf"
+  },
+  "commonTeamText": "من يعمل معك في {clinic}، بأدوارهم وفروعهم.",
+  "@commonTeamText": {
+    "description": "common.teamText",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTeamTextPlain": "من يعمل معك، بأدوارهم وفروعهم.",
+  "@commonTeamTextPlain": {
+    "description": "common.teamTextPlain"
+  },
+  "commonTeamTitle": "الفريق",
+  "@commonTeamTitle": {
+    "description": "common.teamTitle"
   },
   "commonTheme": "المظهر",
   "@commonTheme": {

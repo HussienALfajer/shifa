@@ -21,6 +21,7 @@ import { SessionEndsNotice } from './idle-dialog.tsx';
 import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
 import { type SessionView, useSession } from './session.ts';
+import { TeamPage } from './team/team-page.tsx';
 import { useText } from './text.ts';
 import { type ThemePreference, useThemePreference } from './theme.ts';
 import { useSignOut } from './use-sign-out.ts';
@@ -178,6 +179,7 @@ export const shellPages: ShellPages = {
   adminWeb: AdminWebPage,
   account: AccountPage,
   settings: SettingsPage,
+  team: TeamPage,
   clinics: ClinicsPage,
   createClinic: CreateClinicPage,
   clinic: ClinicPage,

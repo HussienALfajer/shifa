@@ -3,7 +3,8 @@
 // fewer are left — improvement b — and the person's avatar) and the navigation at the start of
 // the line (الرئيسية, the owner's «إعدادات العيادة», حسابي, خروج). On a phone the navigation
 // opens over the page from a menu button. The bar's clinic is the header switcher (A-01-08
-// checkpoint 2, `switcher/clinic-switcher.tsx`); «الفريق» and «الفروع» arrive with checkpoints 3–4.
+// checkpoint 2, `switcher/clinic-switcher.tsx`); the owner's «الفريق» came with checkpoint 3
+// (`team/`), «الفروع» arrives with checkpoint 4.
 import type { CommonKey } from '@shifa/i18n';
 import { Avatar, Badge, Button, cn, Icon, IconButton, type IconName } from '@shifa/ui';
 import { Link } from '@tanstack/react-router';
@@ -18,15 +19,19 @@ import { isOwner, useMfaStatus, useProfile, useSignedIn } from './data.ts';
 
 export const LOW_CODES = 2;
 
-type Place = 'home' | 'account' | 'settings';
+type Place = 'home' | 'account' | 'settings' | 'team';
+
+/** The owner's places: a member has no item for them. */
+const OWNER_ONLY: ReadonlySet<Place> = new Set(['team', 'settings']);
 
 const ITEMS: {
   place: Place;
-  to: '/' | '/account' | '/settings';
+  to: '/' | '/account' | '/settings' | '/team';
   icon: IconName;
   key: CommonKey;
 }[] = [
   { place: 'home', to: '/', icon: 'house', key: 'navHome' },
+  { place: 'team', to: '/team', icon: 'users', key: 'navTeam' },
   { place: 'settings', to: '/settings', icon: 'gear', key: 'navClinicSettings' },
   { place: 'account', to: '/account', icon: 'user', key: 'navAccount' },
 ];
@@ -104,7 +109,7 @@ export function AppFrame({
               phone && 'fixed start-0 top-(--shifa-size-row) bottom-0 z-10 shadow-overlay',
             )}
           >
-            {ITEMS.filter((item) => item.place !== 'settings' || owner).map((item) => (
+            {ITEMS.filter((item) => !OWNER_ONLY.has(item.place) || owner).map((item) => (
               <Link
                 key={item.place}
                 to={item.to}

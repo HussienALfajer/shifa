@@ -4,6 +4,8 @@
 // `purpose` words a setup link or an invitation; a QR code beside it for an owner who is present
 // (improvement e). Leaving before a copy or a share asks first (improvement h), except for
 // sign-in: a session that ended or «خروج» always leaves. The link lives in the caller's state only.
+// Clinic web's member drawer shows a member's link with it too (A-01-08 checkpoint 3), and
+// `onSent` tells the drawer it may close without asking.
 import {
   AlertDialog,
   AlertDialogAction,
@@ -18,7 +20,25 @@ import { clockTime, dayDate } from '../auth/dates.ts';
 import { useText } from '../text.ts';
 import type { SetupLink } from './data.ts';
 
-export function LinkShown({ link }: { link: SetupLink }) {
+/**
+ * A clinic member's link (clinic web, A-01-08 checkpoint 3) has no purpose, by design (OD-76): its
+ * words name the person and cover both a setup link and an invitation.
+ */
+export interface MemberLinkShown {
+  url: string;
+  whatsappUrl: string;
+  expiresAt: string;
+  member: string;
+}
+
+export function LinkShown({
+  link,
+  onSent,
+}: {
+  link: SetupLink | MemberLinkShown;
+  /** Copied or shared: the caller may stop asking before it closes (the member drawer). */
+  onSent?: () => void;
+}) {
   const text = useText();
   const [sent, setSent] = useState(false);
   const blocker = useBlocker({
@@ -26,34 +46,40 @@ export function LinkShown({ link }: { link: SetupLink }) {
     enableBeforeUnload: () => !sent,
     withResolver: true,
   });
+  const markSent = () => {
+    setSent(true);
+    onSent?.();
+  };
   const expires = Date.parse(link.expiresAt);
-  const invitation = link.purpose === 'invitation';
+  const member = 'member' in link ? link.member : null;
+  const invitation = 'purpose' in link && link.purpose === 'invitation';
+  const note =
+    member === null
+      ? text(invitation ? 'linkInvitationNote' : 'linkSetupNote')
+      : text('memberLinkNote', { name: member });
+  const label =
+    member === null ? text(invitation ? 'linkInvitation' : 'linkSetup') : text('memberLink');
   return (
     <div data-testid="link-shown" className="flex flex-wrap items-start gap-5">
-      <div className="flex min-w-0 flex-1 flex-col gap-3">
-        <p className="m-0 text-data leading-body text-text-muted">
-          {text(invitation ? 'linkInvitationNote' : 'linkSetupNote')}
-        </p>
+      {/* At least 240 px: in a narrow place (the member drawer) the QR code goes below. */}
+      <div className="flex min-w-(--shifa-width-60) flex-1 flex-col gap-3">
+        <p className="m-0 text-data leading-body text-text-muted">{note}</p>
         <CopyField
           value={link.url}
-          label={text(invitation ? 'linkInvitation' : 'linkSetup')}
+          label={label}
           copyLabel={text('linkCopy')}
           copiedLabel={text('linkCopied')}
           refusedText={text('linkRefused')}
           share={{ href: link.whatsappUrl, label: text('linkShare') }}
           expiry={text('linkExpiry', { date: `${dayDate(expires)} ${clockTime(expires)}` })}
-          onCopied={() => {
-            setSent(true);
-          }}
-          onShared={() => {
-            setSent(true);
-          }}
+          onCopied={markSent}
+          onShared={markSent}
         />
       </div>
       <div className="flex flex-col items-center gap-2">
-        <QrCode value={link.url} label={text('linkQr')} />
+        <QrCode value={link.url} label={text(member === null ? 'linkQr' : 'memberLinkQr')} />
         <p className="m-0 max-w-(--shifa-width-37-5) text-center text-caption leading-body text-text-muted">
-          {text('linkQrNote')}
+          {text(member === null ? 'linkQrNote' : 'memberLinkQrNote')}
         </p>
       </div>
       <AlertDialog

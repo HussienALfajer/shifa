@@ -4,23 +4,33 @@
 import { useEffect, useState } from 'react';
 
 const PHONE = '(max-width: 47.99rem)';
+/** Below Tailwind's `lg` (1024 px): a tablet or a phone, where a drawer is a bottom sheet. */
+const BELOW_DESKTOP = '(max-width: 63.99rem)';
 
-function matches(): boolean {
-  return typeof globalThis.matchMedia === 'function' && globalThis.matchMedia(PHONE).matches;
+function matches(media: string): boolean {
+  return typeof globalThis.matchMedia === 'function' && globalThis.matchMedia(media).matches;
 }
 
-export function useIsPhone(): boolean {
-  const [phone, setPhone] = useState(matches);
+function useMedia(media: string): boolean {
+  const [on, setOn] = useState(() => matches(media));
   useEffect(() => {
     if (typeof globalThis.matchMedia !== 'function') return undefined;
-    const query = globalThis.matchMedia(PHONE);
+    const query = globalThis.matchMedia(media);
     const change = () => {
-      setPhone(query.matches);
+      setOn(query.matches);
     };
     query.addEventListener('change', change);
     return () => {
       query.removeEventListener('change', change);
     };
-  }, []);
-  return phone;
+  }, [media]);
+  return on;
+}
+
+export function useIsPhone(): boolean {
+  return useMedia(PHONE);
+}
+
+export function useBelowDesktop(): boolean {
+  return useMedia(BELOW_DESKTOP);
 }

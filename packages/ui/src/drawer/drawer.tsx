@@ -118,6 +118,8 @@ export interface DrawerContentProps {
   className?: string | undefined;
   /** The body; DrawerActions last. */
   children?: ReactNode;
+  /** `data-*` hooks for the page (tests, journeys) go onto the panel. */
+  [data: `data-${string}`]: string | undefined;
 }
 
 export function DrawerContent({
@@ -127,6 +129,7 @@ export function DrawerContent({
   handleLabel = 'اسحب لتغيير الحجم أو للإغلاق',
   className,
   children,
+  ...data
 }: DrawerContentProps) {
   const side = useContext(SideContext);
   const ref = useRef<HTMLDivElement>(null);
@@ -134,6 +137,7 @@ export function DrawerContent({
     <>
       <BaseDrawerBackdrop className="fixed inset-0 bg-bg-overlay" />
       <BaseDrawerContent
+        {...data}
         ref={ref}
         initialFocus={() => initialFocus(ref.current)}
         className={cn(
@@ -195,7 +199,9 @@ export function DrawerActions({
     <div
       className={cn(
         // Pinned under the scrolling body: the body's padding is cancelled at its sides and end.
-        'sticky bottom-0 -mx-6 -mb-6 mt-auto flex flex-wrap justify-end gap-3 border-t border-border-default bg-bg-surface px-6 py-4',
+        // A sticky box stops at the scroll box's padding: `-bottom-6` takes it to the very edge,
+        // so nothing scrolls into view under the actions (A-01-08 checkpoint 3).
+        'sticky -bottom-6 -mx-6 -mb-6 mt-auto flex flex-wrap justify-end gap-3 border-t border-border-default bg-bg-surface px-6 py-4',
         className,
       )}
     >
