@@ -8,6 +8,7 @@ import { createContext, runInContext } from 'node:vm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   buildBundle,
+  COMPONENTS_CANVAS,
   devHistoryMarkers,
   systemTokensCss,
 } from '../scripts/design-system/bundle.ts';
@@ -175,6 +176,8 @@ describe('design-system bundle', () => {
       expect(preview, name).toContain('*, *::before, *::after { box-sizing: border-box; }');
       const guide = read(`components/${name}/README.md`);
       expect(guide.trim().length, name).toBeGreaterThan(100);
+      // Every state lives on the components canvas: each guideline ends with a link to its sheet.
+      expect(guide, name).toContain(`${COMPONENTS_CANVAS}#artboard-${name})`);
     }
     expect(read('components/index.d.ts')).toContain('ButtonProps');
   });

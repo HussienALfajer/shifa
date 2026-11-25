@@ -80,6 +80,14 @@ export const BUNDLE_COMPONENTS = [
   'DataTable',
 ] as const;
 
+/** The "Shifa Components" canvas: one sheet per component, every state, working in Play (ADR-0048). */
+export const COMPONENTS_CANVAS = 'https://claude.ai/artifact/Kk3HMckdzqQ4yAyxWpu8kd';
+
+/** The end of a component's guidelines: where its every state is shown (the system shows one card). */
+export function sheetLink(name: string): string {
+  return `\n## Every state\n\nEvery variant, size and state of the real component, working in Play: [${name} on Shifa Components](${COMPONENTS_CANVAS}#artboard-${name}). A screen imports the same component with any of its props (\`index.d.ts\`); this page shows one example.\n`;
+}
+
 /** Text that would end or escape an inline <script>, written so that it cannot. */
 function inlineSafe(js: string): string {
   return js.replace(/<\/script/gi, '<\\/script').replaceAll('<!--', '\\x3C!--');
@@ -162,7 +170,13 @@ export async function buildBundle(out: string): Promise<void> {
     for (const name of BUNDLE_COMPONENTS) {
       mkdirSync(join(dir, name), { recursive: true });
       for (const file of readdirSync(join(here, 'components', name))) {
-        copyFileSync(join(here, 'components', name, file), join(dir, name, file));
+        const source = join(here, 'components', name, file);
+        if (file === 'README.md') {
+          writeFileSync(
+            join(dir, name, file),
+            `${readFileSync(source, 'utf8').trimEnd()}\n${sheetLink(name)}`,
+          );
+        } else copyFileSync(source, join(dir, name, file));
       }
     }
   } finally {
