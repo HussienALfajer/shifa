@@ -12,7 +12,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'Says what is empty or what went wrong and the next step: a line drawing (jasmine or the eight-point star with the gold dot) or an icon for search and errors, a title, a description and up to two actions. panel inside a card or table, page for a whole empty screen. The text is the caller’s.\n\n**Accessibility.** The title is a real heading (`h3` by default; set `headingLevel` to 2 or 4 to fit the page outline) and the description a paragraph. No keyboard interaction of its own: Tab reaches only the action buttons the caller passes. The drawing and the icon are decorative and hidden from screen readers (`aria-hidden`), so the title must say what happened. It is not a live region: shown after a search or a failed load, it is not announced on its own.',
+          'Says what is empty or what went wrong and the next step: a line drawing (jasmine or the eight-point star with the gold dot) or an icon for search and errors, a title, a description and up to two actions. panel inside a card or table, page for a whole empty screen. The text is the caller’s.\n\n**Accessibility.** The title is a real heading (`h3` by default; set `headingLevel` from 1 to 4 to fit the page outline; 1 when the empty state is the whole page and its title the page’s only `h1`, which looks the same) and the description a paragraph. No keyboard interaction of its own: Tab reaches only the action buttons the caller passes. The drawing and the icon are decorative and hidden from screen readers (`aria-hidden`), so the title must say what happened. It is not a live region: shown after a search or a failed load, it is not announced on its own.',
       },
     },
   },
@@ -53,12 +53,13 @@ export const Panel: Story = {
   ),
 };
 
-/** Page size, with two actions. */
+/** Page size, with two actions; a whole empty screen, so its title is the page's h1. */
 export const Page: Story = {
   render: () => (
     <EmptyState
       art="star"
       size="page"
+      headingLevel={1}
       title="لا مرضى بعد"
       description="أضف أول مريض أو استورد قائمة المرضى من ملف."
       actions={
