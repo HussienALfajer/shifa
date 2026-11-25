@@ -1,6 +1,6 @@
 # A-01-08 UI batch 3: team, branches and switcher screens
 
-Status: In progress (checkpoint 1 approved 2026-11-24; A-01-12 merged (#160); checkpoint 2 merged (#161); checkpoint 3 merged (#162); checkpoint 4 with A-01-13 merged (#163); checkpoint 5 built, PR open) · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher` (cloud sessions: checkpoint 2 in `claude/kind-albattani-wmavzq`, checkpoint 3 in `claude/dazzling-dijkstra-7s0o1j`; checkpoint 4 in `feat/A-01-08-checkpoint-4`; checkpoint 5 in `claude/confident-lamport-wvnlmx`)
+Status: Done 2026-11-25, accepted by the owner (checkpoint 1 approved 2026-11-24; A-01-12 merged (#160); checkpoint 2 merged (#161); checkpoint 3 merged (#162); checkpoint 4 with A-01-13 merged (#163); checkpoint 5 merged (#164)) · Tier: T1 · Branch: `feat/A-01-08-ui-team-branches-switcher` (cloud sessions: checkpoint 2 in `claude/kind-albattani-wmavzq`, checkpoint 3 in `claude/dazzling-dijkstra-7s0o1j`; checkpoint 4 in `feat/A-01-08-checkpoint-4`; checkpoint 5 in `claude/confident-lamport-wvnlmx`)
 Spec: [A-01b](../specs/platform/A-01b-team-roles-branches-switcher.md) screen inventory, verification rows for criteria 9–11 (Playwright) and "Screens" · Requirements: PLT-03, PLT-04, PLT-05, PLT-06, PLT-43, PLT-45 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94, OD-102 to OD-106
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) (merged); may run beside [A-01-10](A-01-10-ui-account-settings-admin-web.md). The clinic chooser moved to A-01-07 in the 2026-11-24 re-plan. Last A-01 slice with A-01-10; A-01a and A-01b are done when it merges and the owner accepts.
@@ -167,7 +167,7 @@ Each screen is axe clean in light and dark (`look()`); `/branches`, `/team` (alo
 Reviewer (checkpoint 5): one blocking finding, fixed: (B1) journey 4's «signing in again is refused» could not fail (the URL check ran before the answer) and was wrong: sign-in succeeds and lands on the no-clinic page, now asserted (`/choose`, its heading, `tenantId: null`), and this file corrected. Non-blocking fixed: the receptionist's frame drawn before checking that «الفريق» and «الفروع» are absent; the decline confirmation visible before `look()`; the invitation's role («طبيب») asserted; the branch filter's `h3` case tested; `e2e/CLAUDE.md` names the member link among what a failed journey's `error-context.md` may hold. In `docs/backlog.md`: the invitation page's loading, unreachable and server-error states still lack an `h1`.
 
 ## Stopped at
-Checkpoint 5 built, verified and reviewed; PR open. Left: the owner compares the screens with `Team08` and accepts A-01a and A-01b.
+Done: checkpoint 5 merged (#164), the Drawer fix merged (#165); the owner compared the screens with `Team08` and accepted A-01a and A-01b on 2026-11-25.
 
 ## Evidence
 Checkpoint 5 (cloud session, sandbox off, Docker, 2026-11-25):
