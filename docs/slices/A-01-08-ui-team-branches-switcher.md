@@ -28,6 +28,7 @@ Switching calls `POST /me/switch` and reloads the page data (Query cache cleared
 Team table (`@shifa/ui` Data Table; search; statuses in words), member drawer (role assignments with scope, sensitive toggles with the role default named, link shown once with copy and WhatsApp share, re-issue, deactivate and reactivate confirmed), last-owner and duplicate-phone states from the API codes.
 
 ### Checkpoint 4 — branches
+First, in the same session (owner, 2026-11-25): **A-01-13** (OD-107, T0). `PATCH /team/members/:id` keeps the archived-branch assignments a member already holds and refuses only new ones. It has its own API tests, its own commit and the `security-reviewer`. The member drawer then saves such a member without asking the owner to remove the archived branch. Then the branch screens:
 Cards, add and edit, archive with the preview of affected members, archived list, last active branch disabled with the reason; hidden for a solo clinic.
 
 ### Checkpoint 5 — journeys, screenshots, review
@@ -135,7 +136,7 @@ Built from the slice's words and table: this cloud session could not open `Team0
 Reviewer (checkpoint 3): four blocking findings, fixed with tests in `team-review.test.tsx`: (B1) a member's detail was kept after the drawer closed, so a reopened drawer could offer «إصدار رابط جديد» to someone who had accepted (the server then clears their password): the details are dropped on close and read again; (B2) a role held in an archived branch (kept for a restore) made every role save answer 409 `branch_archived`: the drawer shows it as «… · مؤرشف», removable, and says so on that 409; the owner chose that the API keeps held ones (OD-107), a T0 follow-up A-01-13 before checkpoint 4; (B3) while the branches were unread or failed, a new role went out clinic-wide: the role editor waits for the branches and the toggles' defaults, with a retry; (B4) a link stayed copyable after «إلغاء الدعوة»: a status change retires it. Non-blocking fixed: a phone's loading skeleton, a switch back at the new roles' default is not stored, a save answered 404 reads again, the last owner's reason is tied to the disabled button. The rest is in `docs/backlog.md` ("Team page loose ends").
 
 ## Stopped at
-Checkpoint 3 built, reviewed and verified; PR open. Next: A-01-13 (OD-107, T0), then checkpoint 4 (branches: cards with «عرض فريقه» linking to `/team?branch=`, add, edit, archive with the preview, archived list with restore, the solo clinic's «الفروع» card in clinic settings), tests first.
+Checkpoint 3 built, reviewed and verified; PR open. Next, in one session (owner, 2026-11-25): A-01-13 (OD-107, T0) first, then checkpoint 4 (branches: cards with «عرض فريقه» linking to `/team?branch=`, add, edit, archive with the preview, archived list with restore, the solo clinic's «الفروع» card in clinic settings), tests first.
 
 ## Evidence
 Checkpoint 3 (cloud session, sandbox off, 2026-11-25):
