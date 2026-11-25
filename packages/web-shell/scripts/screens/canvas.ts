@@ -31,6 +31,9 @@ const attrJson = (value: unknown) => JSON.stringify(value).replaceAll("'", '\\u0
 
 const DEVICE_WORD = { desktop: 'سطح المكتب', phone: 'هاتف' } as const;
 
+/** «3 حالات» to «10 حالات», «11 حالة» and on (every sheet has at least three). */
+const statesWord = (n: number) => `${String(n)} ${n >= 3 && n <= 10 ? 'حالات' : 'حالة'}`;
+
 /** The board's height: its tallest state, a dialog's state one window high. */
 function heightOf(b: Board, heights: Record<string, number>): number {
   const tallest = b.states.map((s) =>
@@ -140,7 +143,7 @@ export function writeCanvas(
         y,
         w: b.width,
         h,
-        title: `${sheet.title} · ${DEVICE_WORD[b.device]} · ${String(b.states.length)} حالة`,
+        title: `${sheet.title} · ${DEVICE_WORD[b.device]} · ${statesWord(b.states.length)}`,
         page: PAGE.id,
         is_interactive: true,
       };
