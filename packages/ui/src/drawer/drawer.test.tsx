@@ -3,9 +3,18 @@
 // edge in Arabic, the right in English), 400 px wide; `side="bottom"` rises from the bottom on a
 // tablet or phone with a named grabber. Focus starts on the first field, stays inside, and returns
 // to the trigger when Escape, the close button or a press outside closes it.
+import { useState } from 'react';
 import { describe, expect, it } from 'vitest';
 import { userEvent } from 'vitest/browser';
+import { type Person, people } from '../../test/fixtures.ts';
 import { expectAxeClean, renderDir } from '../../test/support/index.ts';
+import {
+  AlertDialog,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogTrigger,
+} from '../alert-dialog/alert-dialog.tsx';
+import { Button } from '../button/button.tsx';
 import { Input } from '../input/input.tsx';
 import { Drawer, DrawerActions, DrawerClose, DrawerContent, DrawerTrigger } from './drawer.tsx';
 
@@ -22,6 +31,57 @@ function EditAppointment({ side }: { side?: 'start' | 'end' | 'bottom' }) {
           <DrawerClose>إلغاء</DrawerClose>
         </DrawerActions>
       </DrawerContent>
+    </Drawer>
+  );
+}
+
+const [{ name: MEMBER }] = people(1, { seed: 11 }) as [Person];
+
+/**
+ * A drawer whose body scrolls, with a confirmation. `beside`: the confirmation is a sibling of
+ * the panel inside Drawer, opened by the page (as the team page's «لم تنسخ الرابط بعد»), so the
+ * whole panel goes inert under it. Otherwise it opens from a trigger inside the body and is
+ * rendered inside the panel.
+ */
+function DeactivateMember({ beside, live = false }: { beside: boolean; live?: boolean }) {
+  const [asking, setAsking] = useState(false);
+  const confirm = (
+    <AlertDialogContent title={`إيقاف حساب ${MEMBER}؟`} tone="danger">
+      <AlertDialogCancel>رجوع</AlertDialogCancel>
+    </AlertDialogContent>
+  );
+  return (
+    <Drawer>
+      <DrawerTrigger>فتح</DrawerTrigger>
+      <DrawerContent title={MEMBER}>
+        {Array.from({ length: 30 }, (_, i) => (
+          <p key={i}>سطر في سجل العضو رقم {i + 1}</p>
+        ))}
+        {/* A live region in the body (as the link's «نُسخ») stays out of the inert page. */}
+        {live && <p role="status" />}
+        <DrawerActions>
+          {beside ? (
+            <Button
+              variant="danger"
+              onClick={() => {
+                setAsking(true);
+              }}
+            >
+              إيقاف الحساب
+            </Button>
+          ) : (
+            <AlertDialog>
+              <AlertDialogTrigger variant="danger">إيقاف الحساب</AlertDialogTrigger>
+              {confirm}
+            </AlertDialog>
+          )}
+        </DrawerActions>
+      </DrawerContent>
+      {beside && (
+        <AlertDialog open={asking} onOpenChange={setAsking}>
+          {asking && confirm}
+        </AlertDialog>
+      )}
     </Drawer>
   );
 }
@@ -131,5 +191,53 @@ describe.each(DIRS)('Drawer in %s', (dir) => {
       await userEvent.keyboard('{Escape}');
       await screen.unmount();
     }
+  });
+
+  // A confirmation beside the panel makes the drawer inert (all of it, or all but a live region's
+  // ancestors); it is hidden from screen readers too, so axe does not count its scroll box as a
+  // region with nothing to focus (A-01-08 checkpoint 5). Back on the button once answered.
+  it('is hidden from screen readers under a confirmation beside it, and clean under axe', async () => {
+    for (const [theme, live] of [
+      ['light', true],
+      ['dark', false],
+    ] as const) {
+      const screen = await renderDir(<DeactivateMember beside live={live} />, { dir, theme });
+      await userEvent.click(screen.getByRole('button', { name: 'فتح' }));
+      const panel = screen.getByRole('dialog', { name: MEMBER });
+      await expect.element(panel).toBeVisible();
+      const el = panel.element() as HTMLElement;
+      await settled(el);
+      expect(el.getAttribute('aria-hidden')).toBeNull();
+      await userEvent.click(screen.getByRole('button', { name: 'إيقاف الحساب' }));
+      const confirm = screen.getByRole('alertdialog', { name: `إيقاف حساب ${MEMBER}؟` });
+      await expect.element(confirm).toBeVisible();
+      await poll(() => el.getAttribute('aria-hidden'), 'the drawer is hidden').toBe('true');
+      await expectAxeClean(document.body);
+      await userEvent.click(screen.getByRole('button', { name: 'رجوع' }));
+      await expect.element(confirm).not.toBeInTheDocument();
+      const button = screen.getByRole('button', { name: 'إيقاف الحساب' }).element();
+      await poll(() => document.activeElement, 'focus back on the button').toBe(button);
+      expect(el.getAttribute('aria-hidden'), 'not hidden once focus is back').toBeNull();
+      await userEvent.keyboard('{Escape}');
+      await screen.unmount();
+    }
+  });
+
+  // A confirmation opened inside the body lives inside the panel: hiding the panel would hide it.
+  it('stays exposed under a confirmation inside it, and clean under axe', async () => {
+    const screen = await renderDir(<DeactivateMember beside={false} />, { dir });
+    await userEvent.click(screen.getByRole('button', { name: 'فتح' }));
+    const panel = screen.getByRole('dialog', { name: MEMBER });
+    const el = panel.element() as HTMLElement;
+    await settled(el);
+    await userEvent.click(screen.getByRole('button', { name: 'إيقاف الحساب' }));
+    const confirm = screen.getByRole('alertdialog', { name: `إيقاف حساب ${MEMBER}؟` });
+    await expect.element(confirm).toBeVisible();
+    expect(el.contains(confirm.element())).toBe(true);
+    expect(el.getAttribute('aria-hidden')).toBeNull();
+    await expectAxeClean(document.body);
+    await userEvent.click(screen.getByRole('button', { name: 'رجوع' }));
+    await expect.element(confirm).not.toBeInTheDocument();
+    await screen.unmount();
   });
 });

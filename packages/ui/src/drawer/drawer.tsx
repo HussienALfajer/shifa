@@ -18,7 +18,7 @@ import {
   DrawerDescription,
   DrawerTitle,
 } from '@ui-sdk/react/drawer';
-import { createContext, type ReactNode, useContext, useRef } from 'react';
+import { createContext, type ReactNode, useCallback, useContext, useRef } from 'react';
 import { type ButtonVariant, buttonClasses } from '../button/button.tsx';
 import { Icon, type IconName } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
@@ -100,6 +100,41 @@ function initialFocus(content: HTMLElement | null): HTMLElement | null {
   return field ?? content.querySelector<HTMLElement>('[data-slot="drawer-close"]');
 }
 
+/**
+ * Hides the panel from screen readers while a modal beside it (an AlertDialog placed after
+ * DrawerContent) has made the drawer inert. Inert already keeps it from focus; `aria-hidden` says
+ * so to tools that read the tree (axe would otherwise count the scrolling body as a region with
+ * nothing to focus). The sign is the drawer's own close button: UI SDK keeps live regions and
+ * their ancestors out of the inert page, so the panel itself may stay live while everything
+ * around a `role="status"` goes inert. A popup opened inside the panel (a confirmation, a sheet
+ * menu) is a descendant and holds focus there: hiding the panel would hide it, so it is left.
+ * The attribute is set in the observer itself, not through a render, so it is gone before focus
+ * returns into the panel. Its own live regions are silent while it is hidden.
+ */
+function watchCovered(panel: HTMLElement): () => void {
+  const check = () => {
+    const close = panel.querySelector('[data-slot="drawer-close"]');
+    const inert = close !== null && close.closest('[inert]') !== null;
+    const inner =
+      panel.contains(panel.ownerDocument.activeElement) ||
+      panel.querySelector('[role="alertdialog"], [role="dialog"][aria-modal="true"]') !== null;
+    if (inert && !inner) panel.setAttribute('aria-hidden', 'true');
+    else panel.removeAttribute('aria-hidden');
+  };
+  check();
+  const observer = new MutationObserver(check);
+  // `childList` too: an inner modal that leaves the DOM under one beside it changes no `inert`.
+  observer.observe(panel.ownerDocument.body, {
+    attributes: true,
+    attributeFilter: ['inert'],
+    childList: true,
+    subtree: true,
+  });
+  return () => {
+    observer.disconnect();
+  };
+}
+
 const PANEL: Record<DrawerSide, string> = {
   end: 'h-full w-(--shifa-size-drawer) max-w-full rounded-s-overlay',
   start: 'h-full w-(--shifa-size-drawer) max-w-full rounded-e-overlay',
@@ -133,12 +168,20 @@ export function DrawerContent({
 }: DrawerContentProps) {
   const side = useContext(SideContext);
   const ref = useRef<HTMLDivElement>(null);
+  const stop = useRef<(() => void) | null>(null);
+  // Stable, so it runs once per panel. Stopped on the `null` call: UI SDK may merge refs without
+  // passing a React 19 ref cleanup on.
+  const attach = useCallback((node: HTMLDivElement | null) => {
+    stop.current?.();
+    stop.current = node === null ? null : watchCovered(node);
+    ref.current = node;
+  }, []);
   return (
     <>
       <BaseDrawerBackdrop className="fixed inset-0 bg-bg-overlay" />
       <BaseDrawerContent
         {...data}
-        ref={ref}
+        ref={attach}
         initialFocus={() => initialFocus(ref.current)}
         className={cn(
           'flex flex-col bg-bg-surface text-text-default shadow-overlay',
