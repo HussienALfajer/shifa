@@ -17,10 +17,10 @@ Write the spec for: $ARGUMENTS
    - Money, abuse and privacy considerations (tenant scoping, audit, what must never be logged).
    - Verification contract: for every criterion, the exact test or check that proves it (unit, integration, isolation suite, browser run against the real backend, golden test).
    - Out of scope; open questions (must be empty before approval).
-4. If the feature has UI, write a screen inventory in words; do not draw (ADR-0042, OD-80; screens are drawn per UI batch after the API, `/slice-plan`):
+4. If the feature has UI, write a screen inventory in words; do not draw (ADR-0042, OD-80; the design slice draws them before the API, ADR-0047, `/slice-plan`):
    - each screen: name, purpose, sizes (desktop, 10-inch tablet, phone as the feature needs), and every state with the data it shows and the actions it offers (empty, loading, error, permission-denied where they apply);
-   - group the screens into UI batches, each one later UI slice;
-   - add to the verification contract: "UI batch slice: drawings and analysis approved at its first checkpoint; browser screenshot compared with the approved drawing". Do not commit artifact links (public repository).
+   - group the screens by app (the likely checkpoints of the design slice);
+   - add to the verification contract: "Design slice: drawings, screen-to-API contract and analysis approved; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing". Do not commit artifact links (public repository).
 5. Ask the owner to approve the spec only (no drawings at this step). A new decision becomes a new ADR (`docs/adr/`), never an edit to an accepted one.
 
 Keep the spec under ~8 KB; split by sub-feature if it grows.

@@ -258,9 +258,9 @@ The layers of the guide are the token layers: Foundations = primitive, Theme = b
 Every new design for Shifa (a component sheet, a screen, a prototype, a deck) follows these steps, in any session:
 1. **Use the Shifa Design System.** Find it by name among the account's Design System artifacts (it is not the account default, so name it), read its `project/README.md` first, and install it on the canvas so its tokens, type styles, fonts and (from 0.4-03) components are the ones drawn with. Never another design system, a look-alike or an own palette.
 2. **Keep the Shifa Guide's rules** (06 Rules, the README's usage rules): meanings not palette steps; status never by colour alone; red for critical clinical alerts only; locked colours never themed; contrast in light and dark; Arabic RTL first with Western digits; synthetic data only.
-3. **Missing value or component:** do not invent a one-off on the canvas. A missing token is added in `packages/tokens`, regenerated and synced first. A missing component found by a UI batch is drawn in that batch from the system's tokens and real components: on its own sheet with every state and at once on every screen that needs it; the owner approves it or asks for changes; then it is built in `packages/ui` with `/ui-component` and synced before the screens' code uses it (ADR-0046).
-5. **Use the whole API.** A screen batch uses every route, response field and error its API gives, or names why one is not shown; missing or unprofessional API answers are reported to the owner and fixed in the API (ADR-0046).
-4. **Exploration outside the system** (for example comparing palettes) is allowed only on a separate canvas, never inside the Shifa Design System, and the owner's choice then goes into code first.
+3. **Missing value or component:** do not invent a one-off on the canvas. A missing token is added in `packages/tokens`, regenerated and synced first. A missing component found by the design slice (ADR-0047) is drawn in that slice from the system's tokens and real components: on its own sheet with every state and at once on every screen that needs it; the owner approves it or asks for changes; then it is built in `packages/ui` with `/ui-component` and synced before the screens' code uses it (ADR-0046).
+4. **Use the whole API.** The design slice's contract table names every route, response field and error the screens use, or why one is not shown; missing or unprofessional API answers are reported to the owner and fixed in the API, never in the client (ADR-0046, ADR-0047).
+5. **Exploration outside the system** (for example comparing palettes) is allowed only on a separate canvas, never inside the Shifa Design System, and the owner's choice then goes into code first.
 
 ### Direction of flow
 
@@ -283,15 +283,19 @@ approved sheet ──▶ component code            approved screen ──▶ scr
 
 ### Screen cycle (Phase A onward)
 
-Amended by [ADR-0042](../adr/0042-screens-drawn-per-ui-batch-with-analysis.md) (owner, 2026-11-23).
+Amended by [ADR-0042](../adr/0042-screens-drawn-per-ui-batch-with-analysis.md) (2026-11-23), [ADR-0046](../adr/0046-full-api-use-and-components-drawn-with-screens.md) (2026-11-24) and [ADR-0047](../adr/0047-screens-drawn-before-the-api-with-a-contract.md) (owner, 2026-11-25; from A-02 on).
 
 1. **Inventory in `/spec`:** the spec lists each screen in words: purpose, sizes, every state and the data and actions it shows. No drawing.
-2. **Draw at the UI batch:** after the API is built, the first checkpoint of a UI batch slice draws its screens (one or several) in Arabic RTL, light and dark, at the sizes needed, with synthetic data. The Shifa Design System is installed and used throughout: its real components from the bundle, its tokens for every colour, space, radius, shadow and size, its type styles; no literal colour or own value; the artboards are checked for both before they are shown (OD-80).
-   - The batch is a working prototype: artboards marked interactive, fields and buttons work, the flow runs from screen to screen, and every listed state is reachable in Play; the owner tests it there before approving (OD-80).
-3. **Analyse:** with the drawings, a written analysis in the slice file: API gaps (fixed in the slice or a small slice before it, never worked around in the client), spec gaps, professional and creative improvements with their cost (the owner accepts or declines each), and missing components.
-4. **Approval:** the owner approves the batch's drawings; nothing in it is coded before.
-5. **Code:** built to match; the slice compares the browser screenshot (real backend) with the drawing and fixes or explains each difference.
-6. **Missing component:** it goes through the component cycle first; no one-off inside a screen. Drawings made before their batch are drafts, reviewed at the batch.
+2. **Draw in the design slice, before the API:** the first slice after the spec draws every screen of the spec in Arabic RTL, light and dark, at the sizes needed, with synthetic data. A large set is approved at several checkpoints (for example one per app). The Shifa Design System is installed and used throughout: its real components from the bundle, its tokens for every colour, space, radius, shadow and size, its type styles; no literal colour or own value; the artboards are checked for both before they are shown (OD-80).
+   - The drawings are a working prototype: artboards marked interactive, fields and buttons work, the flow runs from screen to screen, and every listed state is reachable in Play; the owner tests it there before approving (OD-80).
+3. **Analyse and write the contract:** with the drawings, a written analysis in the slice file:
+   - the **screen-to-API contract table**: for every screen and state, the route (existing or planned), request and response fields, every error code and status with what the screen does, and the permission; anything unprofessional in the existing API (ADR-0046);
+   - spec gaps, added to the spec;
+   - improvements, each with what it adds and its estimated lines, accepted or declined by the owner one by one (accepted ones are drawn and become spec criteria);
+   - missing components, drawn on their own sheet with every state and on their screens (ADR-0046).
+4. **Approval and re-plan:** the owner approves the drawings, the contract and the improvements; `/slice-plan` re-estimates the slices and the owner sees the final count before building.
+5. **API slices:** each delivers its contract rows, proven by contract tests. A change forced during the build updates the row and the drawing in the same slice and is reported to the owner; it is never worked around in the client.
+6. **UI code slices, last:** each starts by checking the drawings and the contract against the built API (a mismatch is fixed in the API), applies any design-system release to the drawings, builds the approved missing components with `/ui-component` and syncs them, then builds the screens. The browser screenshot (real backend) is compared with the drawing and each difference is fixed or explained.
 
 ### Limits
 
@@ -303,7 +307,7 @@ Amended by [ADR-0042](../adr/0042-screens-drawn-per-ui-batch-with-analysis.md) (
 
 ## Working with Claude Code
 
-- `/spec` lists the screens of a feature in words; the first checkpoint of each UI batch slice draws them with the analysis and gets the owner's approval; `/build-slice` compares the built screen with the approved drawing (ADR-0040, ADR-0042).
+- `/spec` lists the screens of a feature in words; the design slice draws them before the API with the analysis and the contract and gets the owner's approval; `/slice-plan` orders design → API → UI code; `/build-slice` proves each contract row in the API slices and compares the built screen with the approved drawing (ADR-0040, ADR-0047).
 - The `/ui-component` skill holds the component checklist (the design sheet and its approval, API conventions, RTL, a11y, stories, tests, the sync to the design system) and points to the best existing component to copy.
 - The upstream `ui-sdk` agent skill is not vendored; `/ui-component` (`references/ui-sdk.md`) holds our notes, re-read at every UI SDK upgrade (ADR-0041).
 

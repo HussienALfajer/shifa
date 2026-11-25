@@ -1,7 +1,7 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
 Status: Approved by the owner 2026-11-25 · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
-Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046; OD-108 to OD-116. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn per UI batch after the API (ADR-0042).
+Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
 The platform decides per clinic what it may use and how it behaves, without code per customer: a plan per clinic type with per-clinic overrides (entitlements and limits), short-lived engineering flags, and a settings cascade that shows where each value comes from. The super admin gets the console a pilot needs: time-boxed read-only support access the owner can see and end, cities and areas, announcements and daily usage. Later specs only register their keys.
@@ -73,9 +73,9 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
-| Screens | UI batch slice: drawings and analysis approved at its first checkpoint; browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
+| Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
-## Screens (inventory, ADR-0042)
+## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)
 Admin web (desktop, tablet), Arabic RTL, light and dark:
 - **Clinic page, «الاشتراك والحدود»**: plan from type, each key with plan value, override (value, reason, expiry) and effective value; set or remove an override; type change with the preview. States: loading, error, expired override shown as such.
 - **Clinic page, «الإعدادات»**: keys with effective value and source; set and lock or unlock. State: no keys.
@@ -93,7 +93,7 @@ Clinic web (desktop, tablet, phone):
 - **Branch form and card**: city and area pickers (Arabic search), shown on the card.
 - **Idle setting**: source shown, locked state.
 
-UI batches: (1) admin web clinic page tabs and clinics list; (2) admin web flags, announcements, cities; (3) clinic web items.
+Drawing: all screens in the design slice A-02-01 (checkpoint 1 admin web, checkpoint 2 clinic web), before any API. UI code, after the API: (1) admin web clinic page tabs and clinics list; (2) admin web flags, announcements, cities; (3) clinic web items.
 
 ## Out of scope
 Prices and billing of plans (OD-07); add-on and plan editing screens; support write elevation; doctor verification, specialty assignment and specialty packs' values (A-11); drug, diagnosis, procedure and template catalogues (A-07, A-08, Phase B and C); WhatsApp session health (A-09); usage counters of later features (their specs); custom-field limit enforcement (A-03); automatic action at the subscription end date; percentage rollouts.

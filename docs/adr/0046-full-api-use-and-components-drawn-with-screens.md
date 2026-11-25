@@ -1,6 +1,6 @@
 # ADR-0046: Screens use the whole API; a missing component is drawn with its screens
 
-Status: Accepted (owner, 2026-11-24) · Date: 2026-11-24 · Deciders: product owner (with Claude) · Amends: [ADR-0042](0042-screens-drawn-per-ui-batch-with-analysis.md) (analysis, design-system gaps), [ADR-0040](0040-design-first-in-claude-design-code-as-source.md) (where a component sheet is drawn)
+Status: Accepted (owner, 2026-11-24); the route, field and error table is made in the design slice before the API, amended by [ADR-0047](0047-screens-drawn-before-the-api-with-a-contract.md) · Date: 2026-11-24 · Deciders: product owner (with Claude) · Amends: [ADR-0042](0042-screens-drawn-per-ui-batch-with-analysis.md) (analysis, design-system gaps), [ADR-0040](0040-design-first-in-claude-design-code-as-source.md) (where a component sheet is drawn)
 
 ## Context
 ADR-0042 has each UI batch draw its screens after the API with an analysis of API gaps. It does not say that the screens must use everything the API already gives, so a screen could ignore a field (a lock's end time, a clinic's last activity, a link's expiry) and look poorer than the backend allows. The re-plan of A-01-07 (OD-94) showed the opposite risk too: gaps such as the signed-in person's name were found only by reading every route against every screen.
