@@ -197,7 +197,7 @@ function Chooser({ userId }: { userId: string }) {
         <EmptyState
           size="page"
           art="star"
-          headingLevel={2}
+          headingLevel={1}
           title={text('noClinicTitle')}
           description={text('noClinicText')}
           actions={
