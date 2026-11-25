@@ -19,7 +19,7 @@ A field of three segments day / month / year (14 / 03 / 1987), left to right in 
 - Month and year panel: press the heading, then a year, then a month: two presses from November 2026 to March 1987. In the years Up/Down move a year, Page Up/Down ten, typing «1987» jumps there; Enter goes to the months. Escape steps back (months, years, days) without closing. Months outside `min`/`max` are pale and cannot be chosen.
 
 ## What you provide
-`label`, `defaultValue` (an ISO date «2026-11-24», or `value` with `onValueChange` in code), `min`, `max`, `maxMessage`, `showAge`, `hint`, `error`, `disabled`.
+`label`, `defaultValue` (an ISO date «2026-11-24», or `value` with `onValueChange` in code), `min`, `max`, `maxMessage`, `showAge`, `hint`, `error`, `disabled`; `defaultOpen` shows the calendar open at rest on the value's month, `defaultView: 'months'` the month and year panel; `open` with `onOpenChange` in code (OD-119).
 
 ## Tokens
 `shifa-input-height`, `shifa-input-border`, `shifa-color-brand-primary` (today, the chosen day, year and month), `shifa-color-brand-on-primary`, `shifa-color-selection-strong` (the focused segment), `shifa-color-text-disabled`, `shifa-size-popover`, `shifa-size-year-list-width`, `shifa-size-year-list-height`, `shifa-shadow-dropdown`.

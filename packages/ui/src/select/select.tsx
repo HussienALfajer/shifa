@@ -47,6 +47,11 @@ export interface SelectProps {
   disabled?: boolean | undefined;
   required?: boolean | undefined;
   name?: string | undefined;
+  /** The list open or closed, controlled; with `onOpenChange`. */
+  open?: boolean | undefined;
+  /** The list open at mount (closed by default): to show it at rest, as the canvas does. */
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   className?: string | undefined;
 }
 
@@ -99,6 +104,9 @@ export function Select({
   disabled,
   required,
   name,
+  open,
+  defaultOpen,
+  onOpenChange,
   className,
 }: SelectProps) {
   const labels = new Map(items.map((item) => [item.value, item.label]));
@@ -123,6 +131,15 @@ export function Select({
         {...(defaultValue === undefined ? {} : { defaultValue })}
         {...(placeholder === undefined ? {} : { placeholder })}
         {...(required === undefined ? {} : { required })}
+        {...(open === undefined ? {} : { open })}
+        {...(defaultOpen === undefined ? {} : { defaultOpen })}
+        {...(onOpenChange === undefined
+          ? {}
+          : {
+              onOpenChange: (next: boolean) => {
+                onOpenChange(next);
+              },
+            })}
         {...(onValueChange === undefined
           ? {}
           : {

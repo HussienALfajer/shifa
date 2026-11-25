@@ -15,7 +15,7 @@ A field like an input, with a caret at its logical end and the label above. The 
 - Enter chooses and closes; Escape closes and keeps the value. Focus returns to the field.
 
 ## What you provide
-`label`, `items` (`value`, `label`, `disabled`, `hint`), `defaultValue` (or `value` with `onValueChange` in code), `placeholder`, `hint`, `error`, `disabled`.
+`label`, `items` (`value`, `label`, `disabled`, `hint`), `defaultValue` (or `value` with `onValueChange` in code), `placeholder`, `hint`, `error`, `disabled`; `defaultOpen` shows the list open at rest (or `open` with `onOpenChange` in code; OD-119).
 
 ## Tokens
 `shifa-input-height`, `shifa-input-border`, `shifa-input-bg`, `shifa-input-radius`, `shifa-size-row`, `shifa-color-selection-default`, `shifa-color-status-danger-fg`, `shifa-shadow-dropdown`.

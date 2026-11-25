@@ -7,7 +7,9 @@
 // what was typed (the sheet's rule), Arabic included. Slice 0.4-12 (OD-40): both sides are folded
 // by `foldArabic`, so «احمد» finds «أحمد», «فاطمه» finds «فاطمة» and harakat do not matter; the
 // typed part is marked through the same folding. The number of results is announced once typing
-// pauses (UI SDK's `announcement`), in Arabic in RTL and in English in LTR.
+// pauses (UI SDK's `announcement`), in Arabic in RTL and in English in LTR. OD-119: it can open at
+// rest (`defaultOpen`) with typed text (`defaultInputValue`); the empty message's box is hidden
+// while there are matches.
 import {
   Combobox as BaseCombobox,
   ComboboxItem as BaseComboboxItem,
@@ -15,10 +17,10 @@ import {
   ComboboxContent,
   ComboboxEmpty,
   ComboboxInput,
-  ComboboxItemText,
   ComboboxList,
+  createComboboxController,
 } from '@ui-sdk/react/combobox';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
@@ -49,6 +51,13 @@ export interface ComboboxProps {
   error?: ReactNode | undefined;
   disabled?: boolean | undefined;
   name?: string | undefined;
+  /** The list open or closed, controlled; with `onOpenChange`. */
+  open?: boolean | undefined;
+  /** The list open at mount (closed by default): to show it at rest, as the canvas does. */
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
+  /** The text in the field at mount, as if typed: the list shows its matches («عب»). */
+  defaultInputValue?: string | undefined;
   className?: string | undefined;
 }
 
@@ -125,14 +134,27 @@ export function Combobox({
   error,
   disabled,
   name,
+  open,
+  defaultOpen,
+  onOpenChange,
+  defaultInputValue,
   className,
 }: ComboboxProps) {
   // The typed text, so only the matching items are rendered (UI SDK would keep the others in the
   // page, hidden), and the field box the list is placed against (not the bare input).
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(defaultInputValue ?? '');
   const [field, setField] = useState<HTMLDivElement | null>(null);
   const dir = useDirection();
   const shown = items.filter((item) => matchesWordStart(item.label, query));
+  // The text at mount goes in as typing would (UI SDK filters, and says «no match», only for
+  // typed text; a plain starting query is treated as a chosen item's label).
+  const [controller] = useState(createComboboxController);
+  const [initialText] = useState(defaultInputValue);
+  useEffect(() => {
+    if (initialText !== undefined && initialText !== '') {
+      controller.setQuery(initialText, { reason: 'input-change' });
+    }
+  }, [controller, initialText]);
   return (
     <FieldShell
       label={label}
@@ -166,8 +188,18 @@ export function Combobox({
         onQueryChange={(next: string, details: { reason: string }) => {
           setQuery(details.reason === 'input-change' ? next : '');
         }}
+        controller={controller}
         {...(value === undefined ? {} : { value })}
         {...(defaultValue === undefined ? {} : { defaultValue })}
+        {...(open === undefined ? {} : { open })}
+        {...(defaultOpen === undefined ? {} : { defaultOpen })}
+        {...(onOpenChange === undefined
+          ? {}
+          : {
+              onOpenChange: (next: boolean) => {
+                onOpenChange(next);
+              },
+            })}
         {...(onValueChange === undefined
           ? {}
           : {
@@ -200,7 +232,10 @@ export function Combobox({
           className="m-0 min-w-(--anchor-width) overflow-visible border-0 bg-transparent p-0"
         >
           <ComboboxEmpty
-            className={cn(FLOATING_BOX, 'px-3 py-2 text-250 leading-body text-text-muted')}
+            className={cn(
+              FLOATING_BOX,
+              'px-3 py-2 text-250 leading-body text-text-muted empty:hidden',
+            )}
           >
             {emptyMessage}
           </ComboboxEmpty>
@@ -213,7 +248,9 @@ export function Combobox({
                 {...(item.disabled === true ? { disabled: true } : {})}
                 className={ITEM}
               >
-                <ComboboxItemText className="min-w-0">{marked(item.label, query)}</ComboboxItemText>
+                {/* Not UI SDK's ComboboxItemText: it rewrites its children as the plain label
+                    (with our function filter it marks nothing), which dropped the bold. */}
+                <span className="min-w-0">{marked(item.label, query)}</span>
                 {item.description !== undefined && (
                   <span className="text-200 leading-body text-text-muted">{item.description}</span>
                 )}
