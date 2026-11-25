@@ -1,8 +1,9 @@
 // The boards of the "Clinic Web Screens" page: one sheet per screen, a desktop window (1440) and a
 // phone (390), each showing any state of the screen in either theme, chosen in the canvas's Tweaks
 // panel (ADR-0049). `renders()` lists every state, device and theme the check opens.
-import { SHEETS } from './scenarios/index.ts';
+
 import type { Scenario, Sheet } from './scenario.ts';
+import { SHEETS } from './scenarios/index.ts';
 
 export type Theme = 'light' | 'dark';
 export type Device = 'desktop' | 'phone';
