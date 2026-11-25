@@ -31,6 +31,7 @@ import { rename } from './member-corrections.ts';
 import { findMember, holdsOwnerRole, listMembers, memberDetail } from './members.read.ts';
 import {
   audit,
+  heldRoles,
   isLastOwner,
   lockMemberPhone,
   lockOwners,
@@ -94,7 +95,7 @@ export class TeamService {
     const purpose = (await this.accounts.hasAccount(phone.e164)) ? 'invitation' : 'member_setup';
     const link = this.accounts.newLink();
     return this.tenants.run(scope, async (tx) => {
-      const roles = await validRoles(tx, input.roles);
+      const { roles } = await validRoles(tx, input.roles);
       // Two adds of one phone at once: the second waits, then sees the first (409, never 500).
       await lockMemberPhone(tx, phone.e164);
       const [taken] = await tx
@@ -135,12 +136,14 @@ export class TeamService {
     requestId: string,
   ): Promise<MemberDetail> {
     return this.tenants.run(scope, async (tx) => {
+      // The owners' lock before any row lock, as deactivate takes them (security review N3).
+      if (input.roles) await lockOwners(tx);
       let row = await this.#member(tx, id);
       if (input.permissions) this.#checkSwitches(input.permissions.map((p) => p.key));
       if (input.name !== undefined) row = await rename(tx, scope, row, input.name, requestId);
       if (input.roles) {
-        await lockOwners(tx);
-        const roles = await validRoles(tx, input.roles, { allowEmpty: true });
+        const held = await heldRoles(tx, row.id);
+        const { roles, live } = await validRoles(tx, input.roles, { allowEmpty: true, held });
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
         // OD-97: only the owner themselves (or the super admin) removes an owner's role, so a
@@ -151,8 +154,9 @@ export class TeamService {
         await tx.delete(roleAssignment).where(eq(roleAssignment.membershipId, row.id));
         await writeRoles(tx, scope.tenantId, row.id, roles);
         await audit(tx, scope, 'member.roles_changed', row.id, requestId);
-        // No role left: the member holds nothing here; their sessions here end (criterion 4).
-        if (roles.length === 0) await this.#endSessions(row, scope, requestId);
+        // No role left, or only roles in archived branches: the member can work nowhere here;
+        // their sessions here end (criterion 4), as archiving would have (security review N1).
+        if (!live) await this.#endSessions(row, scope, requestId);
       }
       for (const { key, granted } of input.permissions ?? []) {
         if (granted === null) {

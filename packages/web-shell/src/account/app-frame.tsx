@@ -4,7 +4,8 @@
 // the line (الرئيسية, the owner's «إعدادات العيادة», حسابي, خروج). On a phone the navigation
 // opens over the page from a menu button. The bar's clinic is the header switcher (A-01-08
 // checkpoint 2, `switcher/clinic-switcher.tsx`); the owner's «الفريق» came with checkpoint 3
-// (`team/`), «الفروع» arrives with checkpoint 4.
+// (`team/`), «الفروع» with checkpoint 4 (`branches/`; not for a solo clinic, whose owner adds the
+// second branch from the clinic's settings).
 import type { CommonKey } from '@shifa/i18n';
 import { Avatar, Badge, Button, cn, Icon, IconButton, type IconName } from '@shifa/ui';
 import { Link } from '@tanstack/react-router';
@@ -15,23 +16,24 @@ import { useIsPhone } from '../auth/media.ts';
 import { ClinicSwitcher } from '../switcher/clinic-switcher.tsx';
 import { useText } from '../text.ts';
 import { useSignOut } from '../use-sign-out.ts';
-import { isOwner, useMfaStatus, useProfile, useSignedIn } from './data.ts';
+import { isOwner, useActiveClinic, useMfaStatus, useProfile, useSignedIn } from './data.ts';
 
 export const LOW_CODES = 2;
 
-type Place = 'home' | 'account' | 'settings' | 'team';
+type Place = 'home' | 'account' | 'settings' | 'team' | 'branches';
 
 /** The owner's places: a member has no item for them. */
-const OWNER_ONLY: ReadonlySet<Place> = new Set(['team', 'settings']);
+const OWNER_ONLY: ReadonlySet<Place> = new Set(['team', 'branches', 'settings']);
 
 const ITEMS: {
   place: Place;
-  to: '/' | '/account' | '/settings' | '/team';
+  to: '/' | '/account' | '/settings' | '/team' | '/branches';
   icon: IconName;
   key: CommonKey;
 }[] = [
   { place: 'home', to: '/', icon: 'house', key: 'navHome' },
   { place: 'team', to: '/team', icon: 'users', key: 'navTeam' },
+  { place: 'branches', to: '/branches', icon: 'buildings', key: 'navBranches' },
   { place: 'settings', to: '/settings', icon: 'gear', key: 'navClinicSettings' },
   { place: 'account', to: '/account', icon: 'user', key: 'navAccount' },
 ];
@@ -69,7 +71,11 @@ export function AppFrame({
   const userId = session?.userId ?? '';
   const { data: profile } = useProfile(userId);
   const owner = isOwner(session);
+  // Branch screens only once the clinic is known to have two or more branches.
+  const multiBranch = useActiveClinic(session)?.solo === false;
   const showNav = !phone || menu;
+  const shown = (place: Place) =>
+    (!OWNER_ONLY.has(place) || owner) && (place !== 'branches' || multiBranch);
   return (
     <div className="flex min-h-dvh flex-col bg-bg-app font-ui text-text-default">
       <header className="flex h-(--shifa-size-row) shrink-0 items-center gap-3 border-b border-border-default bg-bg-surface px-4">
@@ -109,7 +115,7 @@ export function AppFrame({
               phone && 'fixed start-0 top-(--shifa-size-row) bottom-0 z-10 shadow-overlay',
             )}
           >
-            {ITEMS.filter((item) => !OWNER_ONLY.has(item.place) || owner).map((item) => (
+            {ITEMS.filter((item) => shown(item.place)).map((item) => (
               <Link
                 key={item.place}
                 to={item.to}

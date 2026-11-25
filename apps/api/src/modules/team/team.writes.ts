@@ -12,7 +12,7 @@ import {
   setupLink,
   type Tx,
 } from '@shifa/db';
-import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull, sql } from 'drizzle-orm';
 import type { RequestScope } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -45,35 +45,67 @@ export async function isLastOwner(tx: Tx, row: MembershipRow): Promise<boolean> 
   return owners.length === 1 && owners[0] === row.id;
 }
 
-/** Distinct assignments; owners tenant-wide; branches active and of this clinic → else 400. */
+const roleKey = (r: RoleScopeInput) => `${r.role}:${r.branchId ?? ''}`;
+
+/** The member's current assignments (read before an edit replaces them). */
+export async function heldRoles(tx: Tx, membershipId: string): Promise<RoleScopeInput[]> {
+  return tx
+    .select({ role: roleAssignment.role, branchId: roleAssignment.branchId })
+    .from(roleAssignment)
+    .where(eq(roleAssignment.membershipId, membershipId));
+}
+
+export interface ValidRoles {
+  roles: RoleScopeInput[];
+  /** A clinic-wide role or one in an active branch: the member can still work here. */
+  live: boolean;
+}
+
+/**
+ * Distinct assignments; owners tenant-wide; branches of this clinic (else 400) and active (else
+ * 409 `branch_archived`). An assignment in an archived branch that is in `held` (the member's
+ * own, kept for a restore, OD-105) passes, so an edit can send it back (OD-107); a new one, even
+ * another role in the same archived branch, is refused. Ids are compared lower-cased, as the
+ * database returns them: `z.uuid()` accepts upper case (security review B1).
+ */
 export async function validRoles(
   tx: Tx,
   input: readonly RoleScopeInput[],
-  { allowEmpty = false } = {},
-): Promise<RoleScopeInput[]> {
+  { allowEmpty = false, held = [] as readonly RoleScopeInput[] } = {},
+): Promise<ValidRoles> {
   if (input.length === 0 && !allowEmpty) {
     throw new RequestValidationError([{ path: 'body.roles', code: 'too_small' }]);
   }
   const seen = new Map<string, RoleScopeInput>();
-  for (const r of input) seen.set(`${r.role}:${r.branchId ?? ''}`, r);
+  for (const r of input) {
+    const one = { role: r.role, branchId: r.branchId?.toLowerCase() ?? null };
+    seen.set(roleKey(one), one);
+  }
   const roles = [...seen.values()];
   const ownerInBranch = roles.findIndex((r) => r.role === 'owner' && r.branchId !== null);
   if (ownerInBranch >= 0) {
     throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
   }
   const branchIds = [...new Set(roles.flatMap((r) => (r.branchId ? [r.branchId] : [])))];
-  if (branchIds.length > 0) {
-    const found = await tx
-      .select({ id: branch.id, archivedAt: branch.archivedAt })
-      .from(branch)
-      .where(inArray(branch.id, branchIds));
-    if (found.length !== branchIds.length) {
-      throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
-    }
-    // An archived branch leaves the role picker (A-01b criterion 9).
-    if (found.some((b) => b.archivedAt !== null)) throw new ApiError(409, 'branch_archived');
+  if (branchIds.length === 0) return { roles, live: roles.length > 0 };
+  const found = await tx
+    .select({ id: branch.id, archivedAt: branch.archivedAt })
+    .from(branch)
+    .where(inArray(branch.id, branchIds))
+    // In id order, as archiving locks them (security review N2). An archive at the same time
+    // waits for this write (it locks the branch for update), so it never lands between the
+    // check and the new assignment.
+    .orderBy(asc(branch.id))
+    .for('share');
+  if (found.length !== branchIds.length) {
+    throw new RequestValidationError([{ path: 'body.roles', code: 'invalid_value' }]);
   }
-  return roles;
+  // An archived branch leaves the role picker (A-01b criterion 9); a held one stays (OD-107).
+  const archived = new Set(found.filter((b) => b.archivedAt !== null).map((b) => b.id));
+  const kept = new Set(held.map(roleKey));
+  const fresh = roles.some((r) => r.branchId && archived.has(r.branchId) && !kept.has(roleKey(r)));
+  if (fresh) throw new ApiError(409, 'branch_archived');
+  return { roles, live: roles.some((r) => r.branchId === null || !archived.has(r.branchId)) };
 }
 
 export async function writeRoles(

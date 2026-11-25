@@ -208,7 +208,8 @@ export const teamUpdateMember = defineContract({
   path: '/team/members/:id',
   summary: 'Change a member’s name, roles and sensitive toggles',
   request: { params: MemberIdParams, body: UpdateMemberRequest },
-  // 400 `validation_failed`, `permission_not_sensitive`; 409 `last_owner`, `branch_archived`, or
+  // 400 `validation_failed`, `permission_not_sensitive`; 409 `last_owner`, `branch_archived` (a
+  // new assignment in an archived branch; one the member already holds there is kept, OD-107), or
   // `owner_role_protected` when another owner's owner role would be removed (OD-97: only they or
   // the super admin may).
   responses: { 200: MemberDetail, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },

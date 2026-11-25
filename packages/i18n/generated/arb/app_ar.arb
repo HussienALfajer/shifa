@@ -108,9 +108,197 @@
   "@commonBack": {
     "description": "common.back"
   },
+  "commonBranchAddSubmit": "إضافة الفرع",
+  "@commonBranchAddSubmit": {
+    "description": "common.branchAddSubmit"
+  },
+  "commonBranchAddTitle": "إضافة فرع",
+  "@commonBranchAddTitle": {
+    "description": "common.branchAddTitle"
+  },
+  "commonBranchAdded": "أُضيف {name}",
+  "@commonBranchAdded": {
+    "description": "common.branchAdded",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchAddress": "العنوان",
+  "@commonBranchAddress": {
+    "description": "common.branchAddress"
+  },
+  "commonBranchArchive": "أرشفة",
+  "@commonBranchArchive": {
+    "description": "common.branchArchive"
+  },
+  "commonBranchArchiveAction": "أرشفة الفرع",
+  "@commonBranchArchiveAction": {
+    "description": "common.branchArchiveAction"
+  },
+  "commonBranchArchiveEnds": "{count, plural, zero {لن تنتهي جلسة أحد.} one {تنتهي جلسة {names} هنا لأنه لا فرع نشط له غيره.} two {تنتهي جلستا {names} هنا لأنه لا فرع نشط لهما غيره.} few {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.} many {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.} other {تنتهي جلسات هؤلاء هنا لأنه لا فرع نشط لهم غيره: {names}.}}",
+  "@commonBranchArchiveEnds": {
+    "description": "common.branchArchiveEnds",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchArchiveNobody": "لن تنتهي جلسة أحد.",
+  "@commonBranchArchiveNobody": {
+    "description": "common.branchArchiveNobody"
+  },
+  "commonBranchArchivePreviewFailed": "لم نقرأ من سيتأثر بالأرشفة. أعد المحاولة.",
+  "@commonBranchArchivePreviewFailed": {
+    "description": "common.branchArchivePreviewFailed"
+  },
+  "commonBranchArchiveReading": "نقرأ من سيتأثر…",
+  "@commonBranchArchiveReading": {
+    "description": "common.branchArchiveReading"
+  },
+  "commonBranchArchiveText": "يخرج من مبدّل الفروع ومن اختيار الأدوار. تبقى أدوار من فيه محفوظة، وتعود إن استعدته.",
+  "@commonBranchArchiveText": {
+    "description": "common.branchArchiveText"
+  },
+  "commonBranchArchiveTitle": "أرشفة {name}؟",
+  "@commonBranchArchiveTitle": {
+    "description": "common.branchArchiveTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchArchived": "أُرشف {name}",
+  "@commonBranchArchived": {
+    "description": "common.branchArchived",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchArchivedOn": "أُرشف {date}",
+  "@commonBranchArchivedOn": {
+    "description": "common.branchArchivedOn",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
   "commonBranchBack": "كل العيادات",
   "@commonBranchBack": {
     "description": "common.branchBack"
+  },
+  "commonBranchEdit": "تعديل",
+  "@commonBranchEdit": {
+    "description": "common.branchEdit"
+  },
+  "commonBranchEditTitle": "تعديل {name}",
+  "@commonBranchEditTitle": {
+    "description": "common.branchEditTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchGoneArchivedText": "أرشفه أحد في الأثناء، فنُقل إلى الفروع المؤرشفة. استعده إن أردت تعديله.",
+  "@commonBranchGoneArchivedText": {
+    "description": "common.branchGoneArchivedText"
+  },
+  "commonBranchGoneArchivedTitle": "أُرشف هذا الفرع",
+  "@commonBranchGoneArchivedTitle": {
+    "description": "common.branchGoneArchivedTitle"
+  },
+  "commonBranchGoneText": "حدّثنا القائمة.",
+  "@commonBranchGoneText": {
+    "description": "common.branchGoneText"
+  },
+  "commonBranchGoneTitle": "لم يعد هذا الفرع موجوداً",
+  "@commonBranchGoneTitle": {
+    "description": "common.branchGoneTitle"
+  },
+  "commonBranchLastActive": "هذا آخر فرع نشط؛ لا تبقى العيادة بلا فرع.",
+  "@commonBranchLastActive": {
+    "description": "common.branchLastActive"
+  },
+  "commonBranchMembers": "{count, plural, zero {في فريقه: لا أحد بعد} one {في فريقه: {count}} two {في فريقه: {count}} few {في فريقه: {count}} many {في فريقه: {count}} other {في فريقه: {count}}}",
+  "@commonBranchMembers": {
+    "description": "common.branchMembers",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonBranchName": "اسم الفرع",
+  "@commonBranchName": {
+    "description": "common.branchName"
+  },
+  "commonBranchNameMissing": "اكتب اسم الفرع.",
+  "@commonBranchNameMissing": {
+    "description": "common.branchNameMissing"
+  },
+  "commonBranchNetworkText": "لم نعرف إن تمّ ذلك. حدّثنا القائمة؛ تحقّق منها ثم أعد المحاولة إن لزم.",
+  "@commonBranchNetworkText": {
+    "description": "common.branchNetworkText"
+  },
+  "commonBranchNoAddress": "بلا عنوان",
+  "@commonBranchNoAddress": {
+    "description": "common.branchNoAddress"
+  },
+  "commonBranchNotArchivedText": "استعاده أحد في الأثناء. حدّثنا القائمة.",
+  "@commonBranchNotArchivedText": {
+    "description": "common.branchNotArchivedText"
+  },
+  "commonBranchNotArchivedTitle": "هذا الفرع ليس مؤرشفاً",
+  "@commonBranchNotArchivedTitle": {
+    "description": "common.branchNotArchivedTitle"
+  },
+  "commonBranchOptional": "اختياري",
+  "@commonBranchOptional": {
+    "description": "common.branchOptional"
+  },
+  "commonBranchPhone": "هاتف الفرع",
+  "@commonBranchPhone": {
+    "description": "common.branchPhone"
+  },
+  "commonBranchPhoneHint": "اختياري. مع رمز البلد، مثل +963.",
+  "@commonBranchPhoneHint": {
+    "description": "common.branchPhoneHint"
+  },
+  "commonBranchRestore": "استعادة",
+  "@commonBranchRestore": {
+    "description": "common.branchRestore"
+  },
+  "commonBranchRestored": "أُعيد {name}",
+  "@commonBranchRestored": {
+    "description": "common.branchRestored",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchSaved": "حُفظ {name}",
+  "@commonBranchSaved": {
+    "description": "common.branchSaved",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchShowTeam": "عرض فريقه",
+  "@commonBranchShowTeam": {
+    "description": "common.branchShowTeam"
   },
   "commonBranchText": "لك دور في أكثر من فرع من {clinic}. اختر الفرع الذي تعمل فيه الآن.",
   "@commonBranchText": {
@@ -124,6 +312,39 @@
   "commonBranchTitle": "اختر الفرع",
   "@commonBranchTitle": {
     "description": "common.branchTitle"
+  },
+  "commonBranchesAdd": "إضافة فرع",
+  "@commonBranchesAdd": {
+    "description": "common.branchesAdd"
+  },
+  "commonBranchesArchivedTitle": "الفروع المؤرشفة",
+  "@commonBranchesArchivedTitle": {
+    "description": "common.branchesArchivedTitle"
+  },
+  "commonBranchesCountNote": "عدد الموظفين لكل فرع لا يُحسب فيه من له دور في كل الفروع.",
+  "@commonBranchesCountNote": {
+    "description": "common.branchesCountNote"
+  },
+  "commonBranchesLoading": "نقرأ الفروع…",
+  "@commonBranchesLoading": {
+    "description": "common.branchesLoading"
+  },
+  "commonBranchesText": "أماكن عمل {clinic}: عناوينها وهواتفها ومن يعمل في كل منها.",
+  "@commonBranchesText": {
+    "description": "common.branchesText",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      }
+    }
+  },
+  "commonBranchesTextPlain": "أماكن عمل عيادتك: عناوينها وهواتفها ومن يعمل في كل منها.",
+  "@commonBranchesTextPlain": {
+    "description": "common.branchesTextPlain"
+  },
+  "commonBranchesTitle": "الفروع",
+  "@commonBranchesTitle": {
+    "description": "common.branchesTitle"
   },
   "commonBrandAdminText": "العيادات ومالكوها واشتراكاتها، دون أي بيانات مرضى.",
   "@commonBrandAdminText": {
@@ -1466,10 +1687,6 @@
       }
     }
   },
-  "commonMemberArchivedHeldText": "له دور في فرع مؤرشف. أزل علامة ذلك الفرع ثم احفظ.",
-  "@commonMemberArchivedHeldText": {
-    "description": "common.memberArchivedHeldText"
-  },
   "commonMemberBranchArchivedText": "حدّثنا الفروع؛ اختر من جديد.",
   "@commonMemberBranchArchivedText": {
     "description": "common.memberBranchArchivedText"
@@ -1923,6 +2140,10 @@
   "commonNavAccount": "حسابي",
   "@commonNavAccount": {
     "description": "common.navAccount"
+  },
+  "commonNavBranches": "الفروع",
+  "@commonNavBranches": {
+    "description": "common.navBranches"
   },
   "commonNavClinicSettings": "إعدادات العيادة",
   "@commonNavClinicSettings": {
@@ -2468,6 +2689,23 @@
         "type": "String"
       }
     }
+  },
+  "commonSettingsBranchesArchived": "الفروع المؤرشفة ({count})",
+  "@commonSettingsBranchesArchived": {
+    "description": "common.settingsBranchesArchived",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSettingsBranchesSolo": "لعيادتك فرع واحد. أضف فرعاً ثانياً لتوزّع الفريق عليه؛ تظهر صفحة الفروع ومبدّل الفروع عندها.",
+  "@commonSettingsBranchesSolo": {
+    "description": "common.settingsBranchesSolo"
+  },
+  "commonSettingsBranchesTitle": "الفروع",
+  "@commonSettingsBranchesTitle": {
+    "description": "common.settingsBranchesTitle"
   },
   "commonSettingsText": "{clinic} · يغيّرها المالك فقط.",
   "@commonSettingsText": {

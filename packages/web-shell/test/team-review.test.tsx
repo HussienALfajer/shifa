@@ -90,7 +90,7 @@ describe('Checkpoint 3 review fixes', () => {
     );
   });
 
-  it('B2: refused for a held archived branch, the drawer says to remove it', async () => {
+  it('B2 after A-01-13: a held archived branch goes back with the save, no request to remove it', async () => {
     const held = detail({
       ...DOCTOR,
       roles: [
@@ -104,12 +104,29 @@ describe('Checkpoint 3 review fixes', () => {
     });
     const api = teamApi({ details: { [DOCTOR.id]: held } });
     await openMember(DOCTOR.name, api);
-    api.answers[memberPath(DOCTOR.id)] = (body) =>
-      body === undefined ? json(200, held) : errorAnswer(409, 'branch_archived');
+    // OD-107: the API keeps an archived-branch role the member already holds.
+    api.answers[memberPath(DOCTOR.id)] = () => json(200, held);
     await click(control(roleGroup('doctor'), B_THIRD.name));
     await click(button(drawer(), 'حفظ'));
     await flush(40);
-    expect(drawer().textContent).toContain('أزل علامة ذلك الفرع');
+    const body = api.bodies[memberPath(DOCTOR.id)]?.at(-1) as { roles?: { branchId: string }[] };
+    const sent = body.roles?.map((r) => r.branchId) ?? [];
+    expect(sent).toContain('7a1f4c1e-4a43-4f0e-9f61-3c3b1f6f0e19');
+    expect(sent).toContain(B_THIRD.id);
+    expect(drawer().textContent).not.toContain('أزل علامة ذلك الفرع');
+    expect(drawer().textContent).toContain('فرع قديم · مؤرشف');
+  });
+
+  it('B2 after A-01-13: a branch archived meanwhile is the plain refusal, the branches read again', async () => {
+    const api = teamApi();
+    await openMember(DOCTOR.name, api);
+    api.answers[memberPath(DOCTOR.id)] = (body) =>
+      body === undefined ? json(200, detail(DOCTOR)) : errorAnswer(409, 'branch_archived');
+    await click(control(roleGroup('doctor'), B_THIRD.name));
+    await click(button(drawer(), 'حفظ'));
+    await flush(40);
+    expect(drawer().textContent).toContain('أُغلق أحد الفروع المختارة');
+    expect(drawer().textContent).not.toContain('أزل علامة ذلك الفرع');
   });
 
   it('B3: while the branches failed, no role can be chosen; a retry brings the form', async () => {

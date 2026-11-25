@@ -42,13 +42,6 @@ const REFUSED: Record<string, Note> = {
   },
 };
 
-/** The member still holds a role in an archived branch (OD-107; the API keeps it after A-01-13). */
-const ARCHIVED_HELD: Note = {
-  tone: 'warning',
-  title: 'memberBranchArchivedTitle',
-  text: 'memberArchivedHeldText',
-};
-
 const NETWORK: Note = { tone: 'danger', title: 'memberNetworkTitle', text: 'memberNetworkText' };
 const SERVER: Note = { tone: 'danger', title: 'memberNotSavedTitle', text: 'serverErrorText' };
 
@@ -115,9 +108,6 @@ export function MemberForm({
         : [],
     ),
   );
-  const holdsArchived = toRoles(roles).some(
-    (r) => r.branchId !== null && r.branchId in archivedNames,
-  );
   const changed = nameChanged || rolesChanged || changedSwitches.length > 0;
   const emptied = rolesChanged && toRoles(roles).length === 0;
 
@@ -141,13 +131,9 @@ export function MemberForm({
       const { code } = errorFacts(error);
       if (code === 'branch_archived') rereadBranches();
       if (response.status === 404) reread();
-      onNote(
-        response.status === 404
-          ? GONE
-          : code === 'branch_archived' && holdsArchived
-            ? ARCHIVED_HELD
-            : (REFUSED[code] ?? SERVER),
-      );
+      // A held archived-branch role goes back with the save (OD-107, A-01-13); a 409
+      // `branch_archived` now means a chosen branch was archived meanwhile.
+      onNote(response.status === 404 ? GONE : (REFUSED[code] ?? SERVER));
     } catch {
       onNote(NETWORK);
     } finally {
