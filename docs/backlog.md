@@ -1,11 +1,9 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-24 · Owner: product owner
+Status: Living · Last updated: 2026-11-25 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
-- **Invitation page's other states have no h1** (A-01-08 checkpoint 5 review, N6): loading, unreachable and server error show no `h1` (the journeys do not reach them); add the same hidden h1 as the answered states.
-- **Setup link's used-link page has no h1** (A-01-07, found beside the invitation fix of A-01-08 checkpoint 5): `InvalidLink` in `auth/setup-link.tsx` shows only the EmptyState's h2 (axe `page-has-heading-one`); give it the same hidden h1 as the invitation page's states.
 - **Team page loose ends** (A-01-08 checkpoint 3 review, non-blocking 5, 7, 8): an unknown or archived `?branch=` shows the whole team with no notice (say «لم يعد هذا الفرع قائماً» and clear it); an owner who is not the last may untick their own owner role without a confirmation and loses the team page at the next request (confirm, as for removing every role); no page test of 409 `member_deactivated` or `member_not_deactivated` in the account actions, `member_account_exists` in the phone dialog, or a save answered 404. Removing the last archived branch of a role in a clinic with one active branch turns the role clinic-wide (no scope is shown there); settle with A-01-13.
 - **Archiving or restoring the owner's own branch sends them home unexplained** (A-01-08 checkpoint 4 review, N1): the session's `branchId` comes back null after an archive (the old id after a restore), and the router treats that as a branch change: it drops the cache and goes to `/` at the next session read. Name it in the confirmation when the branch is the session's own, and read the session on purpose after the archive or restore so the page can say where the owner now is. Also: after an archive or restore, focus falls to the body when its card or row leaves (move it to the page note).
 

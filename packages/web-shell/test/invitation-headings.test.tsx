@@ -89,4 +89,29 @@ describe('the invitation page keeps one h1', () => {
     await until(() => page().includes('هذا الرابط لم يعد صالحاً'));
     expect(h1s()).toEqual(['دعوة للانضمام إلى فريق']);
   });
+
+  // Backlog: the loading, unreachable and server-error states had no h1 either.
+  it('loading', async () => {
+    const fake = api();
+    fake.answers['/api/invitations/view'] = () => new Promise<Response>(() => undefined);
+    shown = await renderShell('clinic', fake, `/setup#${TOKEN}`);
+    await until(() => document.querySelector('[aria-label="جارٍ تحميل الدعوة"]') !== null);
+    expect(h1s()).toEqual(['دعوة للانضمام إلى فريق']);
+  });
+
+  it('unreachable', async () => {
+    const fake = api();
+    fake.answers['/api/invitations/view'] = () => Promise.reject(new TypeError('Failed to fetch'));
+    shown = await renderShell('clinic', fake, `/setup#${TOKEN}`);
+    await until(() => page().includes('إعادة المحاولة'));
+    expect(h1s()).toEqual(['دعوة للانضمام إلى فريق']);
+  });
+
+  it('server error', async () => {
+    const fake = api();
+    fake.answers['/api/invitations/view'] = () => errorAnswer(500, 'internal');
+    shown = await renderShell('clinic', fake, `/setup#${TOKEN}`);
+    await until(() => page().includes('إعادة المحاولة'));
+    expect(h1s()).toEqual(['دعوة للانضمام إلى فريق']);
+  });
 });
