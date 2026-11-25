@@ -159,8 +159,10 @@ function SetupLink({ token }: { token: string | null }) {
 function InvalidLink() {
   const text = useText();
   const navigate = useNavigate();
+  // The page's h1 (axe page-has-heading-one), as the invitation page's; the drawn title stays the h2.
   return (
     <>
+      <h1 className="sr-only">{text('setupTitle')}</h1>
       <EmptyState
         icon="x-circle"
         size="page"

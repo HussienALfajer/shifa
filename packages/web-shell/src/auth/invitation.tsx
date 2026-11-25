@@ -52,12 +52,20 @@ type Failure = 'other' | 'network' | 'server' | undefined;
 /** The invited number's last digits, from its masked form («+963 ••• ••• 876» → 876). */
 const lastDigits = (masked: string) => masked.replace(/\D/g, '').slice(-3);
 
+/**
+ * The page's h1 (axe page-has-heading-one, checkpoint 5) while the clinic is not known: invalid,
+ * loading, unreachable and server error. The drawn title, if any, stays the h2.
+ */
+function PageHeading() {
+  const text = useText();
+  return <h1 className="sr-only">{text('inviteKicker')}</h1>;
+}
+
 export function InvalidInvitation() {
   const text = useText();
-  // The page's h1 (axe page-has-heading-one, checkpoint 5); the drawn title stays the h2.
   return (
     <>
-      <h1 className="sr-only">{text('inviteKicker')}</h1>
+      <PageHeading />
       <EmptyState
         icon="x-circle"
         size="page"
@@ -158,27 +166,33 @@ export function InvitationAnswer({ token }: { token: string }) {
 
   if (shown.kind === 'loading') {
     return (
-      <div className="flex flex-col gap-5" role="status" aria-label={text('inviteLoading')}>
-        <SkeletonText lines={3} />
-        <SkeletonText lines={2} />
-      </div>
+      <>
+        <PageHeading />
+        <div className="flex flex-col gap-5" role="status" aria-label={text('inviteLoading')}>
+          <SkeletonText lines={3} />
+          <SkeletonText lines={2} />
+        </div>
+      </>
     );
   }
   if (shown.kind === 'invalid') return <InvalidInvitation />;
   if (shown.kind === 'unreachable' || shown.kind === 'server') {
     return (
-      <Callout
-        tone="danger"
-        icon={shown.kind === 'unreachable' ? 'wifi-slash' : 'warning'}
-        title={text(shown.kind === 'unreachable' ? 'unreachableTitle' : 'serverErrorTitle')}
-        action={
-          <Button size="sm" variant="secondary" onClick={load}>
-            {text('retry')}
-          </Button>
-        }
-      >
-        {text(shown.kind === 'unreachable' ? 'unreachableText' : 'serverErrorText')}
-      </Callout>
+      <>
+        <PageHeading />
+        <Callout
+          tone="danger"
+          icon={shown.kind === 'unreachable' ? 'wifi-slash' : 'warning'}
+          title={text(shown.kind === 'unreachable' ? 'unreachableTitle' : 'serverErrorTitle')}
+          action={
+            <Button size="sm" variant="secondary" onClick={load}>
+              {text('retry')}
+            </Button>
+          }
+        >
+          {text(shown.kind === 'unreachable' ? 'unreachableText' : 'serverErrorText')}
+        </Callout>
+      </>
     );
   }
 
