@@ -57,7 +57,7 @@ Every text and icon colour meets WCAG 2.2 on the surfaces its note names, in lig
 
 ## Components
 
-Each component is coded from a sheet the owner approved, tested in Arabic RTL and English LTR, light and dark, both densities, with axe and screenshots, and only then synced here. Use the component; never redraw a look-alike.
+Each component is coded from a sheet the owner approved, tested in Arabic RTL and English LTR, light and dark, both densities, with axe and screenshots, and only then synced here. Use the component; never redraw a look-alike. A screen imports it from the bundle with any of its props (`components/index.d.ts`), whatever this page's card shows; every variant, size and state of each, working in Play, is on the [Shifa Components](https://claude.ai/artifact/Kk3HMckdzqQ4yAyxWpu8kd) canvas, linked at the end of each component's guidelines.
 
 - **Button**: primary (one per view), secondary (the default), ghost, danger (brick, never red); sm, md, lg; an icon on the logical start; loading keeps its label and focus.
 - **Icon**: the curated Solar Broken set (and the Healthicons tooth) by name.
