@@ -111,7 +111,7 @@ export async function openBranches(api: FakeApi, path = '/branches'): Promise<Re
 /** The card of an active branch. */
 export function cardOf(name: string): HTMLElement {
   for (const el of document.querySelectorAll<HTMLElement>('[data-testid="branch-card"]')) {
-    if (el.querySelector('h3')?.textContent === name) return el;
+    if (el.querySelector('h2')?.textContent === name) return el;
   }
   throw new Error(`no card ${name}`);
 }

@@ -56,9 +56,9 @@ function BranchCard({
     <div data-testid="branch-card">
       <Card className="h-full gap-3 p-(--shifa-card-padding)">
         <div className="flex items-start gap-2">
-          <h3 className="m-0 min-w-0 flex-1 text-heading-sm leading-heading font-semibold">
+          <h2 className="m-0 min-w-0 flex-1 text-heading-sm leading-heading font-semibold">
             {branch.name}
-          </h3>
+          </h2>
           <IconButton icon="pencil" label={text('branchEdit')} variant="ghost" onClick={onEdit} />
         </div>
         <p className="m-0 text-data leading-body text-text-muted">
