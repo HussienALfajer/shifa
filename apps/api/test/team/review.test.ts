@@ -125,9 +125,21 @@ describe('review 1: the last owner under concurrency', () => {
       post(world.app, `/team/members/${second.membershipId}/deactivate`, {}, own.owner.cookie),
       post(world.app, `/team/members/${own.ownerMembershipId}/deactivate`, {}, enrolled.cookie),
     ]);
-    const statuses = [a.statusCode, b.statusCode].sort();
-    expect(statuses).toEqual([200, 409]);
-    expect([errorCode(a), errorCode(b)]).toContain('last_owner');
+    // Exactly one deactivation wins. The other either waited on the per-clinic lock and met the
+    // last-owner rule (409 `last_owner`), or arrived after its own caller was deactivated and was
+    // refused at the guard (401 or 403). Which one happens depends on timing; both are correct.
+    const statuses = [a.statusCode, b.statusCode];
+    expect(statuses.filter((status) => status === 200)).toHaveLength(1);
+    const [winner, loser] = a.statusCode === 200 ? [a, b] : [b, a];
+    if (loser.statusCode === 409) expect(errorCode(loser)).toBe('last_owner');
+    else expect([401, 403]).toContain(loser.statusCode);
+    // Whatever the timing: one owner stays active, and it is the one whose request won.
+    const winnerTarget = winner === a ? second.membershipId : own.ownerMembershipId;
+    const winnerSelf = winner === a ? own.ownerMembershipId : second.membershipId;
+    const [target] = await membershipRow(winnerTarget);
+    const [self] = await membershipRow(winnerSelf);
+    expect(target?.status).toBe('deactivated');
+    expect(self?.status).toBe('active');
   });
 });
 
