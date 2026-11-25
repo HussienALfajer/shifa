@@ -139,9 +139,17 @@ export const clinicRoutes: RouteTable = {
   'GET /team/members': (_r, world) =>
     owner(world, () =>
       ok({
-        members: world.members.map(
-          ({ permissions: _p, isLastOwner: _o, mfaEnrolled: _e, ...m }) => m,
-        ),
+        // The list answer (MemberSummary): no permissions, owner flag or second factor.
+        members: world.members.map((m) => ({
+          id: m.id,
+          name: m.name,
+          phone: m.phone,
+          status: m.status,
+          roles: m.roles,
+          lastActiveAt: m.lastActiveAt,
+          linkExpiresAt: m.linkExpiresAt,
+          isSelf: m.isSelf,
+        })),
       }),
     ),
   'GET /team/permissions': (_r, world) =>

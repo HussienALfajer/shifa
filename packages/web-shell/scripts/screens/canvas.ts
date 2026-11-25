@@ -163,7 +163,7 @@ export function writeCanvas(
     };
     y += rowH + ROW_GAP;
   }
-  out.noteOrder = Object.keys(out.notes);
+  out['noteOrder'] = Object.keys(out.notes);
   out['title'] = 'Shifa Screens · Clinic web';
   out['pages'] = [PAGE];
   out['launch'] = { view: 'canvas', page: PAGE.id };
@@ -184,5 +184,5 @@ if (import.meta.main && projectArg && indexArg && heightsArg) {
     ];
   }
   writeFileSync(join(project, 'canvas.json'), `${JSON.stringify(index, null, 1)}\n`);
-  console.log(`${String(index.order.length)} boards in ${String(SHEETS.length)} sheets`);
+  process.stdout.write(`${String(index.order.length)} boards in ${String(SHEETS.length)} sheets\n`);
 }

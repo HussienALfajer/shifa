@@ -43,23 +43,25 @@ async function mount(page: Page, args: Mount): Promise<string> {
       endBoard?: () => void;
     };
     g.endBoard?.();
-    const host = document.getElementById('board') as HTMLElement;
-    g.endBoard = g.ShifaScreens.mount(host, { sheet, state, theme });
+    const host = document.getElementById('board');
+    if (host) g.endBoard = g.ShifaScreens.mount(host, { sheet, state, theme });
   }, args);
   return page
     .waitForFunction(
       () =>
         ['ready', 'failed'].includes(
-          (document.querySelector('[data-screen]') as HTMLElement | null)?.dataset['screen'] ?? '',
+          document.querySelector<HTMLElement>('[data-screen]')?.dataset['screen'] ?? '',
         ),
       null,
       { timeout: 40_000 },
     )
     .then(() =>
-      page.evaluate(
-        () =>
-          (document.querySelector('[data-screen]') as HTMLElement | null)?.dataset['screen'] ?? '',
-      ),
+      page.evaluate(() => {
+        const board = document.querySelector<HTMLElement>('[data-screen]');
+        const state = board?.dataset['screen'] ?? '';
+        // A state that failed says why (the step that found nothing).
+        return state === 'failed' ? `failed: ${board?.dataset['screenError'] ?? ''}` : state;
+      }),
     )
     .catch(() => 'timeout');
 }
@@ -70,7 +72,7 @@ let problems = 0;
 const report = (key: string, errors: string[]) => {
   if (errors.length === 0) return;
   problems += 1;
-  console.log(`${key}: ${errors.join(' | ')}`);
+  process.stdout.write(`${key}: ${errors.join(' | ')}\n`);
 };
 
 const list = renders().filter((r) => only.length === 0 || only.some((p) => r.key.startsWith(p)));
@@ -115,5 +117,5 @@ for (const b of boards().filter(
 
 await browser.close();
 writeFileSync(resolve(heightsArg), `${JSON.stringify(heights, null, 1)}\n`);
-console.log(`${String(list.length)} states, ${String(problems)} with problems`);
+process.stdout.write(`${String(list.length)} states, ${String(problems)} with problems\n`);
 if (problems > 0) process.exitCode = 1;

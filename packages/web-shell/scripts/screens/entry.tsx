@@ -94,7 +94,8 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
     (error: unknown) => {
       if (life.signal.aborted) return;
       container.dataset['screen'] = 'failed';
-      console.error(error);
+      // Kept on the board for the check to report (a step that found nothing).
+      container.dataset['screenError'] = error instanceof Error ? error.message : String(error);
     },
   );
   return () => {

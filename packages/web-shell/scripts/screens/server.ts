@@ -116,7 +116,10 @@ export function createServer({ world, answers = {}, latencyMs = 350 }: ServerOpt
     if (queued && queued.length > 0) reply = queued.shift() ?? reply;
     else if (typeof answer === 'function') reply = answer(request, world);
     else if (answer !== undefined && !Array.isArray(answer)) reply = answer;
-    else if (route) reply = (ROUTES[route.key] as Route)(request, world);
+    else {
+      const handler = route ? ROUTES[route.key] : undefined;
+      if (handler) reply = handler(request, world);
+    }
     await new Promise((resolve) => setTimeout(resolve, latencyMs));
     // A held request never answers, and is not waited for: the board shows it loading.
     if (reply === 'hold') {
