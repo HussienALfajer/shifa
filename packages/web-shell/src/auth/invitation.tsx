@@ -54,14 +54,18 @@ const lastDigits = (masked: string) => masked.replace(/\D/g, '').slice(-3);
 
 export function InvalidInvitation() {
   const text = useText();
+  // The page's h1 (axe page-has-heading-one, checkpoint 5); the drawn title stays the h2.
   return (
-    <EmptyState
-      icon="x-circle"
-      size="page"
-      headingLevel={2}
-      title={text('setupInvalidTitle')}
-      description={text('inviteInvalidText')}
-    />
+    <>
+      <h1 className="sr-only">{text('inviteKicker')}</h1>
+      <EmptyState
+        icon="x-circle"
+        size="page"
+        headingLevel={2}
+        title={text('setupInvalidTitle')}
+        description={text('inviteInvalidText')}
+      />
+    </>
   );
 }
 
@@ -189,6 +193,7 @@ export function InvitationAnswer({ token }: { token: string }) {
   if (shown.kind === 'accepted') {
     return (
       <div className="flex flex-col items-center gap-4">
+        <h1 className="sr-only">{text('invitationTitle', { clinic: view.clinicName })}</h1>
         <EmptyState
           art="jasmine"
           size="page"
@@ -219,6 +224,7 @@ export function InvitationAnswer({ token }: { token: string }) {
   if (shown.kind === 'declined') {
     return (
       <div className="flex flex-col items-center gap-4">
+        <h1 className="sr-only">{text('invitationTitle', { clinic: view.clinicName })}</h1>
         <EmptyState
           icon="check-circle"
           size="page"
