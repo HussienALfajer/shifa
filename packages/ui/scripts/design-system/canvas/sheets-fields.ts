@@ -1,6 +1,8 @@
 // Sheets of the Forms group: the text, number and choice fields.
 import { DOCTORS, PATIENTS } from './data.ts';
-import { fieldFocus, type SheetSpec, st } from './types.ts';
+import { boxFocus, fieldFocus, type SheetSpec, st } from './types.ts';
+
+const LONG_NAME = 'عبد الرحمن محمد خير الدين الحسيني الدمشقي';
 
 export const FIELDS: SheetSpec[] = [
   {
@@ -16,7 +18,18 @@ export const FIELDS: SheetSpec[] = [
         items: [
           st({ label: 'اسم المريض', placeholder: 'مثال: لينا زيدان' }, 'empty, placeholder'),
           st({ label: 'اسم المريض', defaultValue: 'لينا زيدان' }, 'filled'),
+          st({ label: 'اسم المريض', required: true }, 'required'),
           st({ label: 'اسم المريض', required: true, error: 'اكتب اسم المريض' }, 'required, error'),
+          st(
+            {
+              label: 'رقم الهاتف',
+              hint: 'عشر خانات تبدأ بـ 09',
+              error: 'الرقم ناقص',
+              defaultValue: '0944 12',
+              dir: 'auto',
+            },
+            'hint and error',
+          ),
           st({ label: 'اسم المريض', defaultValue: 'لينا زيدان', disabled: true }, 'disabled'),
           st({ label: 'رقم الملف', defaultValue: '1042', readOnly: true }, 'read-only'),
           st(
@@ -33,12 +46,36 @@ export const FIELDS: SheetSpec[] = [
             },
             'search icon, hint',
           ),
+          st(
+            { label: 'بحث', startIcon: 'magnifying-glass', error: 'اكتب حرفين على الأقل' },
+            'icon and error',
+          ),
+          st(
+            { label: 'بحث', startIcon: 'magnifying-glass', defaultValue: 'لينا', disabled: true },
+            'icon, disabled',
+          ),
+          st(
+            { label: 'الاسم الكامل كما في البطاقة الشخصية', defaultValue: LONG_NAME },
+            'long label and value',
+          ),
         ],
       },
       {
         label: 'Interaction',
         cols: 2,
-        items: fieldFocus({ label: 'اسم المريض', defaultValue: 'لينا زيدان' }),
+        items: [
+          ...fieldFocus({ label: 'اسم المريض', defaultValue: 'لينا زيدان' }),
+          st(
+            { label: 'اسم المريض', required: true, error: 'اكتب اسم المريض' },
+            'keyboard focus on an error',
+            'focus',
+          ),
+          st(
+            { label: 'رقم الملف', defaultValue: '1042', readOnly: true },
+            'keyboard focus, read-only',
+            'focus',
+          ),
+        ],
       },
     ],
   },
@@ -63,10 +100,40 @@ export const FIELDS: SheetSpec[] = [
             },
             'filled, counter, hint',
           ),
+          st(
+            { label: 'سبب الزيارة', defaultValue: 'ألم في الضرس منذ يومين', maxLength: 22 },
+            'counter at its limit',
+          ),
+          st(
+            {
+              label: 'ملاحظات للطبيب',
+              defaultValue:
+                'يفضّل موعداً بعد الظهر.\nيحتاج إلى مرافق عند الصعود.\nحساسية من البنسلين.\nيُرسل التذكير قبل يوم.',
+            },
+            'several lines: the box grows',
+          ),
           st({ label: 'ملاحظات للطبيب', error: '500 حرف على الأكثر' }, 'error'),
+          st(
+            {
+              label: 'ملاحظات للطبيب',
+              error: 'الملاحظة أطول من المسموح',
+              maxLength: 40,
+              defaultValue: 'يفضّل موعداً بعد الظهر ويحتاج إلى مرافق.',
+            },
+            'error with the counter',
+          ),
+          st({ label: 'سبب الزيارة', required: true }, 'required'),
+          st(
+            { label: 'ملاحظات الاستقبال', defaultValue: 'وصل مبكراً.', readOnly: true },
+            'read-only',
+          ),
           st(
             { label: 'ملاحظات للطبيب', defaultValue: 'يفضّل موعداً بعد الظهر.', disabled: true },
             'disabled',
+          ),
+          st(
+            { label: 'Notes', dir: 'auto', defaultValue: 'Allergic to penicillin.' },
+            'Latin content, dir auto',
           ),
         ],
       },
@@ -81,7 +148,7 @@ export const FIELDS: SheetSpec[] = [
     name: 'PasswordInput',
     group: 'Forms',
     fill: true,
-    desc: 'A password with a show toggle inside at the logical end (one name, aria-pressed).',
+    desc: 'A password with a show toggle inside at the logical end (one name, aria-pressed); typed left to right.',
     play: 'Type, then press the eye to show and hide.',
     blocks: () => [
       {
@@ -90,6 +157,7 @@ export const FIELDS: SheetSpec[] = [
         items: [
           st({ label: 'كلمة المرور' }, 'empty'),
           st({ label: 'كلمة المرور', defaultValue: 'Shifa-2026' }, 'filled, hidden'),
+          st({ label: 'كلمة المرور', required: true, hint: '8 أحرف على الأقل' }, 'required, hint'),
           st(
             {
               label: 'كلمة المرور الجديدة',
@@ -105,7 +173,7 @@ export const FIELDS: SheetSpec[] = [
       {
         label: 'Interaction',
         cols: 2,
-        items: fieldFocus({ label: 'كلمة المرور', defaultValue: 'Shifa-2026' }),
+        items: boxFocus({ label: 'كلمة المرور', defaultValue: 'Shifa-2026' }),
       },
     ],
   },
@@ -122,17 +190,30 @@ export const FIELDS: SheetSpec[] = [
         items: [
           st({ label: 'عدد الجلسات', defaultValue: 3, min: 1, max: 20 }, 'steppers'),
           st(
+            { label: 'عدد الجلسات', defaultValue: 1, min: 1, max: 20, hint: 'الحد الأدنى 1' },
+            'at the minimum: − stops',
+          ),
+          st(
             { label: 'عدد الجلسات', defaultValue: 20, min: 1, max: 20, hint: 'الحد الأقصى 20' },
-            'at the maximum',
+            'at the maximum: + stops',
           ),
           st(
             { label: 'العمر', defaultValue: 140, min: 0, max: 120, error: 'العمر بين 0 و120' },
             'error',
           ),
+          st({ label: 'عدد الجلسات', defaultValue: 3, required: true }, 'required'),
           st({ label: 'عدد الجلسات', defaultValue: 1, disabled: true }, 'disabled'),
           st(
             { label: 'أجر المعاينة', defaultValue: 125000, unit: 'ل.س', steppers: false },
             'amount with unit',
+          ),
+          st(
+            { label: 'الجرعة', defaultValue: 2.5, step: 0.5, unit: 'مل' },
+            'a step of 0.5, a unit',
+          ),
+          st(
+            { label: 'رصيد الصندوق', defaultValue: 12500000, unit: 'ل.س', steppers: false },
+            'a long amount',
           ),
           st({ label: 'عدد الجلسات', defaultValue: null }, 'empty'),
         ],
@@ -140,7 +221,12 @@ export const FIELDS: SheetSpec[] = [
       {
         label: 'Interaction',
         cols: 2,
-        items: fieldFocus({ label: 'عدد الجلسات', defaultValue: 3, min: 1, max: 20 }),
+        items: [
+          ...boxFocus({ label: 'عدد الجلسات', defaultValue: 3, min: 1, max: 20 }),
+          st({ label: 'عدد الجلسات', defaultValue: 3, min: 1, max: 20 }, '+ hovered', 'hover', {
+            scope: 2,
+          }),
+        ],
       },
     ],
   },
@@ -158,6 +244,10 @@ export const FIELDS: SheetSpec[] = [
           st({ label: 'الطبيب', items: DOCTORS, placeholder: 'اختر الطبيب' }, 'empty, placeholder'),
           st({ label: 'الطبيب المعالج', items: DOCTORS, defaultValue: '1001' }, 'chosen'),
           st(
+            { label: 'الطبيب', items: DOCTORS, placeholder: 'اختر الطبيب', required: true },
+            'required',
+          ),
+          st(
             {
               label: 'الطبيب',
               items: DOCTORS,
@@ -167,6 +257,16 @@ export const FIELDS: SheetSpec[] = [
             'error',
           ),
           st({ label: 'الطبيب', items: DOCTORS, defaultValue: '1002', disabled: true }, 'disabled'),
+          st(
+            {
+              label: 'الخدمة',
+              items: [{ value: 'x', label: 'تنظيف الأسنان وإزالة الجير مع التلميع الكامل' }],
+              defaultValue: 'x',
+            },
+            'a long choice, cut',
+            null,
+            { w: 280 },
+          ),
         ],
       },
       {
@@ -180,7 +280,7 @@ export const FIELDS: SheetSpec[] = [
     name: 'Combobox',
     group: 'Forms',
     fill: true,
-    desc: 'Search a long list as you type; a word of the name starts with the text; an empty message when nothing matches.',
+    desc: 'Search a long list as you type; a word of the name starts with the text; the typed part in bold; an empty message when nothing matches.',
     play: 'Type «عب» to see three suggestions, or «زز» for the empty message.',
     blocks: () => {
       const b = {
@@ -194,12 +294,17 @@ export const FIELDS: SheetSpec[] = [
           cols: 2,
           items: [
             st({ ...b, label: 'المريض' }, 'empty'),
-            st({ ...b, label: 'المريض المحوَّل', defaultValue: '1061' }, 'chosen'),
+            st({ ...b, label: 'المريض المحوَّل', defaultValue: '1061' }, 'chosen: a clear button'),
+            st({ ...b, label: 'المريض', hint: 'اكتب حرفين من الاسم' }, 'hint'),
             st({ ...b, label: 'المرافق', error: 'اختر مريضاً مسجلاً' }, 'error'),
             st({ ...b, label: 'صاحب الملف', disabled: true }, 'disabled'),
           ],
         },
-        { label: 'Interaction', cols: 2, items: fieldFocus({ ...b, label: 'المريض' }) },
+        {
+          label: 'Interaction',
+          cols: 2,
+          items: boxFocus({ ...b, label: 'المريض', defaultValue: '1061' }),
+        },
       ];
     },
   },
@@ -207,7 +312,7 @@ export const FIELDS: SheetSpec[] = [
     name: 'DatePicker',
     group: 'Forms',
     fill: true,
-    desc: 'dd/mm/yyyy, Gregorian, the week from Saturday, Levantine month names; typed or chosen from the calendar.',
+    desc: 'dd/mm/yyyy, Gregorian, the week from Saturday, Levantine month names; typed or chosen from the calendar; the age under a birth date.',
     play: 'Type the date, or press the calendar button and move with the arrows.',
     blocks: () => [
       {
@@ -219,6 +324,8 @@ export const FIELDS: SheetSpec[] = [
             'empty, hint',
           ),
           st({ label: 'تاريخ الموعد', defaultValue: '2026-11-24', min: '2026-11-20' }, 'chosen'),
+          st({ label: 'تاريخ الميلاد', defaultValue: '1990-04-12', showAge: true }, 'with the age'),
+          st({ label: 'تاريخ الموعد', required: true }, 'required'),
           st(
             {
               label: 'تاريخ المتابعة',
@@ -233,7 +340,7 @@ export const FIELDS: SheetSpec[] = [
       {
         label: 'Interaction',
         cols: 2,
-        items: [st({ label: 'تاريخ الموعد', defaultValue: '2026-11-24' }, 'hover', 'hover')],
+        items: boxFocus({ label: 'تاريخ الموعد', defaultValue: '2026-11-24' }),
       },
     ],
   },
@@ -242,7 +349,7 @@ export const FIELDS: SheetSpec[] = [
     group: 'Forms',
     fill: true,
     desc: 'Hour and minute, left to right, "HH:mm"; 24-hour by default, a ص/م segment on the 12-hour clock (a clinic setting).',
-    play: 'Type digits or use Up and Down in each segment.',
+    play: 'Type digits or use Up and Down in each segment; the list button shows the slots.',
     blocks: () => [
       {
         label: 'States',
@@ -255,39 +362,22 @@ export const FIELDS: SheetSpec[] = [
           ),
           st({ label: 'وقت الموعد', defaultValue: '14:30', hourCycle: 12 }, '12-hour'),
           st(
+            { label: 'وقت الموعد', required: true, min: '09:00', max: '17:00' },
+            'required, limits',
+          ),
+          st(
             { label: 'وقت الموعد', defaultValue: '19:15', error: 'اختر وقتاً بين 09:00 و17:00' },
             'error',
           ),
+          st({ label: 'وقت الوصول', defaultValue: '10:05', readOnly: true }, 'read-only'),
           st({ label: 'وقت الموعد', defaultValue: '14:30', disabled: true }, 'disabled'),
         ],
       },
       {
         label: 'Interaction',
         cols: 2,
-        items: [st({ label: 'وقت الموعد', defaultValue: '14:30' }, 'hover', 'hover')],
+        items: boxFocus({ label: 'وقت الموعد', defaultValue: '14:30' }),
       },
-    ],
-  },
-  {
-    name: 'OtpInput',
-    group: 'Forms',
-    desc: 'Six slots, left to right in both directions; one field for screen readers; Western digits.',
-    play: 'Type or paste six digits; Backspace moves back.',
-    blocks: () => [
-      {
-        label: 'States',
-        items: [
-          st({ label: 'رمز التحقق', hint: 'أرسلناه برسالة إلى 0930 024 973' }, 'empty, hint'),
-          st({ label: 'رمز التحقق', defaultValue: '4820' }, 'partly typed'),
-          st({ label: 'رمز التحقق', defaultValue: '482071' }, 'filled'),
-          st(
-            { label: 'رمز التحقق', defaultValue: '482075', error: 'الرمز غير صحيح. بقيت محاولتان' },
-            'error',
-          ),
-          st({ label: 'رمز التحقق', defaultValue: '482071', disabled: true }, 'disabled'),
-        ],
-      },
-      { label: 'Interaction', items: fieldFocus({ label: 'رمز التحقق', defaultValue: '4820' }) },
     ],
   },
 ];

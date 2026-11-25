@@ -20,6 +20,13 @@ const NOTE = {
 };
 const SHOW = 'إظهار الإشعارات';
 const open = { defaultOpen: true };
+const TOAST_KINDS: [string, string, string][] = [
+  ['success', 'حُفظت الوصفة', 'نجاح'],
+  ['info', 'نُقل الموعد إلى الخميس', 'معلومة'],
+  ['warning', 'لم يُرسل التذكير بعد', 'تحذير'],
+  ['error', 'تعذّر حفظ الفاتورة', 'خطأ'],
+  ['default', 'نُسخ رابط الحجز', 'عادي'],
+];
 
 export const OVERLAYS: SheetSpec[] = [
   {
@@ -30,7 +37,11 @@ export const OVERLAYS: SheetSpec[] = [
     blocks: () => [
       {
         label: 'Triggers',
-        items: [st(DIALOG, 'a deletion'), st(DIALOG2, 'an ordinary confirmation')],
+        items: [
+          st(DIALOG, 'a deletion'),
+          st(DIALOG2, 'an ordinary confirmation'),
+          st({ ...DIALOG, triggerDisabled: true }, 'trigger disabled'),
+        ],
       },
     ],
     open: [
@@ -48,9 +59,16 @@ export const OVERLAYS: SheetSpec[] = [
     name: 'AlertDialog',
     group: 'Overlays',
     desc: 'The Dialog’s panel for a question that needs an answer: a danger or info mark before the title, «رجوع» focused first, the action last; no close button, no closing by a press outside.',
-    play: 'Press a trigger; only «رجوع» or the action close it.',
+    play: 'Press a trigger; only «رجوع» or the action close it. The action runs a 1.2 s request; in the playground it can succeed, fail or never finish.',
     blocks: () => [
-      { label: 'Triggers', items: [st(ALERT, 'danger'), st(ALERT2, 'info, primary action')] },
+      {
+        label: 'Triggers',
+        items: [
+          st(ALERT, 'danger'),
+          st(ALERT2, 'info, primary action'),
+          st({ ...ALERT, triggerDisabled: true }, 'trigger disabled'),
+        ],
+      },
     ],
     open: [
       view('OpenDanger', 'مفتوحة · خطر', 560, { ...ALERT, ...open }, 'Open: danger'),
@@ -65,8 +83,21 @@ export const OVERLAYS: SheetSpec[] = [
         'OpenError',
         'مفتوحة · مع خطأ',
         560,
-        { ...ALERT, errorText: 'تعذّر الحذف. حاول مرة أخرى.', ...open },
-        'Open: the action failed',
+        {
+          ...ALERT,
+          errorText: 'تعذّر الحذف. حاول مرة أخرى.',
+          actionResult: 'error',
+          runAction: true,
+          ...open,
+        },
+        'Open: the action was pressed and failed; the message stays above the actions',
+      ),
+      view(
+        'OpenBusy',
+        'مفتوحة · قيد التنفيذ',
+        560,
+        { ...ALERT, actionResult: 'pending', runAction: true, ...open },
+        'Open: the action was pressed and is still running («رجوع» dimmed)',
       ),
     ],
   },
@@ -74,7 +105,7 @@ export const OVERLAYS: SheetSpec[] = [
     name: 'Drawer',
     group: 'Overlays',
     desc: 'A 400 px panel from the logical end (the left in Arabic), radius 16 on its inner edge; from the bottom on a tablet or phone with a named grabber.',
-    play: 'Press a trigger; Esc or «إلغاء» closes.',
+    play: 'Press a trigger; Esc, «إلغاء» or «حفظ» closes.',
     blocks: () => [
       {
         label: 'Triggers',
@@ -85,6 +116,7 @@ export const OVERLAYS: SheetSpec[] = [
           ),
           st({ ...DRAWER, triggerLabel: 'من البداية', side: 'start' }, 'side start'),
           st({ ...DRAWER, triggerLabel: 'من الأسفل', side: 'bottom' }, 'side bottom'),
+          st({ ...DRAWER, triggerLabel: 'تعديل', triggerDisabled: true }, 'trigger disabled'),
         ],
       },
     ],
@@ -117,8 +149,30 @@ export const OVERLAYS: SheetSpec[] = [
     group: 'Overlays',
     desc: 'A small panel under a button, at its logical start; Esc or a press outside closes it.',
     play: 'Press the trigger to open and close.',
-    blocks: () => [{ label: 'States', items: [st(NOTE, 'closed')] }],
-    open: [view('Open', 'مفتوحة', 360, { ...NOTE, ...open }, 'Open')],
+    blocks: () => [
+      {
+        label: 'Triggers',
+        items: [
+          st(NOTE, 'closed'),
+          st({ ...NOTE, triggerVariant: 'ghost' }, 'ghost trigger'),
+          st({ ...NOTE, triggerDisabled: true }, 'trigger disabled'),
+        ],
+      },
+    ],
+    open: [
+      view('Open', 'مفتوحة', 360, { ...NOTE, ...open }, 'Open: the trigger looks pressed'),
+      view(
+        'OpenLong',
+        'مفتوحة · نص طويل',
+        420,
+        {
+          ...NOTE,
+          text: 'يفضّل موعداً بعد الظهر لأنه يعمل صباحاً، ويحتاج إلى مرافق عند الصعود إلى الطابق الثاني، ويُرسل التذكير قبل يوم.',
+          ...open,
+        },
+        'Open: a long text wraps inside 320 px',
+      ),
+    ],
   },
   {
     name: 'Tooltip',
@@ -138,6 +192,10 @@ export const OVERLAYS: SheetSpec[] = [
             'describes a text button',
           ),
           st({ content: 'الإشعارات', triggerIcon: 'bell', side: 'bottom' }, 'side bottom'),
+          st(
+            { content: 'إرسال تذكير عبر واتساب', triggerLabel: 'إرسال تذكير', disabled: true },
+            'disabled: never opens',
+          ),
         ],
       },
     ],
@@ -156,15 +214,40 @@ export const OVERLAYS: SheetSpec[] = [
         { content: 'إرسال تذكير عبر واتساب', triggerLabel: 'إرسال تذكير', ...open },
         'Open: describes a text button',
       ),
+      view(
+        'OpenBottom',
+        'مفتوح · من الأسفل',
+        300,
+        { content: 'الإشعارات', triggerIcon: 'bell', side: 'bottom', ...open },
+        'Open: below its trigger',
+      ),
+      view(
+        'OpenLong',
+        'مفتوح · نص طويل',
+        320,
+        {
+          content:
+            'يُرسل التذكير إلى رقم المريض عبر واتساب قبل الموعد بيوم، ويُعاد مرة واحدة إن لم يصل.',
+          triggerLabel: 'إرسال تذكير',
+          ...open,
+        },
+        'Open: wraps at 240 px',
+      ),
     ],
   },
   {
     name: 'Toast',
     group: 'Overlays',
-    openOnly: true,
-    desc: 'A small card at the bottom, at the logical end (the bottom left in Arabic), three at most, the newest at the bottom; status toasts carry their icon; errors stay until closed.',
-    play: 'The button shows the toasts again; each closes with its button.',
-    blocks: () => [],
+    desc: 'A small card at the bottom, at the logical end (the bottom left in Arabic), three at most, the newest at the bottom; status toasts carry their icon; errors stay until closed. In the app they leave after 5 s (8 s with an action); here they stay unless the playground asks for the app’s times.',
+    play: 'Press a button to show its toast; each closes with its button. The open views show them stacked.',
+    blocks: () => [
+      {
+        label: 'Each type, on a press',
+        items: TOAST_KINDS.map(([type, title, label]) =>
+          st({ type, title, triggerLabel: label, showOnMount: false }, type),
+        ),
+      },
+    ],
     open: [
       view(
         'Status',
@@ -179,6 +262,13 @@ export const OVERLAYS: SheetSpec[] = [
         520,
         { toasts: TOASTS2, triggerLabel: SHOW },
         'Error (stays until closed), default',
+      ),
+      view(
+        'Queue',
+        'أربعة: الرابع ينتظر',
+        560,
+        { toasts: [...TOASTS, { type: 'default', title: 'نُسخ رابط الحجز' }], triggerLabel: SHOW },
+        'Four at once: three show, the fourth waits for one to close',
       ),
     ],
   },

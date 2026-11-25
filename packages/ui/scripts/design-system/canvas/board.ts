@@ -2,8 +2,10 @@
 // live copy whose props are tweaks), below every variant, size and state in one panel; theme,
 // density and direction are tweaks of the whole board, and an overlay's open views replace the
 // sheet when Tweaks' `view` asks for one. Every copy is the real component of the bundle.
+import { PRELUDE, playgroundSection, playgroundVals } from './dock.ts';
 import { esc, Mounts, page, type TweakDef, WIDTH } from './page.ts';
-import { type Control, PLAYGROUNDS, tweakKey } from './playground.ts';
+import { PLAYGROUNDS, tweakKey } from './playground.ts';
+import { NTH } from './states.ts';
 import type { Block, Item, OpenView, SheetSpec } from './types.ts';
 
 const MUTED = 'color: var(--shifa-color-text-muted);';
@@ -75,14 +77,9 @@ function logic(
   vals: Record<string, unknown>,
   caps: Record<string, [string, string]>,
 ): string {
-  const controls: Control[] = PLAYGROUNDS[spec.name]?.controls ?? [];
   const first = viewOptions(spec)[0]?.value ?? 'sheet';
-  const pg = controls
-    .map((c, i) => {
-      const read = `p[${JSON.stringify(tweakKey(c, controls))}] ?? ${JSON.stringify(c.default)}`;
-      return `      c${String(i)}: ${c.editor === 'text' || c.editor === 'enum' ? `none(${read})` : read},`;
-    })
-    .join('\n');
+  // Before `vals` is written: a data control adds its data to them.
+  const playground = playgroundVals(spec, vals);
   const compactCaps = Object.fromEntries(Object.entries(caps).map(([k, [, c]]) => [k, c]));
   const comfortableCaps = Object.fromEntries(Object.entries(caps).map(([k, [c]]) => [k, c]));
   const opens = (spec.open ?? [])
@@ -94,8 +91,10 @@ function logic(
     const dir = p.direction ?? 'rtl';
     const view = p.view ?? ${JSON.stringify(first)};
     const none = (x) => (x === '' ? undefined : x);
-    return {
-      v: ${JSON.stringify(vals)},
+    const v = ${JSON.stringify(vals)};
+${PRELUDE}
+${playground}
+      v,
       theme,
       density,
       dir,
@@ -105,9 +104,6 @@ function logic(
       caps: density === 'compact' ? ${JSON.stringify(compactCaps)} : ${JSON.stringify(comfortableCaps)},
       isSheet: view === 'sheet',
 ${opens}
-      pg: {
-${pg}
-      },
     };`;
 }
 
@@ -123,9 +119,24 @@ const strip = (
         <span style="font-size: 12px; ${MUTED}">${note}</span>
       </div>`;
 
+/** The frame that fixes a copy's hover, pressed or focus, on what its `scope` names (states.ts). */
+function pseudoFrame(name: string, it: Item, slot: string, seen: { scoped: boolean }): string {
+  const nth =
+    typeof it.scope === 'number' ? it.scope : typeof it.scope === 'object' ? it.scope.nth : 0;
+  if (nth > NTH) throw new Error(`${name}: scope ${String(nth)} > ${String(NTH)}`);
+  if (nth > 0) seen.scoped = true;
+  let attrs = '';
+  if (it.scope === 'outer') attrs = ' data-pseudo-outer';
+  else if (typeof it.scope === 'number') attrs = ` data-pseudo-nth="${String(it.scope)}"`;
+  else if (typeof it.scope === 'object')
+    attrs = ` data-pseudo-in="${it.scope.role}" data-pseudo-nth="${String(it.scope.nth)}"`;
+  const pseudo = it.pseudo ? PSEUDO[it.pseudo] : '';
+  return `<div data-pseudo="${pseudo}"${attrs} style="display: block; min-width: 0;">${slot}</div>`;
+}
+
 function sheetBody(spec: SheetSpec, mounts: Mounts, caps: Record<string, [string, string]>) {
   // Set by the copies below as they are written (an object: TS does not follow closures).
-  const seen = { pseudo: false };
+  const seen = { pseudo: false, scoped: false };
   const alt = flat(spec.density === false ? spec.blocks('comfortable') : spec.blocks('compact'));
   let index = 0;
   const item = (it: Item, ind: string) => {
@@ -137,7 +148,7 @@ function sheetBody(spec: SheetSpec, mounts: Mounts, caps: Record<string, [string
     let slot = mounts.tag(it.c ?? spec.name, it.p);
     if (it.pseudo) {
       seen.pseudo = true;
-      slot = `<div data-pseudo="${PSEUDO[it.pseudo]}" style="display: block; min-width: 0;">${slot}</div>`;
+      slot = pseudoFrame(spec.name, it, slot, seen);
     }
     const width = it.w ? `width: ${String(it.w)}px; max-width: 100%;` : 'min-width: 0;';
     const dir = it.dir ? ` dir="${it.dir}"` : '';
@@ -183,18 +194,7 @@ function sheetBody(spec: SheetSpec, mounts: Mounts, caps: Record<string, [string
     .blocks('comfortable')
     .map((b) => block(b, '      '))
     .join('\n');
-  const playground = PLAYGROUNDS[spec.name];
-  const holes = Object.fromEntries(
-    (playground?.controls ?? []).map((c, i) => [c.prop, `pg.c${String(i)}`]),
-  );
-  const live = playground
-    ? `    <section data-playground${frame(spec)} style="${PANEL}">
-${strip('Playground', 'Change its props in Tweaks')}
-      <div style="display: flex; justify-content: center; align-items: center; min-height: 120px; padding: 24px;">
-        <div style="display: flex; flex-direction: column; align-items: ${spec.fill ? 'stretch' : 'center'}; width: ${spec.fill ? '560px' : 'auto'}; max-width: 100%;">${mounts.tag(spec.name, playground.base, holes)}</div>
-      </div>
-    </section>`
-    : '';
+  const live = playgroundSection(spec, mounts, frame(spec), PANEL, strip);
   const notes: string[] = [];
   if (seen.pseudo) {
     notes.push(
@@ -203,7 +203,12 @@ ${strip('Playground', 'Change its props in Tweaks')}
   }
   if (spec.density === false)
     notes.push('This component has no compact values, so it has no density tweak.');
-  if (spec.open) notes.push('Its open views are in Tweaks › View: a modal covers the whole board.');
+  if (spec.open)
+    notes.push('Its open views are in Tweaks › View; each shows the overlay open over the board.');
+  if (seen.scoped)
+    notes.push(
+      'A copy that names one item («the second», «+ hovered») has the state on that item only, as the pointer or Tab would put it.',
+    );
   return `    <div style="box-sizing: border-box; padding: 56px 64px; display: flex; flex-direction: column; gap: 28px;">
   <div dir="ltr" style="display: flex; justify-content: space-between; gap: 48px; align-items: flex-end;">
     <div style="display: flex; flex-direction: column; gap: 8px; max-width: 820px;">
@@ -214,7 +219,7 @@ ${strip('Playground', 'Change its props in Tweaks')}
     <div style="flex: none; width: 360px; display: flex; flex-direction: column; gap: 6px; padding: 16px 20px; border-radius: 12px; background: var(--shifa-color-bg-app); border: 1px solid var(--shifa-color-border-default);">
       <span style="font-size: 13px; font-weight: 600;">The real component</span>
       <code style="font-size: 13px; font-family: var(--font-mono);">Shifa.${esc(spec.name)}</code>
-      <span style="font-size: 13px; line-height: 1.5; ${MUTED}">In Play: ${esc(spec.play)} Theme, density, direction and the playground’s props: Tweaks.</span>
+      <span style="font-size: 13px; line-height: 1.5; ${MUTED}">In Play: ${esc(spec.play)} The playground’s props: its panel at the right; theme, density, direction and saved defaults: Tweaks.</span>
     </div>
   </div>
 ${live}

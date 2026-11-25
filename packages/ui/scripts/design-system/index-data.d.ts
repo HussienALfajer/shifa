@@ -53,10 +53,13 @@ export interface ActionData {
 }
 
 export interface CardProps {
-  title: string;
+  /** Leave out for a body-only card (a figure). */
+  title?: string;
   description?: string;
   /** Makes it a link card: a press anywhere on it follows the title's link. */
   href?: string;
+  /** Small buttons at the logical end of the header. */
+  actions?: ActionData[];
   body?: string[];
   /** Footer buttons, the main one first. */
   footer?: ActionData[];
@@ -115,14 +118,24 @@ export interface PaginationProps {
   pageSize?: number;
   /** The page-size choices: 25, 50, 100. */
   pageSizes?: number[];
-  /** numbers (default) or compact («الصفحة 3 من 13»). */
-  form?: 'numbers' | 'compact';
+  /** auto (default: compact below 430 px of its own width), numbers, or compact («الصفحة 3 من 13»). */
+  form?: 'auto' | 'numbers' | 'compact';
+  /** Hides the «عرض 51–75 من 312» line. */
+  hideSummary?: boolean;
+  /** The navigation's name. */
+  label?: string;
 }
 
 export interface DataTableProps {
   'aria-label': string;
-  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`. */
-  columns: { id: string; header: string; kind?: 'text' | 'number' | 'latin'; sortable?: boolean }[];
+  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`, `hideable`. */
+  columns: {
+    id: string;
+    header: string;
+    kind?: 'text' | 'number' | 'latin';
+    sortable?: boolean;
+    hideable?: boolean;
+  }[];
   /** Rows as cell values by column id. */
   rows: Record<string, string | number>[];
   selectable?: boolean;
@@ -130,9 +143,19 @@ export interface DataTableProps {
   defaultSelected?: string[];
   /** The column sorted at first. */
   defaultSort?: { columnId: string; direction: 'ascending' | 'descending' };
+  /** Columns hidden at first (the «الأعمدة» menu shows them again). */
+  defaultHiddenColumns?: string[];
   loading?: boolean;
-  /** The empty state's title when there is no row. */
+  /** Skeleton rows while loading. */
+  loadingRows?: number;
+  /** The empty state when there is no row: no match, or an error with its way out. */
   emptyTitle?: string;
+  emptyDescription?: string;
+  emptyIcon?: IconName;
+  emptyArt?: 'jasmine' | 'star';
+  emptyActions?: { label: string; variant?: 'primary' | 'secondary' }[];
+  /** Rows the server has in all. */
+  totalRows?: number;
 }
 
 /** A value shown once to copy or send (slice A-01-10): a setup link. */
@@ -206,6 +229,11 @@ export interface MenuProps {
       }
     | { group: string; notes: { label: string; icon?: IconName; description?: string }[] }
   )[];
+  triggerVariant?: 'primary' | 'secondary' | 'ghost' | 'danger';
+  triggerSize?: 'sm' | 'md';
+  triggerDisabled?: boolean;
+  /** Opens the menu when it mounts, to show its rows. */
+  defaultOpen?: boolean;
 }
 
 export declare const Menu: (props: MenuProps) => unknown;

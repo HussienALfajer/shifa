@@ -51,23 +51,31 @@ function Actions({ actions, size }: { actions: ActionData[]; size?: 'sm' }) {
 }
 
 export interface CardData {
-  title: string;
+  /** Leave out for a body-only card (a figure, a stat). */
+  title?: string;
   description?: string;
   /** Makes it a link card: the title is a link and the whole card its hit area. */
   href?: string;
+  /** Small buttons at the logical end of the header. */
+  actions?: ActionData[];
   /** Lines of the body. */
   body?: string[];
   /** Buttons of the footer, the main one first. */
   footer?: ActionData[];
 }
 
-export function Card({ title, description, href, body, footer }: CardData) {
+export function Card({ title, description, href, actions, body, footer }: CardData) {
   return (
     <CodeCard>
-      <CardHeader
-        title={href === undefined ? title : <CardLink href={href}>{title}</CardLink>}
-        {...(description === undefined ? {} : { description })}
-      />
+      {title !== undefined && (
+        <CardHeader
+          title={href === undefined ? title : <CardLink href={href}>{title}</CardLink>}
+          {...(description === undefined ? {} : { description })}
+          {...(actions === undefined || actions.length === 0
+            ? {}
+            : { actions: <Actions actions={actions} size="sm" /> })}
+        />
+      )}
       {body !== undefined && body.length > 0 && (
         <CardBody>
           {body.map((line) => (
@@ -213,7 +221,12 @@ export interface PaginationData {
   defaultPage?: number;
   pageSize?: number;
   pageSizes?: number[];
-  form?: 'numbers' | 'compact';
+  /** auto (the default) follows the pagination's own width; numbers or compact always. */
+  form?: 'auto' | 'numbers' | 'compact';
+  /** Hides the «عرض 51–75 من 312» line. */
+  hideSummary?: boolean;
+  /** The navigation's name. */
+  label?: string;
 }
 
 export function Pagination({
@@ -222,6 +235,8 @@ export function Pagination({
   pageSize: initialSize = 25,
   pageSizes,
   form,
+  hideSummary,
+  label,
 }: PaginationData) {
   const [page, setPage] = useState(defaultPage);
   const [pageSize, setPageSize] = useState(initialSize);
@@ -233,6 +248,8 @@ export function Pagination({
       totalItems={totalItems}
       {...(pageSizes === undefined ? {} : { pageSizes, onPageSizeChange: setPageSize })}
       {...(form === undefined ? {} : { form })}
+      {...(hideSummary === undefined ? {} : { hideSummary })}
+      {...(label === undefined ? {} : { label })}
     />
   );
 }

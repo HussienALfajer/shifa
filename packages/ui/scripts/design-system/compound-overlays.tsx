@@ -1,6 +1,7 @@
 // The overlay and navigation components of slice 0.4-06 as the design system sees them: a canvas
 // hands the bundle plain values only, so each takes its content as data and builds the parts of
 // packages/ui inside. The props are documented in index.d.ts.
+import { useEffect, useRef } from 'react';
 import { AccordionItem, Accordion as CodeAccordion } from '../../src/accordion/accordion.tsx';
 import {
   AlertDialogAction,
@@ -59,7 +60,46 @@ export interface AlertDialogData {
   actionLabel: string;
   actionVariant?: 'danger' | 'primary';
   errorText?: string;
+  triggerDisabled?: boolean;
+  /**
+   * What the action does when pressed, as the app's request would: `success` (the default)
+   * finishes after a short wait and closes, `error` fails after it and shows `errorText`,
+   * `pending` never finishes (the busy state).
+   */
+  actionResult?: 'success' | 'error' | 'pending';
+  /** Presses the action once the dialog opens, to show its busy or failed state at rest. */
+  runAction?: boolean;
   defaultOpen?: boolean;
+}
+
+/** How long the drawn request takes. */
+const WAIT_MS = 1200;
+
+function drawnRequest(result: AlertDialogData['actionResult']): () => Promise<void> {
+  return () =>
+    new Promise<void>((resolve, reject) => {
+      if (result === 'pending') return;
+      setTimeout(() => {
+        if (result === 'error') reject(new Error('drawn failure'));
+        else resolve();
+      }, WAIT_MS);
+    });
+}
+
+/** Presses the dialog's action once, from inside the open dialog (`runAction`). */
+function PressAction({ label }: { label: string }) {
+  const marker = useRef<HTMLSpanElement>(null);
+  useEffect(() => {
+    const dialog = marker.current?.closest('[role="alertdialog"], [role="dialog"]');
+    const button = [...(dialog?.querySelectorAll('button') ?? [])].find(
+      (b) => b.textContent.trim() === label,
+    );
+    const timer = setTimeout(() => button?.click(), 0);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [label]);
+  return <span ref={marker} hidden />;
 }
 
 export function AlertDialog({
@@ -72,6 +112,9 @@ export function AlertDialog({
   actionLabel,
   actionVariant,
   errorText,
+  triggerDisabled,
+  actionResult,
+  runAction,
   defaultOpen,
 }: AlertDialogData) {
   const danger = (actionVariant ?? 'danger') === 'danger';
@@ -80,6 +123,7 @@ export function AlertDialog({
       <AlertDialogTrigger
         variant={danger ? 'danger' : 'secondary'}
         {...(triggerIcon === undefined ? {} : { startIcon: triggerIcon })}
+        {...(triggerDisabled === undefined ? {} : { disabled: triggerDisabled })}
       >
         {triggerLabel}
       </AlertDialogTrigger>
@@ -90,11 +134,13 @@ export function AlertDialog({
       >
         <AlertDialogCancel>{cancelLabel}</AlertDialogCancel>
         <AlertDialogAction
+          onAction={drawnRequest(actionResult)}
           {...(actionVariant === undefined ? {} : { variant: actionVariant })}
           {...(errorText === undefined ? {} : { errorText })}
         >
           {actionLabel}
         </AlertDialogAction>
+        {runAction === true && <PressAction label={actionLabel} />}
       </AlertDialogContent>
     </CodeAlertDialog>
   );
@@ -109,6 +155,7 @@ export interface DrawerData {
   fields?: { label: string; value?: string }[];
   cancelLabel?: string;
   saveLabel?: string;
+  triggerDisabled?: boolean;
   defaultOpen?: boolean;
 }
 
@@ -121,6 +168,7 @@ export function Drawer({
   fields = [],
   cancelLabel,
   saveLabel,
+  triggerDisabled,
   defaultOpen,
 }: DrawerData) {
   return (
@@ -128,7 +176,10 @@ export function Drawer({
       {...(side === undefined ? {} : { side })}
       {...(defaultOpen === undefined ? {} : { defaultOpen })}
     >
-      <DrawerTrigger {...(triggerIcon === undefined ? {} : { startIcon: triggerIcon })}>
+      <DrawerTrigger
+        {...(triggerIcon === undefined ? {} : { startIcon: triggerIcon })}
+        {...(triggerDisabled === undefined ? {} : { disabled: triggerDisabled })}
+      >
         {triggerLabel}
       </DrawerTrigger>
       <DrawerContent title={title} {...(description === undefined ? {} : { description })}>
@@ -142,7 +193,8 @@ export function Drawer({
         {(cancelLabel !== undefined || saveLabel !== undefined) && (
           <DrawerActions>
             {cancelLabel !== undefined && <DrawerClose>{cancelLabel}</DrawerClose>}
-            {saveLabel !== undefined && <Button variant="primary">{saveLabel}</Button>}
+            {/* As in the app once the change is saved: saving closes the drawer. */}
+            {saveLabel !== undefined && <DrawerClose variant="primary">{saveLabel}</DrawerClose>}
           </DrawerActions>
         )}
       </DrawerContent>
@@ -157,12 +209,22 @@ export interface TooltipData {
   /** An icon trigger with no text: an icon button named by `content`. */
   triggerIcon?: IconName;
   side?: 'top' | 'bottom';
+  /** The tooltip never opens (its trigger stays pressable). */
+  disabled?: boolean;
   defaultOpen?: boolean;
 }
 
-export function Tooltip({ content, triggerLabel, triggerIcon, side, defaultOpen }: TooltipData) {
+export function Tooltip({
+  content,
+  triggerLabel,
+  triggerIcon,
+  side,
+  disabled,
+  defaultOpen,
+}: TooltipData) {
   const common = {
     ...(side === undefined ? {} : { side }),
+    ...(disabled === undefined ? {} : { disabled }),
     ...(defaultOpen === undefined ? {} : { defaultOpen }),
   };
   if (triggerLabel === undefined) {

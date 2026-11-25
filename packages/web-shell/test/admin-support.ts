@@ -24,8 +24,12 @@ export const ADMIN = {
 
 export const CID = (n: number) => `5c1f4c1e-4a43-4f0e-9f61-3c3b1f6f0d${String(n).padStart(2, '0')}`;
 
-const inDays = (days: number) =>
-  new Date(Date.now() + days * 86_400_000).toISOString().slice(0, 10);
+/** The local calendar date `days` from now: the screen counts days in local time, not UTC. */
+const inDays = (days: number) => {
+  const d = new Date(Date.now() + days * 86_400_000);
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return `${String(d.getFullYear())}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+};
 
 export interface Summary {
   id: string;

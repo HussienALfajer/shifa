@@ -2,7 +2,7 @@
 // 0.4-04). A canvas can hand the bundle only plain values, not elements of its own React, so each
 // takes its content as data and builds the parts of packages/ui inside. The props are documented
 // in index.d.ts; the parts themselves (Tab, MenuItem…) are not separate cards.
-import { Button } from '../../src/button/button.tsx';
+import { useState } from 'react';
 import {
   Dialog as CodeDialog,
   DialogActions,
@@ -117,19 +117,28 @@ export interface DialogData {
   /** The main action, last in the row. */
   confirmLabel: string;
   confirmVariant?: Variant;
+  /** The trigger cannot be pressed. */
+  triggerDisabled?: boolean;
   defaultOpen?: boolean;
 }
 
 export function Dialog(props: DialogData) {
   return (
     <CodeDialog {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}>
-      <DialogTrigger variant={props.triggerVariant} startIcon={props.triggerIcon}>
+      <DialogTrigger
+        variant={props.triggerVariant}
+        startIcon={props.triggerIcon}
+        disabled={props.triggerDisabled}
+      >
         {props.triggerLabel}
       </DialogTrigger>
       <DialogContent title={props.title} description={props.description}>
         <DialogActions>
           <DialogClose>{props.cancelLabel}</DialogClose>
-          <Button variant={props.confirmVariant ?? 'primary'}>{props.confirmLabel}</Button>
+          {/* As in the app once its action is done: the main action closes the dialog too. */}
+          <DialogClose variant={props.confirmVariant ?? 'primary'}>
+            {props.confirmLabel}
+          </DialogClose>
         </DialogActions>
       </DialogContent>
     </CodeDialog>
@@ -139,6 +148,8 @@ export function Dialog(props: DialogData) {
 export interface PopoverData {
   triggerLabel: string;
   triggerIcon?: IconName;
+  triggerVariant?: Variant;
+  triggerDisabled?: boolean;
   title: string;
   /** A short text under the title. */
   text: string;
@@ -148,7 +159,13 @@ export interface PopoverData {
 export function Popover(props: PopoverData) {
   return (
     <CodePopover {...(props.defaultOpen === undefined ? {} : { defaultOpen: props.defaultOpen })}>
-      <PopoverTrigger startIcon={props.triggerIcon}>{props.triggerLabel}</PopoverTrigger>
+      <PopoverTrigger
+        startIcon={props.triggerIcon}
+        variant={props.triggerVariant}
+        disabled={props.triggerDisabled}
+      >
+        {props.triggerLabel}
+      </PopoverTrigger>
       <PopoverContent title={props.title}>
         <p className="m-0 text-body leading-body text-text-muted">{props.text}</p>
       </PopoverContent>
@@ -197,26 +214,32 @@ export interface MenuData {
   presentation?: MenuPresentation;
   title?: string;
   items: MenuEntry[];
+  triggerVariant?: Variant;
+  triggerSize?: 'sm' | 'md';
+  triggerDisabled?: boolean;
+  /** Opens the menu when it mounts, to show its rows. */
+  defaultOpen?: boolean;
+}
+
+type RadioEntry = Extract<MenuEntry, { radios: unknown }>;
+
+/** A radio group whose choice follows a press, as the app's switcher does. */
+function Radios({ item }: { item: RadioEntry }) {
+  const [value, setValue] = useState(item.value);
+  return (
+    <MenuRadioGroup label={item.group} value={value} onValueChange={setValue}>
+      {item.radios.map(({ label, ...radio }) => (
+        <MenuRadioItem key={radio.value} {...radio}>
+          {label}
+        </MenuRadioItem>
+      ))}
+    </MenuRadioGroup>
+  );
 }
 
 function entry(item: MenuEntry, index: number) {
   if ('separator' in item) return <MenuSeparator key={`separator-${String(index)}`} />;
-  if ('radios' in item) {
-    return (
-      <MenuRadioGroup
-        key={item.group}
-        label={item.group}
-        value={item.value}
-        onValueChange={() => undefined}
-      >
-        {item.radios.map(({ label, ...radio }) => (
-          <MenuRadioItem key={radio.value} {...radio}>
-            {label}
-          </MenuRadioItem>
-        ))}
-      </MenuRadioGroup>
-    );
-  }
+  if ('radios' in item) return <Radios key={item.group} item={item} />;
   if ('notes' in item) {
     return (
       <MenuGroup key={item.group} label={item.group}>
@@ -253,13 +276,31 @@ function entry(item: MenuEntry, index: number) {
   );
 }
 
-export function Menu({ triggerLabel, triggerIcon, presentation, title, items, ...aria }: MenuData) {
+export function Menu({
+  triggerLabel,
+  triggerIcon,
+  presentation,
+  title,
+  items,
+  triggerVariant,
+  triggerSize,
+  triggerDisabled,
+  defaultOpen,
+  ...aria
+}: MenuData) {
+  const trigger = { variant: triggerVariant, size: triggerSize, disabled: triggerDisabled };
   return (
-    <CodeMenu presentation={presentation}>
+    <CodeMenu presentation={presentation} {...(defaultOpen === undefined ? {} : { defaultOpen })}>
       {triggerLabel === undefined ? (
-        <MenuTrigger icon={triggerIcon ?? 'dots'} aria-label={aria['aria-label'] ?? 'إجراءات'} />
+        <MenuTrigger
+          {...trigger}
+          icon={triggerIcon ?? 'dots'}
+          aria-label={aria['aria-label'] ?? 'إجراءات'}
+        />
       ) : (
-        <MenuTrigger icon={triggerIcon}>{triggerLabel}</MenuTrigger>
+        <MenuTrigger {...trigger} icon={triggerIcon}>
+          {triggerLabel}
+        </MenuTrigger>
       )}
       <MenuContent title={title}>{items.map(entry)}</MenuContent>
     </CodeMenu>

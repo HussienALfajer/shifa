@@ -94,8 +94,10 @@ export interface DialogProps {
   title: string;
   description?: string;
   cancelLabel: string;
+  /** The main action; it closes the dialog, as in the app once its work is done. */
   confirmLabel: string;
   confirmVariant?: Variant;
+  triggerDisabled?: boolean;
   defaultOpen?: boolean;
 }
 
@@ -103,6 +105,8 @@ export interface DialogProps {
 export interface PopoverProps {
   triggerLabel: string;
   triggerIcon?: IconName;
+  triggerVariant?: Variant;
+  triggerDisabled?: boolean;
   title: string;
   text: string;
   defaultOpen?: boolean;
@@ -166,6 +170,8 @@ export interface TooltipProps {
   triggerLabel?: string;
   triggerIcon?: IconName;
   side?: 'top' | 'bottom';
+  /** The tooltip never opens; the trigger stays pressable. */
+  disabled?: boolean;
   defaultOpen?: boolean;
 }
 
@@ -196,7 +202,16 @@ export interface AlertDialogProps {
   actionLabel: string;
   /** danger (default) for a deletion, primary for an ordinary confirmation. */
   actionVariant?: 'danger' | 'primary';
+  /** Shown above the actions when the action fails; the dialog stays open. */
   errorText?: string;
+  triggerDisabled?: boolean;
+  /**
+   * What a press of the action does, as the app's request would: success (default) waits 1.2 s
+   * and closes, error waits and shows `errorText`, pending never finishes (busy).
+   */
+  actionResult?: 'success' | 'error' | 'pending';
+  /** Presses the action once the dialog is open, to show its busy or failed state at rest. */
+  runAction?: boolean;
   defaultOpen?: boolean;
 }
 
@@ -210,22 +225,31 @@ export interface DrawerProps {
   /** Fields in the body, each an Input. */
   fields?: { label: string; value?: string }[];
   cancelLabel?: string;
+  /** The main action; it closes the drawer, as in the app once the change is saved. */
   saveLabel?: string;
+  triggerDisabled?: boolean;
   defaultOpen?: boolean;
+}
+
+interface ToastEntry {
+  type?: 'default' | 'success' | 'info' | 'warning' | 'error';
+  title: string;
+  description?: string;
+  actionLabel?: string;
 }
 
 /**
  * Toasts at the bottom of the screen, at the logical end; this card shows the ones it is given
- * and stays. In code: one ToastProvider and `useToast().show(...)`.
+ * when it mounts and again from its button. In code: one ToastProvider and `useToast().show(...)`.
+ * Give `toasts`, or one toast by its own props (`type`, `title`, `description`, `actionLabel`).
  */
-export interface ToastProps {
-  toasts: {
-    type?: 'default' | 'success' | 'info' | 'warning' | 'error';
-    title: string;
-    description?: string;
-    actionLabel?: string;
-  }[];
+export interface ToastProps extends Partial<ToastEntry> {
+  toasts?: ToastEntry[];
   triggerLabel?: string;
+  /** The app's times (5 s, 8 s with an action, errors stay); without it they stay. */
+  autoDismiss?: boolean;
+  /** false: only the button shows them. */
+  showOnMount?: boolean;
 }
 
 /** One search over patients and actions in a modal panel; Arabic matching folds alef forms. */
@@ -390,6 +414,8 @@ export interface SpinnerProps {
   showLabel?: boolean;
   /** Milliseconds before it shows (400 by default; 0 in previews). */
   delay?: number;
+  /** Whether the wait still runs; keep it mounted and set false: once shown it stays 400 ms. */
+  active?: boolean;
 }
 
 type Name =

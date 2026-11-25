@@ -6,8 +6,13 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { createContext, runInContext } from 'node:vm';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { buildBundle, devHistoryMarkers } from '../scripts/design-system/bundle.ts';
+import {
+  buildBundle,
+  devHistoryMarkers,
+  systemTokensCss,
+} from '../scripts/design-system/bundle.ts';
 import { PARTS, PROVIDED } from '../scripts/design-system/compound.tsx';
+import { gapBlock, undefinedTokens } from '../scripts/design-system/token-gaps.ts';
 import * as ui from '../src/index.ts';
 
 let out: string;
@@ -133,6 +138,30 @@ describe('design-system bundle', () => {
     expect(css).not.toContain('-webkit-text-size-adjust');
     expect(css).not.toMatch(/html,\s*:host/);
     expect(css).not.toMatch(/<\/style/i);
+  });
+
+  // A canvas loads the system's tokens.css and this stylesheet only: a token neither declares
+  // resolves to nothing, and `var(--shifa-motion-easing-exit)` inside `animation` then dropped the
+  // whole animation (the Spinner stood still) and text fell back to the size around it.
+  it('declares every token the stylesheet reads, with the system tokens.css', () => {
+    const css = read('components/bundle.css');
+    expect(undefinedTokens(css, systemTokensCss())).toEqual([]);
+    expect(css).toMatch(/--shifa-motion-easing-exit:\s*cubic-bezier/);
+    expect(css).toMatch(/--shifa-text-size-caption:\s*12px/);
+  });
+
+  it('finds a token the stylesheet reads and nothing declares', () => {
+    expect(undefinedTokens('a{color:var(--shifa-x)}', ':root{--shifa-y:1}')).toEqual(['--shifa-x']);
+    expect(
+      gapBlock(
+        'a{b:var(--shifa-a)}',
+        '',
+        ':root {\n  --shifa-a: var(--shifa-b);\n  --shifa-b: 2px;\n}',
+      ),
+    ).toBe(
+      '/* Tokens the components read that tokens.json does not carry (motion, type scale, text). */\n:root {\n  --shifa-a: var(--shifa-b);\n  --shifa-b: 2px;\n}\n',
+    );
+    expect(() => gapBlock('a{b:var(--shifa-z)}', '', ':root {\n}')).toThrow(/--shifa-z/);
   });
 
   it('gives every public component a preview and guidelines, and types', () => {

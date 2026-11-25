@@ -1,6 +1,6 @@
 // Builds the component bundle of the Shifa Design System (spec 0.4 criterion 12): one classic
-// script (bundle-entry.tsx, React 19 inside, global `Shifa`), its stylesheet with the compact
-// density values, the types and a preview and guidelines per public component.
+// script (bundle-entry.tsx, React 19 inside, global `Shifa`), its stylesheet with the token
+// values tokens.json does not carry (token-gaps.ts) and the compact density values, the types and a preview and guidelines per public component.
 import {
   copyFileSync,
   mkdirSync,
@@ -15,6 +15,8 @@ import { join } from 'node:path';
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import { build } from 'vite';
+import { gapBlock } from './token-gaps.ts';
+import { compileTokensCss, type DsTokens } from './tokens-css.ts';
 
 const here = import.meta.dirname;
 const pkg = join(here, '..', '..');
@@ -83,12 +85,21 @@ function inlineSafe(js: string): string {
   return js.replace(/<\/script/gi, '<\\/script').replaceAll('<!--', '\\x3C!--');
 }
 
-/** The `[data-density='compact']` block of the generated token CSS. */
-function compactBlock(): string {
-  const css = readFileSync(
-    join(root, 'packages', 'tokens', 'generated', 'css', 'tokens.css'),
+const codeTokensCss = () =>
+  readFileSync(join(root, 'packages', 'tokens', 'generated', 'css', 'tokens.css'), 'utf8');
+
+/** The system's tokens.css as assemble.ts compiles it from tokens.json. */
+export function systemTokensCss(): string {
+  const json = readFileSync(
+    join(root, 'packages', 'tokens', 'generated', 'design-system', 'tokens.json'),
     'utf8',
   );
+  return compileTokensCss(JSON.parse(json) as DsTokens, 'Shifa Design System');
+}
+
+/** The `[data-density='compact']` block of the generated token CSS. */
+function compactBlock(): string {
+  const css = codeTokensCss();
   const start = css.indexOf("[data-density='compact'] {");
   if (start === -1) throw new Error('design-system bundle: no compact block in tokens.css');
   return css.slice(start, css.indexOf('}', start) + 1);
@@ -137,7 +148,8 @@ export async function buildBundle(out: string): Promise<void> {
     const js = inlineSafe(readFileSync(join(tmp, 'bundle.js'), 'utf8'));
     writeFileSync(join(dir, 'bundle.js'), `/* @ds-bundle: ${JSON.stringify(header)} */\n${js}`);
     const css = readFileSync(join(tmp, 'bundle.css'), 'utf8');
-    writeFileSync(join(dir, 'bundle.css'), `${css}\n${compactBlock()}\n`);
+    const gaps = gapBlock(css, systemTokensCss(), codeTokensCss());
+    writeFileSync(join(dir, 'bundle.css'), `${css}\n${gaps}${compactBlock()}\n`);
     // One types file for the system: the data-display types follow the rest (without their import).
     const dataTypes = readFileSync(join(here, 'index-data.d.ts'), 'utf8').replace(
       /^[\s\S]*?import type[^\n]*\n/,

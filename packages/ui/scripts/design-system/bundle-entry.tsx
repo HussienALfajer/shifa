@@ -96,14 +96,25 @@ type Props = Record<string, unknown>;
 
 /** Text children only: an element of another React cannot be rendered by this one. */
 function own(props: Props): Props {
-  const { children, ...rest } = props;
+  const { children, ...all } = props;
+  const rest = Object.fromEntries(Object.entries(all).filter(([k]) => k !== 'instanceKey'));
   return typeof children === 'string' || typeof children === 'number'
     ? { ...rest, children }
     : rest;
 }
 
+/**
+ * `instanceKey` is not a prop of the component: when it changes the component mounts afresh, so
+ * a canvas can change what a component reads only when it mounts (`defaultValue`, `defaultOpen`).
+ */
 function render(root: Root, name: Name, props: Props) {
-  root.render(createElement(COMPONENTS[name] as unknown as ComponentType<Props>, own(props)));
+  const key = props['instanceKey'];
+  root.render(
+    createElement(COMPONENTS[name] as unknown as ComponentType<Props>, {
+      ...own(props),
+      ...(typeof key === 'string' || typeof key === 'number' ? { key } : {}),
+    }),
+  );
 }
 
 function mount(element: Element, name: Name, props: Props = {}): () => void {

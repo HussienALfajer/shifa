@@ -14,9 +14,17 @@ export interface Item {
   cap?: string | null;
   /** A copy fixed in this state with the component's own rules (`support/states.css`). */
   pseudo?: 'hover' | 'pressed' | 'focus' | null;
+  /**
+   * Which elements the fixed state reaches (states.ts): `outer`, the outermost element with a
+   * rule for it (a field box, not the buttons inside it); a number, that one of sibling items
+   * (a stepper of two); `{ role, nth }`, the Nth item of a `[role]` container and what is in it
+   * (the second tab of a tablist). Every element inside the frame otherwise.
+   */
+  scope?: 'outer' | number | { role: 'tablist' | 'radiogroup' | 'group' | 'toolbar'; nth: number };
   /** A fixed width in px. */
   w?: number;
-  dir?: 'ltr';
+  /** The copy's own direction, whatever the board's. */
+  dir?: 'ltr' | 'rtl';
 }
 
 export interface Matrix {
@@ -80,5 +88,9 @@ export const fieldFocus = (p: Props, extra: Partial<Item> = {}): Item[] => [
   st(p, 'hover', 'hover', extra),
   st(p, 'keyboard focus', 'focus', extra),
 ];
+
+/** A field's hover and keyboard focus on its box only, not on the buttons inside it. */
+export const boxFocus = (p: Props, extra: Partial<Item> = {}): Item[] =>
+  fieldFocus(p, { ...extra, scope: 'outer' });
 
 export const compact = (d: Density) => d === 'compact';

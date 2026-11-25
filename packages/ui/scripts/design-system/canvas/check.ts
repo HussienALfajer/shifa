@@ -10,6 +10,7 @@ import { createReadStream, existsSync, readdirSync, readFileSync, writeFileSync 
 import { createServer } from 'node:http';
 import { extname, join, resolve } from 'node:path';
 import { chromium } from 'playwright';
+import { undefinedTokens } from '../token-gaps.ts';
 import { combinations, type Tweaks } from './combinations.ts';
 import { renderBoard } from './render-board.ts';
 
@@ -40,9 +41,18 @@ await new Promise<void>((done) => server.listen(0, '127.0.0.1', done));
 const address = server.address();
 const base = `http://127.0.0.1:${String(typeof address === 'object' && address ? address.port : 0)}/`;
 
-const browser = await chromium.launch();
 const heights: Record<string, number> = {};
 let problems = 0;
+// A token the stylesheet reads and nothing declares resolves to nothing on the canvas (a still
+// Spinner, text at the size around it): the system's copy must declare all of them.
+const systemCss = (file: string) => readFileSync(join(project, 'ds', 'shifa', file), 'utf8');
+const gaps = undefinedTokens(systemCss('components/bundle.css'), systemCss('tokens.css'));
+if (gaps.length > 0) {
+  problems += 1;
+  process.stdout.write(`ds/shifa: tokens read but never declared: ${gaps.join(', ')}\n`);
+}
+
+const browser = await chromium.launch();
 let runs = 0;
 const files = readdirSync(project).filter(
   (f) => f.endsWith('.dc.html') && (only.length === 0 || only.some((o) => f.startsWith(o))),
