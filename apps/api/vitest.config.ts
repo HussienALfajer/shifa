@@ -51,12 +51,18 @@ const telemetry = [
 ];
 
 // The identity tests sign in up to 30 times per case, and every attempt verifies a scrypt hash on
-// purpose (criterion 6): on a loaded runner that outlasts the harness's 20 s default.
+// purpose (criterion 6): on a loaded runner that outlasts the harness's 20 s default. Hooks get
+// the same: the route matrix signs in every caller for every route in its `beforeAll` (about 20 s
+// alone, past 60 s in CI beside the other files).
 const IDENTITY_TEST_TIMEOUT_MS = 90_000;
 const withIdentityTimeout = (project: ReturnType<typeof dbTestProject>) =>
   ({
     ...project,
-    test: { ...project.test, testTimeout: IDENTITY_TEST_TIMEOUT_MS },
+    test: {
+      ...project.test,
+      testTimeout: IDENTITY_TEST_TIMEOUT_MS,
+      hookTimeout: IDENTITY_TEST_TIMEOUT_MS,
+    },
   }) as ReturnType<typeof dbTestProject>;
 const db = withIdentityTimeout(dbTestProject({ name: 'db', exclude: [...unit, ...telemetry] }));
 const telemetryProject = withIdentityTimeout(
