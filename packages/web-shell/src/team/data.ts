@@ -13,6 +13,7 @@ export type MemberDetail = Schemas['MemberDetail'];
 export type MemberLink = Schemas['MemberLinkIssued'];
 export type MemberStatus = MemberSummary['status'];
 export type Branch = Schemas['Branch'];
+export type BranchList = Schemas['BranchList'];
 export type RoleScope = Schemas['RoleScopeInput'];
 export type { Role };
 
@@ -26,7 +27,7 @@ export const teamKey = (tenantId: string) => ['clinic', tenantId, 'team'] as con
 export const memberKey = (tenantId: string, id: string) =>
   ['clinic', tenantId, 'team', 'member', id] as const;
 const permissionsKey = (tenantId: string) => ['clinic', tenantId, 'team-permissions'] as const;
-const branchesKey = (tenantId: string) => ['clinic', tenantId, 'branches'] as const;
+export const branchesKey = (tenantId: string) => ['clinic', tenantId, 'branches'] as const;
 
 /** The order roles are listed in, as the server lists them. */
 export const ROLES: readonly Role[] = [
@@ -114,17 +115,33 @@ export function usePermissionDefaults(tenantId: string) {
   });
 }
 
-/** The clinic's active branches (role scopes). */
-export function useBranches(tenantId: string) {
+function useBranchQuery<T>(tenantId: string, select: (list: BranchList) => T) {
   const { shell } = useShell();
   return useQuery({
     queryKey: branchesKey(tenantId),
-    queryFn: async (): Promise<Branch[]> => {
+    queryFn: async (): Promise<BranchList> => {
       const { data } = await shell.api.GET('/branches');
-      if (!data) throw new Error('GET /branches failed');
-      return data.active;
+      // Not the lists (another answer in tests, a proxy page): failed, never half a list.
+      if (!data || !Array.isArray(data.active) || !Array.isArray(data.archived)) {
+        throw new Error('GET /branches failed');
+      }
+      return data;
     },
+    select,
     staleTime: 60_000,
     ...QUIET,
   });
+}
+
+const activeOf = (list: BranchList) => list.active;
+const whole = (list: BranchList) => list;
+
+/** The clinic's active branches (role scopes). */
+export function useBranches(tenantId: string) {
+  return useBranchQuery(tenantId, activeOf);
+}
+
+/** Active and archived branches (the branches page, checkpoint 4); one read with the above. */
+export function useBranchList(tenantId: string) {
+  return useBranchQuery(tenantId, whole);
 }

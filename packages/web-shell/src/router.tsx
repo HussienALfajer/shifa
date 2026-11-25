@@ -47,6 +47,8 @@ export interface ShellPages {
   settings?: ComponentType;
   /** Clinic web only: the owner's team (A-01-08 checkpoint 3); `?branch=` from a branch card. */
   team?: ComponentType;
+  /** Clinic web only: the owner's branches (A-01-08 checkpoint 4). */
+  branches?: ComponentType;
   /** Admin web only: the clinics list (its home), «إنشاء عيادة» and a clinic (A-01-10 checkpoint 3). */
   clinics?: ComponentType;
   createClinic?: ComponentType;
@@ -187,6 +189,9 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   }
   if (app === 'clinic' && pages.settings) {
     children.push(route('/settings', 'signed-in', pages.settings));
+  }
+  if (app === 'clinic' && pages.branches) {
+    children.push(route('/branches', 'signed-in', pages.branches));
   }
   if (app === 'admin' && pages.createClinic) {
     children.push(route('/clinics/new', 'signed-in', pages.createClinic));

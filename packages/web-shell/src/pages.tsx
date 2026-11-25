@@ -16,6 +16,7 @@ import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
 import { MfaPage } from './auth/mfa.tsx';
 import { SetupLinkPage } from './auth/setup-link.tsx';
 import { SignInPage } from './auth/sign-in.tsx';
+import { BranchesPage } from './branches/branches-page.tsx';
 import { ClinicChooserPage } from './chooser/clinic-chooser.tsx';
 import { SessionEndsNotice } from './idle-dialog.tsx';
 import { useShell } from './providers.tsx';
@@ -180,6 +181,7 @@ export const shellPages: ShellPages = {
   account: AccountPage,
   settings: SettingsPage,
   team: TeamPage,
+  branches: BranchesPage,
   clinics: ClinicsPage,
   createClinic: CreateClinicPage,
   clinic: ClinicPage,

@@ -8,6 +8,7 @@ import { Button, Callout, Card, Radio, RadioGroup, SkeletonGroup, SkeletonText }
 import { useQueryClient } from '@tanstack/react-query';
 import { Navigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { SettingsBranchesCard } from '../branches/settings-branches.tsx';
 import { useShell } from '../providers.tsx';
 import { sessionQueryKey } from '../session.ts';
 import { useText } from '../text.ts';
@@ -140,6 +141,11 @@ export function SettingsPage() {
       }
     >
       <IdleCard tenantId={session.tenantId} />
+      <SettingsBranchesCard
+        tenantId={session.tenantId}
+        userId={session.userId}
+        solo={clinic?.solo === true}
+      />
     </AppFrame>
   );
 }
