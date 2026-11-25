@@ -116,6 +116,12 @@ export const TypedImpossible: Story = {
   },
 };
 
+/** The calendar open at rest by `defaultOpen` (OD-119), on the chosen day's month. */
+export const OpenAtRest: Story = {
+  parameters: { matrix: false },
+  args: { defaultOpen: true },
+};
+
 const states = storyStates((label) => <DatePicker label={label} defaultValue="2026-11-24" />);
 export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
 export const MixedDirection: Story = states['MixedDirection'] ?? {};

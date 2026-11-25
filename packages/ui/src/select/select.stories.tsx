@@ -66,6 +66,12 @@ export const Open: Story = {
   },
 };
 
+/** Open at rest by `defaultOpen` (OD-119), as the canvas draws it: no keyboard needed. */
+export const OpenAtRest: Story = {
+  parameters: { matrix: false },
+  args: { defaultOpen: true, defaultValue: first?.id ?? null },
+};
+
 const states = storyStates((label) => (
   <Select label={label} items={ITEMS} placeholder="اختر الطبيب" />
 ));

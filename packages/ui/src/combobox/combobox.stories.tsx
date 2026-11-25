@@ -74,6 +74,18 @@ export const NoMatch: Story = {
   },
 };
 
+/** Open at rest with typed text (`defaultInputValue`, OD-119): the matches, the typed part bold. */
+export const OpenAtRestTyped: Story = {
+  parameters: { matrix: false },
+  args: { defaultOpen: true, defaultInputValue: query },
+};
+
+/** Open at rest with text that matches nothing: the empty message. */
+export const OpenAtRestNoMatch: Story = {
+  parameters: { matrix: false },
+  args: { defaultOpen: true, defaultInputValue: 'زز' },
+};
+
 const states = storyStates((label) => (
   <Combobox label={label} items={ITEMS} emptyMessage="لا يوجد مريض بهذا الاسم" />
 ));

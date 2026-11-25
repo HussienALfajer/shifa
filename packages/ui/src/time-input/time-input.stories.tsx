@@ -69,6 +69,31 @@ export const SlotGrid12Hour: Story = {
   play: openGrid,
 };
 
+/** The slots open at rest by `defaultOpen` (OD-119), 24-hour. */
+export const OpenAtRest: Story = {
+  args: {
+    label: 'وقت الموعد',
+    defaultValue: '10:30',
+    min: '09:00',
+    max: '17:00',
+    defaultOpen: true,
+  },
+  parameters: { matrix: false },
+};
+
+/** The slots open at rest, 12-hour. */
+export const OpenAtRest12Hour: Story = {
+  args: {
+    label: 'وقت الموعد',
+    defaultValue: '10:30',
+    min: '09:00',
+    max: '17:00',
+    hourCycle: 12,
+    defaultOpen: true,
+  },
+  parameters: { matrix: false },
+};
+
 const states = storyStates((label) => <TimeInput label={label} defaultValue="14:30" />);
 export const LongArabicLabel: Story = states['LongArabicLabel'] ?? {};
 export const MixedDirection: Story = states['MixedDirection'] ?? {};

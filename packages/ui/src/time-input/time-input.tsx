@@ -58,6 +58,11 @@ export interface TimeInputProps {
   required?: boolean | undefined;
   name?: string | undefined;
   onBlur?: (() => void) | undefined;
+  /** The slot list open or closed, controlled; with `onOpenChange`. */
+  open?: boolean | undefined;
+  /** The slot list open at mount (closed by default): to show it at rest, as the canvas does. */
+  defaultOpen?: boolean | undefined;
+  onOpenChange?: ((open: boolean) => void) | undefined;
   ref?: Ref<HTMLDivElement> | undefined;
   'aria-label'?: string | undefined;
   className?: string | undefined;
@@ -83,6 +88,9 @@ export function TimeInput({
   required,
   name,
   onBlur,
+  open,
+  defaultOpen,
+  onOpenChange,
   ref,
   'aria-label': ariaLabel,
   className,
@@ -97,7 +105,13 @@ export function TimeInput({
   // The slot grid fills the segments through UI SDK's controller, as typing would.
   const [controller] = useState(createTimeInputController);
   const [box, setBox] = useState<HTMLDivElement | null>(null);
-  const [open, setOpen] = useState(false);
+  // The slot list: held here even when controlled, as Menu holds its own.
+  const [innerOpen, setInnerOpen] = useState(defaultOpen ?? false);
+  const slotsOpen = open ?? innerOpen;
+  const setOpen = (next: boolean) => {
+    setInnerOpen(next);
+    onOpenChange?.(next);
+  };
   // The time shown, so the grid can mark it, whether the field is controlled or not.
   const [own, setOwn] = useState<string | null>(defaultValue ?? null);
   const current = value === undefined ? own : value;
@@ -190,7 +204,7 @@ export function TimeInput({
         <TimeSlotGrid
           dir={dir}
           anchor={box}
-          open={open}
+          open={slotsOpen}
           onOpenChange={setOpen}
           value={current}
           min={min}

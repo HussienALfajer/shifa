@@ -16,9 +16,10 @@ import {
   VARIANTS,
   WAIT,
 } from './controls.ts';
-import { DOCTORS, FORM_REG, ICONS, MENU_GROUPS, MENU_ITEMS, PATIENTS, SETUP, WA } from './data.ts';
+import { FORM_REG, ICONS, MENU_GROUPS, MENU_ITEMS, SETUP, WA } from './data.ts';
 import { FORM_CLEAN } from './playground-data.ts';
 import { MORE_PLAYGROUNDS } from './playground-more.ts';
+import { PICKER_PLAYGROUNDS } from './playground-pickers.ts';
 
 export { type Control, type Option, type Playground, tweakKey } from './controls.ts';
 
@@ -223,76 +224,7 @@ export const PLAYGROUNDS: Record<string, Playground> = {
       { label: 'Amount', set: { label: 'أجر المعاينة', unit: 'ل.س', steppers: false } },
     ],
   },
-  Select: {
-    base: { items: DOCTORS },
-    controls: [
-      ...field('الطبيب'),
-      text('placeholder', 'اختر الطبيب'),
-      flag('required'),
-      flag('disabled'),
-      once(
-        pick('defaultValue', [NONE, ...DOCTORS.map((d) => ({ value: d.value, label: d.label }))]),
-      ),
-    ],
-    scenarios: [
-      { label: 'Chosen', set: { defaultValue: DOCTORS[0]?.value ?? '' } },
-      { label: 'Error', set: { error: 'اختر الطبيب قبل الحفظ' } },
-    ],
-  },
-  Combobox: {
-    base: { items: PATIENTS },
-    controls: [
-      ...field('المريض'),
-      text('placeholder', 'ابحث بالاسم'),
-      text('emptyMessage', 'لا يوجد مريض بهذا الاسم'),
-      flag('disabled'),
-      once(
-        pick('defaultValue', [
-          NONE,
-          ...PATIENTS.slice(0, 3).map((x) => ({ value: x.value, label: x.label })),
-        ]),
-      ),
-    ],
-    scenarios: [
-      { label: 'Chosen', set: { defaultValue: PATIENTS[0]?.value ?? '' } },
-      { label: 'Error', set: { error: 'اختر مريضاً مسجلاً' } },
-    ],
-  },
-  DatePicker: {
-    base: {},
-    controls: [
-      ...field('تاريخ الموعد', 'يمكن الكتابة مباشرة'),
-      flag('showAge'),
-      flag('required'),
-      flag('disabled'),
-      once(pick('defaultValue', [NONE, '2026-11-24', '1990-04-12'])),
-    ],
-    scenarios: [
-      {
-        label: 'Birth date, age',
-        set: { label: 'تاريخ الميلاد', showAge: true, defaultValue: '1990-04-12' },
-      },
-      { label: 'Error', set: { error: 'اختر تاريخاً من اليوم فصاعداً', defaultValue: '2026-11-24' } },
-    ],
-  },
-  TimeInput: {
-    base: { min: '09:00', max: '17:00' },
-    controls: [
-      ...field('وقت الموعد', 'دوام العيادة 09:00 – 17:00'),
-      pick('hourCycle', [
-        { value: 24, label: '24 ساعة' },
-        { value: 12, label: '12 ساعة (ص/م)' },
-      ]),
-      flag('required'),
-      flag('readOnly'),
-      flag('disabled'),
-      once(pick('defaultValue', [NONE, '10:30', '14:30'])),
-    ],
-    scenarios: [
-      { label: '12-hour', set: { hourCycle: 12, defaultValue: '14:30' } },
-      { label: 'Error', set: { error: 'اختر وقتاً بين 09:00 و17:00', defaultValue: '14:30' } },
-    ],
-  },
+  ...PICKER_PLAYGROUNDS,
   OtpInput: {
     base: {},
     controls: [

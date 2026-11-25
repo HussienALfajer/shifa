@@ -18,7 +18,7 @@ Input's box with an hour and a minute segment and a clock button at the logical 
 - The value is always "HH:mm" in 24 hours, whatever the clock shows.
 
 ## What you provide
-`label`, `defaultValue`, `hourCycle`, `min`, `max`, `step`, `hint`, `error`, `required`, `disabled`.
+`label`, `defaultValue`, `hourCycle`, `min`, `max`, `step`, `hint`, `error`, `required`, `disabled`; `defaultOpen` shows the slots open at rest; `open` with `onOpenChange` in code (OD-119).
 
 ## Tokens
 As Input; `shifa-color-selection-strong` (the focused segment), `shifa-color-icon-default` (the clock button), `shifa-color-brand-primary` (the chosen time), `shifa-size-popover`, `shifa-size-slot-list-height`.

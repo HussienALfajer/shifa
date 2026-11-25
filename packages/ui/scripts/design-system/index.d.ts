@@ -125,6 +125,8 @@ export interface SelectProps extends FieldProps {
   items: { value: string; label: string; disabled?: boolean; hint?: string }[];
   defaultValue?: string | null;
   placeholder?: string;
+  /** The list open at mount, to show it at rest (OD-119). */
+  defaultOpen?: boolean;
 }
 
 /** Search a long list as you type (a word of the name starts with the text). */
@@ -133,6 +135,10 @@ export interface ComboboxProps extends FieldProps {
   defaultValue?: string | null;
   emptyMessage: string;
   placeholder?: string;
+  /** The list open at mount, to show it at rest (OD-119). */
+  defaultOpen?: boolean;
+  /** The text in the field at mount, as if typed: its matches, or `emptyMessage`. */
+  defaultInputValue?: string;
 }
 
 /** A number with − and + (or an amount with a unit and no steppers); Western digits. */
@@ -150,6 +156,10 @@ export interface DatePickerProps extends FieldProps {
   defaultValue?: string | null;
   min?: string;
   max?: string;
+  /** The calendar open at mount, on the value's month (OD-119). */
+  defaultOpen?: boolean;
+  /** What the calendar shows at mount: the days (default) or the month and year panel. */
+  defaultView?: 'days' | 'months';
 }
 
 /** A square button with one icon; `label` is its required name. md 44 px, sm 36 px. */
@@ -331,6 +341,8 @@ export interface TimeInputProps extends FieldProps {
   min?: string;
   max?: string;
   required?: boolean;
+  /** The slot list open at mount, to show it at rest (OD-119). */
+  defaultOpen?: boolean;
 }
 
 /** A Field around an Input: label, required asterisk, hint and error. */

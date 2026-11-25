@@ -17,7 +17,7 @@ A search field with a magnifier at its logical start and a clear button at its e
 - The clear button («مسح») empties the field.
 
 ## What you provide
-`label`, `items` (`value`, `label`, `description`, `disabled`), `emptyMessage`, `placeholder`, `defaultValue` (or `value` with `onValueChange` in code), `hint`, `error`, `disabled`.
+`label`, `items` (`value`, `label`, `description`, `disabled`), `emptyMessage`, `placeholder`, `defaultValue` (or `value` with `onValueChange` in code), `hint`, `error`, `disabled`; `defaultOpen` shows the list open at rest, and `defaultInputValue` the text typed at mount (its matches with the typed part in bold, or `emptyMessage`); `open` with `onOpenChange` in code (OD-119).
 
 ## Tokens
 `shifa-input-height`, `shifa-input-border`, `shifa-input-bg`, `shifa-size-row`, `shifa-color-selection-subtle`, `shifa-color-text-muted`, `shifa-shadow-dropdown`.

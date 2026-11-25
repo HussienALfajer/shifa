@@ -1,5 +1,6 @@
 // Sheets of the Forms group: the text, number and choice fields.
 import { DOCTORS, PATIENTS } from './data.ts';
+import { FIELD_OPEN_VIEWS } from './sheets-fields-open.ts';
 import { boxFocus, fieldFocus, type SheetSpec, st } from './types.ts';
 
 const LONG_NAME = 'عبد الرحمن محمد خير الدين الحسيني الدمشقي';
@@ -236,6 +237,7 @@ export const FIELDS: SheetSpec[] = [
     fill: true,
     desc: 'One of a short list; the chosen option has a check; typing finds a name without «د.»; a disabled option says why.',
     play: 'Press a field to open the list; arrows, typing «م», Enter and Esc work.',
+    open: FIELD_OPEN_VIEWS.Select,
     blocks: () => [
       {
         label: 'States',
@@ -282,6 +284,7 @@ export const FIELDS: SheetSpec[] = [
     fill: true,
     desc: 'Search a long list as you type; a word of the name starts with the text; the typed part in bold; an empty message when nothing matches.',
     play: 'Type «عب» to see three suggestions, or «زز» for the empty message.',
+    open: FIELD_OPEN_VIEWS.Combobox,
     blocks: () => {
       const b = {
         items: PATIENTS,
@@ -314,6 +317,7 @@ export const FIELDS: SheetSpec[] = [
     fill: true,
     desc: 'dd/mm/yyyy, Gregorian, the week from Saturday, Levantine month names; typed or chosen from the calendar; the age under a birth date.',
     play: 'Type the date, or press the calendar button and move with the arrows.',
+    open: FIELD_OPEN_VIEWS.DatePicker,
     blocks: () => [
       {
         label: 'States',
@@ -350,6 +354,7 @@ export const FIELDS: SheetSpec[] = [
     fill: true,
     desc: 'Hour and minute, left to right, "HH:mm"; 24-hour by default, a ص/م segment on the 12-hour clock (a clinic setting).',
     play: 'Type digits or use Up and Down in each segment; the list button shows the slots.',
+    open: FIELD_OPEN_VIEWS.TimeInput,
     blocks: () => [
       {
         label: 'States',
