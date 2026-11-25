@@ -1,6 +1,6 @@
 # A-01-10 UI batch 2: My account, automatic sign-out and admin-web clinics
 
-Status: In progress (checkpoint 1 approved 2026-11-24; checkpoint 2 merged #153; re-enrolment drawing approved 2026-11-24; checkpoint 3 merged #155; checkpoint 4 built 2026-11-24) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
+Status: Done 2026-11-25, accepted by the owner (checkpoint 1 approved 2026-11-24; checkpoint 2 merged #153; re-enrolment drawing approved 2026-11-24; checkpoint 3 merged #155; checkpoint 4 built 2026-11-24) · Tier: T1 · Branch: `feat/A-01-10-ui-account-settings-admin-web`
 Spec: [A-01a](../specs/platform/A-01a-clinic-owner-sign-in.md) screens "My account", "Clinic settings · automatic sign-out", "Clinics list", "Create clinic", "Clinic detail"; criteria 3, 4, 9, 10, 10a, 10b, 12a, 13 as seen by the user; verification rows "Flows" and "Screens" · Requirements: PLT-01, PLT-10, PLT-19, PLT-48 · Decisions: ADR-0040, ADR-0042, ADR-0046, OD-79, OD-80, OD-94
 
 After [A-01-07](A-01-07-ui-sign-in-screens.md) and [A-01-09](A-01-09-account-api-gaps.md) (merged). Split from the first A-01-07 plan in the 2026-11-24 re-plan.
@@ -138,7 +138,7 @@ Clinic web, all in `packages/web-shell/src/account/`: `/account` and `/settings`
 The 28 screenshots (14 screens, light and dark) were compared with what checkpoints 2 and 3 recorded against `Account10` and `Main`; nothing new beyond the differences listed there. The drawings themselves could not be opened from this session: the owner compares the screenshots with them. In a full-page capture with a dialog open, the overlay covers only the first 800 px (a capture artefact, not the page).
 
 ## Stopped at
-Checkpoint 4 built, reviewed and verified (this PR). The slice is done when it merges and the owner has compared the screenshots with `Account10` and `Main`.
+Done: checkpoint 4 merged; the owner compared the screens and accepted A-01a and A-01b on 2026-11-25.
 
 ## Evidence
 - Red phase: the four locked test files failed for the expected reason (no `/account` or `/settings` route: «الصفحة غير موجودة.», no radios).
