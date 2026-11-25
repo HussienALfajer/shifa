@@ -31,6 +31,7 @@ import { rename } from './member-corrections.ts';
 import { findMember, holdsOwnerRole, listMembers, memberDetail } from './members.read.ts';
 import {
   audit,
+  heldRoles,
   isLastOwner,
   lockMemberPhone,
   lockOwners,
@@ -140,7 +141,8 @@ export class TeamService {
       if (input.name !== undefined) row = await rename(tx, scope, row, input.name, requestId);
       if (input.roles) {
         await lockOwners(tx);
-        const roles = await validRoles(tx, input.roles, { allowEmpty: true });
+        const held = await heldRoles(tx, row.id);
+        const roles = await validRoles(tx, input.roles, { allowEmpty: true, held });
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
         // OD-97: only the owner themselves (or the super admin) removes an owner's role, so a

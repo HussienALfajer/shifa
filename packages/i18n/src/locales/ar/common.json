@@ -624,6 +624,5 @@
   "addText": "يصله رابط يدخل منه. يظهر الرابط مرة واحدة بعد الإضافة.",
   "addSubmit": "إضافة وإصدار الرابط",
   "addNetworkText": "لم نعرف إن أُضيف. حدّثنا القائمة؛ إن لم يظهر فيها فأعد المحاولة.",
-  "memberArchivedBranch": "{branch} · مؤرشف",
-  "memberArchivedHeldText": "له دور في فرع مؤرشف. أزل علامة ذلك الفرع ثم احفظ."
+  "memberArchivedBranch": "{branch} · مؤرشف"
 }
