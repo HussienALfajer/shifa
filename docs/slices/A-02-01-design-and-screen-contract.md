@@ -153,6 +153,9 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 - Spec gaps 10 (an edited announcement shows again to whoever hid it) and 11 (one at a time, warnings first, then newest) accepted as drawn (criterion 16).
 - PageBanner approved as drawn (sheet `A02cSheetPageBanner`); the admin form's preview (improvement 4) uses it.
 
+### Owner review, limits (2026-11-27)
+- Spec gap 12 accepted (criterion 4: a full limit shown before sending; 409 for a race). No improvement on this screen.
+
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip. Approved by the owner 2026-11-27.
 
