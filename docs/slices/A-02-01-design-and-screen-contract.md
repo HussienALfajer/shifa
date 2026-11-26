@@ -90,6 +90,10 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
   - «سجل دخول الدعم» must show each reason whole. A first fix drew the log as rows by hand; the owner refused it (2026-11-27): the log uses the real DataTable, and the DataTable is changed so a column can wrap (component change 1 below). Until that change is drawn and approved, the board shows today's DataTable, which cuts the reason to one line;
   - the usage chart (owner's request for a professional dashboard): each bar is the system's Tooltip trigger (the figure, then the day), a y-axis with quarter lines, the daily average as a dashed gold line, a strip of figures (total with the change against the previous 30 days, daily average, highest day, days without activity), yesterday under each of today's figures, and the series switch. The UsageChart sheet is redrawn to match.
 
+### Owner review, clinics list (2026-11-27)
+- Improvement 7 accepted: the quick filter «بلا نشاط منذ 7 أيام (n)», a Switch beside the status filter, combined with it and the search (criterion 21; states `inactive`, `inactiveNone`).
+- The first drawing had left out the coded toolbar's status filter with its counts; it is drawn again, as `clinics-page.tsx` renders it.
+
 ### Component changes (accepted by the owner)
 1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet is drawn in this slice with every state (short and long text, sorted, selected, compact, RTL and LTR, light and dark) and approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
 
@@ -101,7 +105,7 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
 - Owner approvals (dates): checkpoint 1 — (clinic page reviewed 2026-11-27, other screens pending), checkpoint 2 —, re-plan —
-- Improvements accepted / declined: 5 and 6 accepted (2026-11-27); 1–4 and 7 wait for their screens
+- Improvements accepted / declined: 5, 6 and 7 accepted (2026-11-27); 1–4 wait for their screens
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record the page and artboard names and the approval dates here.

@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 9, 11, 19, 20) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 9, 11, 19, 20, 21) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -46,6 +46,7 @@ Console
 Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
 19. The clinic page's 30-day usage chart switches between sign-ins and members signed in per day, and shows the total, the daily average (also as a line on the chart), the highest day, the days without activity and the change of the total against the previous 30 days; each day's figure shows in a tooltip.
 20. Each limit on «الاشتراك والحدود» has «السجل»: every change of that key for the clinic, newest first (override set, changed, removed or expired, and type changes that moved its plan value), with who, when, the values before and after, and the reason, read from the audit log.
+21. The clinics list has a quick filter «بلا نشاط منذ 7 أيام (n)»: the clinics where nobody signed in during the last seven Damascus days (sign-ins in 7 days = 0), combined with the status filter and the search; when none, the list says every clinic was active.
 
 ## Edge cases and offline
 - A multi-branch clinic with three branches changed to solo keeps them; the preview says new branches are refused.
@@ -77,7 +78,7 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
-| 19, 20 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
+| 19–21 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
 | Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
 ## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)

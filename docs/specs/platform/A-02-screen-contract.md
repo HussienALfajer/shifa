@@ -54,7 +54,7 @@ Companion of [spec A-02](A-02-settings-entitlements-console.md) (ADR-0047, OD-11
 ### Clinics list (`A02Clinics`)
 | Screen · state | Route (method, path) | Request fields | Response fields → what they drive | Errors and statuses → screen behaviour | Access | Owner |
 |---|---|---|---|---|---|---|
-| List with usage (`list`, `sorted`) | `GET /platform/clinics` (existing, gains fields) | `search` (optional) | each `ClinicSummary` gains `lastActivityAt` (nullable) → «آخر نشاط» («اليوم 10:42», «أمس 18:05», «قبل n أيام», «لا نشاط بعد») and `signIns7d` (integer, the last seven Damascus days, today included) → «الدخول (7 أيام)»; both sortable on the client | as today (A-01-10) | super admin | A-02-07 |
+| List with usage (`list`, `sorted`; quick filter `inactive`, `inactiveNone`, criterion 21) | `GET /platform/clinics` (existing, gains fields) | `search` (optional) | each `ClinicSummary` gains `lastActivityAt` (nullable) → «آخر نشاط» («اليوم 10:42», «أمس 18:05», «قبل n أيام», «لا نشاط بعد») and `signIns7d` (integer, the last seven Damascus days, today included) → «الدخول (7 أيام)»; both sortable on the client; the quick filter «بلا نشاط منذ 7 أيام (n)» keeps the clinics with `signIns7d = 0`, on the client, with the status filter and the search | as today (A-01-10) | super admin | A-02-07 |
 
 ### Flags (`A02Flags`)
 | Screen · state | Route (method, path) | Request fields | Response fields → what they drive | Errors and statuses → screen behaviour | Access | Owner |
