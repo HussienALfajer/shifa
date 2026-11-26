@@ -156,6 +156,9 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 ### Owner review, limits (2026-11-27)
 - Spec gap 12 accepted (criterion 4: a full limit shown before sending; 409 for a race). No improvement on this screen.
 
+### Owner review, branch city and area (2026-11-27)
+- Spec gap 15 accepted (criterion 15). No improvement on this screen; the fields are the system's Combobox.
+
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip. Approved by the owner 2026-11-27.
 
