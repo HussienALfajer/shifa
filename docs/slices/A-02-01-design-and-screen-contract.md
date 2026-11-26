@@ -102,6 +102,10 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 - Spec gap 7 accepted (criterion 16: cancelling a scheduled announcement ends it before its start).
 - Improvements 1 (dismissals per announcement, criterion 22) and 4 (banner preview in the form, criterion 23) accepted and drawn. The preview is drawn with a Callout for now; the page banner drawn at checkpoint 2 replaces it there, on its approval.
 
+### Owner review, cities and areas (2026-11-27)
+- Improvements 2 (branches per place, named in the rename and archive questions) and 3 (restore) accepted and drawn; spec gap 5 is closed by improvement 3 (criterion 15).
+- Owner's addition, improvement 8: clinics and doctors per place beside the branches («5 فروع · 4 عيادات · 11 طبيبًا»), criterion 24. Counts only, over all clinics, read under the platform role; a doctor counts once per place (a branch role there, or a clinic-wide role in a clinic with a branch there). Estimate ~100 lines more on top of improvement 2, in A-02-06 and A-02-09. Its counting query crosses tenants, so A-02-06's security review checks it returns numbers only.
+
 ### Component changes (accepted by the owner)
 1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet is drawn in this slice with every state (short and long text, sorted, selected, compact, RTL and LTR, light and dark) and approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
 
@@ -113,7 +117,7 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
 - Owner approvals (dates): checkpoint 1 — (clinic page reviewed 2026-11-27, other screens pending), checkpoint 2 —, re-plan —
-- Improvements accepted / declined: 1, 4, 5, 6 and 7 accepted (2026-11-27); 2 and 3 wait for their screen
+- Improvements accepted / declined: 1–8 accepted (2026-11-27; 8 asked by the owner); none declined
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record the page and artboard names and the approval dates here.
