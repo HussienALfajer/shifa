@@ -1,7 +1,7 @@
 # A-02-04 Settings cascade with locks
 
 Status: Planned · Tier: T0 · Branch: `feat/A-02-04-settings-cascade`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 8–10, 18 (setting events) · Requirements: PLT-22, PLT-23, PLT-24 · Decisions: ADR-0007; A-01a criterion 9, OD-77, OD-87
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 8–10, 18 (setting events) · Requirements: PLT-22, PLT-23, PLT-24 · Decisions: ADR-0007; A-01a criterion 9, OD-77, OD-87 · From A-02-01: criteria 9 (amended)
 
 After [A-02-03](A-02-03-limits-flags-capabilities.md) (merged).
 Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
@@ -29,7 +29,9 @@ Estimated hand-written lines: ~3,300 (contracts ~250, database ~500, definitions
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: the super admin locks with a value or unlocks (`PUT` and `DELETE …/settings/:key/lock`; no plain `PUT …/settings/:key`, no `POST …/lock|unlock`); errors `validation_failed`, 409 `setting_not_lockable` and, on the clinic route, 409 `setting_locked` (not `setting_scope_refused` or `setting_value_invalid`).
 - `GET /platform/clinics/:id/settings`, `PUT` and `DELETE /platform/clinics/:id/settings/:key/lock` (the super admin locks with a value or unlocks; no plain set, criterion 9); `GET` and `PATCH /clinic/settings` with `source` and `locked`, 409 `setting_locked`.
+- Also owns 409 `setting_not_lockable` (`PUT …/settings/:key/lock` on a key that is not lockable).
 
 ## Stopped at
 Planned.

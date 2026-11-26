@@ -1,7 +1,7 @@
 # A-02-05 Read-only support access
 
 Status: Planned · Tier: T0 · Branch: `feat/A-02-05-support-access`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 11–14 · Requirements: PLT-14, PLT-46 (`support.elevate` reserved), PLT-47 · Decisions: OD-111, OD-112, ADR-0043, ADR-0044; new ADR (support grant mechanism)
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 11–14 · Requirements: PLT-14, PLT-46 (`support.elevate` reserved), PLT-47 · Decisions: OD-111, OD-112, ADR-0043, ADR-0044; new ADR (support grant mechanism) · From A-02-01: criteria 11–13 (amended), 26
 
 After [A-02-04](A-02-04-settings-cascade.md) (merged), so every A-02 write route before it is in the support matrix; later write routes join the matrix automatically.
 Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
@@ -25,14 +25,16 @@ A super admin opens time-boxed, reasoned, read-only access to one clinic and rea
 5. **End-to-end** — API journey: open → hand-off → owner read 200 → a write 403 → owner ends → 401 `support_ended`.
 
 Tests written first: reason 10–500 and durations 30 min, 1, 2, 4 h only; second open grant 409 `support_active` (11); route matrix in a support session: every non-GET route 403 `support_read_only`, every owner GET 200 (12); a write forced past the guard fails on the read-only transaction (12); three ways to end, then 401 `support_ended` (12); owner banner and log data, another clinic's owner sees nothing (13); audit rows per event and per request without bodies (14); suspended clinic opens (14); hand-off token single-use and expiring; isolation case; leak test (no reason in logs).
-Estimated hand-written lines: ~4,050 (ADR ~150, database ~500, principal and guard ~600, grants, hand-off and re-open ~780, owner and console routes ~380, contracts ~220, tests ~1,420). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+Estimated hand-written lines: ~4,090 (ADR ~150, database ~500, principal and guard ~600, grants, hand-off and re-open ~780, owner and console routes ~380, contracts ~220, tests ~1,420). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: routes are `…/support-grants` (not `/platform/clinics/:id/support` or `/clinic/support-access`).
 - Admin: `GET /platform/clinics/:id/support-grants` (`now`, `mine`, `grants`), `POST /platform/clinics/:id/support-grants` (`handoffUrl`; 409 `support_active`), `POST /platform/support-grants/:id/handoff` (open the tab again; 409 `support_ended`), `POST /platform/support-grants/:id/end`.
 - Clinic web: `GET /clinic/support-grants` (`now`, `open`, `grants`; criteria 13, 26), `POST /clinic/support-grants/:id/end`; `support` on `GET /auth/session`; 403 `support_read_only` on every write; 401 `session_expired` with `reason: support_ended` and `details` `endedBy`, `endedAt`, the owner's name (criterion 12).
 - Spec additions: criteria 11 (open the tab again), 12 (who ended it), 13 (banner order, not hideable, time left), 26.
 - Budget: ~4,050, at the limit. If the build passes it, the owner's side (`/clinic/support-grants`, the banner data) moves to a small slice of its own, with the owner's agreement at that time.
+- Ending from the support tab (review of A-02-01, owner 2026-11-27): `POST /auth/support/end` is the one write a support session may make, ending its own grant only; it is a row of the support write-route test matrix (allowed) and every other write stays 403. ~40 lines more.
 
 ## Stopped at
 Planned.

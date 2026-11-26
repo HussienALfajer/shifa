@@ -1,7 +1,7 @@
 # A-02-08 UI code 1: admin web clinic page tabs and clinics list
 
 Status: Planned · Tier: T1 · Branch: `feat/A-02-08-ui-admin-clinic-tabs`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) screens "Clinic page" (الاشتراك والحدود، الإعدادات، دخول الدعم، الاستخدام) and "Clinics list"; criteria 1, 3, 9, 11, 17 as seen by the super admin · Requirements: PLT-13, PLT-14, PLT-16, PLT-24 · Decisions: ADR-0040, ADR-0046, ADR-0047
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) screens "Clinic page" (الاشتراك والحدود، الإعدادات، دخول الدعم، الاستخدام) and "Clinics list"; criteria 1, 3, 9, 11, 17 as seen by the super admin · Requirements: PLT-13, PLT-14, PLT-16, PLT-24 · Decisions: ADR-0040, ADR-0046, ADR-0047 · From A-02-01: criteria 19–21
 
 After A-02-02 to A-02-07 (merged). Drawings, contract rows and missing components approved in [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 1.
 
@@ -18,7 +18,7 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 ## Plan
 ### Checkpoint 1 — contract check and components
 - **Contract check:** every contract row of these screens against the built API (OpenAPI and a real call each): fields, errors, statuses. A mismatch is fixed in the API on this branch (its own commit, T0 review if it touches access or schema) and never worked around in the client. Any design-system release since A-02-01 is applied to the drawings and noted.
-- **Components:** the components approved in A-02-01 that these screens need (for example the 30-day chart and the countdown) are built with `/ui-component` from their sheets and synced to the Shifa Design System before the screens use them. Each is its own PR if the line budget needs it (ADR-0032).
+- **Components:** the components approved in A-02-01 that these screens need (UsageChart and the DataTable wrapping column) are built with `/ui-component` from their sheets and synced to the Shifa Design System before the screens use them. Each is its own PR if the line budget needs it (ADR-0032).
 ### Checkpoint 2 — subscription and limits tab, settings tab
 - Override dialog (value by key type, reason, expiry), remove confirmation, type change with its preview.
 - Settings list with source labels, set value, lock and unlock.
@@ -39,6 +39,7 @@ Estimated hand-written lines: ~4,370 (UsageChart ~600, DataTable wrap ~200, subs
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: the routes are the contract's; the settings tab only locks with a value and unlocks (criterion 9).
 - Screens: `A02Clinic` (tabs «الاشتراك والحدود» with the override history drawer, «الإعدادات», «دخول الدعم», «الاستخدام» with the series switch and the dashboard chart) and `A02Clinics` (usage columns, «بلا نشاط منذ 7 أيام»), on "Shifa Screens · Admin web", page "Proposals"; improvements 5, 6, 7 (criteria 19, 20, 21).
 - Components built here first, with `/ui-component` from their approved sheets, then synced: **UsageChart** (`A02SheetUsageChart`) and the **DataTable wrapping column** (`A02SheetDataTableWrap`). The countdown named earlier is not a component (a Badge whose text the screen updates).
 - Budget: ~4,370 with the components, above the ~4,000 guide; the owner kept ten slices (2026-11-27). Checkpoint 1 (components synced) is its own commit series; if the build runs over, the components go in their own PR first (ADR-0032).

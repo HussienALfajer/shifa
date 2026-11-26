@@ -1,7 +1,7 @@
 # A-02-03 Limits enforced, feature flags and capabilities
 
 Status: Planned · Tier: T0 · Branch: `feat/A-02-03-limits-flags-capabilities`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114 · From A-02-01: criteria 4, 5, 7 (amended)
 
 After [A-02-02](A-02-02-entitlements-and-overrides.md) (merged).
 Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
@@ -27,6 +27,7 @@ Estimated hand-written lines: ~3,800 (contracts ~320, database ~300, limits ~550
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: flag `reason` 10–500.
 - `GET /clinic/capabilities`, `GET /clinic/subscription`; 409 `limit_reached` (`details`: `key`, `limit`, `used`) on `POST` and `PATCH /team/members`, `POST /team/members/:id/reactivate`, `POST /branches`, `POST /branches/:id/restore`; `used` in the entitlements answer.
 - Flags: `GET /platform/flags` (with `updatedByName`, `updatedAt`), `PUT /platform/flags/:key`.
 - Existing API fix: `GET /platform/clinics?search=` on a folded name at the start of a word (alef forms, taa marbuta, alef maqsura, diacritics), one fold function shared with the cities search.

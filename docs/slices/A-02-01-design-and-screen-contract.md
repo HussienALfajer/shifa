@@ -44,7 +44,7 @@ Estimated hand-written lines: ~900 in the repository (contract ~600, spec amendm
 Done (2026-11-27): both checkpoints approved, the re-plan approved with ten slices; PR opened.
 
 ## Checkpoint 3 (re-plan)
-Each of A-02-02 to A-02-10 gained a section "From A-02-01" with its contract rows, the spec criteria and improvements it carries, its components and its new estimate. Estimates: A-02-02 ~3,700, A-02-03 ~3,800, A-02-04 ~3,300, A-02-05 ~4,050, A-02-06 ~2,850, A-02-07 ~3,500, A-02-08 ~4,370, A-02-09 ~4,050, A-02-10 ~3,570. A separate component slice (taking the four components, ~1,900 lines, out of A-02-08 and A-02-09) was offered; the owner kept ten slices, so A-02-08 and A-02-09 build their components first and may split their PR by the budget (ADR-0032).
+Each of A-02-02 to A-02-10 gained a section "From A-02-01" with its contract rows, the spec criteria and improvements it carries, its components and its new estimate. Estimates: A-02-02 ~3,850, A-02-03 ~3,800, A-02-04 ~3,300, A-02-05 ~4,090, A-02-06 ~2,950, A-02-07 ~3,550, A-02-08 ~4,370, A-02-09 ~4,050, A-02-10 ~3,570. A separate component slice (taking the four components, ~1,900 lines, out of A-02-08 and A-02-09) was offered; the owner kept ten slices, so A-02-08 and A-02-09 build their components first and may split their PR by the budget (ADR-0032).
 
 ## Checkpoint 1 (admin web)
 ### What is drawn
@@ -165,10 +165,19 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip. Approved by the owner 2026-11-27.
 
+## Review (reviewer agent, 2026-11-27)
+Five blocking findings, fixed with the owner's decisions:
+- B1 override history had no source for past reasons: a `tenant_override_event` table (owner's choice) in A-02-02; audit rows stay without reasons.
+- B2 counts across clinics conflicted with ADR-0043: integers-only database functions (owner's choice), a new ADR amending ADR-0043 in A-02-06, reused by A-02-07.
+- B3 the support tab could not end its own session: `POST /auth/support/end`, the one write a support session may make (owner's choice), in A-02-05.
+- B4 criteria 22, 24, 26 had no proof: rows added to the spec's verification contract.
+- B5 the contract was still marked draft: marked approved.
+Non-blocking fixed: criterion 24 wording and order, superseded names listed in each slice, `setting_not_lockable` owned by A-02-04, stale component lines in A-02-08 to A-02-10, the new criteria on each slice's spec line and roadmap row, contract privacy wording, `hasData`, a dismissal in a support session, this evidence section.
+
 ## Evidence
-- Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
+- Token and component check of the artboards: checkpoint 1 and checkpoint 2, 0 literal colours, 0 unknown tokens; every state rendered light and dark (and on tablet and phone for clinic web), 0 errors (2026-11-26 and 2026-11-27)
 - Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 2026-11-27 (every clinic web screen and the PageBanner sheet), re-plan 2026-11-27 (ten slices kept)
-- Improvements accepted / declined: 1–8 accepted (2026-11-27; 8 asked by the owner); none declined
+- Improvements accepted / declined: 1–10 accepted (2026-11-27; 8 asked by the owner); none declined
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record the page and artboard names and the approval dates here.

@@ -45,13 +45,13 @@ Console
 
 Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
 19. The clinic page's 30-day usage chart switches between sign-ins and members signed in per day, and shows the total, the daily average (also as a line on the chart), the highest day, the days without activity and the change of the total against the previous 30 days; each day's figure shows in a tooltip.
-20. Each limit on «الاشتراك والحدود» has «السجل»: every change of that key for the clinic, newest first (override set, changed, removed or expired, and type changes that moved its plan value), with who, when, the values before and after, and the reason, read from the audit log.
+20. Each limit on «الاشتراك والحدود» has «السجل»: every change of that key for the clinic, newest first (override set, changed, removed or expired, and type changes that moved its plan value), with who, when, the values before and after, and the reason, read from the override history table (`tenant_override_event`: tenant-scoped, FORCE RLS, written with each override change, readable by the platform for this view). The audit log keeps no reason text.
 21. The clinics list has a quick filter «بلا نشاط منذ 7 أيام (n)»: the clinics where nobody signed in during the last seven Damascus days (sign-ins in 7 days = 0), combined with the status filter and the search; when none, the list says every clinic was active.
 22. Each active or ended announcement shows how many of its targeted members dismissed it («أغلقه 31 من 118 عضوًا»); the targeted members are the non-deactivated members of its clinics, counted when it is read.
 23. The announcement form shows a preview of the banner as members will see it, updated as the body and level change.
+24. Each city and area shows how many non-archived branches hold it, in how many clinics, and how many doctors work there (non-deactivated members holding a doctor role in one of those branches or clinic-wide in one of those clinics, each counted once); the rename and archive questions state how many branches and clinics are affected. The figures are counts only, never names, and archived places show the branches that still hold them.
 25. The owner's «الاشتراك» card warns when the subscription ends within 14 days («ينتهي اشتراكك خلال 9 أيام»), with the date and who to contact.
 26. The owner's support banner shows the time left, counting down each minute from the server's time.
-24. Each city and area shows how many non-archived branches hold it, in how many clinics, and how many doctors work there (non-deactivated members holding a doctor role in one of those branches or clinic-wide in one of those clinics, each counted once); the rename and archive questions name the branches and clinics affected. The figures are counts only, never names, and archived places show the branches that still hold them.
 
 ## Edge cases and offline
 - A multi-branch clinic with three branches changed to solo keeps them; the preview says new branches are refused.
@@ -70,7 +70,7 @@ Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
 `support.elevate` is reserved in the catalogue and grants nothing in Release 1.
 
 ## Money, abuse and privacy
-No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 14); writing through support (12, enforced twice); a stale cache granting more (2); overrun by racing adds (4); phishing through announcements (16, plain text). Tenant scoping: `tenant_override`, `setting_value` (tenant scopes), `support_access_grant`, announcement targets and `usage_daily` carry `tenant_id` with FORCE RLS; `shifa_app` reads only its own and changes only an owner's end of a grant (a column grant, approved at `/db-migration`); plans, flags, cities and announcements are platform tables. Never in logs, spans or errors: support reasons, override reasons, announcement text, phones, tokens. The support grant mechanism is recorded as an ADR in its slice.
+No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 14); writing through support (12, enforced twice); a stale cache granting more (2); overrun by racing adds (4); phishing through announcements (16, plain text). Tenant scoping: `tenant_override`, `setting_value` (tenant scopes), `support_access_grant`, announcement targets and `usage_daily` carry `tenant_id` with FORCE RLS; `shifa_app` reads only its own and changes only an owner's end of a grant (a column grant, approved at `/db-migration`); plans, flags, cities and announcements are platform tables. Counts across clinics (criteria 22 and 24) are read through database functions that return integers only, never rows or names, owned by the slice that adds them and pinned in the privilege test; this amends ADR-0043 (the platform roles stay off clinic data) and is recorded as a new ADR in A-02-06. Never in logs, spans or errors: support reasons, override reasons, announcement text, phones, tokens. The support grant mechanism is recorded as an ADR in its slice.
 
 ## Verification contract
 | Criteria | Proof |
@@ -83,7 +83,10 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
-| 19–26 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
+| 19, 20 | Contract tests of the usage series (30 zero-filled days, both series, previous-period totals) and of the override history (every event kind, before and after values, reasons from `tenant_override_event`, newest first) |
+| 21, 23, 25 | Browser screenshots against the drawings (quick filter, banner preview, subscription ending), component tests of their states |
+| 22, 24 | API tests with seeded clinics: dismissals against non-deactivated targeted members; branches, clinics and doctors per place (each doctor counted once, archived places, deactivated members left out); the answers hold numbers only (no branch, clinic or member name); the counting functions pinned in the privilege test |
+| 26 | Contract test: `now` on `GET /clinic/support-grants`; the banner counts down on a fake clock |
 | Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
 ## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)

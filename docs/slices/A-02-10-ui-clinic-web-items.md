@@ -1,7 +1,7 @@
 # A-02-10 UI code 3: clinic web support frame, banners, subscription, limits and places
 
 Status: Planned · Tier: T1 · Branch: `feat/A-02-10-ui-clinic-web-items`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) clinic web screens; criteria 4–6, 9, 10, 11–13, 15, 16 as seen in the clinic; the three Playwright journeys of the verification contract · Requirements: PLT-14, PLT-18, PLT-20, PLT-24 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-110, OD-111
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) clinic web screens; criteria 4–6, 9, 10, 11–13, 15, 16 as seen in the clinic; the three Playwright journeys of the verification contract · Requirements: PLT-14, PLT-18, PLT-20, PLT-24 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-110, OD-111 · From A-02-01: criteria 25, 26
 
 Last slice of A-02, after A-02-08 and A-02-09 (merged), because its journeys start in admin web. Drawings, contract rows and missing components were approved in [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 2.
 
@@ -27,7 +27,7 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 ## Plan
 ### Checkpoint 1 — contract check and components
 - **Contract check:** every contract row of these screens against the built API. A mismatch is fixed in the API on this branch, never in the client. Any design-system release since A-02-01 is applied to the drawings and noted.
-- **Components:** the approved ones these screens need (for example the fixed, stackable page banner) are built with `/ui-component` and synced before use.
+- **Components:** none to build; PageBanner (built in A-02-09) and the DataTable wrapping column (built in A-02-08) are used.
 ### Checkpoint 2 — capabilities in the shell, support frame and owner side
 - Capabilities loaded with the session and kept for display offline.
 - The support frame and its read-only state.
@@ -45,6 +45,7 @@ Estimated hand-written lines: ~3,570 (shell and capabilities ~400, support frame
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: the routes are the contract's.
 - Screens: `A02cSettings` (idle source and lock, «الاشتراك» beside it with the ending warning, the support log, the owner's banner with time left), `A02cSupportSession`, `A02cAnnouncements`, `A02cLimits`, `A02cBranchPlace` on "Shifa Screens · Clinic web", page "Proposals"; improvements 9 and 10 (criteria 25, 26); spec gaps 9–15.
 - Components: none new; PageBanner (from A-02-09) and the DataTable wrapping column (from A-02-08) are used.
 
