@@ -11,7 +11,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { type Browser, chromium, type Page } from 'playwright';
 import { boards, heightKey, renders } from './boards.ts';
-import { checkBoard } from './check-board.ts';
+import { CANVAS_SANDBOX, checkBoard } from './check-board.ts';
 import { coverageProblems, unansweredCodes } from './coverage.ts';
 import type { Sheet } from './scenario.ts';
 import { undeclaredTokens } from './tokens.ts';
@@ -26,6 +26,8 @@ if (shotsArg) mkdirSync(resolve(shotsArg), { recursive: true });
 
 type Mount = [sheet: string, state: string, theme: string];
 
+const STATE_ORIGIN = 'https://state.test';
+
 /** A window with the bundle loaded and its errors collected. */
 async function open(browser: Browser, width: number, height: number) {
   const page = await browser.newPage({ viewport: { width, height } });
@@ -34,9 +36,16 @@ async function open(browser: Browser, width: number, height: number) {
   page.on('console', (m) => {
     if (m.type() === 'error') errors.push(m.text().slice(0, 300));
   });
-  await page.setContent(
-    `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${css}</style></head><body><div id="board"></div></body></html>`,
+  // Sandboxed as the canvas's frames are (no forms, forms.ts): a press that never reaches the
+  // fake server leaves its answer unshown, which the coverage below reports.
+  await page.route(`${STATE_ORIGIN}/**`, (route) =>
+    route.fulfill({
+      contentType: 'text/html',
+      headers: { 'content-security-policy': CANVAS_SANDBOX },
+      body: `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${css}</style></head><body><div id="board"></div></body></html>`,
+    }),
   );
+  await page.goto(`${STATE_ORIGIN}/state.html`);
   await page.addScriptTag({ content: js });
   return { page, errors };
 }

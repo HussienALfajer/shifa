@@ -17,6 +17,7 @@ import { shellPages } from '../../src/pages.tsx';
 import { ShellProviders } from '../../src/providers.tsx';
 import { createShellRouter } from '../../src/router.tsx';
 import { THEME_STORAGE_KEY } from '../../src/theme.ts';
+import { installFormSubmission } from './forms.ts';
 import { boardStorage, resetClock } from './isolate.ts';
 import { Board, mountBoard } from './panel.tsx';
 import { SHEETS } from './scenarios/index.ts';
@@ -24,6 +25,9 @@ import { answered, createServer } from './server.ts';
 import { createWorld } from './state.ts';
 import { runSteps, type Translate } from './steps.ts';
 import './styles.css';
+
+// The canvas's frames allow no forms (forms.ts).
+installFormSubmission(document);
 
 export interface BoardOptions {
   sheet: string;

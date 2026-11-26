@@ -8,6 +8,9 @@ import { type Board, boardWidth } from './boards.ts';
 
 const ORIGIN = 'https://screens.test';
 
+/** The canvas's board frames: `sandbox="allow-scripts allow-same-origin"`, so no forms. */
+export const CANVAS_SANDBOX = 'sandbox allow-scripts allow-same-origin';
+
 /** The start of the app now in the window (0 before the first). */
 const runOf = (frame: Frame) =>
   frame.evaluate(() =>
@@ -80,6 +83,7 @@ export async function checkBoard(
       // so the inner window must take its styles from this document.
       await route.fulfill({
         contentType: 'text/html',
+        headers: { 'content-security-policy': CANVAS_SANDBOX },
         body: `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${files.css}</style><script src="screens/screens.js"></script><style>html,body{margin:0}</style></head><body><div id="host"></div></body></html>`,
       });
     } else {
