@@ -149,8 +149,12 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 ### Owner review, support session (2026-11-27)
 - Spec gap 14 accepted (criterion 12: the 401 after a support session ends carries who ended it and when; the tab shows the cause and the way back). No improvement on this screen.
 
+### Owner review, announcement banner (2026-11-27)
+- Spec gaps 10 (an edited announcement shows again to whoever hid it) and 11 (one at a time, warnings first, then newest) accepted as drawn (criterion 16).
+- PageBanner approved as drawn (sheet `A02cSheetPageBanner`); the admin form's preview (improvement 4) uses it.
+
 ### Missing component
-- **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip.
+- **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip. Approved by the owner 2026-11-27.
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
