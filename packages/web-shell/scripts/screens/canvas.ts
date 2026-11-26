@@ -4,16 +4,16 @@
 // screen. Run check.ts first: it measures every state's height into heights.json. The boards
 // published now sit beside the current canvas.json (as the Artifact tool saves them): the state
 // and theme the owner saved in their Tweaks are carried into the new boards, and every page but
-// this one is kept as it is.
-// Usage: node scripts/screens/canvas.ts <project-dir> <current canvas.json> <heights.json>
+// this one is kept as it is. With `admin`, the same for the "Admin Web Screens" page of
+// "Shifa Screens · Admin web" (CANVASES: the old A-01-10 page dropped, a Proposals page added).
+// Usage: node scripts/screens/canvas.ts <project-dir> <current canvas.json> <heights.json> [admin]
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { type Board, boards, boardWidth, heightKey } from './boards.ts';
 import { buildScreens } from './build.ts';
-import { SHEETS } from './scenarios/index.ts';
-import { PLAY_CODE, PLAY_PASSWORD } from './state.ts';
+import { SHEETS_OF } from './scenarios/index.ts';
+import { PLAY_CODE, PLAY_PASSWORD, type ScreensApp } from './state.ts';
 
-const PAGE = { id: 'screens', name: 'Clinic Web Screens' };
 const DESIGN_SYSTEM = {
   title: 'Shifa Design System',
   namespace: 'shifa',
@@ -140,23 +140,61 @@ interface CanvasIndex {
   notes: Record<string, unknown>;
 }
 
-const INTRO = `Clinic Web Screens. One sheet per screen: the screen on a desktop window and on a phone. Select a board and open Tweaks to choose the state it opens at (every state the screen can show and every answer of the server) and the light or dark theme; in Play, the panel at the right of each board restarts the app at any state or theme without changing Tweaks, and «Reset» goes back to them. Every board is clinic web itself (packages/web-shell: the same pages, router and Shifa components), opened at that state with a fake server that answers as the API's contracts say, with synthetic data; nothing is drawn by hand. In Play: password ${PLAY_PASSWORD}, code ${PLAY_CODE}; anything else is refused as the server would. Rebuilt from the code by packages/web-shell/scripts/screens (ADR-0049).`;
+const intro = (name: string, app: string) =>
+  `${name}. One sheet per screen: the screen on a desktop window and on a phone. Select a board and open Tweaks to choose the state it opens at (every state the screen can show and every answer of the server) and the light or dark theme; in Play, the panel at the right of each board restarts the app at any state or theme without changing Tweaks, and «Reset» goes back to them. Every board is ${app} itself (packages/web-shell: the same pages, router and Shifa components), opened at that state with a fake server that answers as the API's contracts say, with synthetic data; nothing is drawn by hand. In Play: password ${PLAY_PASSWORD}, code ${PLAY_CODE}; anything else is refused as the server would. Rebuilt from the code by packages/web-shell/scripts/screens (ADR-0049).`;
 
-const onPage = (entry: unknown) => (entry as { page?: string } | undefined)?.page === PAGE.id;
-const others = <T>(record: Record<string, T>) =>
-  Object.fromEntries(Object.entries(record).filter(([, v]) => !onPage(v)));
+interface Page {
+  id: string;
+  name: string;
+}
+
+/** Each app's canvas: its screens page, its title, and pages it drops (old drawings) or adds. */
+export const CANVASES: Record<
+  ScreensApp,
+  { page: Page; title: string; intro: string; drop: string[]; add: Page[] }
+> = {
+  clinic: {
+    page: { id: 'screens', name: 'Clinic Web Screens' },
+    title: 'Shifa Screens · Clinic web',
+    intro: intro('Clinic Web Screens', 'clinic web'),
+    drop: [],
+    add: [],
+  },
+  admin: {
+    page: { id: 'admin-screens', name: 'Admin Web Screens' },
+    title: 'Shifa Screens · Admin web',
+    intro: `${intro('Admin Web Screens', 'admin web')} Admin web is drawn for the desktop; its phone boards show how it renders in a phone's window.`,
+    // The A-01-10 prototype, replaced by the coded screens (owner, 2026-11-26).
+    drop: ['a0110'],
+    add: [{ id: 'proposals', name: 'Proposals' }],
+  },
+};
+
+const pageOf = (entry: unknown) => (entry as { page?: string } | undefined)?.page;
+
+/** The board files a new index no longer holds (for the publish to remove them). */
+export function removedFiles(before: CanvasIndex, after: CanvasIndex): string[] {
+  return Object.keys(before.boards).filter((f) => !(f in after.boards));
+}
 
 export function writeCanvas(
   project: string,
   current: CanvasIndex,
   heights: Record<string, number>,
   saved: (file: string) => Saved = () => ({}),
+  app: ScreensApp = 'clinic',
 ) {
-  // The other pages (Proposals) keep their boards, notes and order as read.
+  const { page: PAGE, title, intro: INTRO, drop, add } = CANVASES[app];
+  const SHEETS = SHEETS_OF[app];
+  const onPage = (entry: unknown) => pageOf(entry) === PAGE.id;
+  const gone = (entry: unknown) => onPage(entry) || drop.includes(pageOf(entry) ?? '');
+  const others = <T>(record: Record<string, T>) =>
+    Object.fromEntries(Object.entries(record).filter(([, v]) => !gone(v)));
+  // The other pages (Proposals) keep their boards, notes and order as read; dropped pages go.
   const out: CanvasIndex = {
     ...current,
     boards: others(current.boards),
-    order: current.order.filter((f) => !onPage(current.boards[f])),
+    order: current.order.filter((f) => !gone(current.boards[f])),
     notes: others(current.notes),
   };
   const rowWidth = boardWidth('desktop') + GAP + boardWidth('phone') + GAP + NOTE_W;
@@ -216,32 +254,49 @@ export function writeCanvas(
     ...noteOrder.filter((k) => k in out.notes && !onPage(out.notes[k])),
     ...Object.keys(out.notes).filter((k) => onPage(out.notes[k])),
   ];
-  out['title'] = 'Shifa Screens · Clinic web';
-  const pages = (current['pages'] as { id: string }[] | undefined) ?? [];
-  out['pages'] = pages.some((p) => p.id === PAGE.id)
+  out['title'] = title;
+  const pages = ((current['pages'] as Page[] | undefined) ?? []).filter(
+    (p) => !drop.includes(p.id),
+  );
+  const withScreens = pages.some((p) => p.id === PAGE.id)
     ? pages.map((p) => (p.id === PAGE.id ? { ...p, ...PAGE } : p))
     : [PAGE, ...pages];
-  out['launch'] = current['launch'] ?? { view: 'canvas', page: PAGE.id };
+  out['pages'] = [...withScreens, ...add.filter((p) => !withScreens.some((q) => q.id === p.id))];
+  const launch = current['launch'] as { page?: string } | undefined;
+  out['launch'] =
+    launch && !drop.includes(launch.page ?? '') ? launch : { view: 'canvas', page: PAGE.id };
   return out;
 }
 
-const [projectArg, indexArg, heightsArg] = process.argv.slice(2);
+const [projectArg, indexArg, heightsArg, appArg] = process.argv.slice(2);
 if (import.meta.main && projectArg && indexArg && heightsArg) {
+  const app: ScreensApp = appArg === 'admin' ? 'admin' : 'clinic';
   const project = resolve(projectArg);
   await buildScreens(join(project, 'screens'));
   const current = JSON.parse(readFileSync(indexArg, 'utf8')) as CanvasIndex;
   const heights = JSON.parse(readFileSync(heightsArg, 'utf8')) as Record<string, number>;
   const version = process.env['DS_VERSION'];
   const published = dirname(resolve(indexArg));
-  const index = writeCanvas(project, current, heights, (file) => {
-    const path = join(published, file);
-    return existsSync(path) ? savedTweaks(readFileSync(path, 'utf8')) : {};
-  });
+  const index = writeCanvas(
+    project,
+    current,
+    heights,
+    (file) => {
+      const path = join(published, file);
+      return existsSync(path) ? savedTweaks(readFileSync(path, 'utf8')) : {};
+    },
+    app,
+  );
   if (version) {
     index['designSystems'] = [
       { ...DESIGN_SYSTEM, version, copiedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z') },
     ];
   }
   writeFileSync(join(project, 'canvas.json'), `${JSON.stringify(index, null, 1)}\n`);
-  process.stdout.write(`${String(index.order.length)} boards in ${String(SHEETS.length)} sheets\n`);
+  const removed = removedFiles(current, index);
+  process.stdout.write(
+    `${String(index.order.length)} boards in ${String(SHEETS_OF[app].length)} sheets` +
+      (removed.length > 0 ? `; removed: ${removed.join(', ')}` : '') +
+      '\n',
+  );
 }

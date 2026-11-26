@@ -66,7 +66,8 @@ function consume({ body }: Request, world: World): Reply {
   const owner = world.setupView.purpose === 'owner_setup';
   world.session = rotated(world.signInAs, {
     mfa: 'none',
-    mfaRequired: owner,
+    // Owners and super admins owe the second factor (A-01a); a staff member does not.
+    mfaRequired: owner || world.setupView.purpose === 'admin_setup',
     tenantId: owner ? (world.clinics[0]?.tenantId ?? null) : null,
   });
   return ok(world.session);
