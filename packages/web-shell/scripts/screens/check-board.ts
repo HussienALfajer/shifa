@@ -1,6 +1,6 @@
 // The check of each board as the canvas shows it (panel.tsx): the app in its own window of the
 // device's width beside the state panel. Opens the board from a served copy of the bundle (the
-// inner window loads it by address, as on the canvas), then works the panel as a viewer does:
+// inner window loads the script by address and takes the inlined stylesheet, as on the canvas), then works the panel as a viewer does:
 // the theme switch, a state chosen in the list, «Reset» back to the Tweaks values. Each must
 // restart the app at that state, and the app's window must keep the device's width.
 import type { Browser, Frame, Page } from 'playwright';
@@ -75,13 +75,15 @@ export async function checkBoard(
     const path = new URL(route.request().url()).pathname;
     if (path === '/screens/screens.js') {
       await route.fulfill({ body: files.js, contentType: 'text/javascript' });
-    } else if (path === '/screens/screens.css') {
-      await route.fulfill({ body: files.css, contentType: 'text/css' });
-    } else {
+    } else if (path === '/board.html') {
+      // The stylesheet inlined, as the live canvas serves it: no `screens.css` to load by address,
+      // so the inner window must take its styles from this document.
       await route.fulfill({
         contentType: 'text/html',
-        body: '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><link rel="stylesheet" href="screens/screens.css"><script src="screens/screens.js"></script><style>html,body{margin:0}</style></head><body><div id="host"></div></body></html>',
+        body: `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>${files.css}</style><script src="screens/screens.js"></script><style>html,body{margin:0}</style></head><body><div id="host"></div></body></html>`,
       });
+    } else {
+      await route.fulfill({ status: 404, body: '' });
     }
   });
   await page.goto(`${ORIGIN}/board.html`);
@@ -102,6 +104,10 @@ export async function checkBoard(
   let frame = await appFrame(page);
   let done = await reached(frame);
   if (done !== 'ready') errors.push(`board: first state not reached: ${done}`);
+  const styled = await frame.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--shifa-screens-bundle').trim(),
+  );
+  if (styled !== '1') errors.push("board: the app's window has no stylesheet");
   const inner = await frame.evaluate(() => window.innerWidth);
   if (inner !== b.width)
     errors.push(`board: the app's window is ${String(inner)}px, not ${String(b.width)}`);

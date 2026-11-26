@@ -7,3 +7,8 @@ html,
 body {
   margin: 0;
 }
+
+/* How a board finds this stylesheet in its document, however the canvas loaded it (panel.tsx). */
+:root {
+  --shifa-screens-bundle: 1;
+}
