@@ -13,6 +13,14 @@ import type {
   SetupLinkView,
 } from '@shifa/contracts';
 import * as w from './world.ts';
+import {
+  ADMIN_NAME,
+  ADMIN_PHONE,
+  adminProfile,
+  adminSession,
+  type PlatformClinic,
+  platformClinics,
+} from './world-admin.ts';
 
 export interface World {
   /** The browser's session; null when signed out. */
@@ -35,6 +43,30 @@ export interface World {
   wrongPasswords: number;
   /** Set by an enrolment or a move of TOTP once started. */
   enrolStarted: boolean;
+  /** Admin web: the platform's clinics and their owners (world-admin.ts). */
+  platform: PlatformClinic[];
+}
+
+/** Which app a board runs: clinic web or admin web (the same shell, another router). */
+export type ScreensApp = 'clinic' | 'admin';
+
+/** Admin web's world: a super admin signed in (or signing in), the platform's clinics. */
+export function createAdminWorld(): World {
+  return createWorld({
+    session: adminSession(),
+    signInAs: adminSession({ mfa: 'pending' }),
+    profile: adminProfile(),
+    clinics: [],
+    invitations: [],
+    setupView: {
+      clinicName: null,
+      personName: ADMIN_NAME,
+      role: 'platform_admin',
+      purpose: 'admin_setup',
+      phoneMasked: w.masked(ADMIN_PHONE),
+      expiresAt: w.at(2 * 86_400_000),
+    },
+  });
 }
 
 /** The right password and code in Play (written in the canvas notes). */
@@ -80,6 +112,7 @@ export function createWorld(over: Partial<World> = {}): World {
     },
     wrongPasswords: 0,
     enrolStarted: false,
+    platform: platformClinics(),
     ...over,
   };
 }

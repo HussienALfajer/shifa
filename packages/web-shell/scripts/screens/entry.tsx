@@ -1,6 +1,7 @@
 // The entry of the screens bundle (build.ts makes it one classic script, React 19 inside, global
-// `ShifaScreens`): clinic web itself, the shell's own providers, router and pages, on a memory
-// history and the board's fake server, in the theme the board names. Nothing is redrawn here:
+// `ShifaScreens`): clinic web or admin web itself (the sheet names which), the shell's own
+// providers, router and pages, on a memory history and the board's fake server, in the theme the
+// board names. Nothing is redrawn here:
 // what a board shows is what the app renders for that address, that server and those steps.
 // - `ShifaScreens.mount(element, { sheet, state, theme })` starts the app in an element;
 // - `ShifaScreens.Board` is the board's island for the canvas's own React (attributes sheet, width,
@@ -18,11 +19,11 @@ import { ShellProviders } from '../../src/providers.tsx';
 import { createShellRouter } from '../../src/router.tsx';
 import { THEME_STORAGE_KEY } from '../../src/theme.ts';
 import { installFormSubmission } from './forms.ts';
-import { boardStorage, resetClock } from './isolate.ts';
+import { boardStorage, resetClock, setClipboard } from './isolate.ts';
 import { Board, mountBoard } from './panel.tsx';
-import { SHEETS } from './scenarios/index.ts';
+import { ADMIN_SHEETS, findSheet, SHEETS } from './scenarios/index.ts';
 import { answered, createServer } from './server.ts';
-import { createWorld } from './state.ts';
+import { createAdminWorld, createWorld } from './state.ts';
 import { runSteps, type Translate } from './steps.ts';
 import './styles.css';
 
@@ -37,26 +38,28 @@ export interface BoardOptions {
 
 /** The state chosen; an unknown one (a renamed state in an old tweak) opens the sheet's first. */
 function scenarioOf(sheet: string, state: string) {
-  const states = SHEETS.find((s) => s.id === sheet)?.scenarios ?? [];
-  const found = states.find((s) => s.id === state) ?? states[0];
-  if (!found) throw new Error(`screens canvas: no sheet ${sheet}`);
-  return found;
+  const found = findSheet(sheet);
+  const states = found?.sheet.scenarios ?? [];
+  const scenario = states.find((s) => s.id === state) ?? states[0];
+  if (!found || !scenario) throw new Error(`screens canvas: no sheet ${sheet}`);
+  return { scenario, app: found.app };
 }
 
 let runs = 0;
 
 /** Starts clinic web in `element` at the state's address; returns the unmount. */
 function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOptions): () => void {
-  const scenario = scenarioOf(sheet, state);
+  const { scenario, app } = scenarioOf(sheet, state);
   // A state of its own: the previous one's steps stop, its clock and storage are gone.
   const life = new AbortController();
   resetClock();
+  setClipboard(scenario.clipboard);
   answered.clear();
   boardStorage.clear();
   boardStorage.setItem(THEME_STORAGE_KEY, theme);
   for (const [key, value] of Object.entries(scenario.storage ?? {}))
     boardStorage.setItem(key, value);
-  const world = createWorld();
+  const world = app === 'admin' ? createAdminWorld() : createWorld();
   scenario.world?.(world);
   const server = createServer({
     world,
@@ -64,11 +67,14 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
     ...(scenario.latencyMs === undefined ? {} : { latencyMs: scenario.latencyMs }),
   });
   // The origin is never reached: every request goes to the board's server.
-  const shell = createShellClient({ baseUrl: 'https://clinic.example/api', fetch: server.fetch });
+  const shell = createShellClient({
+    baseUrl: `https://${app === 'admin' ? 'admin' : 'clinic'}.example/api`,
+    fetch: server.fetch,
+  });
   const queryClient = new QueryClient();
   const i18n = createI18n();
   const { router, dispose } = createShellRouter({
-    app: 'clinic',
+    app,
     shell,
     queryClient,
     pages: shellPages,
@@ -82,7 +88,7 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
   root.render(
     <StrictMode>
       <ShellProviders
-        value={{ app: 'clinic', shell, version: '0.0.0' }}
+        value={{ app, shell, version: '0.0.0' }}
         queryClient={queryClient}
         i18n={i18n}
       >
@@ -122,7 +128,10 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
 
 const target = globalThis as unknown as Record<string, unknown>;
 target['ShifaScreens'] = {
-  sheets: SHEETS.map((s) => ({ id: s.id, states: s.scenarios.map((x) => x.id) })),
+  sheets: [...SHEETS, ...ADMIN_SHEETS].map((s) => ({
+    id: s.id,
+    states: s.scenarios.map((x) => x.id),
+  })),
   mount,
   /** The error codes the server answered in the current state (the check's coverage). */
   answered: () => [...answered],

@@ -24,6 +24,8 @@ export interface Scenario {
   /** Every state is on both boards of its sheet; `only` keeps one off the desktop (a phone menu). */
   phone?: 'only';
   latencyMs?: number;
+  /** A copy that works or is refused in this state, whatever the frame allows (isolate.ts). */
+  clipboard?: 'copied' | 'refused';
   /**
    * A bug of the screen itself, reported to the owner, that makes this state wider than a phone:
    * the check names it on every run but does not fail (the screen changes only from an approved

@@ -4,6 +4,7 @@
 // route's answer (an error, a lock, a request that never ends, a network that is down).
 import { authRoutes } from './routes-auth.ts';
 import { clinicRoutes } from './routes-clinic.ts';
+import { platformRoutes } from './routes-platform.ts';
 import type { World } from './state.ts';
 
 /** One answer: a status and JSON body, a request left waiting, or no network at all. */
@@ -16,6 +17,8 @@ export interface Request {
   /** The `:id` of the route, when it has one. */
   id: string | undefined;
   body: unknown;
+  /** The query string (`?search=` of admin web's clinics). */
+  query: URLSearchParams;
 }
 
 export type Route = (request: Request, world: World) => Reply;
@@ -34,7 +37,7 @@ export const fail = (status: number, code: string, extra: Record<string, unknown
 export const lockFor = (code: string, ms: number): Reply =>
   fail(429, code, { until: new Date(Date.now() + ms).toISOString() });
 
-const ROUTES: RouteTable = { ...authRoutes, ...clinicRoutes };
+const ROUTES: RouteTable = { ...authRoutes, ...clinicRoutes, ...platformRoutes };
 
 function match(table: Record<string, unknown>, method: string, path: string) {
   for (const key of Object.keys(table)) {
@@ -116,7 +119,13 @@ export function createServer({ world, answers = {}, latencyMs = 350 }: ServerOpt
     let reply: Reply = fail(404, 'not_found');
     const own = match(answers, input.method, path);
     const route = match(ROUTES, input.method, path);
-    const request: Request = { method: input.method, path, id: own?.id ?? route?.id, body };
+    const request: Request = {
+      method: input.method,
+      path,
+      id: own?.id ?? route?.id,
+      body,
+      query: url.searchParams,
+    };
     const queued = own ? queue.get(own.key) : undefined;
     const answer = own ? answers[own.key] : undefined;
     if (queued && queued.length > 0) reply = queued.shift() ?? reply;

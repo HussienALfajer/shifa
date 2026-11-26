@@ -1,4 +1,4 @@
-// A board of the screens canvas with its state panel (ADR-0049): clinic web in a window of its own
+// A board of the screens canvases with its state panel (ADR-0049): the app in a window of its own
 // at the board's real width (1440 or 390), and at its right a panel built from Shifa's own
 // components (Select, SegmentedControl, Button) that restarts the app at any state and theme.
 // The panel starts from the board's Tweaks (the saved, shared values) and keeps its choice in its
@@ -21,7 +21,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import { type Device, PANEL_GAP, PANEL_WIDTH, statesOn, WINDOW } from './boards.ts';
 import type { BoardOptions } from './entry.tsx';
-import { SHEETS } from './scenarios/index.ts';
+import { findSheet } from './scenarios/index.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from './state.ts';
 
 export type Theme = 'light' | 'dark';
@@ -110,7 +110,7 @@ function Panel(props: {
   /** The state list's height: the board's, less the panel's other rows. */
   listHeight: number;
 }) {
-  const sheet = SHEETS.find((s) => s.id === props.sheet);
+  const sheet = findSheet(props.sheet)?.sheet;
   // As the board's Tweaks: a phone-only state (the phone's menu) is not offered on a desktop.
   const states = sheet ? statesOn(sheet, props.device) : [];
   const scenario = states.find((s) => s.id === props.state);
@@ -238,7 +238,7 @@ function BoardView({ sheet, width, height, state: tweakState, theme: tweakTheme 
           >
             <iframe
               ref={frame}
-              title="clinic web"
+              title={findSheet(sheet)?.app === 'admin' ? 'admin web' : 'clinic web'}
               srcDoc={doc}
               onLoad={() => {
                 const inner = frame.current?.contentDocument;

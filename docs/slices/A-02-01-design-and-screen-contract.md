@@ -11,7 +11,7 @@ The owner tests every A-02 screen in Play, decides each proposed improvement kno
 ## Plan
 ### Checkpoint 1 — admin web (owner approval)
 - Shifa Design System found by name, its README read first, installed on "Shifa Screens · Admin web" (canvas copy refreshed); Shifa Guide rules kept. Real components from the bundle, `--shifa-*` tokens for every colour, space, radius, shadow and size, its type styles, no literal values. Every artboard is checked for literal colours, unknown `--shifa-` names and hand-drawn copies of existing components before showing, and the result is written here.
-- Page "A-02 Admin": one working prototype (interactive artboards, flow between pages, tabs and dialogs), desktop and tablet, Arabic RTL, light and dark, synthetic names from `@shifa/testing` only. Screens:
+- Page "Proposals" of "Shifa Screens · Admin web" (its "Admin Web Screens" page shows the coded screens, rebuilt from the code; OD-120): one working prototype (interactive artboards, flow between pages, tabs and dialogs), desktop and tablet, Arabic RTL, light and dark, synthetic names from `@shifa/testing` only. Screens:
   - clinic page tabs «الاشتراك والحدود», «الإعدادات», «دخول الدعم», «الاستخدام»;
   - clinics list with last activity and sign-ins in 7 days;
   - Flags; Announcements; Cities and areas.

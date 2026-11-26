@@ -6,7 +6,8 @@
 // sheet leaves out (coverage.ts). Then it opens each board as the canvas does, the app in its own
 // window beside the state panel, and works the panel (check-board.ts). Writes each state's height
 // to heights.json for canvas.ts, and a screenshot of each state when an output folder is given.
-// Usage: node scripts/screens/check.ts <screens-dir with screens.js/.css> <heights.json> [shots-dir] [key-prefix…]
+// Clinic web's sheets by default; `--app=admin` checks admin web's ("Shifa Screens · Admin web").
+// Usage: node scripts/screens/check.ts <screens-dir with screens.js/.css> <heights.json> [shots-dir] [key-prefix…] [--app=admin]
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { type Browser, chromium, type Page } from 'playwright';
@@ -14,11 +15,22 @@ import { boards, heightKey, renders } from './boards.ts';
 import { CANVAS_SANDBOX, checkBoard } from './check-board.ts';
 import { coverageProblems, unansweredCodes } from './coverage.ts';
 import type { Sheet } from './scenario.ts';
+import { SHEETS_OF } from './scenarios/index.ts';
+import type { ScreensApp } from './state.ts';
 import { undeclaredTokens } from './tokens.ts';
 
-const [dirArg, heightsArg, shotsArg, ...only] = process.argv.slice(2);
+const args = process.argv.slice(2);
+const appFlag = args.find((a) => a.startsWith('--app='))?.slice('--app='.length) ?? 'clinic';
+if (appFlag !== 'clinic' && appFlag !== 'admin') {
+  throw new Error(`check.ts: unknown --app=${appFlag} (clinic or admin)`);
+}
+const app: ScreensApp = appFlag;
+const sheets = SHEETS_OF[app];
+const [dirArg, heightsArg, shotsArg, ...only] = args.filter((a) => !a.startsWith('--app='));
 if (!dirArg || !heightsArg) {
-  throw new Error('usage: check.ts <screens-dir> <heights.json> [shots-dir] [prefix…]');
+  throw new Error(
+    'usage: check.ts <screens-dir> <heights.json> [shots-dir] [prefix…] [--app=admin]',
+  );
 }
 const js = readFileSync(join(resolve(dirArg), 'screens.js'), 'utf8');
 const css = readFileSync(join(resolve(dirArg), 'screens.css'), 'utf8');
@@ -92,7 +104,7 @@ report(
   'tokens',
   undeclaredTokens(css, js).map((t) => `${t} is read but never declared`),
 );
-if (only.length === 0) report('coverage', coverageProblems());
+if (only.length === 0) report('coverage', coverageProblems(app));
 // A height measured before (an earlier run) sizes the boards opened with a prefix.
 function measuredBefore(path: string): Record<string, number> {
   try {
@@ -106,7 +118,9 @@ const before = measuredBefore(resolve(heightsArg));
 const browser = await chromium.launch();
 
 const answeredBy = new Map<Sheet, Set<string>>();
-const list = renders().filter((r) => only.length === 0 || only.some((p) => r.key.startsWith(p)));
+const list = renders(sheets).filter(
+  (r) => only.length === 0 || only.some((p) => r.key.startsWith(p)),
+);
 for (const r of list) {
   const { page, errors } = await open(browser, r.width, r.height);
   const done = await mount(page, [r.sheet.id, r.scenario.id, r.theme]);
@@ -156,7 +170,7 @@ if (only.length === 0) {
 }
 
 // Each board as the canvas shows it: the app's window beside the state panel, the panel worked.
-for (const b of boards().filter(
+for (const b of boards(sheets).filter(
   (x) => only.length === 0 || only.some((p) => x.file.startsWith(p)),
 )) {
   const tallest = Math.max(
