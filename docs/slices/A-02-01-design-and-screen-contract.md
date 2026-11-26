@@ -98,6 +98,10 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 - Spec gap 6 accepted (criterion 7: who changed a flag last and when). The sample flag keys are drawing examples only; A-02 declares no real flag.
 - MultiCombobox approved as drawn (sheet `A02SheetMultiCombobox`); built with `/ui-component` before the flags screen.
 
+### Owner review, announcements (2026-11-27)
+- Spec gap 7 accepted (criterion 16: cancelling a scheduled announcement ends it before its start).
+- Improvements 1 (dismissals per announcement, criterion 22) and 4 (banner preview in the form, criterion 23) accepted and drawn. The preview is drawn with a Callout for now; the page banner drawn at checkpoint 2 replaces it there, on its approval.
+
 ### Component changes (accepted by the owner)
 1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet is drawn in this slice with every state (short and long text, sorted, selected, compact, RTL and LTR, light and dark) and approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
 
@@ -109,7 +113,7 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
 - Owner approvals (dates): checkpoint 1 — (clinic page reviewed 2026-11-27, other screens pending), checkpoint 2 —, re-plan —
-- Improvements accepted / declined: 5, 6 and 7 accepted (2026-11-27); 1–4 wait for their screens
+- Improvements accepted / declined: 1, 4, 5, 6 and 7 accepted (2026-11-27); 2 and 3 wait for their screen
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record the page and artboard names and the approval dates here.

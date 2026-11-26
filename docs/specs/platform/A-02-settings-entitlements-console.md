@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 7, 9, 11, 19, 20, 21) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 7, 9, 11, 16, 19–23) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -39,7 +39,7 @@ Support access (OD-111, OD-112)
 
 Console
 15. Cities and areas (OD-113): platform tables with Arabic names; the super admin adds, renames and archives (never deletes; ids stay). Seeded with a list drafted by us (Aleppo and its neighbourhoods, Azaz) that the owner reviews in the PR. A branch gets an optional city and area (the area belongs to the city); archived ones are not offered but stay on branches that hold them.
-16. Announcements (OD-115): plain-text body (≤ 280 characters, no links or markup), level information or warning, start, optional end, all clinics or selected ones. Every member of a targeted clinic sees the active ones in clinic web until they dismiss each; a dismissal is kept per person across devices. The super admin edits, ends early and lists them (scheduled, active, ended). Audited.
+16. Announcements (OD-115): plain-text body (≤ 280 characters, no links or markup), level information or warning, start, optional end, all clinics or selected ones. Every member of a targeted clinic sees the active ones in clinic web until they dismiss each; a dismissal is kept per person across devices. The super admin edits, ends early and lists them (scheduled, active, ended). Audited. Cancelling a scheduled announcement is ending it before its start.
 17. Usage (OD-116): a daily counter table per clinic (Damascus day) that later specs add keys to; A-02 counts sign-ins, members signed in that day, active members and active branches, and keeps each clinic's last activity. The clinics list shows last activity and sign-ins in the last 7 days; the clinic page shows 30 days.
 18. Audit (A-01a criterion 14) also records type and plan change, override set and removed, flag changed, setting set, locked and unlocked, city and area changes, announcement created, edited and ended.
 
@@ -47,6 +47,8 @@ Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
 19. The clinic page's 30-day usage chart switches between sign-ins and members signed in per day, and shows the total, the daily average (also as a line on the chart), the highest day, the days without activity and the change of the total against the previous 30 days; each day's figure shows in a tooltip.
 20. Each limit on «الاشتراك والحدود» has «السجل»: every change of that key for the clinic, newest first (override set, changed, removed or expired, and type changes that moved its plan value), with who, when, the values before and after, and the reason, read from the audit log.
 21. The clinics list has a quick filter «بلا نشاط منذ 7 أيام (n)»: the clinics where nobody signed in during the last seven Damascus days (sign-ins in 7 days = 0), combined with the status filter and the search; when none, the list says every clinic was active.
+22. Each active or ended announcement shows how many of its targeted members dismissed it («أغلقه 31 من 118 عضوًا»); the targeted members are the non-deactivated members of its clinics, counted when it is read.
+23. The announcement form shows a preview of the banner as members will see it, updated as the body and level change.
 
 ## Edge cases and offline
 - A multi-branch clinic with three branches changed to solo keeps them; the preview says new branches are refused.
@@ -78,7 +80,7 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
-| 19–21 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
+| 19–23 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
 | Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
 ## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)
