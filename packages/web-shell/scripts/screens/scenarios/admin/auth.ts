@@ -4,8 +4,8 @@
 // their states follow clinic web's sheets, with the world of admin web.
 import type { Scenario, Sheet, Step, World } from '../../scenario.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from '../../state.ts';
-import { ADMIN_PHONE, adminSession } from '../../world-admin.ts';
 import { local, ownerSession, SETUP_TOKEN } from '../../world.ts';
+import { ADMIN_PHONE, adminSession } from '../../world-admin.ts';
 import { mfaChallenge, mfaEnrol } from '../mfa.ts';
 import { setupLink } from '../setup.ts';
 import { signIn } from '../sign-in.ts';

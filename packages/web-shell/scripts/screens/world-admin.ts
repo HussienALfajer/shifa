@@ -64,7 +64,6 @@ export function dayFromToday(days: number): string {
 export const ACTIVE_OWNER = { ...person('male'), phone: phone() };
 /** A pending owner of another clinic: their phone cannot own a new clinic yet (OD-85). */
 export const PENDING_OWNER = { ...person('female'), phone: phone() };
-const OTHER_PENDING = { ...person('male'), phone: phone() };
 const EXPIRED_OWNER = { ...person('male'), phone: phone() };
 const SUSPENDED_OWNER = { ...person('female'), phone: phone() };
 const TRIAL_OWNER = { ...person('male'), phone: phone() };
@@ -193,5 +192,8 @@ export function platformClinics(): PlatformClinic[] {
   ];
 }
 
-// The other pending owner's phone exists for the 409 of a corrected phone (owner_setup_pending).
-export const OTHER_PENDING_PHONE = OTHER_PENDING.phone;
+/**
+ * A phone of a pending owner of another clinic (the expired link's): fixing the pending owner's
+ * phone to it is the 409 `owner_setup_pending` (OD-85).
+ */
+export const OTHER_PENDING_PHONE = EXPIRED_OWNER.phone;

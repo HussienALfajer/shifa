@@ -3,6 +3,7 @@
 // pending owner's phone fixed (phone-dialog.tsx) and the owner's link shown once (link-shown.tsx).
 import type { Scenario, Sheet, Step } from '../../scenario.ts';
 import { fail } from '../../server.ts';
+import { local } from '../../world.ts';
 import {
   ACTIVE_CLINIC,
   ACTIVE_OWNER,
@@ -15,7 +16,6 @@ import {
   TRIAL_CLINIC,
   UNKNOWN_CLINIC,
 } from '../../world-admin.ts';
-import { local } from '../../world.ts';
 
 const at = (id: string) => `/clinics/${id}`;
 const page = (id: string, s: Omit<Scenario, 'path'>): Scenario => ({ path: at(id), ...s });

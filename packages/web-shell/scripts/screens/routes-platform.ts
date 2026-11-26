@@ -5,8 +5,8 @@ import type { ClinicDetail, ClinicSummary } from '@shifa/contracts';
 import { normalisePhone } from '@shifa/contracts';
 import { fail, ok, type Reply, type Request, type RouteTable } from './server.ts';
 import type { World } from './state.ts';
-import { ACTIVE_OWNER, type PlatformClinic } from './world-admin.ts';
 import { at, id, masked, SETUP_TOKEN } from './world.ts';
+import { ACTIVE_OWNER, type PlatformClinic } from './world-admin.ts';
 
 const field = (body: unknown, name: string): unknown =>
   (body as Record<string, unknown> | undefined)?.[name];
