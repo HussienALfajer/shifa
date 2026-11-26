@@ -270,7 +270,12 @@ export function writeCanvas(
 
 const [projectArg, indexArg, heightsArg, appArg] = process.argv.slice(2);
 if (import.meta.main && projectArg && indexArg && heightsArg) {
-  const app: ScreensApp = appArg === 'admin' ? 'admin' : 'clinic';
+  const asked = appArg ?? 'clinic';
+  // A typo must never rewrite one app's canvas with the other's sheets.
+  if (asked !== 'clinic' && asked !== 'admin') {
+    throw new Error(`canvas.ts: unknown app ${asked} (clinic or admin)`);
+  }
+  const app: ScreensApp = asked;
   const project = resolve(projectArg);
   await buildScreens(join(project, 'screens'));
   const current = JSON.parse(readFileSync(indexArg, 'utf8')) as CanvasIndex;

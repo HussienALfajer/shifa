@@ -68,6 +68,19 @@ export function resetClock(): void {
   ahead = 0;
 }
 
+/**
+ * The clipboard a state names: a copy that works or one the browser refuses, whatever the frame
+ * allows (the canvas's frames may refuse every copy). Without one, the browser's own clipboard.
+ */
+export function setClipboard(mode?: 'copied' | 'refused'): void {
+  // The browser's own is the prototype's getter: removing this window's copy brings it back.
+  Reflect.deleteProperty(navigator, 'clipboard');
+  if (mode === undefined) return;
+  const writeText = (): Promise<void> =>
+    mode === 'copied' ? Promise.resolve() : Promise.reject(new Error('refused'));
+  Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText } });
+}
+
 for (const name of ['localStorage', 'sessionStorage'] as const) {
   Object.defineProperty(globalThis, name, {
     configurable: true,

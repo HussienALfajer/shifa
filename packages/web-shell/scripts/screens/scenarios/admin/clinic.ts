@@ -1,7 +1,7 @@
 // A clinic on admin web (/clinics/:id, A-01-10 checkpoint 3): the page and its subscription card
 // (src/admin/clinic-page.tsx), the owner card and its support actions (owner-card.tsx), the
 // pending owner's phone fixed (phone-dialog.tsx) and the owner's link shown once (link-shown.tsx).
-import type { Scenario, Sheet, Step } from '../../scenario.ts';
+import type { Answer, Scenario, Sheet, Step } from '../../scenario.ts';
 import { fail } from '../../server.ts';
 import { local } from '../../world.ts';
 import {
@@ -21,6 +21,21 @@ const at = (id: string) => `/clinics/${id}`;
 const page = (id: string, s: Omit<Scenario, 'path'>): Scenario => ({ path: at(id), ...s });
 const GET = 'GET /platform/clinics/:id';
 const PATCH = 'PATCH /platform/clinics/:id';
+/**
+ * The owner changed meanwhile (set up from the link, or reset to a new link elsewhere): the world
+ * moves on, then the action is refused, so the card read again agrees with the refusal.
+ */
+const ownerBecame =
+  (status: 'pending' | 'active', code: string): Answer =>
+  (request, world) => {
+    const p = world.platform.find((x) => x.clinic.id === request.id);
+    if (p?.clinic.owner) {
+      p.clinic.owner.status = status;
+      p.clinic.owner.linkExpiresAt = status === 'active' ? null : p.clinic.owner.linkExpiresAt;
+      p.clinic.ownerStatus = status;
+    }
+    return fail(409, code);
+  };
 const suspend: Step = { check: 'موقوفة' };
 const save: Step = { press: 'save' };
 
@@ -98,6 +113,17 @@ export const ownerCardSheet: Sheet = {
     page(PENDING_CLINIC, { id: 'Pending', title: 'مالك بانتظار الإعداد (ينتهي الرابط)' }),
     page(EXPIRED_CLINIC, { id: 'Expired', title: 'انتهى رابط المالك' }),
     page(NO_OWNER_CLINIC, { id: 'NoOwner', title: 'عيادة بلا مالك' }),
+    page(SUSPENDED_CLINIC_ID, {
+      id: 'Deactivated',
+      title: 'مالك معطّل',
+      world: (w) => {
+        const owner = w.platform.find((p) => p.clinic.id === SUSPENDED_CLINIC_ID)?.clinic;
+        if (owner?.owner) {
+          owner.owner.status = 'deactivated';
+          owner.ownerStatus = 'deactivated';
+        }
+      },
+    }),
     page(PENDING_CLINIC, {
       id: 'NewLinkAskPending',
       title: 'رابط جديد لمالك بانتظار الإعداد: سؤال',
@@ -150,7 +176,8 @@ export const ownerCardSheet: Sheet = {
     page(ACTIVE_CLINIC, {
       id: 'ResetMfaNotSetUp',
       title: 'إعادة الضبط: المالك لم يُكمل الإعداد',
-      answers: { [RESET]: [fail(409, 'owner_setup_pending')] },
+      // A new link reset the owner meanwhile: no account, nothing to reset.
+      answers: { [RESET]: ownerBecame('pending', 'owner_setup_pending') },
       steps: [
         ask('ownerResetMfa'),
         confirm('ownerResetMfaAction'),
@@ -245,7 +272,8 @@ export const phoneDialogSheet: Sheet = {
       id: 'AccountExists',
       title: 'أكمل المالك الإعداد أثناء ذلك',
       path: at(PENDING_CLINIC),
-      answers: { [OWNER]: [fail(409, 'owner_account_exists')] },
+      // The owner set up from the earlier link meanwhile.
+      answers: { [OWNER]: ownerBecame('active', 'owner_account_exists') },
       steps: [fix, typed(FREE), send, { until: 'ownerAccountExistsTitle' }],
     },
     {
@@ -284,9 +312,28 @@ export const linkShownSheet: Sheet = {
       ],
     },
     linkState({
-      id: 'Copy',
-      title: 'نسخ الرابط',
-      steps: [...newLink, { press: 'linkCopy' }, { wait: 600 }],
+      id: 'Copied',
+      title: 'نُسخ الرابط',
+      clipboard: 'copied',
+      steps: [...newLink, { press: 'linkCopy' }, { until: 'linkCopied' }],
+    }),
+    linkState({
+      id: 'CopyRefused',
+      title: 'المتصفح رفض النسخ: انسخه بنفسك',
+      clipboard: 'refused',
+      steps: [...newLink, { press: 'linkCopy' }, { until: 'linkRefused' }],
+    }),
+    linkState({
+      id: 'LeaveAfterCopy',
+      title: 'المغادرة بعد النسخ: دون سؤال',
+      clipboard: 'copied',
+      steps: [
+        ...newLink,
+        { press: 'linkCopy' },
+        { until: 'linkCopied' },
+        { press: 'navClinics' },
+        { until: 'clinicsText' },
+      ],
     }),
     linkState({
       id: 'LeaveAsk',

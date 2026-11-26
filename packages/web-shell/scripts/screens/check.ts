@@ -20,7 +20,11 @@ import type { ScreensApp } from './state.ts';
 import { undeclaredTokens } from './tokens.ts';
 
 const args = process.argv.slice(2);
-const app: ScreensApp = args.includes('--app=admin') ? 'admin' : 'clinic';
+const appFlag = args.find((a) => a.startsWith('--app='))?.slice('--app='.length) ?? 'clinic';
+if (appFlag !== 'clinic' && appFlag !== 'admin') {
+  throw new Error(`check.ts: unknown --app=${appFlag} (clinic or admin)`);
+}
+const app: ScreensApp = appFlag;
 const sheets = SHEETS_OF[app];
 const [dirArg, heightsArg, shotsArg, ...only] = args.filter((a) => !a.startsWith('--app='));
 if (!dirArg || !heightsArg) {

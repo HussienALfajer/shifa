@@ -4,7 +4,7 @@
 // their states follow clinic web's sheets, with the world of admin web.
 import type { Scenario, Sheet, Step, World } from '../../scenario.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from '../../state.ts';
-import { local, ownerSession, SETUP_TOKEN } from '../../world.ts';
+import { local, OWNER_PHONE, ownerSession, SETUP_TOKEN } from '../../world.ts';
 import { ADMIN_PHONE, adminSession } from '../../world-admin.ts';
 import { mfaChallenge, mfaEnrol } from '../mfa.ts';
 import { setupLink } from '../setup.ts';
@@ -30,11 +30,6 @@ const CLINIC_ONLY = new Set(['Remembered', 'ForgetPhone']);
 
 const PHONE = local(ADMIN_PHONE);
 const LINK = `/setup#${SETUP_TOKEN}`;
-const send: Step[] = [
-  { fill: 'signInPhone', value: PHONE },
-  { fill: 'signInPassword', value: PLAY_PASSWORD },
-  { press: 'signInSubmit' },
-];
 
 export const adminSignIn: Sheet = {
   id: 'AdminSignIn',
@@ -54,7 +49,12 @@ export const adminSignIn: Sheet = {
         w.session = null;
         w.signInAs = ownerSession({ mfa: 'pending' });
       },
-      steps: [...send, { until: 'noticeNotAdminTitle' }],
+      steps: [
+        { fill: 'signInPhone', value: local(OWNER_PHONE) },
+        { fill: 'signInPassword', value: PLAY_PASSWORD },
+        { press: 'signInSubmit' },
+        { until: 'noticeNotAdminTitle' },
+      ],
     },
     {
       id: 'ReasonNotAdmin',

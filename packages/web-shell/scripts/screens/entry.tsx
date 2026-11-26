@@ -19,7 +19,7 @@ import { ShellProviders } from '../../src/providers.tsx';
 import { createShellRouter } from '../../src/router.tsx';
 import { THEME_STORAGE_KEY } from '../../src/theme.ts';
 import { installFormSubmission } from './forms.ts';
-import { boardStorage, resetClock } from './isolate.ts';
+import { boardStorage, resetClock, setClipboard } from './isolate.ts';
 import { Board, mountBoard } from './panel.tsx';
 import { ADMIN_SHEETS, findSheet, SHEETS } from './scenarios/index.ts';
 import { answered, createServer } from './server.ts';
@@ -53,6 +53,7 @@ function mount(element: HTMLElement, { sheet, state, theme = 'light' }: BoardOpt
   // A state of its own: the previous one's steps stop, its clock and storage are gone.
   const life = new AbortController();
   resetClock();
+  setClipboard(scenario.clipboard);
   answered.clear();
   boardStorage.clear();
   boardStorage.setItem(THEME_STORAGE_KEY, theme);

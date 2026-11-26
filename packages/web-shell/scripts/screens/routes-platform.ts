@@ -6,7 +6,7 @@ import { normalisePhone } from '@shifa/contracts';
 import { fail, ok, type Reply, type Request, type RouteTable } from './server.ts';
 import type { World } from './state.ts';
 import { at, id, masked, SETUP_TOKEN } from './world.ts';
-import { ACTIVE_OWNER, type PlatformClinic } from './world-admin.ts';
+import { ACTIVE_OWNER, ADMIN_PHONE, type PlatformClinic } from './world-admin.ts';
 
 const field = (body: unknown, name: string): unknown =>
   (body as Record<string, unknown> | undefined)?.[name];
@@ -27,7 +27,12 @@ const phoneIssue = (path: string): Reply =>
 /** A phone that has an account already (the active owner's): its link is an invitation. */
 const hasAccount = (world: World, e164: string) =>
   e164 === ACTIVE_OWNER.phone ||
-  world.platform.some((p) => p.ownerPhone === e164 && p.clinic.owner?.status === 'active');
+  e164 === ADMIN_PHONE ||
+  world.platform.some((p) => p.ownerPhone === e164 && ownerHasAccount(p));
+
+/** An owner who has set up (active, or deactivated since): not pending. */
+const ownerHasAccount = (p: PlatformClinic) =>
+  p.clinic.owner !== null && p.clinic.owner.status !== 'pending';
 
 /** Another clinic whose owner, on this phone, has not set up yet (OD-85). */
 const pendingElsewhere = (world: World, e164: string, except?: string) =>
@@ -68,7 +73,8 @@ function clinicAction(run: (p: PlatformClinic, world: World, request: Request) =
 
 /** The owner actions of an owner with an account; 409 for one not set up (A-01-11). */
 function accountAction(p: PlatformClinic): Reply {
-  if (p.clinic.owner?.status !== 'active') return fail(409, 'owner_setup_pending');
+  if (!p.clinic.owner) return fail(404, 'not_found');
+  if (!ownerHasAccount(p)) return fail(409, 'owner_setup_pending');
   return ok(undefined, 204);
 }
 
@@ -124,10 +130,12 @@ export const platformRoutes: RouteTable = {
     return ok(p.clinic);
   }),
   'PATCH /platform/clinics/:id/owner': clinicAction((p, world, { body }) => {
-    const owner = p.clinic.owner;
-    if (owner?.status !== 'pending') return fail(409, 'owner_account_exists');
+    // As the API: the phone is read first, then the owner.
     const read = normalisePhone(text(body, 'phone'));
     if (!read.ok) return phoneIssue('body.phone');
+    const owner = p.clinic.owner;
+    if (!owner) return fail(404, 'not_found');
+    if (ownerHasAccount(p)) return fail(409, 'owner_account_exists');
     if (pendingElsewhere(world, read.e164, p.clinic.id)) return fail(409, 'owner_setup_pending');
     const issued = link(world, read.e164);
     p.ownerPhone = read.e164;
@@ -139,7 +147,9 @@ export const platformRoutes: RouteTable = {
     const owner = p.clinic.owner;
     if (!owner || p.ownerPhone === null) return fail(404, 'not_found');
     // The earlier link stops; a set-up owner's password is cleared, their membership stays.
-    const issued = { ...link(world, p.ownerPhone), purpose: 'owner_setup' as const };
+    // An invitation when the owner has no account but their phone has one (as the API).
+    const fresh = link(world, p.ownerPhone);
+    const issued = ownerHasAccount(p) ? { ...fresh, purpose: 'owner_setup' as const } : fresh;
     owner.linkExpiresAt = issued.expiresAt;
     return ok(issued);
   }),
