@@ -138,11 +138,9 @@ export const platformRoutes: RouteTable = {
   'POST /platform/clinics/:id/owner/setup-link': clinicAction((p, world) => {
     const owner = p.clinic.owner;
     if (!owner || p.ownerPhone === null) return fail(404, 'not_found');
-    // A set-up owner's password is cleared: they are pending again until they use the link.
+    // The earlier link stops; a set-up owner's password is cleared, their membership stays.
     const issued = { ...link(world, p.ownerPhone), purpose: 'owner_setup' as const };
-    owner.status = 'pending';
     owner.linkExpiresAt = issued.expiresAt;
-    p.clinic.ownerStatus = 'pending';
     return ok(issued);
   }),
   'POST /platform/clinics/:id/owner/reset-mfa': clinicAction(accountAction),
