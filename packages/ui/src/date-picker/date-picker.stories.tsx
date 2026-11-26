@@ -119,7 +119,9 @@ export const TypedImpossible: Story = {
 /** The calendar open at rest by `defaultOpen` (OD-119), on the chosen day's month. */
 export const OpenAtRest: Story = {
   parameters: { matrix: false },
-  args: { defaultOpen: true },
+  // A past month without bounds: today's ring is never in it, so the screenshot does not change
+  // with the date (opened on November 2026 it moved every day).
+  args: { defaultOpen: true, defaultValue: '2025-02-14', min: undefined },
 };
 
 const states = storyStates((label) => <DatePicker label={label} defaultValue="2026-11-24" />);
