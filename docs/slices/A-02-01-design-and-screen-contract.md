@@ -146,6 +146,9 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 - The owner moved «الاشتراك» beside «الخروج التلقائي»: two columns on a desktop, one under the other on a tablet and a phone; «سجل دخول الدعم» stays full width below.
 - A `position: relative` on the page's `main` appeared in a version saved from the canvas page; nobody wrote it (most likely the canvas editor while the board was open), it changed nothing visible, and it was removed (owner, 2026-11-27).
 
+### Owner review, support session (2026-11-27)
+- Spec gap 14 accepted (criterion 12: the 401 after a support session ends carries who ended it and when; the tab shows the cause and the way back). No improvement on this screen.
+
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip.
 

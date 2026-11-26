@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 5, 7, 9, 11, 13, 15, 16, 19–26) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 5, 7, 9, 11–13, 15, 16, 19–26) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -33,7 +33,7 @@ Settings cascade (PLT-22 to PLT-24)
 
 Support access (OD-111, OD-112)
 11. The super admin opens access to one clinic with a mandatory reason (10–500 characters) and a duration of 30 min, 1, 2 or 4 h; one open grant per super admin per clinic (409 `support_active`). It opens clinic web in a new tab, as the super admin, with the clinic's owner view and a fixed banner (reason, end time, «إنهاء»). While the grant is open the super admin can open that tab again («فتح عيادة الويب»), each time with a new single-use hand-off.
-12. In a support session every write route answers 403 `support_read_only` and the database transaction is read-only; reads are those an owner may make. It ends at its expiry, when the super admin ends it, or when an owner ends it; the next request then answers 401 `session_expired` with reason `support_ended`.
+12. In a support session every write route answers 403 `support_read_only` and the database transaction is read-only; reads are those an owner may make. It ends at its expiry, when the super admin ends it, or when an owner ends it; the next request then answers 401 `session_expired` with reason `support_ended`. That answer says who ended it (expiry, the owner with their name, or the super admin) and when, and the tab shows a full page with the cause and a way back to admin web.
 13. While a grant is open, every owner of that clinic sees a banner naming the super admin, reason, end time and time left, with «إنهاء الدخول». Banners sit above the top bar on every page: the support session's strip, then the owner's support notice, then announcements; neither support banner can be hidden while the grant is open. Clinic settings lists every grant (who, reason, start, end, ended by whom).
 14. Audit: grant opened (reason, duration), ended (by whom) or expired, and every request in a support session (route template, target id, no body). A suspended clinic can still be opened.
 
