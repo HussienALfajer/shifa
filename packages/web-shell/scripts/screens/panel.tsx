@@ -41,16 +41,49 @@ interface Inner {
   ShifaScreens?: { mount: Mount };
 }
 
-/** Where this bundle and its stylesheet were loaded from, for the inner window. */
+/** Where this bundle was loaded from, for the inner window (an inline script has no `src`). */
 const script =
-  (document.currentScript as HTMLScriptElement | null)?.src ??
-  document.querySelector<HTMLScriptElement>('script[src*="screens.js"]')?.src ??
-  '';
-function sources(): { js: string; css: string } {
-  const link = [...document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')].find((l) =>
-    l.href.includes('screens.css'),
-  );
-  return { js: script, css: link?.href ?? script.replace(/\.js(\?.*)?$/, '.css') };
+  [
+    (document.currentScript as HTMLScriptElement | null)?.src,
+    document.querySelector<HTMLScriptElement>('script[src*="screens.js"]')?.src,
+  ].find(Boolean) ?? '';
+
+const MARKER = '--shifa-screens-bundle';
+let copied: string | undefined;
+
+/**
+ * This bundle's stylesheet for the inner window, as the board's own document has it: the canvas
+ * may serve it inlined or at an address no longer named `screens.css` (seen on the live canvas,
+ * where the frame came out unstyled). A sheet is known by its marker rule (styles.css); a sheet of
+ * another origin, whose rules cannot be read, by its address.
+ */
+function stylesheet(): { text: string } | { href: string } {
+  if (copied !== undefined) return { text: copied };
+  for (const sheet of document.styleSheets) {
+    let rules: CSSRuleList | undefined;
+    try {
+      rules = sheet.cssRules;
+    } catch {
+      if (sheet.href?.includes('screens')) return { href: sheet.href };
+      continue;
+    }
+    const text = Array.from(rules, (rule) => rule.cssText).join('\n');
+    if (text.includes(MARKER)) {
+      copied = text;
+      return { text };
+    }
+  }
+  return { href: script.replace(/\.js(\?.*)?$/, '.css') };
+}
+
+/** Puts the stylesheet into the inner window before the app mounts. */
+function styleInner(doc: Document) {
+  const css = stylesheet();
+  const node =
+    'text' in css ? doc.createElement('style') : Object.assign(doc.createElement('link'), css);
+  if ('text' in css) node.textContent = css.text;
+  else (node as HTMLLinkElement).rel = 'stylesheet';
+  doc.head.append(node);
 }
 
 /** The panel's rows besides the state list (heading, theme, restart, notes), and the list's least. */
@@ -186,8 +219,7 @@ function BoardView({ sheet, width, height, state: tweakState, theme: tweakTheme 
     const done = win.ShifaScreens.mount(host, { sheet, state, theme });
     return done;
   }, [ready, sheet, state, theme, run]);
-  const { js, css } = sources();
-  const doc = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><link rel="stylesheet" href="${css}"><style>html,body{margin:0}</style><script src="${js}"></script></head><body><div id="app"></div></body></html>`;
+  const doc = `<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><style>html,body{margin:0}</style><script src="${script}"></script></head><body><div id="app"></div></body></html>`;
   return (
     <DirectionProvider dir="ltr" lang="en">
       <ThemeProvider theme={theme}>
@@ -209,6 +241,8 @@ function BoardView({ sheet, width, height, state: tweakState, theme: tweakTheme 
               title="clinic web"
               srcDoc={doc}
               onLoad={() => {
+                const inner = frame.current?.contentDocument;
+                if (inner) styleInner(inner);
                 setReady(true);
               }}
               style={{ display: 'block', border: 0, width, height, flex: 'none' }}
