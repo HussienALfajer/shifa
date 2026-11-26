@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25 · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 9, 11, 19, 20) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -18,7 +18,7 @@ Requirements: PLT-13, PLT-14 (read-only; write elevation later), PLT-15 (cities 
 Entitlements and limits (OD-109, OD-110)
 1. Three plans without prices, one per clinic type (`solo`, `multi_doctor`, `multi_branch`), seeded with limit defaults `limits.practitioners` 1 / 10 / 30, `limits.branches` 1 / 1 / 5 and `limits.custom_fields` 20 for all. A clinic's plan is its type; changing the type moves the clinic to that plan at once, after a preview of the new limits against current use. `addon` exists (replace / increment) with no screen.
 2. Resolution per key (PLT-21): unexpired tenant override → highest replacing add-on → plan value plus incremental add-ons → deny. A key outside the catalogue is refused at start-up and at the call (as `PERMISSION_CATALOGUE`). The result is cached per tenant; a change is in force on every API instance within 60 s and at once on the instance that made it.
-3. The super admin sets or removes a clinic's override for any catalogue key (value per the key's type, mandatory reason, optional expiry); an expired override stops counting at its expiry. Audited with before and after values.
+3. The super admin sets or removes a clinic's override for any catalogue key (value per the key's type, mandatory reason, optional expiry); an expired override stops counting at its expiry. Audited with before and after values. The expiry is a date, in force to the end of that Damascus day; today or a past date is refused. An override survives a change of the clinic's type, and the type preview shows it kept. A-02 registers no feature entitlement: the catalogue holds the three limits, and later specs add features.
 4. Limits count non-deactivated members holding a doctor role (pending included) and non-archived branches. Adding a doctor role (new member, edit, reactivation) and creating or restoring a branch beyond the limit answer 409 `limit_reached` with key, limit and used; nothing is written. A limit lowered below use keeps what exists. Two concurrent requests at the limit never both succeed.
 5. `GET /clinic/capabilities` gives the active clinic's entitlements, limits with use, and evaluated flags; clinic web hides what is off (PLT-20) and names the limit when reached («وصلت العيادة إلى حد الأطباء في خطتها، تواصل مع الإدارة»). The server checks every gated route itself.
 6. The owner sees a «الاشتراك» card in clinic settings: plan, status, end date, each limit with use, enabled features. Owner only.
@@ -28,11 +28,11 @@ Feature flags (OD-114)
 
 Settings cascade (PLT-22 to PLT-24)
 8. Setting definitions live in code: key, JSON Schema, default, `overridable_by` (scopes), lockable, sensitivity. Scopes, nearest wins: platform → plan → specialty pack → organization → branch → practitioner → user. A write is validated against the schema and refused for a scope not in `overridable_by` or under a lock; a stored value that no longer validates is skipped and the next scope used.
-9. The super admin may set and lock a clinic's value («مقفل من الإدارة»); below a lock nobody overrides. Every read for an admin screen returns the effective value and its source («موروث من: الإعداد الافتراضي»).
+9. The super admin may set and lock a clinic's value («مقفل من الإدارة»), always together («قفل بقيمة»), and unlock it; the super admin never sets a clinic value without a lock. Below a lock nobody overrides. Every read for an admin screen returns the effective value and its source («موروث من: الإعداد الافتراضي»).
 10. The clinic's idle sign-out (A-01a criterion 9) becomes the first key, `session.idle_minutes` (organization; 15, 30, 60; default 30); existing values keep working.
 
 Support access (OD-111, OD-112)
-11. The super admin opens access to one clinic with a mandatory reason (10–500 characters) and a duration of 30 min, 1, 2 or 4 h; one open grant per super admin per clinic (409 `support_active`). It opens clinic web in a new tab, as the super admin, with the clinic's owner view and a fixed banner (reason, end time, «إنهاء»).
+11. The super admin opens access to one clinic with a mandatory reason (10–500 characters) and a duration of 30 min, 1, 2 or 4 h; one open grant per super admin per clinic (409 `support_active`). It opens clinic web in a new tab, as the super admin, with the clinic's owner view and a fixed banner (reason, end time, «إنهاء»). While the grant is open the super admin can open that tab again («فتح عيادة الويب»), each time with a new single-use hand-off.
 12. In a support session every write route answers 403 `support_read_only` and the database transaction is read-only; reads are those an owner may make. It ends at its expiry, when the super admin ends it, or when an owner ends it; the next request then answers 401 `session_expired` with reason `support_ended`.
 13. While a grant is open, every owner of that clinic sees a banner naming the super admin, reason and end time, with «إنهاء الدخول». Clinic settings lists every grant (who, reason, start, end, ended by whom).
 14. Audit: grant opened (reason, duration), ended (by whom) or expired, and every request in a support session (route template, target id, no body). A suspended clinic can still be opened.
@@ -42,6 +42,10 @@ Console
 16. Announcements (OD-115): plain-text body (≤ 280 characters, no links or markup), level information or warning, start, optional end, all clinics or selected ones. Every member of a targeted clinic sees the active ones in clinic web until they dismiss each; a dismissal is kept per person across devices. The super admin edits, ends early and lists them (scheduled, active, ended). Audited.
 17. Usage (OD-116): a daily counter table per clinic (Damascus day) that later specs add keys to; A-02 counts sign-ins, members signed in that day, active members and active branches, and keeps each clinic's last activity. The clinics list shows last activity and sign-ins in the last 7 days; the clinic page shows 30 days.
 18. Audit (A-01a criterion 14) also records type and plan change, override set and removed, flag changed, setting set, locked and unlocked, city and area changes, announcement created, edited and ended.
+
+Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
+19. The clinic page's 30-day usage chart switches between sign-ins and members signed in per day, and shows the total, the daily average (also as a line on the chart), the highest day, the days without activity and the change of the total against the previous 30 days; each day's figure shows in a tooltip.
+20. Each limit on «الاشتراك والحدود» has «السجل»: every change of that key for the clinic, newest first (override set, changed, removed or expired, and type changes that moved its plan value), with who, when, the values before and after, and the reason, read from the audit log.
 
 ## Edge cases and offline
 - A multi-branch clinic with three branches changed to solo keeps them; the preview says new branches are refused.
@@ -73,6 +77,7 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
+| 19, 20 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
 | Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
 ## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)

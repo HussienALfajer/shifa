@@ -82,6 +82,14 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 | 6 | Override history per key (who, when, before and after) | `GET …/overrides/:key/history` from audit · Drawer · limits rows | ~350 | A-02-02, A-02-08 |
 | 7 | Clinics list filter «بلا نشاط منذ 7 أيام» | none · Toolbar filter · clinics list | ~60 | A-02-08 |
 
+### Owner review, clinic page (2026-11-27)
+- Spec gaps 1, 2, 3, 4 and 8 accepted as drawn and written into the spec (criteria 3, 9, 11). Gaps 5, 6 and 7 wait for their screens.
+- Improvements 5 (chart series) and 6 (override history, criterion 20) accepted; drawn on `A02Clinic` (states `useMembers`, `history`) and added to the spec as criteria 19 and 20 and to the contract.
+- Fixed on the drawing, since the approved drawing is what the UI code is compared with (ADR-0040, ADR-0047):
+  - every list's columns now line up with their headers (the action column had an `auto` width, sized by the buttons in the rows and by nothing in the header; it is now a fixed token width on all A-02 boards);
+  - «سجل دخول الدعم» shows each reason whole: a list of rows whose reason wraps, instead of the DataTable that cuts a cell to one line; the status is a Badge;
+  - the usage chart (owner's request for a professional dashboard): each bar is the system's Tooltip trigger (the figure, then the day), a y-axis with quarter lines, the daily average as a dashed gold line, a strip of figures (total with the change against the previous 30 days, daily average, highest day, days without activity), yesterday under each of today's figures, and the series switch. The UsageChart sheet is redrawn to match.
+
 ### Missing components
 - **UsageChart** (30 daily counts; sheet `A02SheetUsageChart`): needed by «الاستخدام»; built in `packages/ui` without a charting library.
 - **MultiCombobox** (several clinics by search; sheet `A02SheetMultiCombobox`): needed by flags and announcements.
@@ -89,8 +97,8 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
-- Owner approvals (dates): checkpoint 1 —, checkpoint 2 —, re-plan —
-- Improvements accepted / declined: —
+- Owner approvals (dates): checkpoint 1 — (clinic page reviewed 2026-11-27, other screens pending), checkpoint 2 —, re-plan —
+- Improvements accepted / declined: 5 and 6 accepted (2026-11-27); 1–4 and 7 wait for their screens
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record the page and artboard names and the approval dates here.
