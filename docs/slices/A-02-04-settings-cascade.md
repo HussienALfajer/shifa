@@ -25,7 +25,11 @@ Settings are declared in code and resolved nearest-scope-wins with locks and sch
 5. **End-to-end** — the A-01 idle journey stays green unchanged.
 
 Tests written first: precedence across every scope with a test catalogue (8); lock at organization stops branch and user (9); `overridable_by` refusal (8); schema refusal on write and invalid stored value skipped (8); source label for each scope, including the default (9); idle regression: existing 15/30/60 values after the backfill, owner change applied on the next request, super-admin lock refuses the owner (10); audit rows (18); isolation case for `setting_value`; `shifa_app` cannot write lock columns.
-Estimated hand-written lines: ~3,300 (contracts ~250, database ~500, definitions and resolver ~700, routes and auth-path read ~550, tests ~1,300). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
+Estimated hand-written lines: ~3,300 (contracts ~250, database ~500, definitions and resolver ~700, routes and auth-path read ~550, tests ~1,300). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+- `GET /platform/clinics/:id/settings`, `PUT` and `DELETE /platform/clinics/:id/settings/:key/lock` (the super admin locks with a value or unlocks; no plain set, criterion 9); `GET` and `PATCH /clinic/settings` with `source` and `locked`, 409 `setting_locked`.
 
 ## Stopped at
 Planned.

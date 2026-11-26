@@ -1,6 +1,6 @@
 # A-02-01 Design slice: every A-02 screen and the screen-to-API contract
 
-Status: In progress (checkpoints 1 and 2 approved 2026-11-27; checkpoint 3, the re-plan, next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
+Status: Done (checkpoints 1, 2 and 3 approved by the owner 2026-11-27) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md), section "Screens" (all of it), criteria 1–18 as seen on screen · Requirements: PLT-13 to PLT-25, PLT-29, PLT-46, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-80, OD-117
 
 First slice of A-02 (ADR-0047): nothing of A-02 is built before its drawings, contract and improvements are approved.
@@ -41,7 +41,10 @@ Tests written first: none (no code). The proof is the owner's approval of both p
 Estimated hand-written lines: ~900 in the repository (contract ~600, spec amendments ~150, slice and roadmap updates ~150); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 drawn (2026-11-26): admin web boards on "Shifa Screens · Admin web", page "Proposals", and the admin rows of `docs/specs/platform/A-02-screen-contract.md`; waiting for the owner's approval, the answers on the spec gaps and the improvements accepted or declined. Next: checkpoint 2 (clinic web).
+Done (2026-11-27): both checkpoints approved, the re-plan approved with ten slices; PR opened.
+
+## Checkpoint 3 (re-plan)
+Each of A-02-02 to A-02-10 gained a section "From A-02-01" with its contract rows, the spec criteria and improvements it carries, its components and its new estimate. Estimates: A-02-02 ~3,700, A-02-03 ~3,800, A-02-04 ~3,300, A-02-05 ~4,050, A-02-06 ~2,850, A-02-07 ~3,500, A-02-08 ~4,370, A-02-09 ~4,050, A-02-10 ~3,570. A separate component slice (taking the four components, ~1,900 lines, out of A-02-08 and A-02-09) was offered; the owner kept ten slices, so A-02-08 and A-02-09 build their components first and may split their PR by the budget (ADR-0032).
 
 ## Checkpoint 1 (admin web)
 ### What is drawn
@@ -164,7 +167,7 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
-- Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 2026-11-27 (every clinic web screen and the PageBanner sheet), re-plan —
+- Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 2026-11-27 (every clinic web screen and the PageBanner sheet), re-plan 2026-11-27 (ten slices kept)
 - Improvements accepted / declined: 1–8 accepted (2026-11-27; 8 asked by the owner); none declined
 
 ## Notes for the next session

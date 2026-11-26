@@ -24,7 +24,12 @@ The super admin manages the platform's cities and areas in Arabic; a branch gets
 5. **End-to-end** — none.
 
 Tests written first: add, rename, archive, restore; no delete route and no DELETE grant (15); folded Arabic search (15); branch with city and area, area of another city refused, archived not offered but kept on a branch that holds it (15); audit rows (18); idle setting still read from the cascade after the column drop (10); `shifa_app` cannot write `city` or `area`.
-Estimated hand-written lines: ~2,500 (contracts ~250, database ~400, seed list ~250, platform routes ~500, branch changes ~250, tests ~850). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
+Estimated hand-written lines: ~2,850 (contracts ~280, database ~420, seed list ~250, platform routes ~600, counts ~150, branch changes ~300, tests ~850). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+- `GET /platform/cities?includeArchived=` with `branchCount`, `clinicCount`, `doctorCount` per city and area (criterion 24: counts only, across clinics under the platform role; this slice's security review checks that nothing but numbers leaves); add, rename, archive and restore cities and areas (criterion 15); 409 `place_name_taken`, `place_archived`, `place_not_archived`.
+- Clinic web: `GET /clinic/places`; `cityId` and `areaId` on `POST` and `PATCH /branches` (`area_not_in_city`, 409 `place_archived`; an archived place a branch holds is kept); `city` and `area` on `GET /branches`.
 
 ## Stopped at
 Planned.

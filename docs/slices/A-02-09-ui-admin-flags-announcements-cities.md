@@ -31,7 +31,13 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 - Screenshots, light and dark, compared with the approved drawings; axe clean; `reviewer` agent.
 
 Tests written first: component tests per state in the drawings; the three journeys; screenshot comparisons.
-Estimated hand-written lines: ~2,700 (flags ~550, announcements ~850, cities ~600, i18n ~250, journeys ~450); components are `/ui-component` work. Re-estimated at A-02-01 checkpoint 3.
+Estimated hand-written lines: ~4,050 (MultiCombobox ~700, PageBanner ~400, flags ~560, announcements ~980, cities ~720, i18n ~260, journeys ~430). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+- Screens: `A02Flags`, `A02Announcements` (dismissal counts, the banner preview), `A02Cities` (branch, clinic and doctor counts, restore) on "Shifa Screens · Admin web", page "Proposals"; improvements 1, 2, 3, 4, 8 (criteria 15, 22–24).
+- Components built here first, then synced: **MultiCombobox** (`A02SheetMultiCombobox`) and **PageBanner** (`A02cSheetPageBanner` on the clinic web canvas; its first user is the announcement preview, and A-02-10 reuses it).
+- Budget: ~4,050 with the components, at the guide; the owner kept ten slices (2026-11-27).
 
 ## Stopped at
 Planned.

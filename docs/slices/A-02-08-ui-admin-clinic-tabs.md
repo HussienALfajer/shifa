@@ -35,7 +35,13 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 - Screenshots, light and dark, compared with the approved drawings (every difference fixed or explained); axe clean; `reviewer` agent; `security-reviewer` on the hand-off URL handling in the client.
 
 Tests written first: component tests per state in the drawings; the five journeys; screenshot comparisons.
-Estimated hand-written lines: ~3,200 (subscription ~800, settings ~450, support ~600, usage and list ~450, i18n ~300, journeys ~600); components are `/ui-component` work. Re-estimated at A-02-01 checkpoint 3.
+Estimated hand-written lines: ~4,370 (UsageChart ~600, DataTable wrap ~200, subscription and history ~950, settings ~420, support ~620, usage, chart figures and list ~610, i18n ~320, journeys ~650). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+- Screens: `A02Clinic` (tabs «الاشتراك والحدود» with the override history drawer, «الإعدادات», «دخول الدعم», «الاستخدام» with the series switch and the dashboard chart) and `A02Clinics` (usage columns, «بلا نشاط منذ 7 أيام»), on "Shifa Screens · Admin web", page "Proposals"; improvements 5, 6, 7 (criteria 19, 20, 21).
+- Components built here first, with `/ui-component` from their approved sheets, then synced: **UsageChart** (`A02SheetUsageChart`) and the **DataTable wrapping column** (`A02SheetDataTableWrap`). The countdown named earlier is not a component (a Badge whose text the screen updates).
+- Budget: ~4,370 with the components, above the ~4,000 guide; the owner kept ten slices (2026-11-27). Checkpoint 1 (components synced) is its own commit series; if the build runs over, the components go in their own PR first (ADR-0032).
 
 ## Stopped at
 Planned.

@@ -41,7 +41,12 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 - Screenshots, light and dark, compared with the approved drawings; axe clean; `reviewer` agent; `security-reviewer` on the hand-off exchange and the read-only frame.
 
 Tests written first: component tests per state in the drawings; the three journeys; screenshot comparisons.
-Estimated hand-written lines: ~3,500 (shell and capabilities ~400, support frame and owner side ~900, announcements ~400, subscription and limits ~450, places ~350, idle source ~150, i18n ~300, journeys ~550); components are `/ui-component` work. Re-estimated at A-02-01 checkpoint 3.
+Estimated hand-written lines: ~3,570 (shell and capabilities ~400, support frame and owner side ~950, announcements ~400, subscription and limits ~480, places ~350, idle source ~150, i18n ~300, journeys ~540). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+- Screens: `A02cSettings` (idle source and lock, «الاشتراك» beside it with the ending warning, the support log, the owner's banner with time left), `A02cSupportSession`, `A02cAnnouncements`, `A02cLimits`, `A02cBranchPlace` on "Shifa Screens · Clinic web", page "Proposals"; improvements 9 and 10 (criteria 25, 26); spec gaps 9–15.
+- Components: none new; PageBanner (from A-02-09) and the DataTable wrapping column (from A-02-08) are used.
 
 ## Stopped at
 Planned.
