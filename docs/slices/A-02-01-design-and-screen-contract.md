@@ -1,6 +1,6 @@
 # A-02-01 Design slice: every A-02 screen and the screen-to-API contract
 
-Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 drawn 2026-11-27, awaiting the owner) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
+Status: In progress (checkpoints 1 and 2 approved 2026-11-27; checkpoint 3, the re-plan, next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md), section "Screens" (all of it), criteria 1–18 as seen on screen · Requirements: PLT-13 to PLT-25, PLT-29, PLT-46, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-80, OD-117
 
 First slice of A-02 (ADR-0047): nothing of A-02 is built before its drawings, contract and improvements are approved.
@@ -164,7 +164,7 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
-- Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 —, re-plan —
+- Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 2026-11-27 (every clinic web screen and the PageBanner sheet), re-plan —
 - Improvements accepted / declined: 1–8 accepted (2026-11-27; 8 asked by the owner); none declined
 
 ## Notes for the next session
