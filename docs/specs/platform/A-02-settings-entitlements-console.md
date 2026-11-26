@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 9, 11, 19, 20, 21) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 7, 9, 11, 19, 20, 21) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -24,7 +24,7 @@ Entitlements and limits (OD-109, OD-110)
 6. The owner sees a «الاشتراك» card in clinic settings: plan, status, end date, each limit with use, enabled features. Owner only.
 
 Feature flags (OD-114)
-7. Flags are declared in code (key, description, default) behind an OpenFeature-compatible interface with an in-house provider. The super admin sets each flag off for all, on for all, or on for selected clinics, with a reason; off for all is the kill switch and wins. A row for a flag no longer in code is ignored; a flag without a row takes its code default. Same cache rule as criterion 2. Audited.
+7. Flags are declared in code (key, description, default) behind an OpenFeature-compatible interface with an in-house provider. The super admin sets each flag off for all, on for all, or on for selected clinics, with a reason; off for all is the kill switch and wins. A row for a flag no longer in code is ignored; a flag without a row takes its code default. Same cache rule as criterion 2. Audited. The flags list shows, for each flag, who changed it last and when.
 
 Settings cascade (PLT-22 to PLT-24)
 8. Setting definitions live in code: key, JSON Schema, default, `overridable_by` (scopes), lockable, sensitivity. Scopes, nearest wins: platform → plan → specialty pack → organization → branch → practitioner → user. A write is validated against the schema and refused for a scope not in `overridable_by` or under a lock; a stored value that no longer validates is skipped and the next scope used.

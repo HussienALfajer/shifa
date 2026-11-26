@@ -94,12 +94,16 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 - Improvement 7 accepted: the quick filter «بلا نشاط منذ 7 أيام (n)», a Switch beside the status filter, combined with it and the search (criterion 21; states `inactive`, `inactiveNone`).
 - The first drawing had left out the coded toolbar's status filter with its counts; it is drawn again, as `clinics-page.tsx` renders it.
 
+### Owner review, flags (2026-11-27)
+- Spec gap 6 accepted (criterion 7: who changed a flag last and when). The sample flag keys are drawing examples only; A-02 declares no real flag.
+- MultiCombobox approved as drawn (sheet `A02SheetMultiCombobox`); built with `/ui-component` before the flags screen.
+
 ### Component changes (accepted by the owner)
 1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet is drawn in this slice with every state (short and long text, sorted, selected, compact, RTL and LTR, light and dark) and approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
 
 ### Missing components
 - **UsageChart** (30 daily counts; sheet `A02SheetUsageChart`): needed by «الاستخدام»; built in `packages/ui` without a charting library.
-- **MultiCombobox** (several clinics by search; sheet `A02SheetMultiCombobox`): needed by flags and announcements.
+- **MultiCombobox** (several clinics by search; sheet `A02SheetMultiCombobox`): needed by flags and announcements. Approved by the owner 2026-11-27.
 - Not needed: a countdown (the open grant's time left is a Badge whose text the screen updates each minute), a character counter (Textarea's `maxLength` shows it). The page banner is drawn at checkpoint 2.
 
 ## Evidence
