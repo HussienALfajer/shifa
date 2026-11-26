@@ -21,7 +21,7 @@ function owner(world: World, run: () => Reply): Reply {
 }
 
 const phoneIssue = (path: string): Reply =>
-  fail(400, 'validation_failed', { details: [{ path, code: 'invalid_string' }] });
+  fail(400, 'validation_failed', { details: [{ path, code: 'invalid_format' }] });
 
 let serial = 70;
 const nextId = () => {
@@ -113,6 +113,9 @@ function updateMember(m: MemberDetail, world: World, { body }: Request): Reply {
 
 function branchUpdate(b: Branch, body: unknown): Reply | null {
   const name = field(body, 'name');
+  if (typeof name === 'string' && name.trim() === '') {
+    return fail(400, 'validation_failed', { details: [{ path: 'body.name', code: 'too_small' }] });
+  }
   if (typeof name === 'string') b.name = name.trim();
   const address = field(body, 'address');
   if (address !== undefined) b.address = typeof address === 'string' ? address.trim() : null;
@@ -158,7 +161,10 @@ export const clinicRoutes: RouteTable = {
   'POST /team/members': (request, world) => owner(world, () => addMember(request, world)),
   'PATCH /team/members/:id': memberAction(updateMember),
   'PATCH /team/members/:id/phone': memberAction((m, world, { body }) => {
-    if (m.status !== 'pending') return fail(409, 'member_not_pending');
+    // As the API: an account made from the link first, then a cancelled invitation.
+    if (m.status !== 'pending' && m.lastActiveAt !== null)
+      return fail(409, 'member_account_exists');
+    if (m.status === 'deactivated') return fail(409, 'member_deactivated');
     const phone = normalisePhone(text(body, 'phone'));
     if (!phone.ok) return phoneIssue('body.phone');
     if (world.members.some((x) => x !== m && x.phone === phone.e164))
@@ -175,15 +181,18 @@ export const clinicRoutes: RouteTable = {
     return ok(m);
   }),
   'POST /team/members/:id/reactivate': memberAction((m) => {
+    if (m.status !== 'deactivated') return fail(409, 'member_not_deactivated');
     m.status = 'active';
     return ok(m);
   }),
   'POST /team/members/:id/setup-link': memberAction((m) => {
+    if (m.status === 'deactivated') return fail(409, 'member_deactivated');
     const issued = link(m.phone);
     if (m.status === 'pending') m.linkExpiresAt = issued.expiresAt;
     return ok(issued);
   }),
   'POST /team/members/:id/reset-mfa': memberAction((m) => {
+    if (!m.mfaEnrolled) return fail(409, 'mfa_not_enrolled');
     m.mfaEnrolled = false;
     return ok(m);
   }),

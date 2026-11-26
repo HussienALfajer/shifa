@@ -9,8 +9,11 @@ export type Step =
   | { fill: CommonKey; value: string; values?: Record<string, unknown> }
   /** Types into the element the selector finds (a field without a label of its own). */
   | { fillIn: string; value: string }
-  /** Presses the button or link whose text (or aria-label) reads this text key. */
-  | { press: CommonKey; values?: Record<string, unknown>; nth?: number }
+  /**
+   * Presses the button or link whose text (or aria-label) reads this text key, inside `within`
+   * when given (a dialog's button that repeats the drawer's).
+   */
+  | { press: CommonKey; values?: Record<string, unknown>; nth?: number; within?: string }
   /** Presses the button or link whose text reads exactly this (a name from the data). */
   | { pressText: string }
   /** Presses the first button or link whose text holds this (a card that names a clinic). */
@@ -102,7 +105,13 @@ export async function runSteps(
       type(el as HTMLInputElement, step.value);
     } else if ('press' in step) {
       const name = t(step.press, step.values);
-      (await seek(() => pressable(scope, name, step.nth), `button «${name}»`)).click();
+      const inside = () => (step.within ? scope.querySelector(step.within) : scope);
+      (
+        await seek(() => {
+          const root = inside();
+          return root ? pressable(root, name, step.nth) : null;
+        }, `button «${name}»`)
+      ).click();
     } else if ('pressText' in step) {
       (await seek(() => pressable(scope, step.pressText), `button «${step.pressText}»`)).click();
     } else if ('pressIn' in step) {

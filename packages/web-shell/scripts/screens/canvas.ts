@@ -1,11 +1,14 @@
 // Writes the "Clinic Web Screens" page of the "Shifa Screens · Clinic web" canvas from the code:
 // the screens bundle, two artboards per screen (a desktop window and a phone, boards.ts) whose
 // state and theme are chosen in the canvas's Tweaks panel, and the canvas index, one row per
-// screen. Run check.ts first: it measures every state's height into heights.json.
+// screen. Run check.ts first: it measures every state's height into heights.json. The boards
+// published now sit beside the current canvas.json (as the Artifact tool saves them): the state
+// and theme the owner saved in their Tweaks are carried into the new boards, and every page but
+// this one is kept as it is.
 // Usage: node scripts/screens/canvas.ts <project-dir> <current canvas.json> <heights.json>
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
-import { type Board, boards, heightKey, WINDOW } from './boards.ts';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { type Board, boards, boardWidth, heightKey } from './boards.ts';
 import { buildScreens } from './build.ts';
 import { SHEETS } from './scenarios/index.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from './state.ts';
@@ -42,18 +45,51 @@ function heightOf(b: Board, heights: Record<string, number>): number {
   return Math.max(b.height, ...tallest);
 }
 
+/** The Tweaks a board was published with: the owner's saved state and theme. */
+export interface Saved {
+  state?: string;
+  theme?: string;
+}
+
+/** Reads `data-props`' defaults from a published board (either quoting of the attribute). */
+export function savedTweaks(html: string): Saved {
+  const single = /data-props='([^']*)'/.exec(html)?.[1];
+  const double = /data-props="([^"]*)"/.exec(html)?.[1];
+  const raw = single ?? double?.replaceAll('&quot;', '"').replaceAll('&amp;', '&');
+  if (raw === undefined) return {};
+  let props: Record<string, { default?: unknown }>;
+  try {
+    props = JSON.parse(raw.replaceAll('&#39;', "'")) as Record<string, { default?: unknown }>;
+  } catch {
+    // A board the canvas wrote in another shape: its Tweaks start from the defaults.
+    return {};
+  }
+  const pick = (k: string) => {
+    const value = props[k]?.default;
+    return typeof value === 'string' ? value : undefined;
+  };
+  const state = pick('state');
+  const theme = pick('theme');
+  return { ...(state ? { state } : {}), ...(theme ? { theme } : {}) };
+}
+
 /**
- * One artboard: clinic web itself, at the state and in the theme chosen in Tweaks, in the board's
- * window. Only the app's own stylesheet: it holds the system's tokens and fonts as the app ships
- * them (the installed copy's `tokens.css` would add the same fonts a second time, from other files).
+ * One artboard: clinic web itself in a window of the device's width, at the state and in the theme
+ * chosen in Tweaks, and the state panel at its right (panel.tsx). Only the app's own stylesheet:
+ * it holds the system's tokens and fonts as the app ships them (the installed copy's `tokens.css`
+ * would add the same fonts a second time, from other files).
  */
-function artboard(b: Board, height: number): string {
+export function artboard(b: Board, height: number, saved: Saved = {}): string {
   const first = b.states[0]?.id ?? '';
+  // A saved state that no longer exists (renamed) falls back to the first.
+  const state = b.states.some((s) => s.id === saved.state) ? (saved.state ?? first) : first;
+  const theme = saved.theme === 'dark' ? 'dark' : 'light';
+  const width = boardWidth(b.device);
   const props = {
     state: {
       editor: 'enum',
       options: b.states.map((s) => ({ value: s.id, label: s.title })),
-      default: first,
+      default: state,
     },
     theme: {
       editor: 'enum',
@@ -61,9 +97,9 @@ function artboard(b: Board, height: number): string {
         { value: 'light', label: 'فاتح' },
         { value: 'dark', label: 'داكن' },
       ],
-      default: 'light',
+      default: theme,
     },
-    $preview: { width: b.width, height },
+    $preview: { width, height },
   };
   return `<!doctype html>
 <html lang="ar" dir="rtl">
@@ -81,14 +117,14 @@ function artboard(b: Board, height: number): string {
 html,body{margin:0}
 </style>
 </helmet>
-<div style="width: ${String(b.width)}px; min-height: ${String(height)}px;">
-  <x-import component-from-global-scope="ShifaScreens.ClinicWeb" sheet="${b.sheet.id}" state="{{state}}" theme="{{theme}}"></x-import>
+<div style="width: ${String(width)}px; min-height: ${String(height)}px;">
+  <x-import component-from-global-scope="ShifaScreens.Board" sheet="${b.sheet.id}" width="${String(b.width)}" height="${String(height)}" state="{{state}}" theme="{{theme}}"></x-import>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='${attrJson(props)}'>
 class Component extends DCLogic {
   renderVals() {
-    return { state: this.props.state ?? '${first}', theme: this.props.theme ?? 'light' };
+    return { state: this.props.state ?? '${state}', theme: this.props.theme ?? '${theme}' };
   }
 }
 </script>
@@ -104,15 +140,26 @@ interface CanvasIndex {
   notes: Record<string, unknown>;
 }
 
-const INTRO = `Clinic Web Screens. One sheet per screen: the screen on a desktop window and on a phone. Select a board and open Tweaks to choose any of its states (every state the screen can show and every answer of the server) and the light or dark theme. Every board is clinic web itself (packages/web-shell: the same pages, router and Shifa components), opened at that state with a fake server that answers as the API's contracts say, with synthetic data; nothing is drawn by hand. In Play: password ${PLAY_PASSWORD}, code ${PLAY_CODE}; anything else is refused as the server would. Rebuilt from the code by packages/web-shell/scripts/screens (ADR-0049).`;
+const INTRO = `Clinic Web Screens. One sheet per screen: the screen on a desktop window and on a phone. Select a board and open Tweaks to choose the state it opens at (every state the screen can show and every answer of the server) and the light or dark theme; in Play, the panel at the right of each board restarts the app at any state or theme without changing Tweaks, and «Reset» goes back to them. Every board is clinic web itself (packages/web-shell: the same pages, router and Shifa components), opened at that state with a fake server that answers as the API's contracts say, with synthetic data; nothing is drawn by hand. In Play: password ${PLAY_PASSWORD}, code ${PLAY_CODE}; anything else is refused as the server would. Rebuilt from the code by packages/web-shell/scripts/screens (ADR-0049).`;
+
+const onPage = (entry: unknown) => (entry as { page?: string } | undefined)?.page === PAGE.id;
+const others = <T>(record: Record<string, T>) =>
+  Object.fromEntries(Object.entries(record).filter(([, v]) => !onPage(v)));
 
 export function writeCanvas(
   project: string,
   current: CanvasIndex,
   heights: Record<string, number>,
+  saved: (file: string) => Saved = () => ({}),
 ) {
-  const out: CanvasIndex = { ...current, boards: {}, order: [], notes: {} };
-  const rowWidth = WINDOW.desktop.width + GAP + WINDOW.phone.width + GAP + NOTE_W;
+  // The other pages (Proposals) keep their boards, notes and order as read.
+  const out: CanvasIndex = {
+    ...current,
+    boards: others(current.boards),
+    order: current.order.filter((f) => !onPage(current.boards[f])),
+    notes: others(current.notes),
+  };
+  const rowWidth = boardWidth('desktop') + GAP + boardWidth('phone') + GAP + NOTE_W;
   out.notes['intro'] = {
     x: 0,
     y: 0,
@@ -138,18 +185,19 @@ export function writeCanvas(
     let rowH = 0;
     for (const b of [desktop, phone]) {
       const h = heightOf(b, heights);
+      const w = boardWidth(b.device);
       out.boards[b.file] = {
         x,
         y,
-        w: b.width,
+        w,
         h,
         title: `${sheet.title} · ${DEVICE_WORD[b.device]} · ${statesWord(b.states.length)}`,
         page: PAGE.id,
         is_interactive: true,
       };
       out.order.push(b.file);
-      writeFileSync(join(project, b.file), artboard(b, h));
-      x += b.width + GAP;
+      writeFileSync(join(project, b.file), artboard(b, h, saved(b.file)));
+      x += w + GAP;
       rowH = Math.max(rowH, h);
     }
     out.notes[`about-${sheet.id}`] = {
@@ -163,10 +211,17 @@ export function writeCanvas(
     };
     y += rowH + ROW_GAP;
   }
-  out['noteOrder'] = Object.keys(out.notes);
+  const noteOrder = (current['noteOrder'] as string[] | undefined) ?? [];
+  out['noteOrder'] = [
+    ...noteOrder.filter((k) => k in out.notes && !onPage(out.notes[k])),
+    ...Object.keys(out.notes).filter((k) => onPage(out.notes[k])),
+  ];
   out['title'] = 'Shifa Screens · Clinic web';
-  out['pages'] = [PAGE];
-  out['launch'] = { view: 'canvas', page: PAGE.id };
+  const pages = (current['pages'] as { id: string }[] | undefined) ?? [];
+  out['pages'] = pages.some((p) => p.id === PAGE.id)
+    ? pages.map((p) => (p.id === PAGE.id ? { ...p, ...PAGE } : p))
+    : [PAGE, ...pages];
+  out['launch'] = current['launch'] ?? { view: 'canvas', page: PAGE.id };
   return out;
 }
 
@@ -177,7 +232,11 @@ if (import.meta.main && projectArg && indexArg && heightsArg) {
   const current = JSON.parse(readFileSync(indexArg, 'utf8')) as CanvasIndex;
   const heights = JSON.parse(readFileSync(heightsArg, 'utf8')) as Record<string, number>;
   const version = process.env['DS_VERSION'];
-  const index = writeCanvas(project, current, heights);
+  const published = dirname(resolve(indexArg));
+  const index = writeCanvas(project, current, heights, (file) => {
+    const path = join(published, file);
+    return existsSync(path) ? savedTweaks(readFileSync(path, 'utf8')) : {};
+  });
   if (version) {
     index['designSystems'] = [
       { ...DESIGN_SYSTEM, version, copiedAt: new Date().toISOString().replace(/\.\d+Z$/, 'Z') },

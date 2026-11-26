@@ -1,7 +1,7 @@
 // The owner's team (/team, A-01-08): src/team/ — the list (table on a desktop, cards on a phone)
 // with its filter and search, one drawer to add or edit a member, the account actions, the phone
 // fix, and the leave guard of an unsent link.
-import type { Scenario, Sheet, Step, World } from '../scenario.ts';
+import type { Sheet, World } from '../scenario.ts';
 import { fail } from '../server.ts';
 import {
   ACCOUNTANT,
@@ -10,29 +10,11 @@ import {
   DOCTOR,
   LEFT,
   local,
-  NEW_PHONE,
   OWNER_NAME,
   RECEPTION,
 } from '../world.ts';
-
-const team = (s: Omit<Scenario, 'path'> & { path?: string }): Scenario => ({ path: '/team', ...s });
-const open = (name: string): Step[] => [{ pressText: name }, { until: 'memberAccount' }];
-const add: Step[] = [{ press: 'teamAdd' }, { until: 'addTitle' }];
-const NAME = 'سلمى حدّاد';
-const addFilled: Step[] = [
-  ...add,
-  { fill: 'memberName', value: NAME },
-  { fill: 'memberPhone', value: local(NEW_PHONE) },
-  { click: '[data-testid="role-receptionist"] label' },
-  { check: B_SECOND.name, within: '[data-testid="role-receptionist"]' },
-];
-const issueLink: Step[] = [
-  ...open(RECEPTION.name),
-  { press: 'memberNewLink' },
-  { press: 'memberLinkAction' },
-  { until: 'linkCopy' },
-];
-const fixPhone: Step[] = [...open(ACCOUNTANT.name), { press: 'memberFixPhone' }];
+import { teamActions, teamAdds, teamReads, teamSaves } from './team-more.ts';
+import { add, addFilled, fixPhone, issueLink, open, team } from './team-steps.ts';
 
 export const teamSheet: Sheet = {
   id: 'Team',
@@ -49,6 +31,7 @@ export const teamSheet: Sheet = {
     'team/permissions-field.tsx',
     'team/add-member.tsx',
     'team/member-phone-dialog.tsx',
+    'team/panel.tsx',
     'admin/link-shown.tsx',
   ],
   scenarios: [
@@ -195,5 +178,9 @@ export const teamSheet: Sheet = {
       steps: [...addFilled, { press: 'addSubmit' }, { until: 'linkCopy' }],
       overlay: true,
     }),
+    ...teamReads,
+    ...teamActions,
+    ...teamSaves,
+    ...teamAdds,
   ],
 };

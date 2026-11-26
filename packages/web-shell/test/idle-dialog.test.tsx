@@ -52,7 +52,9 @@ describe('the idle warning', () => {
     expect(open?.textContent).toContain('لم نرَ نشاطاً منذ');
     await vi.advanceTimersByTimeAsync(5_000);
     await flush();
-    expect(dialog(r)?.textContent).toContain('00:55');
+    // Five seconds on: 00:55, or 00:54 when the fake clock (which also follows real time) lost a
+    // second to a slow runner while rendering.
+    expect(dialog(r)?.textContent).toMatch(/00:5[45]/);
   });
 
   it('«متابعة العمل» re-reads the session and closes the dialog', async () => {

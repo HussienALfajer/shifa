@@ -1,31 +1,16 @@
 // My account (/account, A-01-10) and the clinic's settings (/settings, the owner's idle limit):
 // src/account/ — the person, their devices and sessions, the second factor (codes, a new phone,
 // enrolment for staff), the password; every dialog and every answer of their routes.
+
 import type { Scenario, Sheet, Step, World } from '../scenario.ts';
+import { CODES_BADGE_BUG } from '../scenario.ts';
 import { fail, lockFor } from '../server.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from '../state.ts';
-import { B_MAIN, ownerSession, TENANT } from '../world.ts';
+import { B_MAIN, B_OLD } from '../world.ts';
+import { accountMore, pw, staff } from './account-more.ts';
 
 const account = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/account', ...s });
-const staff = (w: World) => {
-  w.session = ownerSession({
-    mfa: 'none',
-    mfaRequired: false,
-    roles: [{ role: 'doctor', tenantId: TENANT, branchId: B_MAIN.id }],
-  });
-  w.mfa = { enrolled: false, enrolledAt: null, recoveryCodesLeft: null };
-  const [first, ...rest] = w.clinics;
-  if (first)
-    w.clinics = [{ ...first, roles: ['doctor'], tenantWide: false, branches: [B_MAIN] }, ...rest];
-};
 const password: Step = { press: 'pwOpen' };
-const pw = (current: string, next: string, repeat = next): Step[] => [
-  password,
-  { fill: 'pwCurrent', value: current },
-  { fill: 'pwNew', value: next },
-  { fill: 'pwRepeat', value: repeat },
-  { press: 'pwSubmit' },
-];
 const NEXT = 'Halab-Clinic-24';
 const renew: Step = { press: 'codesRenew' };
 const move: Step = { press: 'reenrolOpen' };
@@ -52,6 +37,7 @@ export const accountSheet: Sheet = {
     'account/reenrol-dialog.tsx',
     'account/codes-once.tsx',
     'account/totp-key.tsx',
+    'account/load-failed.tsx',
   ],
   scenarios: [
     account({ id: 'Owner', title: 'المالك: الجلسات والتحقق وكلمة المرور' }),
@@ -75,6 +61,7 @@ export const accountSheet: Sheet = {
     }),
     account({
       id: 'CodesLow',
+      widerOnPhone: CODES_BADGE_BUG,
       title: 'رمزا استرداد فقط',
       world: (w) => {
         w.mfa = { ...w.mfa, recoveryCodesLeft: 2 };
@@ -210,10 +197,17 @@ export const accountSheet: Sheet = {
       steps: [{ press: 'mfaEnrolOpen' }, { until: 'codesEnrolAsk', values: { digits: 6 } }],
       overlay: true,
     }),
+    ...accountMore,
   ],
 };
 
 const settings = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/settings', ...s });
+/** One active branch (and one archived): the clinic's solo line. */
+const solo = (w: World) => {
+  const [first, ...rest] = w.clinics;
+  if (first) w.clinics = [{ ...first, solo: true, branches: [B_MAIN] }, ...rest];
+  w.branches = w.branches.filter((b) => b.id === B_MAIN.id || b.id === B_OLD.id);
+};
 const pick = (minutes: number): Step => ({ check: `${String(minutes)} ` });
 
 export const settingsSheet: Sheet = {
@@ -228,6 +222,12 @@ export const settingsSheet: Sheet = {
       id: 'Loading',
       title: 'تحميل الإعدادات',
       answers: { 'GET /clinic/settings': 'hold' },
+    }),
+    settings({
+      id: 'LoadFailed',
+      title: 'تعذّر تحميل الإعدادات',
+      answers: { 'GET /clinic/settings': 'offline' },
+      steps: [{ until: 'loadFailedTitle' }],
     }),
     settings({ id: 'Changed', title: 'اختيار 30 دقيقة قبل الحفظ', steps: [pick(30)] }),
     settings({
@@ -244,12 +244,18 @@ export const settingsSheet: Sheet = {
       steps: [pick(30), { press: 'save' }],
     }),
     settings({
-      id: 'Solo',
-      title: 'عيادة بفرع واحد',
-      world: (w) => {
-        const [first, ...rest] = w.clinics;
-        if (first) w.clinics = [{ ...first, solo: true, branches: [B_MAIN] }, ...rest];
-      },
+      id: 'Refused',
+      title: 'الحفظ مرفوض',
+      answers: { 'PATCH /clinic/settings': [fail(403, 'forbidden')] },
+      steps: [pick(30), { press: 'save' }],
+    }),
+    settings({ id: 'Solo', title: 'عيادة بفرع واحد', world: solo }),
+    settings({
+      id: 'SoloAdd',
+      title: 'عيادة بفرع واحد: إضافة فرع',
+      world: solo,
+      steps: [{ press: 'branchesAdd' }, { until: 'branchAddTitle' }],
+      overlay: true,
     }),
   ],
 };
