@@ -141,6 +141,11 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 | 9 | «الاشتراك» warns when the subscription ends within 14 days («ينتهي اشتراكك خلال 9 أيام») | none (`subscriptionEnd` is served) · Callout · subscription card | ~40 | A-02-10 |
 | 10 | The owner's support banner counts down («متبقٍّ 42 دقيقة») like the admin's card | `now` in `GET /clinic/support-grants` · none · banner | ~40 | A-02-05, A-02-10 |
 
+### Owner review, clinic settings (2026-11-27)
+- Spec gaps 9 and 13 accepted (criteria 13 and 5). Improvements 9 (subscription ending within 14 days, criterion 25; state `subEnding`) and 10 (time left in the owner's banner, criterion 26) accepted and drawn.
+- The owner moved «الاشتراك» beside «الخروج التلقائي»: two columns on a desktop, one under the other on a tablet and a phone; «سجل دخول الدعم» stays full width below.
+- The owner's own edit on the canvas (the page's `main` positioned, so dialogs and drawers cover the page only) is kept.
+
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip.
 

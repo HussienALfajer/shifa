@@ -1,6 +1,6 @@
 # Spec A-02: settings, entitlements and limits, flags, basic super-admin console
 
-Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 7, 9, 11, 15, 16, 19–24) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
+Status: Approved by the owner 2026-11-25; amended from the A-02-01 drawings (owner, 2026-11-27: criteria 3, 5, 7, 9, 11, 13, 15, 16, 19–26) · Date: 2026-11-25 · Risk tier: T0 (entitlements, support access, tenancy/RLS, audit) · Owner: product owner
 Builds on [A-01a](A-01a-clinic-owner-sign-in.md) and [A-01b](A-01b-team-roles-branches-switcher.md) (order: OD-75). Decisions: ADR-0004, ADR-0007, ADR-0042, ADR-0046, ADR-0047; OD-108 to OD-117. One spec by the owner's choice (OD-108), above the usual size. Screens: inventory below; drawn in the design slice A-02-01 before the API, with the screen-to-API contract in [A-02-screen-contract.md](A-02-screen-contract.md) (ADR-0047, OD-117).
 
 ## Goal
@@ -20,7 +20,7 @@ Entitlements and limits (OD-109, OD-110)
 2. Resolution per key (PLT-21): unexpired tenant override → highest replacing add-on → plan value plus incremental add-ons → deny. A key outside the catalogue is refused at start-up and at the call (as `PERMISSION_CATALOGUE`). The result is cached per tenant; a change is in force on every API instance within 60 s and at once on the instance that made it.
 3. The super admin sets or removes a clinic's override for any catalogue key (value per the key's type, mandatory reason, optional expiry); an expired override stops counting at its expiry. Audited with before and after values. The expiry is a date, in force to the end of that Damascus day; today or a past date is refused. An override survives a change of the clinic's type, and the type preview shows it kept. A-02 registers no feature entitlement: the catalogue holds the three limits, and later specs add features.
 4. Limits count non-deactivated members holding a doctor role (pending included) and non-archived branches. Adding a doctor role (new member, edit, reactivation) and creating or restoring a branch beyond the limit answer 409 `limit_reached` with key, limit and used; nothing is written. A limit lowered below use keeps what exists. Two concurrent requests at the limit never both succeed.
-5. `GET /clinic/capabilities` gives the active clinic's entitlements, limits with use, and evaluated flags; clinic web hides what is off (PLT-20) and names the limit when reached («وصلت العيادة إلى حد الأطباء في خطتها، تواصل مع الإدارة»). The server checks every gated route itself.
+5. `GET /clinic/capabilities` gives the active clinic's entitlements, limits with use, and evaluated flags; clinic web hides what is off (PLT-20), never showing it disabled, while a limit shows with its use and, when full, is named where it stops an add («وصلت العيادة إلى حد الأطباء في خطتها، تواصل مع الإدارة»). The server checks every gated route itself.
 6. The owner sees a «الاشتراك» card in clinic settings: plan, status, end date, each limit with use, enabled features. Owner only.
 
 Feature flags (OD-114)
@@ -34,7 +34,7 @@ Settings cascade (PLT-22 to PLT-24)
 Support access (OD-111, OD-112)
 11. The super admin opens access to one clinic with a mandatory reason (10–500 characters) and a duration of 30 min, 1, 2 or 4 h; one open grant per super admin per clinic (409 `support_active`). It opens clinic web in a new tab, as the super admin, with the clinic's owner view and a fixed banner (reason, end time, «إنهاء»). While the grant is open the super admin can open that tab again («فتح عيادة الويب»), each time with a new single-use hand-off.
 12. In a support session every write route answers 403 `support_read_only` and the database transaction is read-only; reads are those an owner may make. It ends at its expiry, when the super admin ends it, or when an owner ends it; the next request then answers 401 `session_expired` with reason `support_ended`.
-13. While a grant is open, every owner of that clinic sees a banner naming the super admin, reason and end time, with «إنهاء الدخول». Clinic settings lists every grant (who, reason, start, end, ended by whom).
+13. While a grant is open, every owner of that clinic sees a banner naming the super admin, reason, end time and time left, with «إنهاء الدخول». Banners sit above the top bar on every page: the support session's strip, then the owner's support notice, then announcements; neither support banner can be hidden while the grant is open. Clinic settings lists every grant (who, reason, start, end, ended by whom).
 14. Audit: grant opened (reason, duration), ended (by whom) or expired, and every request in a support session (route template, target id, no body). A suspended clinic can still be opened.
 
 Console
@@ -49,6 +49,8 @@ Added from the A-02-01 drawings (improvements accepted by the owner, 2026-11-27)
 21. The clinics list has a quick filter «بلا نشاط منذ 7 أيام (n)»: the clinics where nobody signed in during the last seven Damascus days (sign-ins in 7 days = 0), combined with the status filter and the search; when none, the list says every clinic was active.
 22. Each active or ended announcement shows how many of its targeted members dismissed it («أغلقه 31 من 118 عضوًا»); the targeted members are the non-deactivated members of its clinics, counted when it is read.
 23. The announcement form shows a preview of the banner as members will see it, updated as the body and level change.
+25. The owner's «الاشتراك» card warns when the subscription ends within 14 days («ينتهي اشتراكك خلال 9 أيام»), with the date and who to contact.
+26. The owner's support banner shows the time left, counting down each minute from the server's time.
 24. Each city and area shows how many non-archived branches hold it, in how many clinics, and how many doctors work there (non-deactivated members holding a doctor role in one of those branches or clinic-wide in one of those clinics, each counted once); the rename and archive questions name the branches and clinics affected. The figures are counts only, never names, and archived places show the branches that still hold them.
 
 ## Edge cases and offline
@@ -81,7 +83,7 @@ No money (no prices, OD-07). Abuse: a super admin reading a clinic unseen (13, 1
 | 8–10 | Cascade tests: precedence, locks, `overridable_by`, schema refusal, invalid stored value, source; idle-setting regression |
 | 11–14 | API tests: grant rules, every write route 403 (matrix in a support session), read-only transaction, three ways to end, owner banner data and log, audit rows; isolation cases for the new tables |
 | 15–18 | API tests for cities, areas, branch city, announcements targeting and dismissal, usage counters against seeded sign-ins, one audit row per event |
-| 19–24 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
+| 19–26 | Contract tests of the usage series (30 zero-filled days, previous-period totals) and of the override history (every event kind, before and after values, newest first); browser screenshot against the drawing |
 | Screens | Design slice A-02-01: drawings, screen-to-API contract and analysis approved by the owner; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (override raises a limit; support opened, banner, owner ends it; announcement dismissed) |
 
 ## Screens (inventory, ADR-0042; drawn before the API, ADR-0047)
