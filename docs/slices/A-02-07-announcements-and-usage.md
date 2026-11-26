@@ -1,7 +1,7 @@
 # A-02-07 Announcements and daily usage
 
 Status: Planned · Tier: T0 · Branch: `feat/A-02-07-announcements-and-usage`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 16–18 · Requirements: PLT-16, PLT-18, PLT-47 · Decisions: OD-115, OD-116
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 16–18 · Requirements: PLT-16, PLT-18, PLT-47 · Decisions: OD-115, OD-116 · From A-02-01: criteria 16 (amended), 19, 22
 
 After [A-02-06](A-02-06-cities-areas-branch-place.md) (merged). Last API slice of A-02.
 Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
@@ -24,7 +24,15 @@ The super admin posts plain-text announcements to all or selected clinics and ev
 5. **End-to-end** — none.
 
 Tests written first: body rules (length, a link, markup refused) (16); targeting all and selected, scheduled not shown, ended not shown (16); dismissal per person across two sessions and kept across clinics (16); end early and edit (16); usage counters against seeded sign-ins, the Damascus day boundary on a fake clock, distinct members (17); clinics list columns and 30-day series (17); audit rows without the body (18); isolation cases for `announcement_target`, `announcement_dismissal`, `usage_daily`.
-Estimated hand-written lines: ~3,300 (contracts ~300, database ~500, announcements ~800, usage ~600, tests ~1,100). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
+Estimated hand-written lines: ~3,550 (contracts ~320, database ~520, announcements ~900, usage ~660, tests ~1,100). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: the body refusals are `validation_failed` and 400 `announcement_link` (not `announcement_body_invalid`); the clinic route is `GET /me/announcements` (not `/announcements/active`).
+- Announcements: `GET /platform/announcements?status=` with `counts`, `dismissedCount`, `targetedMembers` (criterion 22); `POST`, `PATCH`, `POST …/end` (cancel a scheduled one = end it); 400 `announcement_link`, 409 `announcement_ended`.
+- Clinic web: `GET /me/announcements` (with `version`; warnings first, then newest), `POST /me/announcements/:id/dismiss` with `version` (an edited announcement shows again, criterion 16).
+- Usage: `GET /platform/clinics/:id/usage` (`todayCounts`, `members`, `branches`, `lastActivityAt`, 30 zero-filled `days` with both series, `previousTotals`; criteria 17, 19); `lastActivityAt` and `signIns7d` on `GET /platform/clinics`.
+- `dismissedCount` and `targetedMembers` use the integers-only function mechanism of A-02-06 (its ADR). ~50 lines more.
 
 ## Stopped at
 Planned.

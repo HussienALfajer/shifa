@@ -1,7 +1,7 @@
 # A-02-03 Limits enforced, feature flags and capabilities
 
 Status: Planned · Tier: T0 · Branch: `feat/A-02-03-limits-flags-capabilities`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114 · From A-02-01: criteria 4, 5, 7 (amended)
 
 After [A-02-02](A-02-02-entitlements-and-overrides.md) (merged).
 Contract: delivers the rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md) that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing here and is reported to the owner.
@@ -23,7 +23,15 @@ The doctor and branch limits refuse new ones at the limit, even under racing req
 5. **End-to-end** — none.
 
 Tests written first: per limit and path — add, edit adding a doctor role, reactivate, branch create, restore — at the limit 409 with key, limit, used and no row written; lowered limit keeps existing (4); concurrent adds at the limit: exactly one succeeds (4); flag evaluation — kill switch, on for all, selected in and out, unknown row, missing row (7); cache window across two instances on a fake clock for flags (7); capabilities contract test and route matrix with probe-gated routes off and on (5); subscription owner-only in the matrix (6); flag audit row (18); isolation case for `feature_flag_tenant`.
-Estimated hand-written lines: ~3,600 (contracts ~300, database ~300, limits ~550, flags and provider ~650, gates ~300, capabilities and subscription ~300, tests ~1,200). Re-estimated at [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 3 with the accepted improvements.
+Estimated hand-written lines: ~3,800 (contracts ~320, database ~300, limits ~550, flags and provider ~680, gates ~300, capabilities and subscription ~300, search fold ~150, tests ~1,200). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: flag `reason` 10–500.
+- `GET /clinic/capabilities`, `GET /clinic/subscription`; 409 `limit_reached` (`details`: `key`, `limit`, `used`) on `POST` and `PATCH /team/members`, `POST /team/members/:id/reactivate`, `POST /branches`, `POST /branches/:id/restore`; `used` in the entitlements answer.
+- Flags: `GET /platform/flags` (with `updatedByName`, `updatedAt`), `PUT /platform/flags/:key`.
+- Existing API fix: `GET /platform/clinics?search=` on a folded name at the start of a word (alef forms, taa marbuta, alef maqsura, diacritics), one fold function shared with the cities search.
+- Spec additions: criteria 4 and 5 (a full limit shown before sending; what the plan does not allow is absent, never disabled), criterion 7 (who changed a flag last).
 
 ## Stopped at
 Planned.

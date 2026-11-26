@@ -1,7 +1,7 @@
 # A-02-09 UI code 2: admin web flags, announcements, cities and areas
 
 Status: Planned · Tier: T1 · Branch: `feat/A-02-09-ui-admin-flags-announcements-cities`
-Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) screens "Flags", "Announcements", "Cities and areas"; criteria 7, 15, 16 as seen by the super admin · Requirements: PLT-15, PLT-18, PLT-25 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-113 to OD-115
+Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) screens "Flags", "Announcements", "Cities and areas"; criteria 7, 15, 16 as seen by the super admin · Requirements: PLT-15, PLT-18, PLT-25 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-113 to OD-115 · From A-02-01: criteria 22–24
 
 After A-02-02 to A-02-07 (merged). It may run beside A-02-08 in its own worktree, since neither changes schema or contracts; an API fix found by either is serialised. Drawings, contract rows and missing components were approved in [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 1.
 
@@ -17,7 +17,7 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 ## Plan
 ### Checkpoint 1 — contract check and components
 - **Contract check:** every contract row of these screens against the built API. A mismatch is fixed in the API on this branch, never in the client. Any design-system release since A-02-01 is applied to the drawings and noted.
-- **Components:** the approved ones these screens need (for example the multi-select clinic picker and the character counter) are built with `/ui-component` and synced before use.
+- **Components:** the approved ones these screens need (MultiCombobox and PageBanner) are built with `/ui-component` and synced before use.
 ### Checkpoint 2 — flags and announcements
 - Flags list; mode change confirmed with a reason; selected clinics picker.
 - Announcements by status; create and edit (body with counter and link refusal, level, start, end, targets); end early.
@@ -31,7 +31,14 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 - Screenshots, light and dark, compared with the approved drawings; axe clean; `reviewer` agent.
 
 Tests written first: component tests per state in the drawings; the three journeys; screenshot comparisons.
-Estimated hand-written lines: ~2,700 (flags ~550, announcements ~850, cities ~600, i18n ~250, journeys ~450); components are `/ui-component` work. Re-estimated at A-02-01 checkpoint 3.
+Estimated hand-written lines: ~4,050 (MultiCombobox ~700, PageBanner ~400, flags ~560, announcements ~980, cities ~720, i18n ~260, journeys ~430). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+
+## From A-02-01 (re-plan approved by the owner, 2026-11-27)
+The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
+Names in the earlier plan above that the contract replaces: the routes are the contract's.
+- Screens: `A02Flags`, `A02Announcements` (dismissal counts, the banner preview), `A02Cities` (branch, clinic and doctor counts, restore) on "Shifa Screens · Admin web", page "Proposals"; improvements 1, 2, 3, 4, 8 (criteria 15, 22–24).
+- Components built here first, then synced: **MultiCombobox** (`A02SheetMultiCombobox`) and **PageBanner** (`A02cSheetPageBanner` on the clinic web canvas; its first user is the announcement preview, and A-02-10 reuses it).
+- Budget: ~4,050 with the components, at the guide; the owner kept ten slices (2026-11-27).
 
 ## Stopped at
 Planned.
