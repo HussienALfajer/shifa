@@ -1,6 +1,6 @@
 # A-02-01 Design slice: every A-02 screen and the screen-to-API contract
 
-Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
+Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 drawn 2026-11-27, awaiting the owner) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md), section "Screens" (all of it), criteria 1–18 as seen on screen · Requirements: PLT-13 to PLT-25, PLT-29, PLT-46, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-80, OD-117
 
 First slice of A-02 (ADR-0047): nothing of A-02 is built before its drawings, contract and improvements are approved.
@@ -113,6 +113,36 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 - **UsageChart** (30 daily counts; sheet `A02SheetUsageChart`): needed by «الاستخدام»; built in `packages/ui` without a charting library.
 - **MultiCombobox** (several clinics by search; sheet `A02SheetMultiCombobox`): needed by flags and announcements. Approved by the owner 2026-11-27.
 - Not needed: a countdown (the open grant's time left is a Badge whose text the screen updates each minute), a character counter (Textarea's `maxLength` shows it). The page banner is drawn at checkpoint 2.
+
+## Checkpoint 2 (clinic web)
+### What is drawn
+"Shifa Screens · Clinic web", new page "Proposals" (ADR-0049): each row a desktop board (1440) with its state panel, a tablet (1024) and a phone (390); clinic web's frame as `app-frame.tsx` draws it; the design system's copy on that canvas refreshed to `1795722141-5d60`.
+- `A02cSettings` (owner): the idle setting with its source (chosen by the clinic, inherited default, locked by the admin), «الاشتراك» (plan, status, end date, each limit with its use and a meter, a full limit, loading), «سجل دخول الدعم» (DataTable with the wrapping reason, empty), the owner's support banner, the end question and the ended note.
+- `A02cSupportSession` (super admin in clinic web): the support banner over every page, the owner's view with write buttons disabled and «للقراءة فقط», a refused write (403), the end question, and the ended page for each cause (expiry, owner, self).
+- `A02cAnnouncements`: the banner for a warning, an information, several in turn, hidden; under the owner's support banner.
+- `A02cLimits`: the team form at the doctor limit (role disabled, named), refused after sending (409), reactivating a doctor at the limit; branches at their limit and a refused restore; what the plan does not allow is absent (a solo clinic without «الفروع»).
+- `A02cBranchPlace`: branch cards with city and area (and an archived area kept), the dialog with city and area Comboboxes (area waits for the city, Arabic search, no match, an archived area kept on edit).
+- Sheet `A02cSheetPageBanner`: the proposed PageBanner (information, warning, several, the owner's support notice, the support session strip, two at once, phone, dark, compact, English).
+
+Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; every state rendered in light and dark on the three sizes with the local runtime copy, 0 errors.
+
+### Spec gaps (answers go into the spec after approval)
+9. Banners sit above the top bar on every page: the support session's strip, then the owner's support notice, then announcements. Neither support banner can be hidden while the grant is open.
+10. An announcement that is edited after a person hid it shows to that person again (dismissal is kept per version). The alternative is that a hidden announcement stays hidden whatever its edits.
+11. Several announcements show one at a time with «1 من 3» and previous and next, warnings first, then newest.
+12. A full limit is shown before sending: the doctor role and «إضافة فرع» are disabled and the limit named; the server's 409 `limit_reached` still answers a race.
+13. What the plan does not allow is absent, never shown disabled (criterion 5, PLT-20); limits are the one exception (shown, disabled and named, criterion 5).
+14. When a support session ends, the tab shows a full page with its cause (expired, ended by the owner with their name, ended by the super admin) and a link back to admin web; the 401 carries who ended it.
+15. A branch keeps an archived city or area it already holds; the dialog shows it, marked archived, and it cannot be chosen anew.
+
+### Improvements (checkpoint 2)
+| # | Improvement | Adds (API · component · screens) | Lines | Slices |
+|---|---|---|---|---|
+| 9 | «الاشتراك» warns when the subscription ends within 14 days («ينتهي اشتراكك خلال 9 أيام») | none (`subscriptionEnd` is served) · Callout · subscription card | ~40 | A-02-10 |
+| 10 | The owner's support banner counts down («متبقٍّ 42 دقيقة») like the admin's card | `now` in `GET /clinic/support-grants` · none · banner | ~40 | A-02-05, A-02-10 |
+
+### Missing component
+- **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip.
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
