@@ -144,7 +144,7 @@ Check: 0 literal colours and 0 unknown tokens on every board and `a02.css`; ever
 ### Owner review, clinic settings (2026-11-27)
 - Spec gaps 9 and 13 accepted (criteria 13 and 5). Improvements 9 (subscription ending within 14 days, criterion 25; state `subEnding`) and 10 (time left in the owner's banner, criterion 26) accepted and drawn.
 - The owner moved «الاشتراك» beside «الخروج التلقائي»: two columns on a desktop, one under the other on a tablet and a phone; «سجل دخول الدعم» stays full width below.
-- The owner's own edit on the canvas (the page's `main` positioned, so dialogs and drawers cover the page only) is kept.
+- A `position: relative` on the page's `main` appeared in a version saved from the canvas page; nobody wrote it (most likely the canvas editor while the board was open), it changed nothing visible, and it was removed (owner, 2026-11-27).
 
 ### Missing component
 - **PageBanner** (sheet `A02cSheetPageBanner`): announcements, the owner's support notice and the support session strip.
