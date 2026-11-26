@@ -1,6 +1,6 @@
 # A-02-01 Design slice: every A-02 screen and the screen-to-API contract
 
-Status: In progress (checkpoint 1 drawn, awaiting the owner) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
+Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-02-01-design-and-screen-contract`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md), section "Screens" (all of it), criteria 1–18 as seen on screen · Requirements: PLT-13 to PLT-25, PLT-29, PLT-46, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-80, OD-117
 
 First slice of A-02 (ADR-0047): nothing of A-02 is built before its drawings, contract and improvements are approved.
@@ -107,7 +107,7 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 - Owner's addition, improvement 8: clinics and doctors per place beside the branches («5 فروع · 4 عيادات · 11 طبيبًا»), criterion 24. Counts only, over all clinics, read under the platform role; a doctor counts once per place (a branch role there, or a clinic-wide role in a clinic with a branch there). Estimate ~100 lines more on top of improvement 2, in A-02-06 and A-02-09. Its counting query crosses tenants, so A-02-06's security review checks it returns numbers only.
 
 ### Component changes (accepted by the owner)
-1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet `A02SheetDataTableWrap` (drawn 2026-11-27, awaiting approval) shows the real DataTable with the wrap laid out by `a02.css` until it is coded: long and short reasons, sorted, a selected row, a narrow width, compact, dark, English LTR, and a column without `wrap` as today; the wrapping column takes the widest share of the row (dates and status keep their room). The support log on `A02Clinic` is drawn the same way. It is approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
+1. **DataTable: a wrapping column** (owner, 2026-11-27). A column may declare `wrap: true`: its cells show their whole text on as many lines as it needs, never cut, and the row grows to fit; the other cells of the row stay at the top of the row. Rows keep the 48 px minimum (32 compact); sorting, selection, the pinned first column, keyboard and virtualisation behave as today (a virtualised row's height is measured). A column without `wrap` keeps today's one line with an ellipsis and the tooltip. First user: «السبب» of «سجل دخول الدعم»; later users: any free-text column (notes, reasons). Its sheet `A02SheetDataTableWrap` (approved 2026-11-27) shows the real DataTable with the wrap laid out by `a02.css` until it is coded: long and short reasons, sorted, a selected row, a narrow width, compact, dark, English LTR, and a column without `wrap` as today; the wrapping column takes the widest share of the row (dates and status keep their room). The support log on `A02Clinic` is drawn the same way. It is approved with the screens (ADR-0046); it is then built with `/ui-component` in A-02-08 before the support tab, and synced. Estimate ~200 hand-written lines (component, story, tests, screenshots).
 
 ### Missing components
 - **UsageChart** (30 daily counts; sheet `A02SheetUsageChart`): needed by «الاستخدام»; built in `packages/ui` without a charting library.
@@ -116,7 +116,7 @@ In Play the buttons, tabs, filters, dialogs and the city list work. A choice ins
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens; every state rendered light and dark, 0 errors (2026-11-26)
-- Owner approvals (dates): checkpoint 1 — (clinic page reviewed 2026-11-27, other screens pending), checkpoint 2 —, re-plan —
+- Owner approvals (dates): checkpoint 1 2026-11-27 (every admin screen, the UsageChart, MultiCombobox and DataTable wrap sheets), checkpoint 2 —, re-plan —
 - Improvements accepted / declined: 1–8 accepted (2026-11-27; 8 asked by the owner); none declined
 
 ## Notes for the next session
