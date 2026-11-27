@@ -147,6 +147,9 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 - Improvement 7 (the impact of «مرضاي فقط») accepted. No spec gap; the source and lock follow A-02.
 - Checkpoint 2 approved (2026-11-27); its answers are spec criteria 34–41.
 
+## Checkpoint 3 (re-plan)
+Each of A-03-02 to A-03-11 gained a section "From A-03-01" with its contract rows, the criteria it carries, its components and its new estimate. Estimates: A-03-02 ~3,990, A-03-03 ~4,130, A-03-04 ~3,500, A-03-05 ~3,940, A-03-06 ~3,300, A-03-07 ~3,510, A-03-08 ~2,990, A-03-09 ~3,750, A-03-10 ~3,550, A-03-11 ~2,960; total ~35,600 (was ~34,500). To keep A-03-02 inside the budget, `permissions[]` and `allowed` move to A-03-07, which owns visibility; the merge picker's search parameters belong to A-03-08. A-03-03 is ~130 over the ~4,000 budget and may split its PR (ADR-0032). Ten slices kept; waiting for the owner's approval of the count.
+
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>

@@ -26,6 +26,12 @@ Registration warns before a duplicate and the server refuses an unacknowledged o
 Tests written first: each candidate rule and the near misses (twins with different given names are no duplicate; the same name warns) (7); archived candidates marked; 409 on an unacknowledged create, success with the ids and its audit row (7, 20); family by phone, relation values, a phone change moves the chart (9); doctors on create by role, a non-doctor refused, edit by anyone with `patients.manage`, deactivated doctor kept and not offered (10); audit rows without names; isolation case; candidate check within the A-03-03 benchmark's budget (re-run).
 Estimated hand-written lines: ~3,300 (contracts ~300, database ~300, duplicates ~600, family ~350, doctors ~500, tests ~1,250).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `POST /patients/duplicates` (visible and hidden candidate shapes, archived candidates registered anyway, gap 6 option a); `POST /patients/family` (holder, members, relation asked only with a holder); `GET /patients/doctors` (names and `active`, `patients.manage`); `familySize` and `relation` in search results; `family` and `treatingDoctors` in the summary.
+- Criteria added: 27, 29.
+- Components: none (API slice).
+- New estimate: ~3,500 (contracts ~340, database ~300, duplicates ~620, family ~380, doctors ~600, tests ~1,260).
+
 ## Stopped at
 Planned.
 

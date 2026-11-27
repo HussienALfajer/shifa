@@ -21,6 +21,13 @@ Staff open a chart and see its identity, family, treating doctors and custom fie
 Tests written first: the two journeys; component tests from the sheets; chart states from the contract rows.
 Estimated hand-written lines: ~3,600 (components ~600, summary ~1,200, merge ~800, read log ~300, journeys and tests ~700). Re-estimated at A-03-01 checkpoint 3.
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): every row of `A03Chart`, `A03Merge` and `A03ReadLog`.
+- Criteria added on screen: 23, 32–36.
+- Components first: RecordHeader (`A03SheetRecordHeader`), DescriptionList (`A03SheetDescriptionList`); RecordList comes from A-03-09.
+- Drawings: `A03Chart`, `A03Merge`, `A03ReadLog` (approved 2026-11-27).
+- New estimate: ~3,550 (components ~500: RecordHeader ~300, DescriptionList ~200; summary ~1,200; merge ~800; read log ~350 with improvement 6; journeys and tests ~700).
+
 ## Stopped at
 Planned.
 

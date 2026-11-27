@@ -25,6 +25,13 @@ Searchable custom field values join this search in A-03-06.
 Tests written first: vectors on TypeScript and Dart, the new gap cases (6); one test per search path: name variants from the vectors, any part order, phone formats and last 7+ digits, file number, previous number (4); archived only for the owner with the flag, merged number leads to the kept chart, the 20 cap and the order (4); tokens rewritten on edit and backfilled; isolation case for the token table; term absent from logs, spans and URLs; rate limit; the benchmark and plan check (5).
 Estimated hand-written lines: ~3,900 (normaliser and Dart port ~600, vectors ~150, database ~450, search service and route ~900, benchmark ~350, ADR ~120, tests ~1,330).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `POST /patients/search` (results, `truncated`, term lengths, 429 `rate_limited`, `includeArchived` for the owner) with `matchedBy` and `matchedParts` (improvement 1).
+- Criteria added: 21, 24.
+- Components: none (API slice).
+- The merge picker's `excludeId` and `activeOnly` are owned by A-03-08.
+- New estimate: ~4,130 (normaliser and Dart port ~600, vectors ~150, database ~450, search service and route ~1,130, benchmark ~350, ADR ~120, tests ~1,330); about 130 over the budget, so the PR may split by the budget (ADR-0032).
+
 ## Stopped at
 Planned.
 

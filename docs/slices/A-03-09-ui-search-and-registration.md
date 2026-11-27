@@ -21,6 +21,13 @@ Reception finds a patient from one box and registers a new one in seconds, warne
 Tests written first: the three journeys; component tests from each sheet's states; a form test per contract error.
 Estimated hand-written lines: ~3,800 (components ~900 until A-03-01 names them, search ~700, form ~1,300, journeys and tests ~900). Re-estimated at A-03-01 checkpoint 3.
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): every row of `A03Search` and `A03Register`; checked against the built API first.
+- Criteria added on screen: 21, 22, 24–31.
+- Components first, each with `/ui-component` from its approved sheet: RecordList (`A03SheetRecordList`), Drawer `size="wide"` (`A03SheetDrawerWide`); synced to the design system after they pass.
+- Drawings: `A03Search`, `A03Register` and their tablet and phone boards (approved 2026-11-27).
+- New estimate: ~3,750 (components ~570: RecordList ~450, Drawer «wide» ~120; search ~900 with improvements 1, 2 and 4; form ~1,380 with the stale edit and improvement 3; journeys and tests ~900).
+
 ## Stopped at
 Planned.
 

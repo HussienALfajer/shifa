@@ -25,6 +25,13 @@ The owner adds, edits, orders, archives and restores up to 20 administrative fie
 Tests written first: every type with its validation rules and defaults; type fixed after creation; options ≤ 250, renamed and archived, never deleted (14); limit 409 at 21 counting archived within 30 days, use reported in capabilities and to the super admin, searchable 409 at 6, sensitive and searchable refused (15); archive, restore on day 29, purge on day 31 on a fake clock, key never reused (17); audit rows per event without labels (20); route matrix (owner, support read); isolation cases.
 Estimated hand-written lines: ~3,300 (contracts and validator ~700, database ~400, API ~1,000, purge ~200, tests ~1,000).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `GET /patients/fields` (the member's view for the form); `GET /patients/fields/definitions` (the owner's view with `limits`); `POST /patients/fields`, `PATCH /patients/fields/:key` (`type_fixed`, `expectedUpdatedAt`), `PUT /patients/fields/order`, archive and restore; the `limits.custom_fields` use for the settings link.
+- Criteria added: 37, 38, 39.
+- Components: none (API slice).
+- The custom expression is checked with a safe engine and a length cap (gap 18); the library is chosen in the plan and checked against the 24-hour package rule.
+- New estimate: ~3,940 (contracts and validator ~800, database ~420, API ~1,250, purge ~200, safe pattern check ~200, tests ~1,070).
+
 ## Stopped at
 Planned.
 

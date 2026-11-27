@@ -20,6 +20,13 @@ The owner manages the clinic's patient fields and the "my patients only" setting
 Tests written first: the journey; component tests from the sheets; the Drawer per type and per contract error.
 Estimated hand-written lines: ~3,000 (components ~500, fields page and Drawer ~1,600, setting ~200, journeys and tests ~700). Re-estimated at A-03-01 checkpoint 3.
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): every row of `A03Fields` and `A03MyPatients`.
+- Criteria added on screen: 37–41.
+- Component first: EditableList (`A03SheetEditableList`); RecordList and the Drawer «wide» come from A-03-09, DescriptionList from A-03-10.
+- Drawings: `A03Fields`, `A03MyPatients` (approved 2026-11-27).
+- New estimate: ~2,960 (component ~300: EditableList; fields page and panel ~1,710 with presets and improvement 8; setting ~250 with improvement 7; journeys and tests ~700).
+
 ## Stopped at
 Planned.
 

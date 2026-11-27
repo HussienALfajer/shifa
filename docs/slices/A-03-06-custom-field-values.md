@@ -26,6 +26,12 @@ Reception fills the clinic's fields on registration and edit; each member sees a
 Tests written first: every type's value validation on the server (the browser uses the same validator, tested in contracts) (16); required and default on create; archived field stops being required; archived option kept and refused anew (17); view stripping and 403 per role on create, edit and every read (16); sensitive absent from search, family and candidates (16); search by a searchable value, a field made unsearchable stops matching (4); purge removes values on a fake clock (17); isolation cases for both tables; leak test (no value or label in logs, spans, errors, audit).
 Estimated hand-written lines: ~3,200 (contracts ~250, database ~350, values and stripping ~1,000, search ~350, tests ~1,250).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `fields` in `POST /patients`, `PATCH /patients/:id` and the summary (`field_not_editable`); the `custom_field` search path; `chartCount` per field and per choice (improvement 8).
+- Criteria added: 40.
+- Components: none (API slice).
+- New estimate: ~3,300 (contracts ~270, database ~350, values and stripping ~1,000, search ~350, chart counts ~100, tests ~1,230).
+
 ## Stopped at
 Planned.
 

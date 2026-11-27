@@ -23,6 +23,12 @@ The owner merges two charts of the same person: one file number remains, the oth
 Tests written first: field choice with the kept chart's value by default; custom fields filled only where empty; doctors joined without duplicates; merged chart read-only in API and database, found by its number, leading to the kept one; different phones move the family; a merged or archived chart refused (409); confirmation mismatch; concurrent merges of overlapping charts (lock order); audit row (8, 20); start-up check fails on a test table with an unregistered chart foreign key; isolation (a chart of another clinic cannot be merged).
 Estimated hand-written lines: ~2,800 (contracts ~250, database ~150, registry and check ~400, merge ~800, tests ~1,200).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `excludeId` and `activeOnly` in `POST /patients/search` (the merge picker); `GET /patients/:id/merge-preview` (older chart kept by default, differences only, filled fields, joined doctors); `POST /patients/:keepId/merge` (`choices`, `expectedUpdatedAt` for both, 409 `stale` and `patient_not_active`, the other phone as second phone); the merged number in search (`mergedFileNumber`).
+- Criteria added: 34, 35.
+- Components: none (API slice).
+- New estimate: ~2,990 (contracts ~280, database ~150, registry and check ~400, preview and merge ~920, tests ~1,240).
+
 ## Stopped at
 Planned.
 

@@ -26,6 +26,13 @@ Reception registers a chart with its identity, gets the clinic's next file numbe
 Tests written first: name part rules and display name (1); both phone countries and the second phone (1); age in years and months to an estimated date, exact date clears the flag (1); 20 concurrent creates give 20 distinct consecutive numbers, a failed save uses none, the counter is per clinic (2); previous number unique after trimming, 409 (2); replayed create returns the stored chart, a different body 409 (3); edit and its audit keys, edit refused on archived (12, 13); archive and restore owner only, never deleted (13); route matrix for the six permissions by role, support read-only; isolation cases for both tables; leak test (no name or phone in logs, spans, errors, audit).
 Estimated hand-written lines: ~3,700 (contracts ~350, database ~500, generator ~200, API ~1,150, tests ~1,500).
 
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `GET /patients/count` (page line, first patient); `POST /patients` (create, replay, `previous_file_number_taken`, `failed` retry with the same id); `GET /patients/:id` identity part with `registeredBranch`, `createdAt`, `createdByName`, `updatedAt`, `updatedByName`; `PATCH /patients/:id` with `expectedUpdatedAt` and 409 `stale`; `POST /patients/:id/archive` and `/restore` with `expectedUpdatedAt`.
+- Criteria added: 22, 28 (edit and archive), 32.
+- Components: none (API slice).
+- Moved out: `permissions[]` in the session and `allowed` on the summary go to A-03-07, which owns visibility, so this slice stays inside the ~4,000 budget.
+- New estimate: ~3,990 (contracts ~380, database ~520, generator ~200, API ~1,330, tests ~1,560).
+
 ## Stopped at
 Planned.
 
