@@ -3302,6 +3302,10 @@
   "@errorsConflict": {
     "description": "errors.conflict"
   },
+  "errorsFeatureUnavailable": "هذه الميزة غير متاحة في خطة عيادتك.",
+  "@errorsFeatureUnavailable": {
+    "description": "errors.feature_unavailable"
+  },
   "errorsForbidden": "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
   "@errorsForbidden": {
     "description": "errors.forbidden"
@@ -3333,6 +3337,10 @@
   "errorsLastOwner": "لا يمكن تنفيذ ذلك: يجب أن يبقى للعيادة مالك نشط واحد على الأقل.",
   "@errorsLastOwner": {
     "description": "errors.last_owner"
+  },
+  "errorsLimitReached": "وصلت العيادة إلى حد خطتها، تواصل مع الإدارة. لم يُحفظ شيء.",
+  "@errorsLimitReached": {
+    "description": "errors.limit_reached"
   },
   "errorsLinkInvalid": "هذا الرابط لم يعد صالحًا. اطلب رابطًا جديدًا.",
   "@errorsLinkInvalid": {
