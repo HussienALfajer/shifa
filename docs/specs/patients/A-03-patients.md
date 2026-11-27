@@ -1,6 +1,6 @@
 # Spec A-03: patients — registration, search, duplicates, family, summary, custom fields, chart-read audit
 
-Status: Approved by the owner 2026-11-27 · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
+Status: Approved by the owner 2026-11-27; criteria 21–33 and 34–41 added from A-03-01 checkpoints 1 and 2 (owner, 2026-11-27) · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
 Builds on [A-01a](../platform/A-01a-clinic-owner-sign-in.md), [A-01b](../platform/A-01b-team-roles-branches-switcher.md) and [A-02](../platform/A-02-settings-entitlements-console.md) (order: OD-75). Decisions: ADR-0004, ADR-0006, ADR-0008, ADR-0031, ADR-0034, ADR-0047; OD-42, OD-135 to OD-144. One spec by the owner's choice (OD-135), above the usual size. Screens: inventory below; drawn in the design slice before the API, with a screen-to-API contract (ADR-0047).
 
 ## Goal
@@ -40,7 +40,7 @@ Treating doctors and "my patients only" (OD-140)
 
 Summary, archive and edit (OD-143)
 12. «ملف المريض» shows identity (display name, file number, previous number, age, sex, phones, registered branch, state), family, treating doctors and custom fields by section. Later specs add their cards (CLN-01 alerts, visits, appointments, balance). Editing uses the registration form with the same checks.
-13. Charts are never deleted. The owner archives and restores a chart; an archived chart is left out of search unless included, cannot be edited and shows «مؤرشف»; others asking to register it again are told to ask the owner.
+13. Charts are never deleted. The owner archives and restores a chart; an archived chart is left out of search unless included, cannot be edited and shows «مؤرشف»; others asking to register it again are told the owner could restore it (criterion 27: registration is not refused).
 
 Custom fields (OD-144, ADR-0008)
 14. The owner manages «حقول ملف المريض» in clinic settings: Arabic label (English optional), type (text, long text, number, date, single choice, multiple choice, yes/no, phone; fixed after creation), required, validation (length or range, a text pattern), default, options (≤ 250; renamed or archived, never deleted), roles that view and roles that edit, section title and order, sensitive, searchable, shown in print (stored; A-08 uses it). The key is generated with the `cf_` prefix, immutable and never reused. The form says custom fields are not for clinical data.
@@ -52,6 +52,31 @@ Read audit and events (OD-141)
 18. Each read of a chart's summary writes exactly one `patient.chart_viewed` row (actor, role, branch, time, chart id, and whether sensitive fields were included); search results and the duplicate check write none. In a support session the row is marked support (A-02 criterion 14).
 19. The owner's card «من فتح هذا الملف» lists those rows for the chart, newest first, paged by 50: person, role, branch, time; support reads as «الدعم الفني» with the super admin's name.
 20. Audit (A-01a criterion 14) also records chart created, edited (changed field keys, no values), archived, restored, merged (both ids), duplicate registered anyway (candidate ids), treating doctors changed, and custom field created, edited, archived, restored and purged.
+
+Added at A-03-01 checkpoint 1 (owner, 2026-11-27; drawings `A03Search`, `A03Register`, `A03Chart`, contract `A-03-screen-contract.md`)
+21. A search term needs 2 letters for a name; digits search from the first digit for a file number and from 7 for a phone tail; a shorter term is not sent. The answer says when more than 20 charts matched (`truncated`) and the screen asks for another word.
+22. `GET /patients/count` gives the active charts the member may see and the archived ones (0 for a non-owner); with no chart at all (both 0) the page shows «سجّل أول مريض» instead of results. A doctor limited by «مرضاي فقط» learns it from `limitedToMyPatients` in the search and count answers.
+23. The session carries the member's effective permission keys (`permissions[]`, overrides included) and each summary carries `allowed` (edit, archive, restore, merge, read log) for that member, chart state and session, so no screen offers an action the server would refuse; the server still enforces each.
+24. Each search result says why it matched (`matchedBy`: name, name variant, part order, phone, phone tail, file number, previous file number, custom field) and which name parts matched (`matchedParts`); the screen marks those words in a heavier weight, never a colour.
+25. Under an empty search box, «فتحتها مؤخرًا» lists the last 8 distinct charts this member opened, from their own `patient.chart_viewed` rows, visibility applied (hidden charts left out, a merged one replaced by the kept one); reading it writes no `chart_viewed` row.
+26. The results move with ↑ and ↓ and open with Enter; each result row is a link to the chart.
+27. A duplicate candidate that is archived does not block registration: any member who may register can register anyway after acknowledging the candidates, audited with their ids (criterion 7); the screen says the owner could restore it instead.
+28. Edits and archive send `expectedUpdatedAt`; a save after someone else's answers 409 `stale`, and the screen names who saved and when, with «تحميل التعديل الأحدث».
+29. The relation to the phone's holder is asked only when the phone already has a holder; a phone new to the clinic makes the chart its holder.
+30. After saving, «فرد آخر من العائلة» opens a new registration with the same contact phone.
+31. Registration and edit open as a wide side panel (550 px, Drawer `size="wide"`) on desktop and tablet, and as a full page on a phone.
+32. The summary shows the registering branch and date, and who last edited the chart and when (`createdAt`, `createdByName`, `updatedAt`, `updatedByName`).
+33. «من فتح هذا الملف» on the chart always lists at least the current opening; the full log keeps a "none yet" state for safety only.
+
+Added at A-03-01 checkpoint 2 (owner, 2026-11-27; drawings `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`)
+34. The merge proposes the older chart (lower file number) as the one kept; the owner can swap. Only differing identity fields are offered, each defaulting to the kept chart's value; when the kept contact phone differs and the kept chart has no second phone, the other contact phone becomes its second phone.
+35. A chart that is archived or merged cannot be merged (409 `patient_not_active`); the merge sends `expectedUpdatedAt` for both charts and a change meanwhile answers 409 `stale` with nothing merged.
+36. The full read log pages by page number (50 per page) and shows whether sensitive fields were included in each opening; a filter shows support openings only, with the count of each (`supportTotal`).
+37. A choice field needs at least 2 active choices; choice names are unique within a field and active field labels unique in the clinic, both after Arabic folding.
+38. Fields move up and down within their section; sections keep their creation order.
+39. A text field's value shape is a preset (any text, digits only, letters only) or a custom expression, which the server checks with a safe engine and a length cap.
+40. The fields list and the choice editor show how many charts hold each field and each choice, and the archive question names the number of charts whose values will be removed.
+41. «مرضاي فقط» shows its impact before and after it is on: doctors it covers out of all doctors, how many doctors are also owners (not covered), and charts with no treating doctor; numbers only.
 
 ## Edge cases and offline
 - Twins on one phone: different given names are no duplicate; the same name warns and reception registers anyway.
@@ -89,6 +114,14 @@ No money. Tenant scoping: the chart, the file-number counter, name tokens, treat
 | 12, 13 | Contract test of the summary; archive and restore rules; edit refused on archived |
 | 14–17 | API tests: every type and validation, limit 409 and use in capabilities, searchable limit, view stripping and 403 on edit per role, sensitive kept out of lists, 30-day restore and purge on a fake clock |
 | 18–20 | API tests: one row per summary read and none for search; support marking; log paging and contents; one audit row per event without values; isolation cases for every new table |
+| 21, 22, 24, 25, 26 | API tests: term lengths, `truncated` at 21 matches, `count` under "my patients only", `matchedBy` and `matchedParts` per search path, recent list (distinct, visibility, merged replaced, no audit row); UI journey: arrows and Enter open a chart |
+| 23 | Contract tests of `permissions[]` with an override and of `allowed` per role, chart state and support session |
+| 27, 28, 29 | API tests: archived candidate registered anyway and audited; 409 `stale` on edit and archive; relation required only with a holder |
+| 30, 31, 32, 33 | UI checks against the drawings; contract test of the summary's created and updated fields; API test: `GET /patients/:id`, then `GET /patients/:id/reads` holds that opening (33) |
+| 34, 35 | API tests: default kept chart, differences only, second phone filled, 409 `patient_not_active` and `stale` |
+| 36 | API tests: page numbers, `sensitiveIncluded`, support filter and `supportTotal` |
+| 37, 38, 39 | API tests: two choices minimum, folded uniqueness of choices and labels, order within a section, presets and an unsafe custom expression refused |
+| 40, 41 | API tests: chart counts per field and choice; impact numbers (covered doctors, owner-doctors, charts without a doctor) |
 | Screens | Design slice: drawings, screen-to-API contract and analysis approved; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (register with a family phone; duplicate warning then open existing; search by a variant spelling; owner merges; "my patients only" hides a chart) |
 
 ## Screens (inventory; drawn before the API, ADR-0047)

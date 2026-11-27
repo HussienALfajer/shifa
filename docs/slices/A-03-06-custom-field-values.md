@@ -1,7 +1,7 @@
 # A-03-06 Custom field values on charts
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-06-custom-field-values`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 4 (searchable values), 16, 17 (archived field not required, archived option kept, values purged) · Requirements: PLT-30 to PLT-36 (values) · Decisions: ADR-0008, OD-144
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 4 (searchable values), 16, 17 (archived field not required, archived option kept, values purged); from A-03-01: criteria 40 · Requirements: PLT-30 to PLT-36 (values) · Decisions: ADR-0008, OD-144
 
 Fifth API slice of A-03, after A-03-05.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -25,6 +25,13 @@ Reception fills the clinic's fields on registration and edit; each member sees a
 
 Tests written first: every type's value validation on the server (the browser uses the same validator, tested in contracts) (16); required and default on create; archived field stops being required; archived option kept and refused anew (17); view stripping and 403 per role on create, edit and every read (16); sensitive absent from search, family and candidates (16); search by a searchable value, a field made unsearchable stops matching (4); purge removes values on a fake clock (17); isolation cases for both tables; leak test (no value or label in logs, spans, errors, audit).
 Estimated hand-written lines: ~3,200 (contracts ~250, database ~350, values and stripping ~1,000, search ~350, tests ~1,250).
+
+## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded name: `customFields` → `fields`.
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `fields` in `POST /patients`, `PATCH /patients/:id` and the summary (`field_not_editable`); the `custom_field` search path; `chartCount` per field and per choice (improvement 8).
+- Criteria added: 40.
+- Components: none (API slice).
+- New estimate: ~3,300 (contracts ~270, database ~350, values and stripping ~1,000, search ~350, chart counts ~100, tests ~1,230).
 
 ## Stopped at
 Planned.

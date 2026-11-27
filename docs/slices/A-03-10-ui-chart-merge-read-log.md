@@ -1,25 +1,32 @@
-# A-03-10 UI code 2: chart summary, merge and read log
+# A-03-10 UI code 2, owner tools: merge, read log, patient fields and «مرضاي فقط»
 
-Status: Planned · Tier: T1 · Branch: `feat/A-03-10-ui-chart-merge-read-log`
-Spec: [A-03](../specs/patients/A-03-patients.md) screens «ملف المريض», merge, «من فتح هذا الملف»; criteria 8, 9, 10, 11, 12, 13, 16, 18, 19 as seen on screen · Requirements: CLN-01 (identity), CLN-41, CLN-44, CLN-45 · Decisions: ADR-0040, ADR-0046, ADR-0047
+Status: Planned · Tier: T1 · Branch: `feat/A-03-10-ui-owner-tools`
+Spec: [A-03](../specs/patients/A-03-patients.md) screens merge, «من فتح هذا الملف», «حقول ملف المريض» and «مرضاي فقط»; criteria 8, 11, 14, 15, 17, 19 and 34–41 as seen on screen · Requirements: CLN-41, CLN-45, PLT-13, PLT-30 to PLT-36, PLT-44 · Decisions: ADR-0008, ADR-0040, ADR-0046, ADR-0047
 
-Second UI code slice of A-03, after A-03-09 (it opens the chart from search and reuses the form).
+Second and last UI code slice of A-03, after A-03-09 (the merge opens from the chart and the fields appear in its form). Re-planned at A-03-01 checkpoint 3 (owner, 2026-11-27): it takes the former A-03-11; above the ~4,000-line budget by the owner's choice (ADR-0032).
 
 ## Goal
-Staff open a chart and see its identity, family, treating doctors and custom fields; the owner archives, restores and merges charts and sees who opened each one, as drawn.
+The owner merges two charts, reads who opened each chart, manages the clinic's patient fields and the "my patients only" setting, as drawn.
 
 ## Plan
-1. **Contract check** — the rows of these screens against the built API; mismatches fixed in the API.
-2. **Components** — the approved missing components of these screens (for example the merge chooser), with `/ui-component`, synced last.
-3. **Web**
-   - Chart summary: identity header, family card with «إضافة فرد من العائلة» (phone prefilled), treating doctors («غير نشط»), custom fields by section, the owner's read-log card; edit (A-03-09's form), archive and restore with their questions; states archived, merged (link to the kept chart), not found or hidden (one page), loading, error, support read-only. The card frame is the one later specs add their cards to (CLN-01).
-   - Merge (owner): pick the second chart, side by side, a choice per field, the confirmation naming both file numbers; states not active and done.
-   - «من فتح هذا الملف»: full list paged by 50; none yet.
-4. **Flutter** — none.
-5. **End-to-end** (real backend) — the owner merges two charts and the merged number opens the kept chart; "my patients only" on hides a chart from a doctor (search and direct link). Screenshots light and dark on three sizes compared with the drawings; axe.
+1. **Contract check** — every row of `A03Merge`, `A03ReadLog`, `A03Fields` and `A03MyPatients` in the [contract](../specs/patients/A-03-screen-contract.md) against the built API; mismatches fixed in the API.
+2. **Web**, with the components of A-03-12 (EditableList, RecordList, RecordHeader, DescriptionList, Drawer «wide»):
+   - Merge (owner): pick the other chart (active only), the two charts side by side with the older kept by default, a choice per differing field, what is joined, the confirmation naming both file numbers; states not active, stale and done.
+   - «من فتح هذا الملف»: DataTable paged by 50 with the Pagination, «مع الحقول الحساسة», the «الدعم الفني» filter with counts (improvement 6); none yet (safety), error, support session.
+   - «حقول ملف المريض»: fields by section with type icon, flags and roles, up and down within a section, the two meters, archived fields with days left and restore (chart counts, improvement 8); the wide panel per type (lengths, value shape presets or a custom expression, choices in EditableList, default), required, searchable (5), sensitive (never searchable), print, view and edit roles, type fixed on edit, archive question; none yet, limit full, every 409 by its row.
+   - Clinic settings «المرضى»: «مرضاي فقط» with its source, the A-02 lock and its impact (improvement 7); the link to the fields with their use.
+3. **Flutter** — none.
+4. **End-to-end** (real backend) — the owner merges two charts and the merged number opens the kept chart; "my patients only" hides a chart from a doctor (search and direct link); the owner adds «جهة الإحالة» (single choice, searchable), reception fills it on registration and finds the chart by it; the limit full at 20. Screenshots light and dark on three sizes compared with the drawings; axe.
 
-Tests written first: the two journeys; component tests from the sheets; chart states from the contract rows.
-Estimated hand-written lines: ~3,600 (components ~600, summary ~1,200, merge ~800, read log ~300, journeys and tests ~700). Re-estimated at A-03-01 checkpoint 3.
+Tests written first: the four journeys; the panel per type and per contract error; merge and log states from the contract rows.
+Estimated hand-written lines: ~4,440 (merge ~800, read log ~350, fields page and panel ~1,710, setting ~250, journeys and tests ~1,330).
+
+## From A-03-01 (re-plan, 2026-11-27)
+- Contract rows: every row of `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`.
+- Criteria added on screen: 34–41.
+- Components: none built here; they come from A-03-12.
+- Drawings: `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients` (approved 2026-11-27).
+- New estimate: ~4,440, about 440 over the budget (owner's choice).
 
 ## Stopped at
 Planned.

@@ -1,7 +1,7 @@
 # A-03-02 Chart core: registration, file number, edit, archive
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-02-chart-core`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 1–3, 12 (identity part), 13, 20 (created, edited, archived, restored) · Requirements: CLN-01 (identity), CLN-39, CLN-44, PLT-07, PLT-08 (per-clinic chart) · Decisions: ADR-0006, ADR-0031, OD-136, OD-137, OD-143
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 1–3, 12 (identity part), 13, 20 (created, edited, archived, restored); from A-03-01: criteria 22, 28, 32 · Requirements: CLN-01 (identity), CLN-39, CLN-44, PLT-07, PLT-08 (per-clinic chart) · Decisions: ADR-0006, ADR-0031, OD-136, OD-137, OD-143
 
 First API slice of A-03, after the design slice [A-03-01](A-03-01-design-and-screen-contract.md) (approved). Schema changes of A-03 are serialised: A-03-02 → 03 → 04 → 05 → 06 → 07 → 08.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing and is reported to the owner.
@@ -20,11 +20,19 @@ Reception registers a chart with its identity, gets the clinic's next file numbe
    - `POST /patients` (create; a replay with the same `id` and body returns the stored chart, another body with that id 409), `GET /patients/:id` (identity summary; no read audit yet, A-03-07), `PATCH /patients/:id` (same checks; refused on an archived or merged chart 409 `patient_archived`), `POST /patients/:id/archive` and `/restore` (owner).
    - Age to estimated birth date on an injected `Clock` (Damascus day); an exact date later clears the flag.
    - Audit: `patient.created`, `patient.edited` (changed field keys only), `patient.archived`, `patient.restored`; no name, phone, date or previous number in audit, logs, spans or errors.
-4. **Web, Flutter** — none (UI code slices A-03-09 to A-03-11).
+4. **Web, Flutter** — none (UI code slices A-03-09 and A-03-10).
 5. **End-to-end** — none; API tests only.
 
 Tests written first: name part rules and display name (1); both phone countries and the second phone (1); age in years and months to an estimated date, exact date clears the flag (1); 20 concurrent creates give 20 distinct consecutive numbers, a failed save uses none, the counter is per clinic (2); previous number unique after trimming, 409 (2); replayed create returns the stored chart, a different body 409 (3); edit and its audit keys, edit refused on archived (12, 13); archive and restore owner only, never deleted (13); route matrix for the six permissions by role, support read-only; isolation cases for both tables; leak test (no name or phone in logs, spans, errors, audit).
 Estimated hand-written lines: ~3,700 (contracts ~350, database ~500, generator ~200, API ~1,150, tests ~1,500).
+
+## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins; also `archivedAt` and `archivedByName` on the summary, `archived` in `GET /patients/count`, and `expectedUpdatedAt` with 409 `stale` on edit, archive and restore. `GET /patients/:id` has no read audit until A-03-07; no screen reads a chart before A-03-09, which comes after A-03-07, so no unaudited read reaches a person (`.claude/rules/patient-data.md`).
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `GET /patients/count` (page line, first patient); `POST /patients` (create, replay, `previous_file_number_taken`, `failed` retry with the same id); `GET /patients/:id` identity part with `registeredBranch`, `createdAt`, `createdByName`, `updatedAt`, `updatedByName`; `PATCH /patients/:id` with `expectedUpdatedAt` and 409 `stale`; `POST /patients/:id/archive` and `/restore` with `expectedUpdatedAt`.
+- Criteria added: 22, 28 (edit and archive), 32.
+- Components: none (API slice).
+- Moved out: `permissions[]` in the session and `allowed` on the summary go to A-03-07, which owns visibility, so this slice stays inside the ~4,000 budget.
+- New estimate: ~3,990 (contracts ~380, database ~520, generator ~200, API ~1,330, tests ~1,560).
 
 ## Stopped at
 Planned.
