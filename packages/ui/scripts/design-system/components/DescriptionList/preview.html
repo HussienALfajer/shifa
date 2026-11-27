@@ -1,0 +1,36 @@
+<!-- @dsCard group="Data display" height=600 subtitle="Sections, an empty value, a sensitive badge, two columns · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+  .panel { padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-surface); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  window.Shifa.mount(document.querySelector('[lang="ar"]'), 'DescriptionList', {
+    'aria-label': 'حقول العيادة', columns: 2,
+    sections: [
+      { id: 'ref', title: 'الإحالة', rows: [{ id: 'r1', label: 'جهة الإحالة', value: 'طبيب آخر' }] },
+      { id: 'ins', title: 'التأمين', rows: [{ id: 'i1', label: 'شركة التأمين', value: 'تأمين الشمال' }, { id: 'i2', label: 'رقم بطاقة التأمين', value: '40017733', kind: 'latin' }] },
+      { id: 'w', title: 'الإعفاء', rows: [{ id: 'w1', label: 'سبب الإعفاء من الرسوم', value: 'حالة اجتماعية', badge: { label: 'حساس', tone: 'warning', icon: 'eye' } }, { id: 'w2', label: 'أفضل وقت للاتصال', value: '' }] }
+    ]
+  });
+  window.Shifa.mount(document.querySelector('[lang="en"]'), 'DescriptionList', {
+    'aria-label': 'Clinic fields',
+    sections: [
+      { id: 'ins', title: 'Insurance', rows: [{ id: 'i1', label: 'Insurer', value: 'North Insurance' }, { id: 'i2', label: 'Card number', value: '40017733', kind: 'latin' }] },
+      { id: 'w', title: 'Waiver', rows: [{ id: 'w1', label: 'Fee waiver reason', value: 'Social case', badge: { label: 'Sensitive', tone: 'warning', icon: 'eye' } }, { id: 'w2', label: 'Best time to call', value: '' }] }
+    ]
+  });
+</script>
+</body>
+</html>

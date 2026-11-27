@@ -81,6 +81,10 @@ export const BUNDLE_COMPONENTS = [
   'UsageChart',
   'MultiCombobox',
   'PageBanner',
+  'RecordList',
+  'RecordHeader',
+  'DescriptionList',
+  'EditableList',
 ] as const;
 
 /** The "Shifa Components" canvas: one sheet per component, every state, working in Play (ADR-0048). */
@@ -162,13 +166,11 @@ export async function buildBundle(out: string): Promise<void> {
     const gaps = gapBlock(css, systemTokensCss(), codeTokensCss());
     writeFileSync(join(dir, 'bundle.css'), `${css}\n${gaps}${compactBlock()}\n`);
     // One types file for the system: the data-display types follow the rest (without their import).
-    const dataTypes = readFileSync(join(here, 'index-data.d.ts'), 'utf8').replace(
-      /^[\s\S]*?import type[^\n]*\n/,
-      '',
-    );
+    const tail = (file: string) =>
+      readFileSync(join(here, file), 'utf8').replace(/^[\s\S]*?import type[^\n]*\n/, '');
     writeFileSync(
       join(dir, 'index.d.ts'),
-      `${readFileSync(join(here, 'index.d.ts'), 'utf8')}\n${dataTypes}`,
+      `${readFileSync(join(here, 'index.d.ts'), 'utf8')}\n${tail('index-data.d.ts')}\n${tail('index-a03.d.ts')}`,
     );
     for (const name of BUNDLE_COMPONENTS) {
       mkdirSync(join(dir, name), { recursive: true });

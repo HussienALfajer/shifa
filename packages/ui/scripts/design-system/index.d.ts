@@ -230,6 +230,8 @@ export interface DrawerProps {
   triggerLabel: string;
   triggerIcon?: IconName;
   side?: 'start' | 'end' | 'bottom';
+  /** `wide`: 550 px (never wider than the screen) for a form with paired fields; 400 px by default. */
+  size?: 'default' | 'wide';
   title: string;
   description?: string;
   /** Fields in the body, each an Input. */
@@ -418,18 +420,6 @@ export interface CodeListProps {
   };
 }
 
-export interface SpinnerProps {
-  /** sm 20 and md 24 for rows and controls; lg 40 for a whole panel or page. */
-  size?: 'sm' | 'md' | 'lg';
-  /** What screen readers hear («جارٍ التحميل» by default); shown under the petals with `showLabel`. */
-  label?: string;
-  showLabel?: boolean;
-  /** Milliseconds before it shows (400 by default; 0 in previews). */
-  delay?: number;
-  /** Whether the wait still runs; keep it mounted and set false: once shown it stays 400 ms. */
-  active?: boolean;
-}
-
 type Name =
   | 'Button'
   | 'Icon'
@@ -475,7 +465,11 @@ type Name =
   | 'DataTable'
   | 'UsageChart'
   | 'MultiCombobox'
-  | 'PageBanner';
+  | 'PageBanner'
+  | 'RecordList'
+  | 'RecordHeader'
+  | 'DescriptionList'
+  | 'EditableList';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;

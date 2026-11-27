@@ -183,6 +183,19 @@ export interface CopyFieldProps {
 }
 
 export declare const CopyField: (props: CopyFieldProps) => unknown;
+
+export interface SpinnerProps {
+  /** sm 20 and md 24 for rows and controls; lg 40 for a whole panel or page. */
+  size?: 'sm' | 'md' | 'lg';
+  /** What screen readers hear («جارٍ التحميل» by default); shown under the petals with `showLabel`. */
+  label?: string;
+  showLabel?: boolean;
+  /** Milliseconds before it shows (400 by default; 0 in previews). */
+  delay?: number;
+  /** Whether the wait still runs; keep it mounted and set false: once shown it stays 400 ms. */
+  active?: boolean;
+}
+
 export declare const Spinner: (props: SpinnerProps) => unknown;
 export declare const Badge: (props: BadgeProps) => unknown;
 export declare const CountBadge: (props: CountBadgeProps) => unknown;

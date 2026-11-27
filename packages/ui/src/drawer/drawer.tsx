@@ -7,7 +7,9 @@
 // the actions at the end of the last line. Behaviour from UI SDK's Drawer: modal, focus on the
 // first field (else the close button), Tab kept inside, Escape, the close button, a press outside
 // and a drag toward its edge close it, focus returns to the trigger; it fades instead of sliding
-// under reduced motion. No snap points in this slice.
+// under reduced motion. No snap points in this slice. `size="wide"` (A-03-01, sheet
+// A03SheetDrawerWide approved by the owner 2026-11-27): 550 px (the drawer's width plus
+// `shifa-width-37-5`) for a long form with fields side by side, never wider than the screen.
 import {
   Drawer as BaseDrawer,
   DrawerBackdrop as BaseDrawerBackdrop,
@@ -25,36 +27,53 @@ import { cn } from '../lib/cn.ts';
 
 export type DrawerSide = 'start' | 'end' | 'bottom';
 
+export type DrawerSize = 'default' | 'wide';
+
 const SideContext = createContext<DrawerSide>('end');
+const SizeContext = createContext<DrawerSize>('default');
+
+/** The wide panel: the drawer's width plus 150 px, both tokens (550 px). */
+const WIDE = { width: 'calc(var(--shifa-size-drawer) + var(--shifa-width-37-5))' } as const;
 
 export interface DrawerProps {
   /** Where it comes from: the logical end (default), the start, or the bottom (tablet, phone). */
   side?: DrawerSide | undefined;
+  /** A side drawer's width: 400 px (default) or `wide`, 550 px, for a form with paired fields. */
+  size?: DrawerSize | undefined;
   open?: boolean | undefined;
   defaultOpen?: boolean | undefined;
   onOpenChange?: ((open: boolean) => void) | undefined;
   children: ReactNode;
 }
 
-export function Drawer({ side = 'end', open, defaultOpen, onOpenChange, children }: DrawerProps) {
+export function Drawer({
+  side = 'end',
+  size = 'default',
+  open,
+  defaultOpen,
+  onOpenChange,
+  children,
+}: DrawerProps) {
   return (
     <SideContext value={side}>
-      <BaseDrawer
-        side={side}
-        // Side drawers: a swipe from the screen edge on iOS goes back a page; keep it for that.
-        preventEdgeSwipe={side !== 'bottom'}
-        {...(open === undefined ? {} : { open })}
-        {...(defaultOpen === undefined ? {} : { defaultOpen })}
-        {...(onOpenChange === undefined
-          ? {}
-          : {
-              onOpenChange: (next: boolean) => {
-                onOpenChange(next);
-              },
-            })}
-      >
-        {children}
-      </BaseDrawer>
+      <SizeContext value={size}>
+        <BaseDrawer
+          side={side}
+          // Side drawers: a swipe from the screen edge on iOS goes back a page; keep it for that.
+          preventEdgeSwipe={side !== 'bottom'}
+          {...(open === undefined ? {} : { open })}
+          {...(defaultOpen === undefined ? {} : { defaultOpen })}
+          {...(onOpenChange === undefined
+            ? {}
+            : {
+                onOpenChange: (next: boolean) => {
+                  onOpenChange(next);
+                },
+              })}
+        >
+          {children}
+        </BaseDrawer>
+      </SizeContext>
     </SideContext>
   );
 }
@@ -167,6 +186,7 @@ export function DrawerContent({
   ...data
 }: DrawerContentProps) {
   const side = useContext(SideContext);
+  const wide = useContext(SizeContext) === 'wide' && side !== 'bottom';
   const ref = useRef<HTMLDivElement>(null);
   const stop = useRef<(() => void) | null>(null);
   // Stable, so it runs once per panel. Stopped on the `null` call: UI SDK may merge refs without
@@ -183,6 +203,7 @@ export function DrawerContent({
         {...data}
         ref={attach}
         initialFocus={() => initialFocus(ref.current)}
+        {...(wide ? { style: WIDE } : {})}
         className={cn(
           'flex flex-col bg-bg-surface text-text-default shadow-overlay',
           'font-ui text-body leading-body',

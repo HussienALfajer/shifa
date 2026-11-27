@@ -100,6 +100,29 @@ export const ShownEnd: Story = {
   render: () => <EditAppointment open />,
 };
 
+/** `size="wide"` (A-03-01, sheet A03SheetDrawerWide): 550 px, so a long form sits two fields to a line. */
+export const ShownWide: Story = {
+  parameters: { matrix: false },
+  render: () => (
+    <Drawer size="wide" defaultOpen>
+      <DrawerTrigger startIcon="plus">مريض جديد</DrawerTrigger>
+      <DrawerContent title="مريض جديد" description="يأخذ الملف رقمه التالي عند الحفظ">
+        <div className="grid grid-cols-2 gap-4">
+          <Input label="الاسم" required />
+          <Input label="اسم الأب" />
+          <Input label="اسم الجد" />
+          <Input label="الكنية" required />
+        </div>
+        <Input label="هاتف التواصل" type="tel" dir="ltr" defaultValue={PHONE} />
+        <DrawerActions>
+          <DrawerClose>إلغاء</DrawerClose>
+          <Button variant="primary">حفظ الملف</Button>
+        </DrawerActions>
+      </DrawerContent>
+    </Drawer>
+  ),
+};
+
 /** Shown from the start, for the screenshot: from the bottom. */
 export const ShownBottom: Story = {
   parameters: { matrix: false },

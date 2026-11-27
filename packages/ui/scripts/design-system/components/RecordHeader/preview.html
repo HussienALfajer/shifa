@@ -1,0 +1,43 @@
+<!-- @dsCard group="Data display" height=700 subtitle="A chart's header with its menu, an estimated age, archived; compact after saving · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"><div class="a"></div><div class="b"></div><div class="c"></div></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"><div class="a"></div></section>
+</div>
+<script>
+  var menu = { menu: true, triggerLabel: 'المزيد', triggerIcon: 'dots', title: 'إجراءات الملف', items: [{ value: 'merge', label: 'دمج مع ملف آخر', icon: 'users' }, { separator: true }, { value: 'archive', label: 'أرشفة الملف', icon: 'archive', danger: true }] };
+  var facts = [{ label: 'رقم الملف السابق', value: 'A-1180', kind: 'latin' }, { label: 'سُجّل في', value: 'فرع الشهباء · 12/03/2026' }, { label: 'الأطباء المعالجون', value: '2' }];
+  var ar = document.querySelector('[lang="ar"]');
+  window.Shifa.mount(ar.querySelector('.a'), 'RecordHeader', {
+    'aria-label': 'هوية المريض 1', title: 'خديجة المصري', idLabel: 'ملف', idValue: '1043',
+    badges: [{ label: 'أنثى' }, { label: '~40 سنة', tip: 'عمر تقريبي: سُجّل العمر دون تاريخ الميلاد.' }],
+    facts: facts, meta: 'آخر تعديل 20/11/2026 بيد رامي الشيخ', actions: [{ label: 'تعديل', icon: 'pencil' }, menu]
+  });
+  window.Shifa.mount(ar.querySelector('.b'), 'RecordHeader', {
+    'aria-label': 'هوية المريض 2', title: 'منى العمر', idLabel: 'ملف', idValue: '214', muted: true,
+    badges: [{ label: 'أنثى' }, { label: '70 سنة', icon: 'calendar' }, { label: 'مؤرشف', icon: 'archive' }], facts: facts, meta: '', readOnlyNote: 'للقراءة فقط'
+  });
+  window.Shifa.mount(ar.querySelector('.c'), 'RecordHeader', {
+    'aria-label': 'الملف المحفوظ', title: 'أسماء البكري', idLabel: 'ملف', idValue: '1285', compact: true,
+    badges: [{ label: 'أنثى' }, { label: '9 سنوات', icon: 'calendar' }], meta: 'ابنة صاحب الهاتف · سُجّل الآن في فرع الشهباء'
+  });
+  window.Shifa.mount(document.querySelector('[lang="en"] .a'), 'RecordHeader', {
+    'aria-label': 'Patient identity', title: 'Rami Al-Sheikh', idLabel: 'File', idValue: '1043',
+    badges: [{ label: 'Male' }, { label: '34', icon: 'calendar' }],
+    facts: [{ label: 'Previous file no.', value: 'A-1180', kind: 'latin' }, { label: 'Registered at', value: 'Al-Shahba branch · 12/03/2026' }],
+    meta: 'Last edited 20/11/2026 by Nizar Attar', actions: [{ label: 'Edit', icon: 'pencil' }]
+  });
+</script>
+</body>
+</html>
