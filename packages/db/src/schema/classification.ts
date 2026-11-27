@@ -86,7 +86,7 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   platform_setting_value: {
     kind: 'global',
     reason:
-      'a setting’s value for every clinic or for one plan (A-02 criterion 8, PLT-22); keys and values only, no clinic data; written by migrations alone',
+      'a setting’s value for every clinic or for one plan (A-02 criterion 8, PLT-22); keys and values only, no clinic data. No role writes it, the owner included (FORCE RLS, a SELECT policy only): a seeding migration adds a temporary INSERT policy for shifa_owner and drops it in the same migration',
   },
   setting_value: {
     kind: 'tenant',
@@ -102,7 +102,7 @@ export const TABLE_CLASSIFICATION: TableClassification = {
       setting_value_auth_idle_read:
         'the auth path reads the idle sign-out of the clinics the signed-in person belongs to, for each session’s idle limit (A-02 criterion 10, A-01a 9)',
       setting_value_auth_only_idle:
-        'restrictive: the auth path reads the organization’s session.idle_minutes and no other setting',
+        'restrictive: the auth path reads the organization’s session.idle_minutes of the person’s own clinics and no other setting, even with a tenant set',
     },
   },
   // A-02-03: feature flags (criterion 7, OD-114)

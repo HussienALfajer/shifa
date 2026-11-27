@@ -15,7 +15,7 @@ import {
   type SettingCatalogue,
   type SettingDefinition,
 } from './catalogue.ts';
-import { resolveSetting, writeRefusal } from './resolve.ts';
+import { type Resolution, resolveSetting, resolveWithLocks, writeRefusal } from './resolve.ts';
 import { platformRows, scopedValues, tenantRows } from './sources.ts';
 import { clinicPlan, lockSettingWrites } from './store.ts';
 
@@ -31,7 +31,7 @@ export class ClinicSettingsService {
   read(scope: RequestScope): Promise<ClinicSettings> {
     return this.tenants.run(scope, async (tx) => {
       const values = await this.#idleValues(tx, scope.tenantId);
-      return view(resolveSetting(this.#idle(), values));
+      return view(resolveWithLocks(this.#idle(), values));
     });
   }
 
@@ -82,7 +82,7 @@ export class ClinicSettingsService {
           after: body.idleMinutes,
         },
       });
-      return view(resolveSetting(definition, await this.#idleValues(tx, scope.tenantId)));
+      return view(resolveWithLocks(definition, await this.#idleValues(tx, scope.tenantId)));
     });
   }
 
@@ -102,7 +102,7 @@ export class ClinicSettingsService {
   }
 }
 
-function view(resolved: ReturnType<typeof resolveSetting>): ClinicSettings {
+function view(resolved: Resolution): ClinicSettings {
   return {
     idleMinutes: resolved.value as Idle,
     source: resolved.source,

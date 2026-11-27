@@ -3,7 +3,9 @@
 // tables only hold values. Scopes, nearest wins: platform → plan → specialty pack → organization →
 // branch → practitioner → user; a locked value stops every scope below it.
 // - `platform_setting_value` (global, no clinic data): a value for every clinic (`platform`) or for
-//   one plan (`plan`, by clinic type). Written by migrations alone.
+//   one plan (`plan`, by clinic type). No role writes it, the owner included (FORCE RLS, a SELECT
+//   policy only): a migration that seeds a value adds a temporary INSERT policy for shifa_owner and
+//   drops it in the same migration.
 // - `setting_value` (tenant, FORCE RLS, isolation case): a clinic's values at its own scopes. The
 //   clinic writes its own unlocked values; only the super admin writes `locked` (column grants and
 //   restrictive policies, approved at A-02-04's /db-migration).

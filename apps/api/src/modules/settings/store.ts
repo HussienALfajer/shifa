@@ -5,26 +5,23 @@ import type { SettingView } from '@shifa/contracts';
 import { type Tx, tenant } from '@shifa/db';
 import { eq, sql } from 'drizzle-orm';
 import type { SettingCatalogue, SettingDefinition } from './catalogue.ts';
-import { type Resolution, resolveSetting, type ScopedValue } from './resolve.ts';
+import { heldLock, type Resolution, resolveWithLocks, type ScopedValue } from './resolve.ts';
 
-/** Serialises the writes of `key` in clinic `tenantId` until `tx` ends (safe behind PgBouncer). */
+/**
+ * Serialises the writes of `key` in clinic `tenantId` until `tx` ends (safe behind PgBouncer). The
+ * id is lower-cased: a path may spell the same uuid in upper case (security review N3).
+ */
 export async function lockSettingWrites(tx: Tx, tenantId: string, key: string): Promise<void> {
-  await tx.execute(
-    sql`select pg_advisory_xact_lock(hashtextextended(${`shifa.settings:${tenantId}:${key}`}, 0))`,
-  );
+  const name = `shifa.settings:${tenantId.toLowerCase()}:${key}`;
+  await tx.execute(sql`select pg_advisory_xact_lock(hashtextextended(${name}, 0))`);
 }
-
-const ABOVE_CLINIC: readonly ScopedValue['scope'][] = ['platform', 'plan', 'specialty_pack'];
 
 /** A lock above the clinic (platform or plan): the super admin cannot lock it per clinic. */
 export function lockedAboveClinic(
   definition: SettingDefinition,
   values: readonly ScopedValue[],
 ): boolean {
-  return resolveSetting(
-    definition,
-    values.filter((v) => ABOVE_CLINIC.includes(v.scope)),
-  ).locked;
+  return heldLock(definition, values, 'specialty_pack') !== null;
 }
 
 /** The admin view of one key (contract row `set`). */
@@ -33,7 +30,7 @@ export function settingView(
   definition: SettingDefinition,
   values: readonly ScopedValue[],
 ): SettingView {
-  const resolved: Resolution = resolveSetting(definition, values);
+  const resolved: Resolution = resolveWithLocks(definition, values);
   return {
     key: definition.key,
     value: resolved.value,

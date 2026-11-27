@@ -30,6 +30,7 @@ import { openRawSession, type RawSession } from './sessions.ts';
 
 export * from './fixtures.ts';
 export { UnsafeDatabaseError } from './guard.ts';
+export { freshMigratedDatabase, migrateDatabase } from './migrations.ts';
 export { POOLING_DATABASE } from './pgbouncer.ts';
 export type { RawSession } from './sessions.ts';
 

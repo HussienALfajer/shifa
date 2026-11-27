@@ -3,18 +3,11 @@
 // shifa_platform reads a clinic's values inside it in setting actions only, and writes only a
 // locked organization value (setting.locked) or removes one (setting.unlocked); shifa_auth reads
 // the organization's session.idle_minutes of the person's own clinics and nothing else.
-// platform_setting_value is global and read by every role. The backfill moves tenant.idle_minutes.
-import { readFileSync } from 'node:fs';
+// platform_setting_value is global and read by every role. The backfill: settings-backfill.test.ts.
 import { and, eq, sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { inTenantContext, type PlatformEvent, type PlatformTx, type Tx } from '../src/index.ts';
-import {
-  membership,
-  platformSettingValue,
-  settingValue,
-  tenant,
-  user,
-} from '../src/schema/index.ts';
+import { membership, platformSettingValue, settingValue, user } from '../src/schema/index.ts';
 import {
   createTestTenants,
   fixtureId,
@@ -60,33 +53,6 @@ beforeEach(async () => {
       { tenantId: A, scope: 'organization', key: OTHER, value: 'x' },
       { tenantId: A, scope: 'branch', scopeId: fixtureId('branch A'), key: OTHER, value: 'y' },
     ]);
-});
-
-describe('backfill (criterion 10)', () => {
-  it('moves every clinic’s idle minutes into session.idle_minutes at the organization', async () => {
-    await su().delete(settingValue);
-    await su().update(tenant).set({ idleMinutes: 60 }).where(eq(tenant.id, A));
-    const file = new URL(
-      '../migrations/20261127044029_a02_setting_policies/migration.sql',
-      import.meta.url,
-    );
-    const backfill = readFileSync(file, 'utf8').split('--> statement-breakpoint')[0] ?? '';
-    expect(backfill).toMatch(/INSERT INTO "setting_value"/);
-    await su().execute(sql.raw(backfill));
-    const rows = await su()
-      .select({ tenantId: settingValue.tenantId, value: settingValue.value })
-      .from(settingValue)
-      .where(and(eq(settingValue.key, IDLE), eq(settingValue.scope, 'organization')));
-    expect(new Map(rows.map((r) => [r.tenantId, r.value]))).toEqual(
-      new Map([
-        [A, 60],
-        [B, 30],
-      ]),
-    );
-    // Run twice, nothing changes (ON CONFLICT DO NOTHING).
-    await su().execute(sql.raw(backfill));
-    expect(await su().select().from(settingValue)).toHaveLength(2);
-  });
 });
 
 describe('shifa_app (the clinic)', () => {
@@ -185,13 +151,26 @@ describe('shifa_platform (the super admin)', () => {
   });
 
   it('writes a value only locked, at the organization, in setting.locked', async () => {
-    const lock = (event: PlatformEvent, locked: boolean, scope: 'organization' | 'user') =>
+    const lock = (event: PlatformEvent, locked: boolean) =>
       refusal(() =>
         asPlatform(event, (tx) =>
           tx
             .update(settingValue)
-            .set({ value: 60, locked, scope, scopeId: scope === 'user' ? PERSON : null })
+            .set({ value: 60, locked })
             .where(and(eq(settingValue.key, IDLE), eq(settingValue.scope, 'organization'))),
+        ),
+      );
+    const lockBelow = () =>
+      refusal(() =>
+        asPlatform('setting.locked', (tx) =>
+          tx.insert(settingValue).values({
+            tenantId: A,
+            scope: 'user',
+            scopeId: PERSON,
+            key: IDLE,
+            value: 60,
+            locked: true,
+          }),
         ),
       );
     // Outside setting.locked the row is out of reach: nothing changes.
@@ -203,9 +182,23 @@ describe('shifa_platform (the super admin)', () => {
         .returning({ id: settingValue.id }),
     );
     expect(viewed).toEqual([]);
-    expect(await lock('setting.locked', false, 'organization')).toBe('42501');
-    expect(await lock('setting.locked', true, 'user')).toBe('42501');
-    expect(await lock('setting.locked', true, 'organization')).toBeUndefined();
+    expect(await lock('setting.locked', false)).toBe('42501');
+    expect(await lockBelow()).toBe('42501');
+    // Never a value's clinic, scope or key (UPDATE by column, security review N2).
+    for (const set of [
+      { key: OTHER },
+      { scope: 'user' as const, scopeId: PERSON },
+      { tenantId: B },
+    ]) {
+      expect(
+        await refusal(() =>
+          asPlatform('setting.locked', (tx) =>
+            tx.update(settingValue).set(set).where(eq(settingValue.key, IDLE)),
+          ),
+        ),
+      ).toBe('42501');
+    }
+    expect(await lock('setting.locked', true)).toBeUndefined();
     const [row] = await su()
       .select()
       .from(settingValue)
@@ -268,5 +261,12 @@ describe('shifa_auth (each session’s idle limit)', () => {
         tx.select({ tenantId: settingValue.tenantId }).from(settingValue),
       ),
     ).toEqual([]);
+    // Even with another clinic set as tenant on the auth path, only the person's own clinics
+    // (security review N1): the restrictive policy also requires a membership.
+    const withTenant = await testAuthDb().withUser(PERSON, async (tx) => {
+      await tx.execute(sql`select set_config('app.tenant_id', ${B}, true)`);
+      return tx.select({ tenantId: settingValue.tenantId }).from(settingValue);
+    });
+    expect(withTenant).toEqual([{ tenantId: A }]);
   });
 });

@@ -84,9 +84,10 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-02-03: the super admin sets flags and their selected clinics (flag actions, policies)
     feature_flag: ['SELECT', 'INSERT', 'UPDATE'],
     feature_flag_tenant: ['SELECT', 'INSERT', 'DELETE'],
-    // A-02-04: a clinic's values, locked or unlocked, in setting actions (policies)
+    // A-02-04: a clinic's values, locked or unlocked, in setting actions (policies); UPDATE by
+    // column only (below), never a value's clinic, scope or key
     platform_setting_value: ['SELECT'],
-    setting_value: DML,
+    setting_value: ['SELECT', 'INSERT', 'DELETE'],
   },
 };
 
@@ -161,6 +162,8 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ['shifa_platform', 'setup_link', 'UPDATE', ['replaced_at']],
   // A-01-11: a pending owner's phone corrected (OD-99; policies keep it to that row)
   ['shifa_platform', 'membership', 'UPDATE', ['phone_e164', 'updated_at']],
+  // A-02-04: the super admin's lock with a value (security review N2)
+  ['shifa_platform', 'setting_value', 'UPDATE', ['value', 'locked', 'set_by', 'set_at']],
 ];
 
 /** Secret columns no role but shifa_auth may read. */

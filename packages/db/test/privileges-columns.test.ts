@@ -70,6 +70,11 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_platform role_assignment.membership_id SELECT',
   'shifa_platform role_assignment.role SELECT',
   'shifa_platform role_assignment.tenant_id SELECT',
+  // A-02-04: the super admin's lock with a value, never a value's clinic, scope or key
+  'shifa_platform setting_value.locked UPDATE',
+  'shifa_platform setting_value.set_at UPDATE',
+  'shifa_platform setting_value.set_by UPDATE',
+  'shifa_platform setting_value.value UPDATE',
   'shifa_platform setup_link.created_at SELECT',
   'shifa_platform setup_link.expires_at SELECT',
   'shifa_platform setup_link.id SELECT',

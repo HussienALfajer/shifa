@@ -57,6 +57,35 @@ export function resolveSetting(
   return resolution;
 }
 
+/**
+ * The scope of a stored lock that holds `scope` (at or above it), whether or not its value still
+ * validates (security review N4): a lock whose value went invalid still stops the writes below
+ * it, as the database's policies do. Null when none.
+ */
+export function heldLock(
+  definition: SettingDefinition,
+  values: readonly ScopedValue[],
+  scope: SettingScope = 'user',
+): SettingScope | null {
+  const depth = SETTING_SCOPES.indexOf(scope);
+  for (const s of SETTING_SCOPES.slice(0, depth + 1)) {
+    const stored = values.find((v) => v.scope === s);
+    if (stored?.locked && counts(definition, stored)) return s;
+  }
+  return null;
+}
+
+/** resolveSetting(), reporting a held lock even when its value was skipped as invalid. */
+export function resolveWithLocks(
+  definition: SettingDefinition,
+  values: readonly ScopedValue[],
+): Resolution {
+  const resolved = resolveSetting(definition, values);
+  if (resolved.locked) return resolved;
+  const lock = heldLock(definition, values);
+  return lock ? { ...resolved, locked: true, lockedBy: lock } : resolved;
+}
+
 /** Why a write is refused: a scope outside `overridable_by`, a lock, or a value the schema refuses. */
 export type WriteRefusal = 'scope' | 'locked' | 'invalid';
 
@@ -68,9 +97,7 @@ export function writeRefusal(
   value: unknown,
 ): WriteRefusal | null {
   if (!definition.overridableBy.includes(scope)) return 'scope';
-  const depth = SETTING_SCOPES.indexOf(scope);
-  const atOrAbove = values.filter((v) => SETTING_SCOPES.indexOf(v.scope) <= depth);
-  if (resolveSetting(definition, atOrAbove).locked) return 'locked';
+  if (heldLock(definition, values, scope) !== null) return 'locked';
   if (!definition.schema.safeParse(value).success) return 'invalid';
   return null;
 }

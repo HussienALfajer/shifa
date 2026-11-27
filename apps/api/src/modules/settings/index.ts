@@ -12,8 +12,10 @@ export {
 } from './catalogue.ts';
 export { idleMinutesInClinic, idleMinutesOfOwnClinics, idleSettingInClinic } from './idle.ts';
 export {
+  heldLock,
   type Resolution,
   resolveSetting,
+  resolveWithLocks,
   type ScopedValue,
   type WriteRefusal,
   writeRefusal,
