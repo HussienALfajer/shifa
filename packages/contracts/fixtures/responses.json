@@ -989,7 +989,9 @@
             "subscriptionEnd": "2027-06-30",
             "ownerName": "مالك تجريبي",
             "ownerStatus": "pending",
-            "createdAt": "2026-11-23T08:00:00.000Z"
+            "createdAt": "2026-11-23T08:00:00.000Z",
+            "lastActivityAt": "2026-11-27T07:42:00.000Z",
+            "signIns7d": 16
           },
           {
             "id": "4fa06e8c-0a5b-4b1e-9f4c-6d8a9eafbc2d",
@@ -999,7 +1001,9 @@
             "subscriptionEnd": null,
             "ownerName": null,
             "ownerStatus": null,
-            "createdAt": "2026-11-22T08:00:00.000Z"
+            "createdAt": "2026-11-22T08:00:00.000Z",
+            "lastActivityAt": null,
+            "signIns7d": 0
           }
         ]
       }
@@ -1134,7 +1138,10 @@
             "kind": "expired",
             "at": "2026-12-31T21:00:00.000Z",
             "byName": null,
-            "before": { "value": 15, "expiresAt": "2026-12-31" },
+            "before": {
+              "value": 15,
+              "expiresAt": "2026-12-31"
+            },
             "after": null,
             "reason": null
           },
@@ -1143,7 +1150,10 @@
             "at": "2026-11-27T09:00:00.000Z",
             "byName": "مشرف تجريبي",
             "before": null,
-            "after": { "value": 15, "expiresAt": "2026-12-31" },
+            "after": {
+              "value": 15,
+              "expiresAt": "2026-12-31"
+            },
             "reason": "سبب تجريبي للتجاوز"
           }
         ]
@@ -1154,7 +1164,15 @@
       "schema": "TypePreview",
       "body": {
         "type": "solo",
-        "limits": [{ "key": "limits.branches", "current": 5, "next": 1, "used": 3, "over": true }]
+        "limits": [
+          {
+            "key": "limits.branches",
+            "current": 5,
+            "next": 1,
+            "used": 3,
+            "over": true
+          }
+        ]
       }
     },
     {
@@ -1163,10 +1181,20 @@
       "body": {
         "entitlements": {},
         "limits": [
-          { "key": "limits.practitioners", "limit": 10, "used": 10 },
-          { "key": "limits.custom_fields", "limit": 20, "used": null }
+          {
+            "key": "limits.practitioners",
+            "limit": 10,
+            "used": 10
+          },
+          {
+            "key": "limits.custom_fields",
+            "limit": 20,
+            "used": null
+          }
         ],
-        "flags": { "queue.new_board": true }
+        "flags": {
+          "queue.new_board": true
+        }
       }
     },
     {
@@ -1176,7 +1204,13 @@
         "plan": "multi_branch",
         "status": "active",
         "subscriptionEnd": "2027-06-30",
-        "limits": [{ "key": "limits.branches", "limit": 5, "used": 3 }],
+        "limits": [
+          {
+            "key": "limits.branches",
+            "limit": 5,
+            "used": 3
+          }
+        ],
         "features": []
       }
     },
@@ -1190,7 +1224,12 @@
             "description": "the new waiting-room board",
             "defaultValue": false,
             "mode": "selected",
-            "clinics": [{ "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0", "name": "عيادة تجريبية" }],
+            "clinics": [
+              {
+                "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+                "name": "عيادة تجريبية"
+              }
+            ],
             "reason": "سبب تجريبي للعلم",
             "updatedByName": "مشرف تجريبي",
             "updatedAt": "2026-11-27T09:00:00.000Z"
@@ -1215,7 +1254,11 @@
         "error": {
           "code": "limit_reached",
           "message": "The clinic has reached a limit of its plan",
-          "limitReached": { "key": "limits.practitioners", "limit": 10, "used": 10 }
+          "limitReached": {
+            "key": "limits.practitioners",
+            "limit": 10,
+            "used": 10
+          }
         }
       }
     },
@@ -1249,7 +1292,9 @@
     {
       "name": "a clinic without settings",
       "schema": "ClinicSettingList",
-      "body": { "settings": [] }
+      "body": {
+        "settings": []
+      }
     },
     {
       "name": "a locked setting with a text value",
@@ -1351,7 +1396,11 @@
             "name": "حلب",
             "archived": false,
             "areas": [
-              { "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "الشهباء", "archived": true }
+              {
+                "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+                "name": "الشهباء",
+                "archived": true
+              }
             ]
           }
         ]
@@ -1361,7 +1410,11 @@
       "name": "an archived place chosen anew",
       "schema": "ErrorEnvelope",
       "body": {
-        "error": { "code": "place_archived", "message": "This place is archived", "place": "area" }
+        "error": {
+          "code": "place_archived",
+          "message": "This place is archived",
+          "place": "area"
+        }
       }
     },
     {
@@ -1377,7 +1430,12 @@
     {
       "name": "a live place restored",
       "schema": "ErrorEnvelope",
-      "body": { "error": { "code": "place_not_archived", "message": "This place is not archived" } }
+      "body": {
+        "error": {
+          "code": "place_not_archived",
+          "message": "This place is not archived"
+        }
+      }
     },
     {
       "name": "a branch area outside its city",
@@ -1386,7 +1444,133 @@
         "error": {
           "code": "validation_failed",
           "message": "Bad request",
-          "details": [{ "path": "body.areaId", "code": "area_not_in_city" }]
+          "details": [
+            {
+              "path": "body.areaId",
+              "code": "area_not_in_city"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "announcements by status, one selected and ended early",
+      "schema": "AnnouncementList",
+      "body": {
+        "counts": {
+          "scheduled": 1,
+          "active": 1,
+          "ended": 1
+        },
+        "announcements": [
+          {
+            "id": "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f",
+            "version": 2,
+            "body": "صيانة الليلة من 11 حتى 12",
+            "level": "warning",
+            "startsAt": "2026-11-27T08:00:00.000Z",
+            "endsAt": "2026-11-27T09:30:00.000Z",
+            "status": "ended",
+            "endedEarly": true,
+            "endedByName": "مشرف تجريبي",
+            "target": "selected",
+            "clinics": [
+              {
+                "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+                "name": "عيادة تجريبية"
+              }
+            ],
+            "createdByName": "مشرف تجريبي",
+            "createdAt": "2026-11-27T07:55:00.000Z",
+            "dismissedCount": 31,
+            "targetedMembers": 118
+          },
+          {
+            "id": "4d5e6f7a-8b9c-4d0e-9f1a-2b3c4d5e6f7a",
+            "version": 1,
+            "body": "إعلان قادم",
+            "level": "info",
+            "startsAt": "2026-11-28T08:00:00.000Z",
+            "endsAt": null,
+            "status": "scheduled",
+            "endedEarly": false,
+            "endedByName": null,
+            "target": "all",
+            "clinics": [],
+            "createdByName": null,
+            "createdAt": "2026-11-27T07:50:00.000Z",
+            "dismissedCount": null,
+            "targetedMembers": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "a member's banner, a warning first",
+      "schema": "MyAnnouncements",
+      "body": {
+        "announcements": [
+          {
+            "id": "3c4d5e6f-7a8b-4c9d-8e0f-1a2b3c4d5e6f",
+            "version": 2,
+            "level": "warning",
+            "body": "صيانة الليلة من 11 حتى 12",
+            "startsAt": "2026-11-27T08:00:00.000Z",
+            "endsAt": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "a clinic's usage over 30 days",
+      "schema": "ClinicUsage",
+      "body": {
+        "today": "2026-11-27",
+        "hasData": true,
+        "todayCounts": {
+          "signIns": 18,
+          "membersSignedIn": 9,
+          "activeMembers": 24,
+          "activeBranches": 2
+        },
+        "members": 26,
+        "branches": 2,
+        "lastActivityAt": "2026-11-27T07:42:00.000Z",
+        "days": [
+          {
+            "date": "2026-11-26",
+            "signIns": 16,
+            "membersSignedIn": 8
+          },
+          {
+            "date": "2026-11-27",
+            "signIns": 18,
+            "membersSignedIn": 9
+          }
+        ],
+        "previousTotals": {
+          "signIns": 0,
+          "membersSignedIn": 0
+        }
+      }
+    },
+    {
+      "name": "a link in an announcement",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "announcement_link",
+          "message": "An announcement is plain text, without a link"
+        }
+      }
+    },
+    {
+      "name": "an ended announcement edited",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "announcement_ended",
+          "message": "This announcement has ended"
         }
       }
     }

@@ -66,6 +66,10 @@ export const COUNT_FUNCTIONS: Readonly<Record<string, string>> = {
     'a clinic’s doctors and active branches beside its limits and in a type preview (A-02 criteria 2, 3; A-02-02)',
   'place_counts(text,uuid[],uuid[])':
     'branches, clinics and doctors on each city and area across clinics, by the place’s position in the array (A-02 criterion 24; A-02-06)',
+  'announcement_counts(uuid[],integer[],boolean[],uuid[])':
+    'targeted members and their dismissals of each announcement across its clinics, by the announcement’s position in the array (A-02 criterion 22; A-02-07)',
+  'clinic_member_counts(uuid)':
+    'a clinic’s members, active members and branches beside its usage (A-02 criterion 17; A-02-07)',
 };
 
 export const TABLE_CLASSIFICATION: TableClassification = {
@@ -153,6 +157,50 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   // A-02-06: cities and areas (criterion 15, OD-113); a branch holds one of each (optional)
   city: { kind: 'global', reason: PLACE_TABLE, roleAccess: placeAccess('city') },
   area: { kind: 'global', reason: PLACE_TABLE, roleAccess: placeAccess('area') },
+  // A-02-07: announcements (criteria 16, 22) and daily usage (criteria 17, 19, 21)
+  announcement: {
+    kind: 'global',
+    reason:
+      'the super admin’s plain-text announcements with level, period, target and authors’ names (A-02 criterion 16, PLT-18); no clinic data. shifa_app reads seven columns of the ones aimed at its clinic',
+    roleAccess: {
+      announcement_platform_read:
+        'the super admin lists, creates, edits and ends announcements (A-02 criterion 16)',
+      announcement_platform_create:
+        'shifa_platform adds an announcement only in announcement.created, as its own author, not ended, stamped now (A-02 criterion 16)',
+      announcement_platform_change:
+        'shifa_platform edits or ends an announcement only in announcement.edited or announcement.ended; an end names the acting super admin (A-02 criterion 16)',
+    },
+  },
+  announcement_target: {
+    kind: 'tenant',
+    access: 'read-only',
+    roleAccess: {
+      announcement_target_platform_read:
+        'the announcements list names the clinics each one is for, across clinics (tenant ids only), in announcement actions (A-02 criterion 16)',
+      announcement_target_platform_select_clinics:
+        'shifa_platform aims an announcement at a clinic only in announcement.created or announcement.edited',
+      announcement_target_platform_unselect:
+        'shifa_platform removes a clinic from an announcement only in announcement.edited',
+      announcement_target_platform_only_in_actions:
+        'restrictive: even with a tenant set, shifa_platform reaches targets only in an announcement action and writes them only in created or edited',
+      announcement_target_platform_delete_only_in_edit:
+        'restrictive: even with a tenant set, shifa_platform deletes a target only in announcement.edited (a DELETE has no WITH CHECK)',
+    },
+  },
+  announcement_dismissal: {
+    kind: 'global',
+    reason:
+      'a person’s own dismissal of an announcement across their clinics (A-02 criterion 16): user id, announcement id and version only, no clinic data. Every role reads only app.user_id’s rows; shifa_app writes only the signed-in person’s',
+  },
+  usage_daily: {
+    kind: 'tenant',
+    roleAccess: {
+      usage_daily_platform_read:
+        'the clinics list (last activity, sign-ins in 7 days) and a clinic’s usage view read every clinic’s daily counters, integers only (A-02 criteria 17, 19, 21)',
+      usage_daily_platform_only_in_usage:
+        'restrictive: even with a tenant set, shifa_platform reads counters only in clinic.listed and clinic.usage_viewed, and writes none',
+    },
+  },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

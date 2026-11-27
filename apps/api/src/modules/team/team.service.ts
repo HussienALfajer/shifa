@@ -25,10 +25,12 @@ import {
   type RequestScope,
   TenantDb,
 } from '../../access/index.ts';
+import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { ClinicLimits } from '../entitlements/index.ts';
 import { MemberAccounts, type NewMemberLink } from '../identity/index.ts';
+import { recordGauges } from '../usage/index.ts';
 import { rename } from './member-corrections.ts';
 import { findMember, holdsOwnerRole, listMembers, memberDetail } from './members.read.ts';
 import {
@@ -65,6 +67,7 @@ export class TeamService {
     @Inject(MemberAccounts) private readonly accounts: MemberAccounts,
     @Inject(PERMISSION_CATALOGUE) private readonly catalogue: PermissionCatalogue,
     @Inject(ClinicLimits) private readonly limits: ClinicLimits,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   list(scope: RequestScope): Promise<MemberList> {
@@ -212,6 +215,7 @@ export class TeamService {
       await replaceLinks(tx, row.id);
       const changed = await setStatus(tx, row.id, 'deactivated');
       await audit(tx, scope, 'member.deactivated', row.id, requestId);
+      await recordGauges(tx, this.clock.now());
       await this.#endSessions(row, scope, requestId);
       return this.#detail(tx, scope, changed);
     });
@@ -228,6 +232,7 @@ export class TeamService {
       }
       const changed = await setStatus(tx, row.id, row.userId ? 'active' : 'pending');
       await audit(tx, scope, 'member.reactivated', row.id, requestId);
+      await recordGauges(tx, this.clock.now());
       return this.#detail(tx, scope, changed);
     });
   }

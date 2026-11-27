@@ -6,6 +6,7 @@ import {
   type AnyPgColumn,
   boolean,
   check,
+  date,
   foreignKey,
   index,
   pgTable,
@@ -110,6 +111,11 @@ export const membership = pgTable(
       .notNull()
       .default('pending'),
     lastActiveAt: at('last_active_at'),
+    /**
+     * The Damascus day of the member's last sign-in in this clinic (A-02-07): counts each member
+     * once a day in usage_daily (`members_signed_in`) without keeping a list of who signed in.
+     */
+    lastSignInOn: date('last_sign_in_on', { mode: 'string' }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
   },

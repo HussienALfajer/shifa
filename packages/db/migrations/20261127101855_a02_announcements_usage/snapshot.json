@@ -1,0 +1,1061 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d5007d22-bed5-48d8-b3cc-8971770af663",
+  "prevIds": [
+    "93c00af8-cb64-4e91-b2aa-f7e1ead4e166"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement"
+      ],
+      "writes": [
+        "s|tbl|public.announcement",
+        "n|tbl|public.announcement",
+        "e|tbl|public.announcement",
+        "n|rel|public.announcement",
+        "n|type|public.announcement",
+        "n|rel|public.announcement_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_dismissal"
+      ],
+      "writes": [
+        "s|tbl|public.announcement_dismissal",
+        "n|tbl|public.announcement_dismissal",
+        "e|tbl|public.announcement_dismissal",
+        "n|rel|public.announcement_dismissal",
+        "n|type|public.announcement_dismissal",
+        "n|rel|public.announcement_dismissal_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_target"
+      ],
+      "writes": [
+        "s|tbl|public.announcement_target",
+        "n|tbl|public.announcement_target",
+        "e|tbl|public.announcement_target",
+        "n|rel|public.announcement_target",
+        "n|type|public.announcement_target",
+        "n|rel|public.announcement_target_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "usage_daily"
+      ],
+      "writes": [
+        "s|tbl|public.usage_daily",
+        "n|tbl|public.usage_daily",
+        "e|tbl|public.usage_daily",
+        "n|rel|public.usage_daily",
+        "n|type|public.usage_daily",
+        "n|rel|public.usage_daily_pkey",
+        "n|rel|public.usage_daily_tenant_id_day_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "membership",
+        "last_sign_in_on"
+      ],
+      "writes": [
+        "s|col|public.membership.last_sign_in_on",
+        "n|col|public.membership.last_sign_in_on",
+        "e|col|public.membership.last_sign_in_on"
+      ],
+      "reads": [
+        "n|tbl|public.membership",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "announcement",
+        "announcement_starts_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.announcement_starts_at_idx",
+        "n|idx|public.announcement_starts_at_idx",
+        "e|idx|public.announcement_starts_at_idx",
+        "n|rel|public.announcement_starts_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.announcement",
+        "n|sch|public",
+        "n|col|public.announcement.starts_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "announcement_dismissal",
+        "announcement_dismissal_announcement_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.announcement_dismissal_announcement_id_idx",
+        "n|idx|public.announcement_dismissal_announcement_id_idx",
+        "e|idx|public.announcement_dismissal_announcement_id_idx",
+        "n|rel|public.announcement_dismissal_announcement_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.announcement_dismissal",
+        "n|sch|public",
+        "n|col|public.announcement_dismissal.announcement_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_dismissal"
+      ],
+      "writes": [
+        "s|fk|public.announcement_dismissal.announcement_dismissal_user_id_user_id_fkey",
+        "n|fk|public.announcement_dismissal.announcement_dismissal_user_id_user_id_fkey",
+        "e|fk|public.announcement_dismissal.announcement_dismissal_user_id_user_id_fkey",
+        "n|con|public.announcement_dismissal.announcement_dismissal_user_id_user_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.announcement_dismissal",
+        "n|sch|public",
+        "n|tbl|public.user",
+        "n|sch|public",
+        "n|col|public.announcement_dismissal.user_id",
+        "n|col|public.user.id",
+        "e|uniqueness|public.user.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_dismissal"
+      ],
+      "writes": [
+        "s|fk|public.announcement_dismissal.announcement_dismissal_announcement_id_announcement_id_fkey",
+        "n|fk|public.announcement_dismissal.announcement_dismissal_announcement_id_announcement_id_fkey",
+        "e|fk|public.announcement_dismissal.announcement_dismissal_announcement_id_announcement_id_fkey",
+        "n|con|public.announcement_dismissal.announcement_dismissal_announcement_id_announcement_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.announcement_dismissal",
+        "n|sch|public",
+        "n|tbl|public.announcement",
+        "n|sch|public",
+        "n|col|public.announcement_dismissal.announcement_id",
+        "n|col|public.announcement.id",
+        "e|uniqueness|public.announcement.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_target"
+      ],
+      "writes": [
+        "s|fk|public.announcement_target.announcement_target_tenant_id_tenant_id_fkey",
+        "n|fk|public.announcement_target.announcement_target_tenant_id_tenant_id_fkey",
+        "e|fk|public.announcement_target.announcement_target_tenant_id_tenant_id_fkey",
+        "n|con|public.announcement_target.announcement_target_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.announcement_target",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.announcement_target.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "announcement_target"
+      ],
+      "writes": [
+        "s|fk|public.announcement_target.announcement_target_announcement_id_announcement_id_fkey",
+        "n|fk|public.announcement_target.announcement_target_announcement_id_announcement_id_fkey",
+        "e|fk|public.announcement_target.announcement_target_announcement_id_announcement_id_fkey",
+        "n|con|public.announcement_target.announcement_target_announcement_id_announcement_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.announcement_target",
+        "n|sch|public",
+        "n|tbl|public.announcement",
+        "n|sch|public",
+        "n|col|public.announcement_target.announcement_id",
+        "n|col|public.announcement.id",
+        "e|uniqueness|public.announcement.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "usage_daily"
+      ],
+      "writes": [
+        "s|fk|public.usage_daily.usage_daily_tenant_id_tenant_id_fkey",
+        "n|fk|public.usage_daily.usage_daily_tenant_id_tenant_id_fkey",
+        "e|fk|public.usage_daily.usage_daily_tenant_id_tenant_id_fkey",
+        "n|con|public.usage_daily.usage_daily_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.usage_daily",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.usage_daily.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "announcement",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "announcement_dismissal",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "announcement_target",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "usage_daily",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "1",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "body",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "level",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "starts_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "ends_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "target",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "ended_early",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "ended_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "ended_by_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "created_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "created_by_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "version",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "dismissed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "announcement_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "membership",
+        "name": "last_sign_in_on",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "day",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "value",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_starts_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "starts_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_dismissal_announcement_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "announcement_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_dismissal_user_id_user_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "user_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "user",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_dismissal_announcement_id_announcement_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "announcement_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "announcement",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "announcement_target_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "announcement_target_announcement_id_announcement_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "announcement_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "announcement",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "usage_daily_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_dismissal_pkey",
+        "columns": [
+          "user_id",
+          "announcement_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_target",
+        "name": "announcement_target_pkey",
+        "columns": [
+          "tenant_id",
+          "announcement_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "usage_daily_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "usage_daily_tenant_id_day_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "day",
+          "key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_body_check",
+        "value": "char_length(btrim(\"body\")) between 1 and 280",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_level_check",
+        "value": "\"level\" in ('info', 'warning')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_target_check",
+        "value": "\"target\" in ('all', 'selected')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_version_check",
+        "value": "\"version\" >= 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement",
+        "name": "announcement_ended_by_check",
+        "value": "(\"ended_early\" and \"ended_by\" is not null and \"ends_at\" is not null)\n          or (not \"ended_early\" and \"ended_by\" is null)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "announcement_dismissal",
+        "name": "announcement_dismissal_version_check",
+        "value": "\"version\" >= 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "usage_daily_key_check",
+        "value": "\"key\" ~ '^[a-z][a-z0-9_]{0,63}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "usage_daily",
+        "name": "usage_daily_value_check",
+        "value": "\"value\" >= 0",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

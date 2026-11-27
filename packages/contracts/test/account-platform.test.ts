@@ -32,6 +32,9 @@ const summary = {
   subscriptionEnd: null,
   ownerName: 'مالك',
   createdAt: NOW,
+  // A-02-07: the clinics list's usage columns
+  lastActivityAt: null,
+  signIns7d: 0,
 };
 const owner = { membershipId: UUID, name: 'مالك', status: 'pending' };
 

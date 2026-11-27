@@ -3270,6 +3270,14 @@
   "@errorsAccountShared": {
     "description": "errors.account_shared"
   },
+  "errorsAnnouncementEnded": "انتهى هذا الإعلان.",
+  "@errorsAnnouncementEnded": {
+    "description": "errors.announcement_ended"
+  },
+  "errorsAnnouncementLink": "لا يُقبل رابط في نص الإعلان.",
+  "@errorsAnnouncementLink": {
+    "description": "errors.announcement_link"
+  },
   "errorsBadRequest": "تعذّر تنفيذ الطلب. تحقّق من البيانات وحاول مرة أخرى.",
   "@errorsBadRequest": {
     "description": "errors.bad_request"

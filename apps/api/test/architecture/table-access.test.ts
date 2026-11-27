@@ -46,6 +46,10 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   support: ['supportAccessGrant', 'auditEvent'],
   // A-02-06: cities and areas (the super admin's, audited by withPlatformAdmin())
   places: ['city', 'area'],
+  // A-02-07: announcements (the super admin's, audited by withPlatformAdmin(); a member's banner
+  // and dismissals) and the daily usage counters
+  announcements: ['announcement', 'announcementTarget', 'announcementDismissal'],
+  usage: ['usageDaily'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -88,6 +92,14 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   settings: {
     tenant: 'read: a clinic’s type is its plan, whose setting values apply (A-02 criterion 8)',
   },
+  announcements: {
+    tenant: 'read: the list names the selected clinics; a selection must name existing clinics',
+  },
+  usage: {
+    tenant: 'read: the usage view answers 404 for a clinic that does not exist',
+    membership:
+      'a sign-in stamps the member’s last_sign_in_on, so each member counts once a day (A-02 criterion 17)',
+  },
   places: {
     branch:
       'read: the archived places a branch of the clinic still holds stay offered to it (A-02 criterion 15)',
@@ -96,6 +108,9 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
 
 /** Exception tables a module also writes, each with its reason. */
 const WRITES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  usage: {
+    membership: 'a sign-in stamps last_sign_in_on (members signed in per day, A-02 criterion 17)',
+  },
   identity: {
     membership: 'accepting a link or an invitation binds it; a request stamps last_active_at',
     setupLink: 'using a link marks it used, on the auth path',

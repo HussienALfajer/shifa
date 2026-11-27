@@ -4,7 +4,9 @@
 // Rows under "probe" come from the test-only ProbeModule (test/access/probe.ts); rows under
 // "test-only" from src/platform/test-support.ts, registered only when NODE_ENV=test.
 // 500 = the route fails on purpose (test-only routes only).
+
 import type { Role } from '../../src/access/roles.ts';
+import { A02_CONSOLE_SAMPLES } from './route-matrix.samples.ts';
 
 export type Caller = 'anonymous' | Role;
 export type Expected = 200 | 401 | 403 | 500;
@@ -102,6 +104,8 @@ export interface SampleContext {
   handoffToken(): Promise<string>;
   /** A fresh city or area, live or archived, with a unique name (A-02-06). */
   placeId(kind: 'city' | 'area', state?: 'live' | 'archived'): Promise<string>;
+  /** A fresh active announcement for every clinic (A-02-07). */
+  announcementId(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -111,7 +115,7 @@ export interface SampleRequest {
   mfa?: 'none' | 'pending' | 'verified';
 }
 
-type Sample = (ctx: SampleContext) => SampleRequest | Promise<SampleRequest>;
+export type Sample = (ctx: SampleContext) => SampleRequest | Promise<SampleRequest>;
 
 /** Routes taking a body or a path parameter get a valid sample, so the status shows access only. */
 export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
@@ -203,34 +207,7 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
     url: `/clinic/support-grants/${await ctx.clinicGrantId()}/end`,
   }),
   'POST /auth/support/session': async (ctx) => ({ body: { token: await ctx.handoffToken() } }),
-  // A-02-06: cities and areas (a fresh place per call: archives and restores change it)
-  'POST /platform/cities': () => ({
-    body: { name: `مدينة ${String(Math.random()).slice(2, 10)}` },
-  }),
-  'PATCH /platform/cities/:id': async (ctx) => ({
-    url: `/platform/cities/${await ctx.placeId('city')}`,
-    body: { name: `مدينة ${String(Math.random()).slice(2, 10)}` },
-  }),
-  'POST /platform/cities/:id/archive': async (ctx) => ({
-    url: `/platform/cities/${await ctx.placeId('city')}/archive`,
-  }),
-  'POST /platform/cities/:id/restore': async (ctx) => ({
-    url: `/platform/cities/${await ctx.placeId('city', 'archived')}/restore`,
-  }),
-  'POST /platform/cities/:id/areas': async (ctx) => ({
-    url: `/platform/cities/${await ctx.placeId('city')}/areas`,
-    body: { name: 'منطقة المصفوفة' },
-  }),
-  'PATCH /platform/areas/:id': async (ctx) => ({
-    url: `/platform/areas/${await ctx.placeId('area')}`,
-    body: { name: `منطقة ${String(Math.random()).slice(2, 10)}` },
-  }),
-  'POST /platform/areas/:id/archive': async (ctx) => ({
-    url: `/platform/areas/${await ctx.placeId('area')}/archive`,
-  }),
-  'POST /platform/areas/:id/restore': async (ctx) => ({
-    url: `/platform/areas/${await ctx.placeId('area', 'archived')}/restore`,
-  }),
+  ...A02_CONSOLE_SAMPLES,
   'PUT /platform/flags/:key': () => ({
     url: '/platform/flags/test.flag_on',
     body: { mode: 'on', reason: 'سبب تجريبي للمصفوفة' },
@@ -417,6 +394,14 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /platform/areas/:id/archive': platformAdmin,
   'POST /platform/areas/:id/restore': platformAdmin,
   'GET /clinic/places': ownerOnly,
+  // A-02-07: announcements and usage (super admin); every clinic role's banner and dismissal
+  'GET /platform/announcements': platformAdmin,
+  'POST /platform/announcements': platformAdmin,
+  'PATCH /platform/announcements/:id': platformAdmin,
+  'POST /platform/announcements/:id/end': platformAdmin,
+  'GET /platform/clinics/:id/usage': platformAdmin,
+  'GET /me/announcements': clinicMember,
+  'POST /me/announcements/:id/dismiss': clinicMember,
   'GET /clinic/subscription': ownerOnly,
   // team (A-01-04): members.view / members.manage, owner only
   'GET /team/members': ownerOnly,

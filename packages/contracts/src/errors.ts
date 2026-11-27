@@ -81,6 +81,9 @@ export const ErrorCode = z
     'place_name_taken',
     'place_archived',
     'place_not_archived',
+    // announcements (A-02-07)
+    'announcement_link',
+    'announcement_ended',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -250,6 +253,8 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   place_name_taken: 'A place with this name already exists here',
   place_archived: 'This place is archived',
   place_not_archived: 'This place is not archived',
+  announcement_link: 'An announcement is plain text, without a link',
+  announcement_ended: 'This announcement has ended',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

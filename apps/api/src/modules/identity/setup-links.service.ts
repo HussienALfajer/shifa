@@ -141,6 +141,8 @@ export class SetupLinksService {
     const issued = await this.issuer.issue(userId, { userAgent: meta.userAgent });
     const principal = await this.sessions.authenticate(issued.token, meta.requestId);
     if (!principal) throw new Error('the new session was not found');
+    // The link's first session is the person's first sign-in in its clinic (A-02 criterion 17).
+    if (principal.tenantId) await this.sessions.countSignIn(principal.userId, principal.tenantId);
     return { view: await this.sessions.view(principal), cookie: issued.cookie };
   }
 

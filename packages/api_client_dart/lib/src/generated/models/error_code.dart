@@ -134,7 +134,11 @@ enum ErrorCode {
   @JsonValue('place_archived')
   placeArchived('place_archived'),
   @JsonValue('place_not_archived')
-  placeNotArchived('place_not_archived');
+  placeNotArchived('place_not_archived'),
+  @JsonValue('announcement_link')
+  announcementLink('announcement_link'),
+  @JsonValue('announcement_ended')
+  announcementEnded('announcement_ended');
 
   const ErrorCode(this.json);
 

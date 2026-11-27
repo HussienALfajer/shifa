@@ -52,6 +52,11 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-02-06: cities and areas (platform lists); a branch holds one of each
     city: ['SELECT'],
     area: ['SELECT'],
+    // A-02-07: announcements aimed at the clinic (seven columns, below), its targets, the
+    // person's own dismissals (UPDATE by column, below; never DELETE), the clinic's counters
+    announcement_target: ['SELECT'],
+    announcement_dismissal: ['SELECT', 'INSERT'],
+    usage_daily: DML,
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -103,6 +108,11 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // never DELETE
     city: ['SELECT', 'INSERT'],
     area: ['SELECT', 'INSERT'],
+    // A-02-07: announcements and their clinics (announcement actions, policies; UPDATE by column,
+    // below; never an announcement deleted), and every clinic's counters (read only)
+    announcement: ['SELECT', 'INSERT'],
+    announcement_target: ['SELECT', 'INSERT', 'DELETE'],
+    usage_daily: ['SELECT'],
   },
 };
 
@@ -147,7 +157,8 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
     'shifa_app',
     'membership',
     'UPDATE',
-    ['display_name', 'status', 'last_active_at', 'updated_at', 'phone_e164'],
+    // A-02-07: last_sign_in_on, the day of the member's last sign-in (members signed in per day)
+    ['display_name', 'status', 'last_active_at', 'updated_at', 'phone_e164', 'last_sign_in_on'],
   ],
   ['shifa_app', 'setup_link', 'UPDATE', ['replaced_at']],
   // A-02-06: the idle column and its grant are gone; the clinic writes nothing on its tenant row
@@ -229,6 +240,34 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ['shifa_platform', 'area', 'UPDATE', ['name', 'name_key', 'archived_at', 'updated_at']],
   ['shifa_app', 'city', 'UPDATE', []],
   ['shifa_app', 'area', 'UPDATE', []],
+  // A-02-07: the clinic reads seven columns of an announcement (never who wrote or ended it); the
+  // person changes only the version and time of their own dismissal; the super admin edits and
+  // ends by column (never the author or creation time)
+  [
+    'shifa_app',
+    'announcement',
+    'SELECT',
+    ['id', 'version', 'level', 'body', 'starts_at', 'ends_at', 'target'],
+  ],
+  ['shifa_app', 'announcement', 'UPDATE', []],
+  ['shifa_app', 'announcement_dismissal', 'UPDATE', ['version', 'dismissed_at', 'updated_at']],
+  [
+    'shifa_platform',
+    'announcement',
+    'UPDATE',
+    [
+      'version',
+      'body',
+      'level',
+      'starts_at',
+      'ends_at',
+      'target',
+      'ended_early',
+      'ended_by',
+      'ended_by_name',
+      'updated_at',
+    ],
+  ],
 ];
 
 /** Secret columns no role but shifa_auth may read. */

@@ -62,5 +62,7 @@
   "support_read_only": "للقراءة فقط: دخول الدعم لا يغيّر شيئًا.",
   "place_name_taken": "هذا الاسم موجود من قبل هنا.",
   "place_archived": "هذا المكان مؤرشف ولا يمكن اختياره.",
-  "place_not_archived": "هذا المكان غير مؤرشف."
+  "place_not_archived": "هذا المكان غير مؤرشف.",
+  "announcement_link": "لا يُقبل رابط في نص الإعلان.",
+  "announcement_ended": "انتهى هذا الإعلان."
 }

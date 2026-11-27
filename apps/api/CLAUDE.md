@@ -12,14 +12,14 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 ## Access (fail-closed)
 - `src/access/`: permission catalogue (`permissions.ts`, sensitive flag; unknown keys stop the start), roles, grants, `Principal`/`PrincipalSchema` (AuthPort contract), `isGranted()` (grants ± sensitive overrides), `mfaBlock()`; the four annotations and `@BeforeMfa`.
 - Scope binding: handlers take `@CurrentScope()` and reach tenant data only via `TenantDb.run(scope, fn)`; `linkScope()` only for link-bound routes. `test/architecture/table-access.test.ts`: each module's tables.
-- Modules: `identity` (sign-in, links, TOTP, seed, `/me/*`), `platform`, `team`, `branches`, `entitlements`, `settings`, `support`, `places`. Suspended clinic: 403 `clinic_suspended`.
+- Modules: `identity` (sign-in, links, TOTP, seed, `/me/*`), `platform`, `team`, `branches`, `entitlements`, `settings`, `support`, `places`, `announcements`, `usage`. Suspended clinic: 403 `clinic_suspended`.
 - `AccessGuard`: not one annotation → 500 (`AccessCheck` stops the start first); anonymous → 401 (`session_expired` when lapsed); MFA gate or missing key → 403. Denials log route template and handler only.
 - Identity (ADR-0044): Better Auth via `auth.api.*` on `createAuthDb()`; sessions use the injected `CLOCK`. Request metadata only via `@ClientRequest()`; `platform/request-guard.ts` refuses cross-site or non-JSON unsafe requests.
 - Tests: `test/access/probe.ts` has test keys, grants and a header `AuthPort` (`buildTestApp({ auth, grants, permissions })`); `test/architecture/route-matrix.expected.ts` is the reviewed route × role matrix.
 
 ## Contracts (ADR-0013)
 - `src/platform/contract/`: `@Contract(c)`; `ContractCheck` stops the start on a missing or mismatched contract, unnamed schema, undeclared path parameter, `@Body`/`@Query` without schema, `@Req`/`@RawBody`/unknown own decorators, `@Version`, duplicate operationId; `ContractValidationInterceptor` (after the guard) → 400 `validation_failed` with `details: [{ path, code }]`.
-- `openapi.ts` builds the OpenAPI 3.1 document (components by id, an `x-*` access note per route); `scripts/generate-openapi.ts` writes `packages/contracts/generated/openapi.json` via the `openapi` drift check. No Swagger UI.
+- `openapi.ts` builds the OpenAPI 3.1 document (components by id, an `x-*` access note per route); `scripts/generate-openapi.ts` writes `packages/contracts/generated/openapi.json` via the `openapi` drift check.
 - Test-only routes use `testContract(method, path)` from `test/support.ts`.
 
 ## Logging and errors
@@ -30,7 +30,7 @@ NestJS 12 on Fastify, one modular monolith (ADR-0003). Rules for code here: `.cl
 
 ## Commands
 - `pnpm --filter @shifa/api test` (Docker for the `db` project), `build` (tsdown → `dist/main.js`), `boot-check` (after `build`; also in `verify:full`).
-- Run locally: `pnpm start` with the keys of `.env.example`.
+- Run locally: `pnpm start` (keys of `.env.example`).
 
 ## Build
 Decorators need metadata (no Node type stripping), so tsdown bundles `src/` and `@shifa/*`; npm packages stay external and must be in this package's `dependencies` (hence `pg`).

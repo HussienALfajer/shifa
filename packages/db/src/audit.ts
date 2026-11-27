@@ -43,6 +43,12 @@ export const PLATFORM_EVENTS = [
   'area.renamed',
   'area.archived',
   'area.restored',
+  // A-02-07: announcements (criteria 16, 18; the body stays on the row) and a clinic's usage
+  'announcement.listed',
+  'announcement.created',
+  'announcement.edited',
+  'announcement.ended',
+  'clinic.usage_viewed',
 ] as const;
 
 /**

@@ -97,7 +97,8 @@ async function runAsPlatformAdmin<T>(
     },
   };
   // app.user_id is the acting super admin (A-02-05 review 5): support policies tie a grant's
-  // writes to it. No other policy for shifa_platform reads it (they are for shifa_app or shifa_auth).
+  // writes to it, and the announcement policies an announcement's author and who ended it
+  // (A-02-07). No other policy for shifa_platform reads it (they are for shifa_app or shifa_auth).
   const setup = contextSetup({ adminReason: action.event, userId: action.actorId });
   return runScoped(pool, 'shifa_platform', setup, async (tx) => {
     const platformTx = tx as PlatformTx;
