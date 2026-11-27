@@ -20,10 +20,12 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import { AppFrame } from '../account/app-frame.tsx';
-import { isOwner, useActiveClinic, useSignedIn } from '../account/data.ts';
+import { isOwner, useSignedIn } from '../account/data.ts';
 import { LoadFailed } from '../account/load-failed.tsx';
 import { useIsPhone } from '../auth/media.ts';
+import { useClinicFacts } from '../clinic-facts.ts';
 import type { TeamSearch } from '../router.tsx';
+import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import {
   type MemberStatus,
@@ -71,6 +73,7 @@ function Team({
   known: boolean;
 }) {
   const text = useText();
+  const readOnly = useReadOnly();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const phone = useIsPhone();
@@ -108,16 +111,26 @@ function Team({
   const count = (s: MemberStatus) => all.filter((m) => m.status === s).length;
   const rows = all.filter((m) => (filter === 'all' || m.status === filter) && matches(m, typed));
   const alone = data?.every((m) => m.isSelf) === true;
-  const add = (
+  const addButton = (
     <Button
       variant="primary"
       startIcon="plus"
+      disabled={readOnly}
       onClick={() => {
         setTarget({ kind: 'add' });
       }}
     >
       {text('teamAdd')}
     </Button>
+  );
+  // A support session reads the team; every write is drawn disabled (A-02-10).
+  const add = readOnly ? (
+    <span className="flex flex-col items-end gap-1">
+      {addButton}
+      <ReadOnlyNote />
+    </span>
+  ) : (
+    addButton
   );
   const toolbar = (
     <div className="flex flex-1 flex-wrap items-center gap-3">
@@ -242,15 +255,16 @@ function Team({
 
 export function TeamPage() {
   const session = useSignedIn();
-  const clinic = useActiveClinic(session);
+  // A support session has no GET /me/clinics entry: its facts come from the session and the plan.
+  const clinic = useClinicFacts(session);
   if (!session) return null;
   if (!isOwner(session) || session.tenantId === null) return <Navigate to="/account" replace />;
   return (
     <Team
       tenantId={session.tenantId}
-      {...(clinic ? { clinicName: clinic.name } : {})}
-      solo={clinic?.solo === true}
-      known={clinic !== undefined}
+      {...(clinic.name === undefined ? {} : { clinicName: clinic.name })}
+      solo={clinic.solo}
+      known={clinic.known}
     />
   );
 }

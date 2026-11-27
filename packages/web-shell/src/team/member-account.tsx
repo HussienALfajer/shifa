@@ -4,7 +4,9 @@
 // sessions ended), «إلغاء الدعوة» or «إيقاف الحساب», and «إعادة التفعيل»; each confirmed. Nothing
 // on oneself (A-01-12: the server refuses `self_action` too). The last owner's deactivation is
 // disabled with the reason. A refusal the confirmation cannot fix closes it and is named in the
-// drawer; `last_owner` and a lost answer stay in the confirmation.
+// drawer; `last_owner` and a lost answer stay in the confirmation. A-02-10: a deactivated doctor
+// is not reactivated at a full doctors' limit (the Callout, the button disabled; a 409
+// `limit_reached` stays in the confirmation); a support session draws every action disabled.
 import type { CommonKey } from '@shifa/i18n';
 import {
   AlertDialog,
@@ -13,12 +15,17 @@ import {
   AlertDialogContent,
   Badge,
   Button,
+  Callout,
 } from '@shifa/ui';
 import { useId, useState } from 'react';
+import { useSignedIn } from '../account/data.ts';
+import { isFull, limitReachedOf } from '../capabilities.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
+import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import type { MemberDetail, MemberLink } from './data.ts';
+import { useDoctorLimit, useLimitSentence } from './limit-parts.tsx';
 
 type Ask = 'deactivate' | 'reactivate' | 'link' | 'mfa';
 
@@ -68,6 +75,14 @@ export function MemberAccount({
   const path = { params: { path: { id: member.id } } };
   const owner = member.roles.some((r) => r.role === 'owner');
   const { status, name } = member;
+  const readOnly = useReadOnly();
+  const sentence = useLimitSentence();
+  const doctorLimit = useDoctorLimit(useSignedIn()?.tenantId ?? '');
+  // A deactivated doctor comes back as a doctor: refused before sending at a full limit.
+  const blocked =
+    status === 'deactivated' &&
+    member.roles.some((r) => r.role === 'doctor') &&
+    isFull(doctorLimit);
 
   async function run(ask: Ask) {
     setFailure(text('memberActionUnknown'));
@@ -99,6 +114,11 @@ export function MemberAccount({
         }
       }
       return;
+    }
+    const reached = limitReachedOf(error);
+    if (reached) {
+      setFailure(`${text('limitNotSaved')}. ${sentence(reached)}`);
+      throw new Error('limit reached');
     }
     const { code } = errorFacts(error);
     const explained = response.status === 404 ? GONE : EXPLAINED[code];
@@ -182,26 +202,41 @@ export function MemberAccount({
               {text('memberLastOwner')}
             </p>
           )}
-          <div className="flex flex-wrap gap-2">
+          {blocked && isFull(doctorLimit) && (
+            <Callout tone="warning" title={text('limitReactivateTitle')}>
+              {sentence({ key: doctorLimit.key, limit: doctorLimit.limit, used: doctorLimit.used })}
+            </Callout>
+          )}
+          <div className="flex flex-wrap items-center gap-2">
             {status !== 'deactivated' && (
-              <Button variant="secondary" startIcon="file-text" onClick={open('link')}>
+              <Button
+                variant="secondary"
+                startIcon="file-text"
+                disabled={readOnly}
+                onClick={open('link')}
+              >
                 {text(status === 'pending' ? 'memberNewLink' : 'memberPasswordLink')}
               </Button>
             )}
             {status === 'active' && member.mfaEnrolled && !owner && (
-              <Button variant="ghost" startIcon="phone" onClick={open('mfa')}>
+              <Button variant="ghost" startIcon="phone" disabled={readOnly} onClick={open('mfa')}>
                 {text('memberResetMfa')}
               </Button>
             )}
             {status === 'deactivated' ? (
-              <Button variant="secondary" startIcon="check" onClick={open('reactivate')}>
+              <Button
+                variant="secondary"
+                startIcon="check"
+                disabled={readOnly || blocked}
+                onClick={open('reactivate')}
+              >
                 {text('memberReactivate')}
               </Button>
             ) : (
               <Button
                 variant="danger"
                 startIcon="x-circle"
-                disabled={member.isLastOwner}
+                disabled={readOnly || member.isLastOwner}
                 // Read with the button by a screen reader's browse mode (review, non-blocking 6).
                 {...(member.isLastOwner ? { 'aria-describedby': reasonId } : {})}
                 onClick={open('deactivate')}
@@ -209,6 +244,7 @@ export function MemberAccount({
                 {text(status === 'pending' ? 'memberCancelInvite' : 'memberDeactivate')}
               </Button>
             )}
+            {readOnly && <ReadOnlyNote />}
           </div>
         </>
       )}

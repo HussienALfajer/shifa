@@ -84,6 +84,17 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       clinicWebUrl: urls.clinicWebUrl,
     });
     const consoleToken = new URL(consoleAdmin.setupUrl).hash.slice(1);
+    // The A-02-10 journeys' super admin: a limit raised, support access, an announcement, each
+    // seen in clinic web.
+    const clinicWebPhone = generatePhone(random, 'SY');
+    const clinicWebAdmin = await seedSuperAdmin({
+      authDb,
+      platformDb,
+      phone: clinicWebPhone,
+      name: person(),
+      clinicWebUrl: urls.clinicWebUrl,
+    });
+    const clinicWebToken = new URL(clinicWebAdmin.setupUrl).hash.slice(1);
     const clinics: Seeded['clinics'] = [];
     // A-01-07 checkpoint 5: the third clinic's owner walks the screens by keyboard; the fourth's
     // link checks the browser history and the used-link page (refusals.spec.ts).
@@ -121,6 +132,7 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       teamAdmin: { phone: teamPhone, token: teamToken },
       tabsAdmin: { phone: tabsPhone, token: tabsToken },
       consoleAdmin: { phone: consolePhone, token: consoleToken },
+      clinicWebAdmin: { phone: clinicWebPhone, token: clinicWebToken },
       clinics,
     };
   } finally {

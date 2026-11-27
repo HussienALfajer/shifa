@@ -301,6 +301,10 @@
   "@commonAnnGoneTitle": {
     "description": "common.annGoneTitle"
   },
+  "commonAnnHide": "إخفاء الإعلان",
+  "@commonAnnHide": {
+    "description": "common.annHide"
+  },
   "commonAnnLevel": "المستوى",
   "@commonAnnLevel": {
     "description": "common.annLevel"
@@ -345,6 +349,10 @@
   "commonAnnNew": "إعلان جديد",
   "@commonAnnNew": {
     "description": "common.annNew"
+  },
+  "commonAnnNext": "الإعلان التالي",
+  "@commonAnnNext": {
+    "description": "common.annNext"
   },
   "commonAnnNoEnd": "دون نهاية",
   "@commonAnnNoEnd": {
@@ -407,9 +415,17 @@
   "@commonAnnPreviewWaiting": {
     "description": "common.annPreviewWaiting"
   },
+  "commonAnnPrevious": "الإعلان السابق",
+  "@commonAnnPrevious": {
+    "description": "common.annPrevious"
+  },
   "commonAnnPublish": "نشر الإعلان",
   "@commonAnnPublish": {
     "description": "common.annPublish"
+  },
+  "commonAnnRegion": "إعلان من شفاء",
+  "@commonAnnRegion": {
+    "description": "common.annRegion"
   },
   "commonAnnSaveEdit": "حفظ التعديل",
   "@commonAnnSaveEdit": {
@@ -2124,6 +2140,23 @@
   "@commonIdleLoading": {
     "description": "common.idleLoading"
   },
+  "commonIdleLockedBadge": "مقفل من الإدارة",
+  "@commonIdleLockedBadge": {
+    "description": "common.idleLockedBadge"
+  },
+  "commonIdleLockedMeanwhile": "قفلت إدارة شفاء هذا الإعداد في الأثناء. لم يُحفظ شيء.",
+  "@commonIdleLockedMeanwhile": {
+    "description": "common.idleLockedMeanwhile"
+  },
+  "commonIdleLockedText": "قفلت إدارة شفاء هذا الإعداد على {minutes} دقيقة لعيادتك. تواصل معها إن أردت تغييره.",
+  "@commonIdleLockedText": {
+    "description": "common.idleLockedText",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
   "commonIdleNotSavedText": "لم نصل إلى الخادم. ما زالت المدة {minutes} دقيقة.",
   "@commonIdleNotSavedText": {
     "description": "common.idleNotSavedText",
@@ -2166,6 +2199,41 @@
   "commonIdleSignOutNow": "خروج الآن",
   "@commonIdleSignOutNow": {
     "description": "common.idleSignOutNow"
+  },
+  "commonIdleSourceClinic": "اختارتها عيادتك.",
+  "@commonIdleSourceClinic": {
+    "description": "common.idleSourceClinic"
+  },
+  "commonIdleSourceDefault": "الإعداد الافتراضي لشفاء ({minutes} دقيقة). اختر غيره ليصير إعداد عيادتك.",
+  "@commonIdleSourceDefault": {
+    "description": "common.idleSourceDefault",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleSourceLocked": "من: الإدارة",
+  "@commonIdleSourceLocked": {
+    "description": "common.idleSourceLocked"
+  },
+  "commonIdleSourcePlan": "من خطة عيادتك ({minutes} دقيقة). اختر غيره ليصير إعداد عيادتك.",
+  "@commonIdleSourcePlan": {
+    "description": "common.idleSourcePlan",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
+  },
+  "commonIdleSourcePlatform": "إعداد شفاء العام ({minutes} دقيقة). اختر غيره ليصير إعداد عيادتك.",
+  "@commonIdleSourcePlatform": {
+    "description": "common.idleSourcePlatform",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      }
+    }
   },
   "commonIdleText": "{count, plural, zero {لم نرَ نشاطاً منذ قليل. نُغلق الجلسة بعد:} one {لم نرَ نشاطاً منذ دقيقة. نُغلق الجلسة بعد:} two {لم نرَ نشاطاً منذ دقيقتين. نُغلق الجلسة بعد:} few {لم نرَ نشاطاً منذ {count} دقائق. نُغلق الجلسة بعد:} many {لم نرَ نشاطاً منذ {count} دقيقة. نُغلق الجلسة بعد:} other {لم نرَ نشاطاً منذ {count} دقيقة. نُغلق الجلسة بعد:}}",
   "@commonIdleText": {
@@ -2343,9 +2411,41 @@
       }
     }
   },
+  "commonLimitBranchNotAdded": "لم يُضف الفرع",
+  "@commonLimitBranchNotAdded": {
+    "description": "common.limitBranchNotAdded"
+  },
   "commonLimitBranches": "الفروع",
   "@commonLimitBranches": {
     "description": "common.limitBranches"
+  },
+  "commonLimitBranchesFull": "وصلت العيادة إلى حد الفروع في خطتها ({used} من {limit})، تواصل مع الإدارة.",
+  "@commonLimitBranchesFull": {
+    "description": "common.limitBranchesFull",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLimitBranchesFullText": "تواصل مع الإدارة لزيادته. لا يمكن إضافة فرع ولا استعادة فرع مؤرشف حتى ذلك.",
+  "@commonLimitBranchesFullText": {
+    "description": "common.limitBranchesFullText"
+  },
+  "commonLimitBranchesFullTitle": "وصلت العيادة إلى حد الفروع في خطتها ({used} من {limit})",
+  "@commonLimitBranchesFullTitle": {
+    "description": "common.limitBranchesFullTitle",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
   },
   "commonLimitColEffective": "السارية",
   "@commonLimitColEffective": {
@@ -2371,9 +2471,73 @@
   "@commonLimitCustomFields": {
     "description": "common.limitCustomFields"
   },
+  "commonLimitDoctorsFull": "وصلت العيادة إلى حد الأطباء في خطتها ({used} من {limit})، تواصل مع الإدارة.",
+  "@commonLimitDoctorsFull": {
+    "description": "common.limitDoctorsFull",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLimitNotSaved": "لم يُحفظ شيء",
+  "@commonLimitNotSaved": {
+    "description": "common.limitNotSaved"
+  },
+  "commonLimitOtherFull": "وصلت العيادة إلى حد «{item}» في خطتها ({used} من {limit})، تواصل مع الإدارة.",
+  "@commonLimitOtherFull": {
+    "description": "common.limitOtherFull",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      },
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLimitOthersAllowed": "يمكنك إضافة الأدوار الأخرى.",
+  "@commonLimitOthersAllowed": {
+    "description": "common.limitOthersAllowed"
+  },
   "commonLimitPractitioners": "الأطباء",
   "@commonLimitPractitioners": {
     "description": "common.limitPractitioners"
+  },
+  "commonLimitReactivateTitle": "لا يمكن إعادة التفعيل الآن",
+  "@commonLimitReactivateTitle": {
+    "description": "common.limitReactivateTitle"
+  },
+  "commonLimitRestoreRefused": "لم يُستعد «{name}»",
+  "@commonLimitRestoreRefused": {
+    "description": "common.limitRestoreRefused",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLimitRoleFull": "الحد ممتلئ: {used} من {limit}",
+  "@commonLimitRoleFull": {
+    "description": "common.limitRoleFull",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLimitSomeFull": "وصلت العيادة إلى أحد حدود خطتها، تواصل مع الإدارة.",
+  "@commonLimitSomeFull": {
+    "description": "common.limitSomeFull"
   },
   "commonLimitsCaption": "يُحتسب الأطباء غير المعطّلين (والمدعوون منهم) والفروع غير المؤرشفة. الحقول المخصّصة تُحتسب من A-03.",
   "@commonLimitsCaption": {
@@ -3499,6 +3663,48 @@
       }
     }
   },
+  "commonOwnerLogByAdmin": "أنهاه فريق شفاء",
+  "@commonOwnerLogByAdmin": {
+    "description": "common.ownerLogByAdmin"
+  },
+  "commonOwnerLogByOwner": "أنهاه {name}",
+  "@commonOwnerLogByOwner": {
+    "description": "common.ownerLogByOwner",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOwnerLogBySelf": "أنهيته أنت",
+  "@commonOwnerLogBySelf": {
+    "description": "common.ownerLogBySelf"
+  },
+  "commonOwnerLogEmptyText": "حين يفتح الدعم دخولًا للقراءة تراه هنا، وتنهيه متى شئت.",
+  "@commonOwnerLogEmptyText": {
+    "description": "common.ownerLogEmptyText"
+  },
+  "commonOwnerLogEmptyTitle": "لم يدخل فريق شفاء عيادتك بعد",
+  "@commonOwnerLogEmptyTitle": {
+    "description": "common.ownerLogEmptyTitle"
+  },
+  "commonOwnerLogLoading": "جارٍ تحميل سجل دخول الدعم",
+  "@commonOwnerLogLoading": {
+    "description": "common.ownerLogLoading"
+  },
+  "commonOwnerLogText": "كل مرة قرأ فيها فريق شفاء عيادتك، ولماذا.",
+  "@commonOwnerLogText": {
+    "description": "common.ownerLogText"
+  },
+  "commonOwnerLogWho": "{name} · فريق شفاء",
+  "@commonOwnerLogWho": {
+    "description": "common.ownerLogWho",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "commonOwnerNewLink": "رابط إعداد جديد",
   "@commonOwnerNewLink": {
     "description": "common.ownerNewLink"
@@ -3567,6 +3773,46 @@
   "@commonOwnerResetMfaTitle": {
     "description": "common.ownerResetMfaTitle"
   },
+  "commonOwnerSupportEndAsk": "يتوقف فريق شفاء عن قراءة عيادتك فورًا. إن احتاج إليها ثانية فتح دخولًا جديدًا بسبب جديد، وتراه هنا.",
+  "@commonOwnerSupportEndAsk": {
+    "description": "common.ownerSupportEndAsk"
+  },
+  "commonOwnerSupportEndFailed": "لم يُنهَ دخول الدعم. أعد المحاولة.",
+  "@commonOwnerSupportEndFailed": {
+    "description": "common.ownerSupportEndFailed"
+  },
+  "commonOwnerSupportEndedText": "لم يعد فريق شفاء يقرأ عيادتك. سُجّل ذلك في «سجل دخول الدعم».",
+  "@commonOwnerSupportEndedText": {
+    "description": "common.ownerSupportEndedText"
+  },
+  "commonOwnerSupportEndedTitle": "أنهيت دخول الدعم",
+  "@commonOwnerSupportEndedTitle": {
+    "description": "common.ownerSupportEndedTitle"
+  },
+  "commonOwnerSupportText": "السبب: {reason} · حتى {time} (متبقٍّ {minutes} دقيقة)",
+  "@commonOwnerSupportText": {
+    "description": "common.ownerSupportText",
+    "placeholders": {
+      "minutes": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOwnerSupportTitle": "{name} من فريق شفاء تقرأ عيادتك الآن، للقراءة فقط.",
+  "@commonOwnerSupportTitle": {
+    "description": "common.ownerSupportTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
   "commonPermClinicalNotesView": "رؤية الملاحظات السريرية",
   "@commonPermClinicalNotesView": {
     "description": "common.permClinicalNotesView"
@@ -3623,6 +3869,94 @@
   "commonPickerPlaceholder": "ابحث عن عيادة",
   "@commonPickerPlaceholder": {
     "description": "common.pickerPlaceholder"
+  },
+  "commonPlaceArchivedHeld": "«{name}» مؤرشفة: تبقى على هذا الفرع، ولا تُعرض للفروع الجديدة.",
+  "@commonPlaceArchivedHeld": {
+    "description": "common.placeArchivedHeld",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlaceArchivedOption": "{name} (مؤرشفة)",
+  "@commonPlaceArchivedOption": {
+    "description": "common.placeArchivedOption",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlaceArea": "المنطقة",
+  "@commonPlaceArea": {
+    "description": "common.placeArea"
+  },
+  "commonPlaceAreaArchived": "أُرشفت هذه المنطقة. اختر غيرها.",
+  "@commonPlaceAreaArchived": {
+    "description": "common.placeAreaArchived"
+  },
+  "commonPlaceAreaArchivedBadge": "منطقة مؤرشفة",
+  "@commonPlaceAreaArchivedBadge": {
+    "description": "common.placeAreaArchivedBadge"
+  },
+  "commonPlaceAreaFirst": "اختر المدينة أولًا",
+  "@commonPlaceAreaFirst": {
+    "description": "common.placeAreaFirst"
+  },
+  "commonPlaceAreaNone": "لا منطقة بهذا الاسم في {city}. تضيف إدارة شفاء المناطق؛ اكتب الحي في العنوان.",
+  "@commonPlaceAreaNone": {
+    "description": "common.placeAreaNone",
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlaceAreaNotInCity": "ليست هذه المنطقة في المدينة المختارة.",
+  "@commonPlaceAreaNotInCity": {
+    "description": "common.placeAreaNotInCity"
+  },
+  "commonPlaceAreaSearch": "ابحث عن منطقة في {city}",
+  "@commonPlaceAreaSearch": {
+    "description": "common.placeAreaSearch",
+    "placeholders": {
+      "city": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlaceCity": "المدينة",
+  "@commonPlaceCity": {
+    "description": "common.placeCity"
+  },
+  "commonPlaceCityArchived": "أُرشفت هذه المدينة. اختر غيرها.",
+  "@commonPlaceCityArchived": {
+    "description": "common.placeCityArchived"
+  },
+  "commonPlaceCityArchivedBadge": "مدينة مؤرشفة",
+  "@commonPlaceCityArchivedBadge": {
+    "description": "common.placeCityArchivedBadge"
+  },
+  "commonPlaceCityNone": "لا مدينة بهذا الاسم",
+  "@commonPlaceCityNone": {
+    "description": "common.placeCityNone"
+  },
+  "commonPlaceCitySearch": "ابحث عن مدينة",
+  "@commonPlaceCitySearch": {
+    "description": "common.placeCitySearch"
+  },
+  "commonPlaceClear": "مسح",
+  "@commonPlaceClear": {
+    "description": "common.placeClear"
+  },
+  "commonPlaceNoCity": "لم تُحدَّد المدينة",
+  "@commonPlaceNoCity": {
+    "description": "common.placeNoCity"
+  },
+  "commonPlaceUnknown": "لم يعد هذا المكان موجودًا. اختر غيره.",
+  "@commonPlaceUnknown": {
+    "description": "common.placeUnknown"
   },
   "commonPlacesActions": "إجراءات {name}",
   "@commonPlacesActions": {
@@ -4059,6 +4393,14 @@
   "commonPwWrongCurrent": "كلمة المرور الحالية غير صحيحة.",
   "@commonPwWrongCurrent": {
     "description": "common.pwWrongCurrent"
+  },
+  "commonReadOnly": "للقراءة فقط",
+  "@commonReadOnly": {
+    "description": "common.readOnly"
+  },
+  "commonReadOnlyRefusedText": "دخول الدعم لا يغيّر شيئًا في العيادة. لم يُحفظ هذا الطلب.",
+  "@commonReadOnlyRefusedText": {
+    "description": "common.readOnlyRefusedText"
   },
   "commonReasonIdle": "انتهت الجلسة لعدم النشاط. سجّل الدخول من جديد.",
   "@commonReasonIdle": {
@@ -4550,6 +4892,98 @@
   "@commonSourceUser": {
     "description": "common.sourceUser"
   },
+  "commonSubEnd": "نهاية الاشتراك",
+  "@commonSubEnd": {
+    "description": "common.subEnd"
+  },
+  "commonSubEndingText": "في {date}. تواصل مع إدارة شفاء لتجديده قبل ذلك.",
+  "@commonSubEndingText": {
+    "description": "common.subEndingText",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSubEndingTitle": "{count, plural, zero {ينتهي اشتراكك اليوم} one {ينتهي اشتراكك خلال يوم واحد} two {ينتهي اشتراكك خلال يومين} few {ينتهي اشتراكك خلال {count} أيام} many {ينتهي اشتراكك خلال {count} يومًا} other {ينتهي اشتراكك خلال {count} يوم}}",
+  "@commonSubEndingTitle": {
+    "description": "common.subEndingTitle",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonSubFeatures": "الميزات",
+  "@commonSubFeatures": {
+    "description": "common.subFeatures"
+  },
+  "commonSubFullBranches": "وصلت العيادة إلى حد الفروع في خطتها. لإضافة فرع تواصل مع إدارة شفاء.",
+  "@commonSubFullBranches": {
+    "description": "common.subFullBranches"
+  },
+  "commonSubFullOther": "وصلت العيادة إلى حد «{item}» في خطتها. لزيادته تواصل مع إدارة شفاء.",
+  "@commonSubFullOther": {
+    "description": "common.subFullOther",
+    "placeholders": {
+      "item": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSubFullPractitioners": "وصلت العيادة إلى حد الأطباء في خطتها. لإضافة طبيب تواصل مع إدارة شفاء.",
+  "@commonSubFullPractitioners": {
+    "description": "common.subFullPractitioners"
+  },
+  "commonSubLoading": "جارٍ تحميل الاشتراك",
+  "@commonSubLoading": {
+    "description": "common.subLoading"
+  },
+  "commonSubNoEnd": "بلا تاريخ",
+  "@commonSubNoEnd": {
+    "description": "common.subNoEnd"
+  },
+  "commonSubNoFeatures": "لا ميزات إضافية في خطتك بعد.",
+  "@commonSubNoFeatures": {
+    "description": "common.subNoFeatures"
+  },
+  "commonSubPlan": "الخطة",
+  "@commonSubPlan": {
+    "description": "common.subPlan"
+  },
+  "commonSubStatus": "الحالة",
+  "@commonSubStatus": {
+    "description": "common.subStatus"
+  },
+  "commonSubText": "خطة عيادتك وحدودها. لزيادة حد، تواصل مع إدارة شفاء.",
+  "@commonSubText": {
+    "description": "common.subText"
+  },
+  "commonSubTitle": "الاشتراك",
+  "@commonSubTitle": {
+    "description": "common.subTitle"
+  },
+  "commonSubUpTo": "حتى {limit}",
+  "@commonSubUpTo": {
+    "description": "common.subUpTo",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSubUse": "{used} من {limit}",
+  "@commonSubUse": {
+    "description": "common.subUse",
+    "placeholders": {
+      "limit": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
   "commonSupportActiveShow": "عرض الدخول المفتوح",
   "@commonSupportActiveShow": {
     "description": "common.supportActiveShow"
@@ -4561,6 +4995,10 @@
   "commonSupportActiveTitle": "لديك دخول مفتوح لهذه العيادة",
   "@commonSupportActiveTitle": {
     "description": "common.supportActiveTitle"
+  },
+  "commonSupportBackToAdmin": "العودة إلى إدارة شفاء",
+  "@commonSupportBackToAdmin": {
+    "description": "common.supportBackToAdmin"
   },
   "commonSupportByAdmin": "أنهاه: {name}",
   "@commonSupportByAdmin": {
@@ -4587,6 +5025,10 @@
   "commonSupportBySelf": "أنهاه بنفسه",
   "@commonSupportBySelf": {
     "description": "common.supportBySelf"
+  },
+  "commonSupportCloseTab": "أغلق هذا التبويب وعد إلى تبويب إدارة شفاء.",
+  "@commonSupportCloseTab": {
+    "description": "common.supportCloseTab"
   },
   "commonSupportColEnd": "النهاية",
   "@commonSupportColEnd": {
@@ -4620,6 +5062,18 @@
   "@commonSupportEndAction": {
     "description": "common.supportEndAction"
   },
+  "commonSupportEndAskSelf": "يُغلق هذا التبويب على العيادة، ويرى المالك في سجله أنك أنهيته. لفتح دخول جديد تكتب سببًا من جديد في إدارة شفاء.",
+  "@commonSupportEndAskSelf": {
+    "description": "common.supportEndAskSelf"
+  },
+  "commonSupportEndAskTitle": "إنهاء دخول الدعم؟",
+  "@commonSupportEndAskTitle": {
+    "description": "common.supportEndAskTitle"
+  },
+  "commonSupportEndShort": "إنهاء",
+  "@commonSupportEndShort": {
+    "description": "common.supportEndShort"
+  },
   "commonSupportEndText": "يُغلق تبويب العيادة عند طلبه التالي. لفتح دخول جديد تكتب سببًا من جديد.",
   "@commonSupportEndText": {
     "description": "common.supportEndText"
@@ -4627,6 +5081,53 @@
   "commonSupportEndTitle": "إنهاء دخول الدعم؟",
   "@commonSupportEndTitle": {
     "description": "common.supportEndTitle"
+  },
+  "commonSupportEndedAdmin": "أُنهي من إدارة شفاء في {time}.",
+  "@commonSupportEndedAdmin": {
+    "description": "common.supportEndedAdmin",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportEndedExpiry": "انتهت مدته في {time}.",
+  "@commonSupportEndedExpiry": {
+    "description": "common.supportEndedExpiry",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportEndedLink": "رابط الدخول مستعمل أو انتهت مدته، أو انتهى الدخول نفسه. افتح العيادة من جديد من إدارة شفاء.",
+  "@commonSupportEndedLink": {
+    "description": "common.supportEndedLink"
+  },
+  "commonSupportEndedOwner": "أنهاه مالك العيادة {name} في {time}. لم تعد تقرأ هذه العيادة.",
+  "@commonSupportEndedOwner": {
+    "description": "common.supportEndedOwner",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportEndedPlain": "لم تعد تقرأ هذه العيادة.",
+  "@commonSupportEndedPlain": {
+    "description": "common.supportEndedPlain"
+  },
+  "commonSupportEndedSelf": "أنهيت الدخول في {time}.",
+  "@commonSupportEndedSelf": {
+    "description": "common.supportEndedSelf",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
   },
   "commonSupportEndedText": "أُغلق دخول الدعم في {time}. أي طلب بعده من تبويب العيادة يُرفض.",
   "@commonSupportEndedText": {
@@ -4690,9 +5191,17 @@
   "@commonSupportMinutes60": {
     "description": "common.supportMinutes60"
   },
+  "commonSupportNoSwitch": "لا تبديل في دخول الدعم",
+  "@commonSupportNoSwitch": {
+    "description": "common.supportNoSwitch"
+  },
   "commonSupportOpen": "فتح الدخول",
   "@commonSupportOpen": {
     "description": "common.supportOpen"
+  },
+  "commonSupportOpenFailed": "تعذّر فتح دخول الدعم. أعد المحاولة من إدارة شفاء.",
+  "@commonSupportOpenFailed": {
+    "description": "common.supportOpenFailed"
   },
   "commonSupportOpenLine": "للقراءة فقط بعرض المالك · من {start} حتى {end} · السبب: {reason}",
   "@commonSupportOpenLine": {
@@ -4717,6 +5226,10 @@
   "@commonSupportOpenWeb": {
     "description": "common.supportOpenWeb"
   },
+  "commonSupportOpening": "جارٍ فتح دخول الدعم",
+  "@commonSupportOpening": {
+    "description": "common.supportOpening"
+  },
   "commonSupportOwnersSee": "يرى كل مالك للعيادة شريطًا باسمك وسببك ووقت النهاية، ويستطيع إنهاء الدخول.",
   "@commonSupportOwnersSee": {
     "description": "common.supportOwnersSee"
@@ -4732,6 +5245,36 @@
   "commonSupportReasonShort": "اكتب سببًا من 10 أحرف على الأقل.",
   "@commonSupportReasonShort": {
     "description": "common.supportReasonShort"
+  },
+  "commonSupportRegion": "دخول الدعم",
+  "@commonSupportRegion": {
+    "description": "common.supportRegion"
+  },
+  "commonSupportSessionEndedTitle": "انتهى دخول الدعم",
+  "@commonSupportSessionEndedTitle": {
+    "description": "common.supportSessionEndedTitle"
+  },
+  "commonSupportSessionText": "{clinic} بعرض المالك · السبب: {reason} · حتى {time} (متبقٍّ {minutes} دقيقة)",
+  "@commonSupportSessionText": {
+    "description": "common.supportSessionText",
+    "placeholders": {
+      "clinic": {
+        "type": "String"
+      },
+      "minutes": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportSessionTitle": "دخول الدعم · للقراءة فقط",
+  "@commonSupportSessionTitle": {
+    "description": "common.supportSessionTitle"
   },
   "commonSupportStateOpen": "مفتوح",
   "@commonSupportStateOpen": {

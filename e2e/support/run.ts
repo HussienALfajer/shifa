@@ -19,6 +19,8 @@ export interface Seeded {
   tabsAdmin: SeededPerson;
   /** A sixth super admin, for the A-02-09 journeys: flags, announcements, cities and areas. */
   consoleAdmin: SeededPerson;
+  /** A seventh super admin, for the A-02-10 journeys seen in clinic web. */
+  clinicWebAdmin: SeededPerson;
   clinics: { tenantId: string; owner: SeededPerson }[];
 }
 

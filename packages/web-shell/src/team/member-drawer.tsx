@@ -21,6 +21,7 @@ import { useState } from 'react';
 import { LinkShown, type MemberLinkShown } from '../admin/link-shown.tsx';
 import { clockTime, dayDate } from '../auth/dates.ts';
 import { useBelowDesktop } from '../auth/media.ts';
+import { capabilitiesKey } from '../capabilities.ts';
 import { useText } from '../text.ts';
 import { AddMember } from './add-member.tsx';
 import {
@@ -130,6 +131,7 @@ function MemberPanel({
   const reread = () => {
     void queryClient.invalidateQueries({ queryKey: memberKey(team.tenantId, id) });
     void queryClient.invalidateQueries({ queryKey: teamKey(team.tenantId), exact: true });
+    void queryClient.invalidateQueries({ queryKey: capabilitiesKey(team.tenantId) });
   };
   const update = (next: MemberDetail) => {
     // A cancelled invitation or a deactivation stops the link on the server; a reactivation
@@ -140,6 +142,8 @@ function MemberPanel({
     }
     queryClient.setQueryData(memberKey(team.tenantId, id), next);
     void queryClient.invalidateQueries({ queryKey: teamKey(team.tenantId), exact: true });
+    // Roles and status change the doctors' use (A-02-10): the limit is read again.
+    void queryClient.invalidateQueries({ queryKey: capabilitiesKey(team.tenantId) });
   };
   const show = (issued: MemberLink) => {
     setLink(issued);
