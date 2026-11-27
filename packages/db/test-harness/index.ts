@@ -10,6 +10,7 @@ import {
   createDb,
   runWithoutTenantForTests,
   type ShifaDb,
+  sharePool,
 } from '../src/client.ts';
 import { createPlatformDb, type PlatformDb } from '../src/platform.ts';
 import { TABLE_CLASSIFICATION } from '../src/schema/classification.ts';
@@ -191,6 +192,7 @@ function appDb(via: Via, options?: CreateDbOptions): ShifaDb {
     },
   };
   inner.set(handle, db);
+  sharePool(handle, db);
   shared.set(via, handle);
   return handle;
 }
@@ -324,14 +326,22 @@ export async function dropTestOnlyRelations(): Promise<void> {
   });
 }
 
-/** Truncates every table outside the migration history (`drizzle` schema). */
+/**
+ * Platform tables whose rows a migration seeds (A-02-02: the plans and their values): kept by
+ * resetTestDb(), as in every real database. No application role may write them.
+ */
+export const SEEDED_TABLES = ['plan', 'plan_feature'] as const;
+
+/** Truncates every table outside the migration history (`drizzle` schema) and SEEDED_TABLES. */
 export async function resetTestDb(): Promise<void> {
+  const seeded = SEEDED_TABLES.map((t) => `'${t}'`).join(', ');
   await withPool(urlFor(info(), 'owner', workerDatabaseName()), (pool) =>
     pool.query(`DO $$
       DECLARE targets text;
       BEGIN
         SELECT string_agg(format('%I.%I', schemaname, tablename), ', ') INTO targets
-          FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema', 'drizzle');
+          FROM pg_tables WHERE schemaname NOT IN ('pg_catalog', 'information_schema', 'drizzle')
+           AND NOT (schemaname = 'public' AND tablename IN (${seeded}));
         IF targets IS NOT NULL THEN
           EXECUTE 'TRUNCATE ' || targets || ' RESTART IDENTITY CASCADE';
         END IF;

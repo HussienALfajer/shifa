@@ -43,6 +43,7 @@ import {
 import {
   clinicWithAccountOwner,
   clinicWithLink,
+  clinicWithOverride,
   nextPhone,
   totpState,
 } from './route-matrix.fixtures.ts';
@@ -234,6 +235,7 @@ async function observe(app: TestApp): Promise<Observed> {
         callerClinicId: () => clinicOfCaller(userId, phonesOf.get(caller)),
         password: () => knownPassword(userId),
         enrolledMemberId: () => enrolledMemberOfTenantA(),
+        overriddenClinicId: () => clinicWithOverride(),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

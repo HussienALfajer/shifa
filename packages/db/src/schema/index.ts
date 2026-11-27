@@ -2,6 +2,20 @@
 // .claude/rules/db.md. Policies, grants and triggers live in the custom migrations.
 export { auditEvent } from './audit.ts';
 export {
+  ADDON_MODES,
+  type AddonMode,
+  addon,
+  type EntitlementValue,
+  OVERRIDE_EVENT_KINDS,
+  type OverrideEventKind,
+  type OverrideState,
+  plan,
+  planFeature,
+  tenantAddon,
+  tenantOverride,
+  tenantOverrideEvent,
+} from './entitlements.ts';
+export {
   AUTH_THROTTLE_KINDS,
   account,
   authThrottle,

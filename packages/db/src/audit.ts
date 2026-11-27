@@ -14,6 +14,13 @@ export const PLATFORM_EVENTS = [
   // A-01-11: a pending owner's phone corrected (OD-99)
   'owner.phone_changed',
   'platform.admin_created',
+  // A-02-02: entitlements, overrides and the type change (criterion 18)
+  'entitlement.viewed',
+  'entitlement.history_viewed',
+  'entitlement.override_set',
+  'entitlement.override_removed',
+  'clinic.type_previewed',
+  'clinic.type_changed',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 

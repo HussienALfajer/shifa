@@ -38,6 +38,8 @@ export type CreateClinicRequest = z.infer<typeof CreateClinicRequest>;
 
 export const UpdateClinicRequest = z
   .object({
+    /** A-02-02: the clinic moves to that type's plan at once (preview first: type-preview). */
+    type: ClinicType.optional(),
     status: ClinicStatus.optional(),
     subscriptionEnd: CalendarDate.nullable().optional(),
   })
@@ -138,7 +140,7 @@ export const platformUpdateClinic = defineContract({
   operationId: 'platformUpdateClinic',
   method: 'PATCH',
   path: '/platform/clinics/:id',
-  summary: 'Change a clinic’s status or subscription end date',
+  summary: 'Change a clinic’s type (and so its plan), status or subscription end date',
   request: { params: ClinicIdParams, body: UpdateClinicRequest },
   responses: { 200: ClinicDetail, 400: ErrorEnvelope, 404: ErrorEnvelope },
 });

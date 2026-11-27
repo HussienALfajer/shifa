@@ -30,12 +30,14 @@ import {
   type PlatformAction,
   type PlatformDb,
   type PlatformTx,
+  type TenantType,
   tenant,
 } from '@shifa/db';
 import { and, desc, eq, ilike, ne } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { EntitlementsAdmin } from '../entitlements/index.ts';
 import { OwnerAccounts } from '../identity/index.ts';
 import { PLATFORM_DB } from './tokens.ts';
 
@@ -57,6 +59,7 @@ export class ClinicsService {
   constructor(
     @Inject(PLATFORM_DB) private readonly platformDb: PlatformDb,
     @Inject(OwnerAccounts) private readonly owners: OwnerAccounts,
+    @Inject(EntitlementsAdmin) private readonly entitlements: EntitlementsAdmin,
   ) {}
 
   list(principal: Principal, search: string | undefined, requestId: string): Promise<ClinicList> {
@@ -134,7 +137,13 @@ export class ClinicsService {
     });
   }
 
-  update(
+  /**
+   * Status, end date and (A-02-02) type. A new type moves the clinic to that plan at once in one
+   * `clinic.type_changed` action (before and after in the audit row, a history event per limit
+   * whose plan value moved; overrides stay). The same type again is no type change: the call
+   * rolls back and runs as a status change, so no type_changed row is left.
+   */
+  async update(
     principal: Principal,
     id: string,
     input: UpdateClinicRequest,
@@ -145,20 +154,32 @@ export class ClinicsService {
     if (input.subscriptionEnd !== undefined) {
       data['endDate'] = input.subscriptionEnd === null ? 'cleared' : 'set';
     }
+    const { type } = input;
+    if (type) {
+      const action = { event: 'clinic.type_changed', requestId, targetId: id, data } as const;
+      try {
+        const detail = await this.#run(principal, action, async (tx, audit) => {
+          const [current] = await tx
+            .select({ type: tenant.type })
+            .from(tenant)
+            .where(eq(tenant.id, id))
+            .for('update');
+          if (!current) throw new NotFoundException();
+          if (current.type === type) throw new SameType();
+          audit.setData({ before: current.type, after: type });
+          await updateClinic(tx, id, input, type);
+          await this.entitlements.recordTypeChange(tx, id, current.type, type, principal.userId);
+          return clinicDetail(tx, id);
+        });
+        this.entitlements.invalidate(id);
+        return detail;
+      } catch (err) {
+        if (!(err instanceof SameType)) throw err;
+      }
+    }
     const action = { event: 'clinic.status_changed', requestId, targetId: id, data } as const;
     return this.#run(principal, action, async (tx) => {
-      const changed = await tx
-        .update(tenant)
-        .set({
-          ...(input.status ? { status: input.status } : {}),
-          ...(input.subscriptionEnd !== undefined
-            ? { subscriptionEnd: input.subscriptionEnd }
-            : {}),
-          updatedAt: new Date(),
-        })
-        .where(eq(tenant.id, id))
-        .returning({ id: tenant.id });
-      if (changed.length === 0) throw new NotFoundException();
+      await updateClinic(tx, id, input);
       return clinicDetail(tx, id);
     });
   }
@@ -271,6 +292,29 @@ export class ClinicsService {
   ): Promise<T> {
     return this.platformDb.withPlatformAdmin({ ...action, actorId: principal.userId }, fn);
   }
+}
+
+/** A type change to the clinic's own type: rolled back and run as a status change. */
+class SameType extends Error {}
+
+/** Writes status, end date and type as given; 404 when there is no such clinic. */
+async function updateClinic(
+  tx: PlatformTx,
+  id: string,
+  input: UpdateClinicRequest,
+  type?: TenantType,
+): Promise<void> {
+  const changed = await tx
+    .update(tenant)
+    .set({
+      ...(type ? { type } : {}),
+      ...(input.status ? { status: input.status } : {}),
+      ...(input.subscriptionEnd !== undefined ? { subscriptionEnd: input.subscriptionEnd } : {}),
+      updatedAt: new Date(),
+    })
+    .where(eq(tenant.id, id))
+    .returning({ id: tenant.id });
+  if (changed.length === 0) throw new NotFoundException();
 }
 
 /** Owner memberships (all shifa_platform can see), of one clinic or of every clinic. */

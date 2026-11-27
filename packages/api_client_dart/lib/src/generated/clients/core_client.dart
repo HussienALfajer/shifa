@@ -13,11 +13,14 @@ import '../models/branch_list.dart';
 import '../models/change_password_request.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
+import '../models/clinic_entitlements.dart';
 import '../models/clinic_list.dart';
 import '../models/clinic_settings.dart';
+import '../models/clinic_type.dart';
 import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
 import '../models/ended_sessions.dart';
+import '../models/entitlement_item.dart';
 import '../models/health_status.dart';
 import '../models/invitation_request.dart';
 import '../models/invitation_view.dart';
@@ -31,12 +34,14 @@ import '../models/mfa_passed.dart';
 import '../models/mfa_status.dart';
 import '../models/my_clinics.dart';
 import '../models/my_profile.dart';
+import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
 import '../models/permission_defaults.dart';
 import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
+import '../models/set_override_request.dart';
 import '../models/set_password_request.dart';
 import '../models/setup_link_issued.dart';
 import '../models/setup_link_request.dart';
@@ -48,6 +53,7 @@ import '../models/totp_enrol_confirm.dart';
 import '../models/totp_enrol_start.dart';
 import '../models/totp_reenrol_confirm.dart';
 import '../models/totp_reenrol_start.dart';
+import '../models/type_preview.dart';
 import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_member_request.dart';
@@ -223,11 +229,39 @@ abstract class CoreClient {
   @GET('/platform/clinics/{id}')
   Future<ClinicDetail> platformClinic({@Path('id') required String id});
 
-  /// Change a clinic’s status or subscription end date
+  /// Change a clinic’s type (and so its plan), status or subscription end date
   @PATCH('/platform/clinics/{id}')
   Future<ClinicDetail> platformUpdateClinic({
     @Path('id') required String id,
     @Body() required UpdateClinicRequest body,
+  });
+
+  /// A clinic’s plan and every catalogue key with plan value, override and effective value
+  @GET('/platform/clinics/{id}/entitlements')
+  Future<ClinicEntitlements> platformClinicEntitlements({
+    @Path('id') required String id,
+  });
+
+  /// Remove a clinic’s override of one key
+  @DELETE('/platform/clinics/{id}/overrides/{key}')
+  Future<EntitlementItem> platformRemoveOverride({
+    @Path('id') required String id,
+    @Path('key') required String key,
+  });
+
+  /// Set or change a clinic’s override of one key (reason required, optional expiry)
+  @PUT('/platform/clinics/{id}/overrides/{key}')
+  Future<EntitlementItem> platformSetOverride({
+    @Path('id') required String id,
+    @Path('key') required String key,
+    @Body() required SetOverrideRequest body,
+  });
+
+  /// Every change of one key for a clinic, newest first
+  @GET('/platform/clinics/{id}/overrides/{key}/history')
+  Future<OverrideHistory> platformOverrideHistory({
+    @Path('id') required String id,
+    @Path('key') required String key,
   });
 
   /// Correct a pending owner’s phone; returns the new setup link once
@@ -249,6 +283,13 @@ abstract class CoreClient {
   @POST('/platform/clinics/{id}/owner/setup-link')
   Future<SetupLinkIssued> platformOwnerSetupLink({
     @Path('id') required String id,
+  });
+
+  /// The limits a clinic would have under another type, against its current use
+  @GET('/platform/clinics/{id}/type-preview')
+  Future<TypePreview> platformTypePreview({
+    @Path('id') required String id,
+    @Query('type') required ClinicType type,
   });
 
   /// The clinic’s members with roles, scope and status

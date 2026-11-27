@@ -33,6 +33,13 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     setup_link: ['SELECT', 'INSERT', 'DELETE'],
     audit_event: ['SELECT', 'INSERT'],
     user: ['SELECT'],
+    // A-02-02: plans and add-ons, and the clinic's own add-ons, overrides and their history
+    plan: ['SELECT'],
+    plan_feature: ['SELECT'],
+    addon: ['SELECT'],
+    tenant_addon: ['SELECT'],
+    tenant_override: ['SELECT'],
+    tenant_override_event: ['SELECT'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -59,6 +66,13 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     role_assignment: ['INSERT'],
     setup_link: ['INSERT'],
     platform_admin: ['INSERT'],
+    // A-02-02: overrides and their history, inside a clinic in entitlement actions (policies)
+    plan: ['SELECT'],
+    plan_feature: ['SELECT'],
+    addon: ['SELECT'],
+    tenant_addon: ['SELECT'],
+    tenant_override: DML,
+    tenant_override_event: ['SELECT', 'INSERT'],
   },
 };
 

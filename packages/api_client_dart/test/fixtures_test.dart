@@ -33,6 +33,10 @@ final _decoders = <String, Object Function(_Json)>{
   'MfaStatus': (json) => MfaStatus.fromJson(json).toJson(),
   'RecoveryCodes': (json) => RecoveryCodes.fromJson(json).toJson(),
   'MfaPassed': (json) => MfaPassed.fromJson(json).toJson(),
+  'ClinicEntitlements': (json) => ClinicEntitlements.fromJson(json).toJson(),
+  'EntitlementItem': (json) => EntitlementItem.fromJson(json).toJson(),
+  'OverrideHistory': (json) => OverrideHistory.fromJson(json).toJson(),
+  'TypePreview': (json) => TypePreview.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {
