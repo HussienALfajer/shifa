@@ -13,6 +13,9 @@ import type {
   SetupLinkView,
 } from '@shifa/contracts';
 import * as w from './world.ts';
+import { type AdminA02World, adminA02World } from './world-a02-admin.ts';
+import { type ClinicA02World, clinicA02World } from './world-a02-clinic.ts';
+import { type TabsWorld, tabsWorld } from './world-a02-tabs.ts';
 import {
   ADMIN_NAME,
   ADMIN_PHONE,
@@ -45,6 +48,12 @@ export interface World {
   enrolStarted: boolean;
   /** Admin web: the platform's clinics and their owners (world-admin.ts). */
   platform: PlatformClinic[];
+  /** Admin web: the clinic page tabs (A-02-08, world-a02-tabs.ts). */
+  tabs: TabsWorld;
+  /** Admin web: flags, announcements, cities and areas (A-02-09, world-a02-admin.ts). */
+  adminA02: AdminA02World;
+  /** Clinic web: capabilities, subscription, announcements, support, places (A-02-10). */
+  clinicA02: ClinicA02World;
 }
 
 /** Which app a board runs: clinic web or admin web (the same shell, another router). */
@@ -113,6 +122,9 @@ export function createWorld(over: Partial<World> = {}): World {
     wrongPasswords: 0,
     enrolStarted: false,
     platform: platformClinics(),
+    tabs: tabsWorld(),
+    adminA02: adminA02World(),
+    clinicA02: clinicA02World(),
     ...over,
   };
 }

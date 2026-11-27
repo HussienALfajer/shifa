@@ -3,9 +3,11 @@
 // Only a super admin is answered (403 otherwise), as the API does.
 import type { ClinicDetail, ClinicSummary } from '@shifa/contracts';
 import { normalisePhone } from '@shifa/contracts';
+import { changeType } from './routes-a02-tabs.ts';
 import { fail, ok, type Reply, type Request, type RouteTable } from './server.ts';
 import type { World } from './state.ts';
 import { at, id, masked, SETUP_TOKEN } from './world.ts';
+import { signIns7d, tabsOf } from './world-a02-tabs.ts';
 import { ACTIVE_OWNER, ADMIN_PHONE, type PlatformClinic } from './world-admin.ts';
 
 const field = (body: unknown, name: string): unknown =>
@@ -51,8 +53,8 @@ function link(world: World, e164: string) {
   };
 }
 
-/** A clinic as the list answers it (ClinicSummary: no owner card). */
-export const summary = (c: ClinicDetail): ClinicSummary => ({
+/** A clinic as the list answers it (ClinicSummary: no owner card, its usage columns). */
+export const summary = (c: ClinicDetail, world: World): ClinicSummary => ({
   id: c.id,
   name: c.name,
   type: c.type,
@@ -61,9 +63,9 @@ export const summary = (c: ClinicDetail): ClinicSummary => ({
   ownerName: c.ownerName,
   ownerStatus: c.ownerStatus,
   createdAt: c.createdAt,
-  // A-02-07: the list's usage columns (no counters in the screens world yet)
-  lastActivityAt: null,
-  signIns7d: 0,
+  // A-02-07: the list's usage columns, from the clinic's counters (world-a02-tabs.ts).
+  lastActivityAt: tabsOf(world, c.id).usage.lastActivityAt,
+  signIns7d: signIns7d(tabsOf(world, c.id).usage),
 });
 
 function clinicAction(run: (p: PlatformClinic, world: World, request: Request) => Reply) {
@@ -117,13 +119,18 @@ export const platformRoutes: RouteTable = {
     admin(world, () => {
       const search = (query.get('search') ?? '').trim();
       const clinics = world.platform
-        .map((p) => summary(p.clinic))
+        .map((p) => summary(p.clinic, world))
         .filter((c) => search === '' || c.name.includes(search));
       return ok({ clinics });
     }),
   'POST /platform/clinics': (request, world) => admin(world, () => create(request, world)),
   'GET /platform/clinics/:id': clinicAction((p) => ok(p.clinic)),
-  'PATCH /platform/clinics/:id': clinicAction((p, _w, { body }) => {
+  'PATCH /platform/clinics/:id': clinicAction((p, world, { body }) => {
+    // A-02-02: the clinic moves to the new type's plan at once (routes-a02-tabs.ts).
+    const type = field(body, 'type');
+    if (type === 'solo' || type === 'multi_doctor' || type === 'multi_branch') {
+      changeType(world, p, type);
+    }
     const status = field(body, 'status');
     if (status === 'trial' || status === 'active' || status === 'suspended') {
       p.clinic.status = status;

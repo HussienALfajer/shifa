@@ -5,7 +5,14 @@ import { summary } from '../../routes-platform.ts';
 import type { Scenario, Sheet, Step, World } from '../../scenario.ts';
 import { fail, ok } from '../../server.ts';
 import { local } from '../../world.ts';
-import { ACTIVE_OWNER, CLINIC_NAMES, FREE_OWNER, PENDING_OWNER } from '../../world-admin.ts';
+import {
+  ACTIVE_CLINIC,
+  ACTIVE_OWNER,
+  CLINIC_NAMES,
+  FREE_OWNER,
+  PENDING_OWNER,
+  TRIAL_CLINIC,
+} from '../../world-admin.ts';
 
 const list = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/', ...s });
 const search = (value: string): Step => ({ fillIn: 'input[type="search"]', value });
@@ -14,7 +21,7 @@ export const clinicsSheet: Sheet = {
   id: 'Clinics',
   title: 'العيادات',
   route: '/',
-  note: 'Admin web’s home in its frame (the logo, «إدارة شفاء», the avatar; «العيادات» and «خروج»): every clinic newest first with type, status, end date («ينتهي خلال 5 أيام»), owner and «لم يُكمل الإعداد»; loading, no clinic yet, a failed read; the search (a match, none), the status filter with its counts (one with no clinic), the hidden creation date in «الأعمدة».',
+  note: 'Admin web’s home in its frame (the logo, «إدارة شفاء», the avatar; «العيادات» and «خروج»): every clinic newest first with type, status, end date («ينتهي خلال 5 أيام»), owner and «لم يُكمل الإعداد», its last activity and sign-ins of the last 7 days (A-02-08); «بلا نشاط منذ 7 أيام» (the quiet clinics, or every clinic active); loading, no clinic yet, a failed read; the search (a match, none), the status filter with its counts (one with no clinic), the hidden creation date in «الأعمدة».',
   code: [
     'admin/clinics-page.tsx',
     'admin/admin-frame.tsx',
@@ -86,6 +93,19 @@ export const clinicsSheet: Sheet = {
       ],
     }),
     list({
+      id: 'Inactive',
+      title: 'بلا نشاط منذ 7 أيام',
+      steps: [{ check: 'بلا نشاط منذ 7 أيام' }],
+    }),
+    list({
+      id: 'AllActive',
+      title: 'بلا نشاط: كل العيادات نشطة',
+      world: (w) => {
+        w.platform = w.platform.filter((p) => [ACTIVE_CLINIC, TRIAL_CLINIC].includes(p.clinic.id));
+      },
+      steps: [{ check: 'بلا نشاط منذ 7 أيام' }, { until: 'clinicsAllActiveTitle' }],
+    }),
+    list({
       id: 'Columns',
       title: 'قائمة «الأعمدة»: تاريخ الإنشاء',
       overlay: true,
@@ -95,7 +115,7 @@ export const clinicsSheet: Sheet = {
 };
 
 /** The list answer of the world (GET /platform/clinics without a search). */
-const listOf = (w: World) => ok({ clinics: w.platform.map((p) => summary(p.clinic)) });
+const listOf = (w: World) => ok({ clinics: w.platform.map((p) => summary(p.clinic, w)) });
 
 const create = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/clinics/new', ...s });
 

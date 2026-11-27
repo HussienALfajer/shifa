@@ -48,3 +48,7 @@ ace4c3c5b3c1eacdb552a728dd330298b7060b8d:packages/web-shell/test/invitation-head
 # ("Zk3vQ9pL…", typed by hand, 43 base64url characters); no server ever issued it. Replaced by
 # plain synthetic words in the next commits.
 d3ce4b77eec7e2194253ed3930b2aeadb592ec38:packages/web-shell/scripts/screens/world.ts:generic-api-key:293
+
+# Screens canvas (A-02 on the approved screens pages): the synthetic support hand-off token, the
+# base64url of "Synthetic-handoff-token-canvas00"; the next commit builds it from those words.
+8c8bf767e7631b5df5e7bd96e6be8ea5fff23ff0:packages/web-shell/scripts/screens/routes-a02-clinic.ts:generic-api-key:154
