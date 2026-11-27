@@ -18,6 +18,9 @@ SessionView _$SessionViewFromJson(Map<String, dynamic> json) => SessionView(
       .map((e) => SessionRoleAssignment.fromJson(e as Map<String, dynamic>))
       .toList(),
   sessionId: json['sessionId'] as String,
+  support: json['support'] == null
+      ? null
+      : SupportSessionView.fromJson(json['support'] as Map<String, dynamic>),
   tenantId: json['tenantId'] as String?,
   userId: json['userId'] as String,
 );
@@ -33,6 +36,7 @@ Map<String, dynamic> _$SessionViewToJson(SessionView instance) =>
       'platformAdmin': instance.platformAdmin,
       'roles': instance.roles,
       'sessionId': instance.sessionId,
+      'support': instance.support,
       'tenantId': instance.tenantId,
       'userId': instance.userId,
     };

@@ -45,6 +45,9 @@ final _decoders = <String, Object Function(_Json)>{
   // A-02-04
   'ClinicSettingList': (json) => ClinicSettingList.fromJson(json).toJson(),
   'SettingView': (json) => SettingView.fromJson(json).toJson(),
+  'PlatformSupportGrants': (json) =>
+      PlatformSupportGrants.fromJson(json).toJson(),
+  'ClinicSupportGrants': (json) => ClinicSupportGrants.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

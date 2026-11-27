@@ -44,6 +44,13 @@ export {
   type TenantSettingScope,
 } from './settings.ts';
 export {
+  SUPPORT_END_REASONS,
+  SUPPORT_MINUTES,
+  type SupportEndReason,
+  type SupportMinutes,
+  supportAccessGrant,
+} from './support.ts';
+export {
   branch,
   deploymentRoute,
   MEMBERSHIP_STATUSES,

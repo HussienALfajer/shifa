@@ -46,6 +46,8 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-02-04: settings; the clinic's own values, UPDATE by column only (never `locked`, below)
     platform_setting_value: ['SELECT'],
     setting_value: ['SELECT', 'INSERT', 'DELETE'],
+    // A-02-05: the clinic's support grants; an owner ends one by column UPDATE (below)
+    support_access_grant: ['SELECT'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -62,6 +64,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     platform_admin: ['SELECT'],
     // A-02-04: platform values, and each clinic's idle sign-out (column SELECT below)
     platform_setting_value: ['SELECT'],
+    // A-02-05: the grant of a hand-off or of the signed-in super admin (policies); UPDATE by
+    // column only (below)
+    support_access_grant: ['SELECT'],
   },
   shifa_platform: {
     tenant: ['SELECT', 'INSERT', 'UPDATE'],
@@ -88,8 +93,25 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // column only (below), never a value's clinic, scope or key
     platform_setting_value: ['SELECT'],
     setting_value: ['SELECT', 'INSERT', 'DELETE'],
+    // A-02-05: opens grants in support actions (policies); SELECT and UPDATE by column (below)
+    support_access_grant: ['INSERT'],
   },
 };
+
+/** support_access_grant without the hand-off hash (A-02-05): what the super admin reads. */
+const GRANT_COLUMNS = [
+  'id',
+  'tenant_id',
+  'admin_user_id',
+  'admin_name',
+  'reason',
+  'opened_at',
+  'expires_at',
+  'ended_at',
+  'ended_by',
+  'ended_by_name',
+  'end_reason',
+] as const;
 
 /** Column-level grants on top of the table privileges above (secrets left out on purpose). */
 const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: readonly string[]][] = [
@@ -164,6 +186,34 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ['shifa_platform', 'membership', 'UPDATE', ['phone_e164', 'updated_at']],
   // A-02-04: the super admin's lock with a value (security review N2)
   ['shifa_platform', 'setting_value', 'UPDATE', ['value', 'locked', 'set_by', 'set_at']],
+  // A-02-05: the clinic reads its grants without the hand-off hash and an owner ends one; the
+  // super admin opens, hands off and ends (policies keep each to its action)
+  [
+    'shifa_app',
+    'support_access_grant',
+    'UPDATE',
+    ['ended_at', 'ended_by', 'ended_by_name', 'end_reason'],
+  ],
+  ['shifa_platform', 'support_access_grant', 'SELECT', [...GRANT_COLUMNS, 'handoff_expires_at']],
+  [
+    'shifa_platform',
+    'support_access_grant',
+    'UPDATE',
+    [
+      'ended_at',
+      'ended_by',
+      'ended_by_name',
+      'end_reason',
+      'handoff_token_hash',
+      'handoff_expires_at',
+    ],
+  ],
+  [
+    'shifa_auth',
+    'support_access_grant',
+    'UPDATE',
+    ['ended_at', 'end_reason', 'handoff_token_hash', 'handoff_expires_at'],
+  ],
 ];
 
 /** Secret columns no role but shifa_auth may read. */

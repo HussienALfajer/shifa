@@ -9,6 +9,7 @@ import {
   envelopeFor,
   type LimitReached,
   type SessionEndReason,
+  type SupportEnded,
   VALIDATION_FAILED_MESSAGE,
 } from '@shifa/contracts';
 import type { FastifyReply, FastifyRequest } from 'fastify';
@@ -32,6 +33,8 @@ export class ApiError extends HttpException {
     readonly reason?: SessionEndReason,
     /** The limit that refused an add: only with `limit_reached` (A-02 criterion 4). */
     readonly limitReached?: LimitReached,
+    /** How a support grant ended: only with `session_expired`, `support_ended` (A-02-05). */
+    readonly supportEnded?: SupportEnded,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -47,6 +50,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         ...(exception.until ? { until: exception.until.toISOString() } : {}),
         ...(exception.reason ? { reason: exception.reason } : {}),
         ...(exception.limitReached ? { limitReached: { ...exception.limitReached } } : {}),
+        ...(exception.supportEnded ? { supportEnded: { ...exception.supportEnded } } : {}),
       },
     };
   }

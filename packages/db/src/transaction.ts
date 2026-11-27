@@ -87,12 +87,16 @@ async function assertApplicationRole(client: PoolClient, role: ApplicationRole):
   verified.set(client, role);
 }
 
-/** Runs `setup` then `fn` in one transaction as `role`; the handle dies when it ends. */
+/**
+ * Runs `setup` then `fn` in one transaction as `role`; the handle dies when it ends. `readOnly`
+ * opens it `READ ONLY` (a support session, A-02-05): PostgreSQL refuses every write in it.
+ */
 export async function runScoped<T>(
   pool: Pool,
   role: ApplicationRole,
   setup: SQL,
   fn: (tx: Tx) => Promise<T>,
+  { readOnly = false }: { readOnly?: boolean } = {},
 ): Promise<T> {
   const client = await pool.connect();
   let broken: unknown;
@@ -105,10 +109,13 @@ export async function runScoped<T>(
     await assertApplicationRole(client, role);
     const db = drizzle({ client: scoped as unknown as PoolClient, paramsInErrors: false });
     return await withoutQueryParams(() =>
-      db.transaction(async (tx) => {
-        await tx.execute(setup);
-        return fn(tx as unknown as Tx);
-      }),
+      db.transaction(
+        async (tx) => {
+          await tx.execute(setup);
+          return fn(tx as unknown as Tx);
+        },
+        readOnly ? { accessMode: 'read only' } : undefined,
+      ),
     );
   } catch (err) {
     // Drizzle already rolled back; if the connection cannot even do that, destroy it.

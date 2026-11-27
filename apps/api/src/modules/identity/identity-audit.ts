@@ -20,7 +20,9 @@ export type SessionEndReason =
   /** The clinic deactivated the member, removed their roles or issued a new link (A-01b 3, 4). */
   | 'member'
   /** The person changed their password: every other session ends (OD-92). */
-  | 'password_changed';
+  | 'password_changed'
+  /** A support session's grant ended or expired (A-02-05), or a new hand-off replaced it. */
+  | 'support_ended';
 
 /** The allowlisted `data` of each event; nothing else can be written. */
 export type IdentityEvent =
@@ -45,7 +47,11 @@ export type IdentityEvent =
   | { event: 'auth.password_change_failed' }
   | { event: 'auth.recovery_codes_renewed' }
   // A-01-11: TOTP moved to a new phone (OD-98; actor and target: the person).
-  | { event: 'auth.mfa_reenrolled' };
+  | { event: 'auth.mfa_reenrolled' }
+  // A-02-05 (target: the grant; actor: its super admin): a hand-off opened a support session; a
+  // support session found its grant expired and closed it (`support.expired`, once).
+  | { event: 'support.session_started' }
+  | { event: 'support.expired'; data: { endedBy: 'expiry' } };
 
 export interface AuditIds {
   actorId: string | null;

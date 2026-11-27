@@ -9,7 +9,7 @@ export {
   isCommonPassword,
   type PasswordProblem,
 } from './password-rules.ts';
-export { SESSION_COOKIE } from './session-cookie.ts';
+export { SESSION_COOKIE, SUPPORT_COOKIE } from './session-cookie.ts';
 export {
   parseSeedArgs,
   type SeedArgs,
@@ -18,4 +18,5 @@ export {
   type SeedSuperAdminInput,
   seedSuperAdmin,
 } from './super-admin-seed.ts';
+export { SupportDirectory } from './support-directory.ts';
 export type { IdentitySecrets } from './tokens.ts';

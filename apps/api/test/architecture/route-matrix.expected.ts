@@ -94,6 +94,12 @@ export interface SampleContext {
   overriddenClinicId(): Promise<string>;
   /** A new clinic whose `session.idle_minutes` is locked (A-02-04 unlock). */
   lockedClinicId(): Promise<string>;
+  /** An open support grant of the calling person on a new clinic (A-02-05). */
+  supportGrantId(): Promise<string>;
+  /** An open support grant of another super admin on the callers' clinic (the owner's end). */
+  clinicGrantId(): Promise<string>;
+  /** A fresh, valid support hand-off token (the exchange). */
+  handoffToken(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -177,6 +183,24 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'DELETE /platform/clinics/:id/settings/:key/lock': async (ctx) => ({
     url: `/platform/clinics/${await ctx.lockedClinicId()}/settings/session.idle_minutes/lock`,
   }),
+  // A-02-05: support access (a fresh clinic per open: one open grant per admin and clinic)
+  'GET /platform/clinics/:id/support-grants': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/support-grants`,
+  }),
+  'POST /platform/clinics/:id/support-grants': async (ctx) => ({
+    url: `/platform/clinics/${await ctx.ownedClinicId()}/support-grants`,
+    body: { reason: 'سبب تجريبي للمصفوفة', minutes: 30 },
+  }),
+  'POST /platform/support-grants/:id/handoff': async (ctx) => ({
+    url: `/platform/support-grants/${await ctx.supportGrantId()}/handoff`,
+  }),
+  'POST /platform/support-grants/:id/end': async (ctx) => ({
+    url: `/platform/support-grants/${await ctx.supportGrantId()}/end`,
+  }),
+  'POST /clinic/support-grants/:id/end': async (ctx) => ({
+    url: `/clinic/support-grants/${await ctx.clinicGrantId()}/end`,
+  }),
+  'POST /auth/support/session': async (ctx) => ({ body: { token: await ctx.handoffToken() } }),
   'PUT /platform/flags/:key': () => ({
     url: '/platform/flags/test.flag_on',
     body: { mode: 'on', reason: 'سبب تجريبي للمصفوفة' },
@@ -334,6 +358,18 @@ export const EXPECTED_MATRIX: Matrix = {
   'GET /platform/clinics/:id/settings': platformAdmin,
   'PUT /platform/clinics/:id/settings/:key/lock': platformAdmin,
   'DELETE /platform/clinics/:id/settings/:key/lock': platformAdmin,
+  // A-02-05: support access. The super admin opens, hands off and ends; an owner sees and ends
+  // (clinic.settings.manage); the hand-off token is the credential of the exchange; ending from
+  // the support tab refuses every session that is not a support session (support matrix:
+  // test/support/support-matrix.test.ts)
+  'GET /platform/clinics/:id/support-grants': platformAdmin,
+  'POST /platform/clinics/:id/support-grants': platformAdmin,
+  'POST /platform/support-grants/:id/handoff': platformAdmin,
+  'POST /platform/support-grants/:id/end': platformAdmin,
+  'GET /clinic/support-grants': ownerOnly,
+  'POST /clinic/support-grants/:id/end': ownerOnly,
+  'POST /auth/support/session': everyone,
+  'POST /auth/support/end': refusedForEveryone,
   // A-02-03: feature flags (super admin); what the clinic may use (every member) and its
   // subscription card (clinic.settings.manage, owner only)
   'GET /platform/flags': platformAdmin,

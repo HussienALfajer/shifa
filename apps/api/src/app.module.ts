@@ -8,11 +8,13 @@ import { type FlagDefinition, FlagsModule } from './modules/flags/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
   BetterAuthAdapter,
+  DEFAULT_CLINIC_WEB_URL,
   IdentityModule,
   type IdentitySecrets,
 } from './modules/identity/index.ts';
 import { PlatformModule } from './modules/platform/index.ts';
 import { type SettingDefinition, SettingsModule } from './modules/settings/index.ts';
+import { SupportModule } from './modules/support/index.ts';
 import { TeamModule } from './modules/team/index.ts';
 import type { Clock } from './platform/clock.ts';
 import { ContractModule } from './platform/contract/index.ts';
@@ -92,6 +94,11 @@ export class AppModule {
           ...(settingKeys ? { settings: settingKeys } : {}),
         }),
         BranchesModule.register({ identity, entitlements }),
+        SupportModule.register({
+          platformDb,
+          identity,
+          clinicWebUrl: clinicWebUrl ?? DEFAULT_CLINIC_WEB_URL,
+        }),
         ContractModule,
         HealthModule,
         ...(testRoutes ? [TestSupportModule] : []),

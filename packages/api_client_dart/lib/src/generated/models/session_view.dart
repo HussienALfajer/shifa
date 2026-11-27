@@ -6,6 +6,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'mfa_state.dart';
 import 'session_role_assignment.dart';
+import 'support_session_view.dart';
 
 part 'session_view.g.dart';
 
@@ -21,6 +22,7 @@ class SessionView {
     required this.platformAdmin,
     required this.roles,
     required this.sessionId,
+    required this.support,
     required this.tenantId,
     required this.userId,
   });
@@ -38,6 +40,8 @@ class SessionView {
   final bool platformAdmin;
   final List<SessionRoleAssignment> roles;
   final String sessionId;
+  @JsonKey(includeIfNull: true)
+  final SupportSessionView? support;
   @JsonKey(includeIfNull: true)
   final String? tenantId;
   final String userId;

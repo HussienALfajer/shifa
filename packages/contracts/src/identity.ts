@@ -34,6 +34,23 @@ export const SessionRoleAssignment = z
 export const MfaState = z.enum(['none', 'pending', 'verified']).meta({ id: 'MfaState' });
 export type MfaState = z.infer<typeof MfaState>;
 
+/**
+ * A support session (A-02 criteria 11, 13; ADR-0050): the super admin reads `tenantId` as its
+ * owner, read-only, until `expiresAt`. Clinic web shows the full support banner above every page
+ * (time left from `expiresAt − now`, the server's time) and draws write actions disabled.
+ */
+export const SupportSessionView = z
+  .object({
+    grantId: z.uuid(),
+    clinicName: z.string(),
+    reason: z.string(),
+    expiresAt: z.iso.datetime(),
+    /** The server's time, so time left does not trust the device clock. */
+    now: z.iso.datetime(),
+  })
+  .meta({ id: 'SupportSessionView' });
+export type SupportSessionView = z.infer<typeof SupportSessionView>;
+
 /** The signed-in person's current session: who, where, and when it ends. */
 export const SessionView = z
   .object({
@@ -57,6 +74,8 @@ export const SessionView = z
     idleExpiresAt: z.iso.datetime(),
     /** When the session ends however active (12 h after sign-in). */
     absoluteExpiresAt: z.iso.datetime(),
+    /** The support grant this session reads the clinic under; null for every other session. */
+    support: SupportSessionView.nullable(),
   })
   .meta({ id: 'SessionView' });
 export type SessionView = z.infer<typeof SessionView>;

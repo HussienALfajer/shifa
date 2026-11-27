@@ -1,6 +1,6 @@
 # A-02-04 Settings cascade with locks
 
-Status: Built, in review · Tier: T0 · Branch: `claude/admiring-johnson-rxetti` (cloud session; planned as `feat/A-02-04-settings-cascade`)
+Status: Done (merged [#186](https://github.com/HussienALfajer/shifa/pull/186), 2026-11-27) · Tier: T0 · Branch: `claude/admiring-johnson-rxetti` (cloud session; planned as `feat/A-02-04-settings-cascade`)
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 8–10, 18 (setting events) · Requirements: PLT-22, PLT-23, PLT-24 · Decisions: ADR-0007; A-01a criterion 9, OD-77, OD-87 · From A-02-01: criteria 9 (amended)
 
 After [A-02-03](A-02-03-limits-flags-capabilities.md) (merged).

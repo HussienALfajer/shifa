@@ -28,6 +28,23 @@ export const PLATFORM_EVENTS = [
   'setting.viewed',
   'setting.locked',
   'setting.unlocked',
+  // A-02-05: support access (criteria 11–14; ADR-0050). The reason stays on the grant row.
+  'support.listed',
+  'support.opened',
+  'support.handoff_issued',
+  'support.ended',
+] as const;
+
+/**
+ * Support access events besides the platform actions (A-02-05): written in the clinic by shifa_app
+ * (`support.request`, one per request of a support session; `support.ended` by an owner) or with a
+ * null tenant (`support.expired`, `support.session_started`, by whichever path first sees it).
+ */
+export const SUPPORT_EVENTS = [
+  'support.request',
+  'support.ended',
+  'support.expired',
+  'support.session_started',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 
@@ -77,7 +94,8 @@ export const TENANT_EVENTS = [
 export type AuditEventName =
   | PlatformEvent
   | (typeof AUTH_EVENTS)[number]
-  | (typeof TENANT_EVENTS)[number];
+  | (typeof TENANT_EVENTS)[number]
+  | (typeof SUPPORT_EVENTS)[number];
 
 /** A request id as the API issues it; anything else is refused before it reaches a row. */
 export const REQUEST_ID = /^[A-Za-z0-9._:-]{1,64}$/;

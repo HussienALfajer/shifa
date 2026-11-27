@@ -13,6 +13,7 @@ import {
   PLATFORM_ADMIN_METADATA,
   PUBLIC_METADATA,
   SIGNED_IN_METADATA,
+  SUPPORT_WRITE_METADATA,
 } from './decorators.ts';
 import { findGates, type GatePort } from './gates.ts';
 import {
@@ -41,6 +42,8 @@ export interface AccessAnnotations {
   entitlementGate: string | undefined;
   /** @RequireFlag(key) (A-02-03). */
   flagGate: string | undefined;
+  /** @SupportSessionWrite (A-02-05): the one write a support session may make. */
+  supportWrite: boolean;
 }
 
 export function readAccess(reflector: Reflector, handler: object): AccessAnnotations {
@@ -57,6 +60,7 @@ export function readAccess(reflector: Reflector, handler: object): AccessAnnotat
     beforeMfa: flag(BEFORE_MFA_METADATA),
     entitlementGate: text(ENTITLEMENT_GATE_METADATA),
     flagGate: text(FLAG_GATE_METADATA),
+    supportWrite: flag(SUPPORT_WRITE_METADATA),
   };
 }
 
@@ -172,6 +176,9 @@ export class AccessCheck implements OnApplicationBootstrap {
         if (count > 1) problems.push(`  ${label}: more than one access annotation`);
         if (access.beforeMfa && !access.signedIn) {
           problems.push(`  ${label}: @BeforeMfa without @SignedIn`);
+        }
+        if (access.supportWrite && (!access.signedIn || access.beforeMfa)) {
+          problems.push(`  ${label}: @SupportSessionWrite without @SignedIn (or with @BeforeMfa)`);
         }
       }
     }

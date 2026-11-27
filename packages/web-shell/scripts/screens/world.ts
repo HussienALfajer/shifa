@@ -70,6 +70,7 @@ export function ownerSession(over: Partial<SessionView> = {}): SessionView {
     idleMinutes: 15,
     idleExpiresAt: at(minutes(15)),
     absoluteExpiresAt: at(minutes(11 * 60)),
+    support: null,
     ...over,
   };
 }

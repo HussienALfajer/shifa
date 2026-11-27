@@ -26,6 +26,12 @@ export interface AuthDb {
    * memberships (one clinic or several, OD-86).
    */
   withUserLink<T>(userId: string, tokenHashHex: string, fn: (tx: Tx) => Promise<T>): Promise<T>;
+  /**
+   * As withAuth(), plus the support grant whose hand-off has this SHA-256 hash (A-02-05,
+   * ADR-0050): it can be read and, with its super admin given as `userId` (the cleared row must
+   * stay visible), its hand-off cleared, once, while the grant is open.
+   */
+  withHandoff<T>(tokenHashHex: string, fn: (tx: Tx) => Promise<T>, userId?: string): Promise<T>;
   /** Ends the pool at shutdown; later calls return the same promise. */
   close(): Promise<void>;
 }
@@ -51,6 +57,11 @@ export function createAuthDb(url: string, options: CreateDbOptions = {}): AuthDb
       assertUuid('userId', userId);
       assertTokenHash(tokenHashHex);
       return runAsAuth(pool, { userId, linkTokenHash: tokenHashHex }, fn);
+    },
+    withHandoff: async (tokenHashHex, fn, userId) => {
+      assertTokenHash(tokenHashHex);
+      if (userId !== undefined) assertUuid('userId', userId);
+      return runAsAuth(pool, { linkTokenHash: tokenHashHex, userId }, fn);
     },
     close,
   };

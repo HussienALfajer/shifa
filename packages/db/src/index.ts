@@ -3,6 +3,7 @@ export {
   type AuditEventName,
   PLATFORM_EVENTS,
   type PlatformEvent,
+  SUPPORT_EVENTS,
   TENANT_EVENTS,
 } from './audit.ts';
 export { type AuthDb, createAuthDb } from './auth.ts';

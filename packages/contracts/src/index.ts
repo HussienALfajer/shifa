@@ -13,5 +13,6 @@ export * from './onboarding.ts';
 export * from './phone.ts';
 export * from './platform.ts';
 export * from './settings.ts';
+export * from './support.ts';
 export * from './switcher.ts';
 export * from './team.ts';

@@ -17,6 +17,9 @@ export const PRODUCTION_PERMISSIONS = [
   { key: 'clinical.notes.view', sensitive: true },
   // A-02-03: what the active clinic may use (GET /clinic/capabilities), every member
   { key: 'clinic.capabilities.view', sensitive: false },
+  // A-02-05 (PLT-46): reserved for support write elevation; granted to nobody in Release 1, and
+  // not sensitive, so no member toggle can switch it on.
+  { key: 'support.elevate', sensitive: false },
 ] as const satisfies readonly PermissionDefinition[];
 
 export type PermissionKey = (typeof PRODUCTION_PERMISSIONS)[number]['key'];

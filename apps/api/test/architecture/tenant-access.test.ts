@@ -20,8 +20,16 @@ const ALLOWED: Readonly<Record<string, Readonly<Record<string, string>>>> = {
       'an invitation answered from the chooser writes the clinic’s audit row (OD-90)',
     'identity/switcher.service.ts':
       'a switch, checked against the person’s own clinics, writes the clinic’s audit row',
+    'identity/support-sessions.ts':
+      'a support session’s banner names its clinic, read before any scope exists (AuthPort)',
+    'support/request-audit.ts':
+      'the guard records each support-session request in the clinic before any scope is bound',
   },
   withTenant: {
+    'identity/support-sessions.ts':
+      'the clinic’s name for the support banner, READ ONLY, in the grant’s clinic',
+    'support/request-audit.ts':
+      'one support.request row in the grant’s clinic per support-session request (A-02 14)',
     'identity/sessions.service.ts': 'the member’s last activity, for the principal (AuthPort)',
     'identity/tenant-view.ts': 'builds the principal before any scope exists (AuthPort)',
     'identity/clinic-choices.ts':

@@ -11,6 +11,11 @@ export interface RequestScope {
   readonly branchId: string | null;
   /** The person acting (audit actor, `app.user_id`). */
   readonly userId: string;
+  /**
+   * A support session's scope (A-02-05): TenantDb opens every transaction READ ONLY, so a write
+   * the guard did not refuse still fails in the database. Absent for every other scope.
+   */
+  readonly readOnly?: true;
 }
 
 const issued = new WeakSet<object>();

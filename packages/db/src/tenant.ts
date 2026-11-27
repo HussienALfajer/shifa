@@ -8,6 +8,11 @@ export interface TenantContext {
   tenantId: string;
   branchId?: string;
   userId: string;
+  /**
+   * Open the transaction READ ONLY (A-02-05: a super admin's support session reads the clinic as
+   * its owner, and the database refuses every write, the second wall behind the guard).
+   */
+  readOnly?: boolean;
 }
 
 /**
@@ -28,5 +33,5 @@ export async function runWithTenant<T>(
     branchId: ctx.branchId,
     userId: ctx.userId,
   });
-  return runScoped(pool, 'shifa_app', setup, fn);
+  return runScoped(pool, 'shifa_app', setup, fn, { readOnly: ctx.readOnly === true });
 }

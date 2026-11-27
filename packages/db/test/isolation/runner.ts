@@ -155,7 +155,7 @@ async function readsWithoutTenant(scope: Scope, table: string, paths: [string, P
 /** Seeds `tenantId` as shifa_app, or for a read-only table as the owner in that tenant. */
 function seeder(db: ShifaDb, c: IsolationCase, access: Access) {
   return async (tenantId: string): Promise<void> => {
-    if (access !== 'read-only') {
+    if (access !== 'read-only' && !c.withoutPrivilege?.includes('insert')) {
       await db.withTenant({ tenantId, userId: USER }, (tx) => c.seed(tx, tenantId));
       return;
     }
@@ -199,7 +199,10 @@ export async function runIsolationCase(
   out.push(...(await readsInTenantA(tenantA, c.table, paths)));
   out.push(...(await readsWithoutTenant(noTenant, c.table, paths)));
 
-  const insertRefused = access === 'read-only' ? refusedByPrivilege : refusedByRls;
+  const insertRefused =
+    access === 'read-only' || c.withoutPrivilege?.includes('insert')
+      ? refusedByPrivilege
+      : refusedByRls;
   const changeRefused = access === 'read-write' ? refusedByRls : refusedByPrivilege;
   const forged = "insert with tenant B's tenant_id";
   for (const scope of [tenantA, noTenant]) {
@@ -236,7 +239,7 @@ export async function runIsolationCase(
   await reseed();
   const beforeDelete = await rowsOfB(db, t);
   const deleted = await attempt(tenantA, (tx) => tx.execute(sql`delete from ${t}`));
-  if (access !== 'read-write') {
+  if (access !== 'read-write' || c.withoutPrivilege?.includes('delete')) {
     out.push(...refusedByPrivilege(deleted, 'delete without WHERE', c.table, tenantA));
   } else if (deleted !== undefined) {
     out.push(

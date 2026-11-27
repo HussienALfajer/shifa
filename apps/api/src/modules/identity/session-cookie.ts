@@ -6,6 +6,16 @@ import { createHmac, timingSafeEqual } from 'node:crypto';
 /** `__Host-`: Secure, Path=/, no Domain; the browser refuses it otherwise. */
 export const SESSION_COOKIE = '__Host-shifa.sid';
 
+/**
+ * A support session's cookie (A-02-05, ADR-0050), set on clinic web by the hand-off exchange and
+ * read before SESSION_COOKIE: the support tab acts as the support session, never as anyone's
+ * own clinic session. Same format and attributes; it lasts until the grant's end.
+ */
+export const SUPPORT_COOKIE = '__Host-shifa.support';
+
+/** Clears the support cookie (its session ended and is gone). */
+export const CLEAR_SUPPORT_COOKIE = `${SUPPORT_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`;
+
 /** Absolute session limit (OD-77): 12 hours; also the cookie's Max-Age. */
 export const SESSION_ABSOLUTE_MS = 12 * 60 * 60 * 1000;
 
@@ -37,11 +47,12 @@ export function sessionCookieFor(
   secret: string,
   expiresAt: Date,
   now: Date,
+  name: typeof SESSION_COOKIE | typeof SUPPORT_COOKIE = SESSION_COOKIE,
 ): string {
   const signature = createHmac('sha256', secret).update(token).digest('base64');
   const maxAge = Math.max(0, Math.floor((expiresAt.getTime() - now.getTime()) / 1000));
   const value = encodeURIComponent(`${token}.${signature}`);
-  return `${SESSION_COOKIE}=${value}; Max-Age=${String(maxAge)}; Path=/; HttpOnly; Secure; SameSite=Lax`;
+  return `${name}=${value}; Max-Age=${String(maxAge)}; Path=/; HttpOnly; Secure; SameSite=Lax`;
 }
 
 /** The session cookie's line among Better Auth's Set-Cookie headers. */

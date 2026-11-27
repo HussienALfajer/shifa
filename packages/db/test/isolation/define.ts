@@ -42,6 +42,13 @@ export interface IsolationCase {
    */
   readonly updatable?: { readonly column: string; readonly value: string } | undefined;
   /**
+   * For a read-write table where shifa_app holds no INSERT or no DELETE privilege at all (A-02-05:
+   * support grants are opened by the platform; the clinic only ends one by column UPDATE): those
+   * writes must be refused by privileges, and with `insert` listed the runner seeds as the owner
+   * inside each tenant's context, as for a read-only table.
+   */
+  readonly withoutPrivilege?: readonly ('insert' | 'delete')[] | undefined;
+  /**
    * Inserts with tenant A's own tenant_id that a restrictive policy of this table must refuse
    * (SQLSTATE 42501 naming the table), by name; each runs inside tenant A (A-01-05: a membership
    * already bound to an account).

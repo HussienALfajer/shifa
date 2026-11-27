@@ -48,6 +48,8 @@ import {
   clinicWithOverride,
   nextPhone,
   openLimitsAndTestFeature,
+  openSupportGrant,
+  supportHandoffToken,
   totpState,
 } from './route-matrix.fixtures.ts';
 
@@ -241,6 +243,9 @@ async function observe(app: TestApp): Promise<Observed> {
         enrolledMemberId: () => enrolledMemberOfTenantA(),
         overriddenClinicId: () => clinicWithOverride(),
         lockedClinicId: () => clinicWithLock(),
+        supportGrantId: async () => (await openSupportGrant(userId)).grantId,
+        clinicGrantId: async () => (await openSupportGrant(undefined, TENANT_A)).grantId,
+        handoffToken: () => supportHandoffToken(),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

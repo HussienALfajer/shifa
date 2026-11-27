@@ -27,6 +27,7 @@ import { idleMinutesOfOwnClinics } from '../settings/index.ts';
 import { activeAtSignIn } from './clinic-choices.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
 import { SESSION_ABSOLUTE_MS } from './session-cookie.ts';
+import { SupportSessions } from './support-sessions.ts';
 import { NO_CLINIC_IDLE_MINUTES, tenantView } from './tenant-view.ts';
 import { AUTH_DB } from './tokens.ts';
 
@@ -85,6 +86,7 @@ export class SessionsService {
     @Inject(SHIFA_DB) private readonly db: ShifaDb,
     @Inject(CLOCK) private readonly clock: Clock,
     @Inject(IdentityAudit) private readonly audit: IdentityAudit,
+    @Inject(SupportSessions) private readonly support: SupportSessions,
   ) {}
 
   /**
@@ -106,6 +108,12 @@ export class SessionsService {
       tx.select().from(session).where(eq(session.token, token)).limit(1),
     );
     if (!row) return null;
+    // A support session (A-02-05): its grant decides, never a membership.
+    if (row.supportGrantId !== null) {
+      return this.support.principal(row, now, requestId, async (reason) => {
+        await this.end(row.userId, [row.id], reason, requestId);
+      });
+    }
     const view = await tenantView(this.db, row.userId, row.activeTenantId, row.activeBranchId);
     const reason = this.#expiry(row, view.idleMinutes, now);
     if (reason) {
@@ -162,7 +170,12 @@ export class SessionsService {
         })),
       idleMinutes,
       idleExpiresAt: new Date(lastActive.getTime() + idleMinutes * MINUTE_MS).toISOString(),
-      absoluteExpiresAt: absoluteEnd(row).toISOString(),
+      // A support session ends with its grant, before 12 hours (A-02-05).
+      absoluteExpiresAt: (principal.support
+        ? new Date(Math.min(absoluteEnd(row).getTime(), row.expiresAt.getTime()))
+        : absoluteEnd(row)
+      ).toISOString(),
+      support: await this.support.view(principal),
     };
   }
 

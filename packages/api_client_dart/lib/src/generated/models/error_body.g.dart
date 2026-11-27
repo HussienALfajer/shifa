@@ -16,6 +16,9 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
       ? null
       : LimitReached.fromJson(json['limitReached'] as Map<String, dynamic>),
   reason: $enumDecodeNullable(_$SessionEndReasonEnumMap, json['reason']),
+  supportEnded: json['supportEnded'] == null
+      ? null
+      : SupportEnded.fromJson(json['supportEnded'] as Map<String, dynamic>),
   until: json['until'] == null ? null : DateTime.parse(json['until'] as String),
 );
 
@@ -25,6 +28,7 @@ Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'limitReached': ?instance.limitReached,
   'message': instance.message,
   'reason': ?instance.reason,
+  'supportEnded': ?instance.supportEnded,
   'until': ?instance.until?.toIso8601String(),
 };
 
@@ -87,10 +91,14 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.featureUnavailable: 'feature_unavailable',
   ErrorCode.settingLocked: 'setting_locked',
   ErrorCode.settingNotLockable: 'setting_not_lockable',
+  ErrorCode.supportActive: 'support_active',
+  ErrorCode.supportEnded: 'support_ended',
+  ErrorCode.supportReadOnly: 'support_read_only',
 };
 
 const _$SessionEndReasonEnumMap = {
   SessionEndReason.idle: 'idle',
   SessionEndReason.absolute: 'absolute',
   SessionEndReason.ended: 'ended',
+  SessionEndReason.supportEnded: 'support_ended',
 };

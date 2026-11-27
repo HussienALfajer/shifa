@@ -1,6 +1,11 @@
 // Public surface of the access model; product modules import only from here.
 export { AccessModule } from './access.module.ts';
-export { AUTH_PORT, type AuthPort, SessionExpiredError } from './auth.port.ts';
+export {
+  AUTH_PORT,
+  type AuthPort,
+  SessionExpiredError,
+  SupportEndedError,
+} from './auth.port.ts';
 export {
   BeforeMfa,
   CurrentPrincipal,
@@ -10,6 +15,7 @@ export {
   RequireFlag,
   RequirePermission,
   SignedIn,
+  SupportSessionWrite,
 } from './decorators.ts';
 export { GATE_PORT, type GatePort } from './gates.ts';
 export type { PermissionKey } from './permissions.ts';
@@ -29,8 +35,10 @@ export {
   PrincipalError,
   parsePrincipal,
   type RoleAssignment,
+  type SupportGrantRef,
 } from './principal.ts';
 export type { Role } from './roles.ts';
 export { PRODUCTION_GRANTS } from './roles.ts';
 export { CurrentScope, linkScope, type RequestScope } from './scope.ts';
+export { SUPPORT_AUDIT, type SupportAuditPort, type SupportRequest } from './support.ts';
 export { TenantDb, withScope } from './tenant-db.ts';

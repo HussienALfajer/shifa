@@ -1,0 +1,589 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "0367e906-ae74-4f44-b432-34c70043e638",
+  "prevIds": [
+    "2f2a12da-1a68-421f-8d7e-6dab6bd1cebb"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "support_access_grant"
+      ],
+      "writes": [
+        "s|tbl|public.support_access_grant",
+        "n|tbl|public.support_access_grant",
+        "e|tbl|public.support_access_grant",
+        "n|rel|public.support_access_grant",
+        "n|type|public.support_access_grant",
+        "n|rel|public.support_access_grant_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "session",
+        "support_grant_id"
+      ],
+      "writes": [
+        "s|col|public.session.support_grant_id",
+        "n|col|public.session.support_grant_id",
+        "e|col|public.session.support_grant_id"
+      ],
+      "reads": [
+        "n|tbl|public.session",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "session",
+        "session_support_grant_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.session_support_grant_id_idx",
+        "n|idx|public.session_support_grant_id_idx",
+        "e|idx|public.session_support_grant_id_idx",
+        "n|rel|public.session_support_grant_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.session",
+        "n|sch|public",
+        "n|col|public.session.support_grant_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "support_access_grant",
+        "support_access_grant_tenant_id_admin_user_id_open_key"
+      ],
+      "writes": [
+        "s|idx|public.support_access_grant_tenant_id_admin_user_id_open_key",
+        "n|idx|public.support_access_grant_tenant_id_admin_user_id_open_key",
+        "e|idx|public.support_access_grant_tenant_id_admin_user_id_open_key",
+        "n|rel|public.support_access_grant_tenant_id_admin_user_id_open_key"
+      ],
+      "reads": [
+        "n|tbl|public.support_access_grant",
+        "n|sch|public",
+        "n|col|public.support_access_grant.tenant_id",
+        "n|col|public.support_access_grant.admin_user_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "support_access_grant",
+        "support_access_grant_tenant_id_opened_at_idx"
+      ],
+      "writes": [
+        "s|idx|public.support_access_grant_tenant_id_opened_at_idx",
+        "n|idx|public.support_access_grant_tenant_id_opened_at_idx",
+        "e|idx|public.support_access_grant_tenant_id_opened_at_idx",
+        "n|rel|public.support_access_grant_tenant_id_opened_at_idx"
+      ],
+      "reads": [
+        "n|tbl|public.support_access_grant",
+        "n|sch|public",
+        "n|col|public.support_access_grant.tenant_id",
+        "n|col|public.support_access_grant.opened_at"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "support_access_grant",
+        "support_access_grant_tenant_id_handoff_token_hash_idx"
+      ],
+      "writes": [
+        "s|idx|public.support_access_grant_tenant_id_handoff_token_hash_idx",
+        "n|idx|public.support_access_grant_tenant_id_handoff_token_hash_idx",
+        "e|idx|public.support_access_grant_tenant_id_handoff_token_hash_idx",
+        "n|rel|public.support_access_grant_tenant_id_handoff_token_hash_idx"
+      ],
+      "reads": [
+        "n|tbl|public.support_access_grant",
+        "n|sch|public",
+        "n|col|public.support_access_grant.tenant_id",
+        "n|col|public.support_access_grant.handoff_token_hash"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "support_access_grant"
+      ],
+      "writes": [
+        "s|fk|public.support_access_grant.support_access_grant_tenant_id_tenant_id_fkey",
+        "n|fk|public.support_access_grant.support_access_grant_tenant_id_tenant_id_fkey",
+        "e|fk|public.support_access_grant.support_access_grant_tenant_id_tenant_id_fkey",
+        "n|con|public.support_access_grant.support_access_grant_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.support_access_grant",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.support_access_grant.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "support_access_grant",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "session",
+        "name": "support_grant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "admin_user_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "admin_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "opened_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "ended_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "ended_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "ended_by_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "end_reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "handoff_token_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "handoff_expires_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "session",
+        "name": "session_support_grant_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "support_grant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_tenant_id_admin_user_id_open_key",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "admin_user_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"ended_at\" is null",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_tenant_id_opened_at_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "opened_at",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_tenant_id_handoff_token_hash_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "handoff_token_hash",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_reason_check",
+        "value": "char_length(\"reason\") between 10 and 500 and \"reason\" = btrim(\"reason\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_duration_check",
+        "value": "\"expires_at\" > \"opened_at\" and \"expires_at\" <= \"opened_at\" + interval '4 hours'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_end_check",
+        "value": "(\"ended_at\" is null) = (\"end_reason\" is null)\n          and (\"end_reason\" is null or \"end_reason\" in ('admin', 'owner', 'expiry'))\n          and ((\"end_reason\" = 'expiry') = (\"end_reason\" is not null and \"ended_by\" is null))",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_names_check",
+        "value": "char_length(\"admin_name\") between 1 and 200\n          and (\"ended_by_name\" is null or char_length(\"ended_by_name\") between 1 and 200)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "support_access_grant",
+        "name": "support_access_grant_handoff_check",
+        "value": "\"handoff_token_hash\" is null or \"handoff_token_hash\" ~ '^[0-9a-f]{64}$'",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

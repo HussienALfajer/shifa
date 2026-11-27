@@ -31,6 +31,7 @@ const unit = [
   'test/identity/ip-key.test.ts',
   'test/telemetry/sampler.test.ts',
   'test/access/principal-schema.test.ts',
+  'test/access/support-principal.test.ts',
   'test/architecture/raw-routes.test.ts',
   'test/contract/openapi-meta-schema.test.ts',
   'test/entitlements/resolve.test.ts',

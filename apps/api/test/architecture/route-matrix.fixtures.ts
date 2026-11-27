@@ -1,7 +1,16 @@
 // Fixtures of the route matrix (route-matrix.test.ts): fresh phones, clinics with a pending or a
 // set-up owner, and the calling person's TOTP put in a known state, so each sample request shows
 // access only.
-import { createClinic, membership, settingValue, tenantOverride, twoFactor } from '@shifa/db';
+import { randomUUID } from 'node:crypto';
+import {
+  createClinic,
+  membership,
+  platformAdmin,
+  settingValue,
+  supportAccessGrant,
+  tenantOverride,
+  twoFactor,
+} from '@shifa/db';
 import {
   fixtureId,
   superuserDb,
@@ -106,6 +115,38 @@ export async function clinicWithAccountOwner(): Promise<string> {
     .set({ userId, status: 'active' })
     .where(eq(membership.tenantId, id));
   return id;
+}
+
+/** An open support grant of `adminUserId` (any id for refused callers) on a new clinic (A-02-05). */
+export async function openSupportGrant(
+  adminUserId: string = randomUUID(),
+  tenantId?: string,
+  handoffHash: string | null = null,
+): Promise<{ grantId: string; clinicId: string }> {
+  const clinicId = tenantId ?? (await clinicWithLink()).clinicId;
+  const [row] = await superuserDb(workerDatabaseName())
+    .insert(supportAccessGrant)
+    .values({
+      tenantId: clinicId,
+      adminUserId,
+      adminName: 'مشرف المصفوفة',
+      reason: 'سبب تجريبي لدخول الدعم',
+      expiresAt: new Date(Date.now() + 3_600_000),
+      handoffTokenHash: handoffHash,
+      handoffExpiresAt: handoffHash ? new Date(Date.now() + 120_000) : null,
+    })
+    .returning({ id: supportAccessGrant.id });
+  if (!row) throw new Error('no grant');
+  return { grantId: row.id, clinicId };
+}
+
+/** A fresh hand-off token of an open grant of a new super admin (the exchange route). */
+export async function supportHandoffToken(): Promise<string> {
+  const { userId } = await seedPerson(nextPhone());
+  await superuserDb(workerDatabaseName()).insert(platformAdmin).values({ userId });
+  const { token, hash } = newLinkToken();
+  await openSupportGrant(userId, undefined, hash);
+  return token;
 }
 
 /** A known TOTP key, so the matrix can send a valid code. */

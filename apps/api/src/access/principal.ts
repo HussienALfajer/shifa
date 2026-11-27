@@ -44,6 +44,17 @@ export interface Principal {
    * @RequirePermission route answers 403 `clinic_suspended`. Absent = not suspended.
    */
   clinicSuspended?: boolean | undefined;
+  /**
+   * A support session (A-02 criteria 11–14, ADR-0050): a super admin reading the active tenant as
+   * its owner (synthesised tenant-wide `owner` role) under this grant until `expiresAt` (ISO).
+   * Every write route answers 403 `support_read_only` and its transactions are READ ONLY.
+   */
+  support?: SupportGrantRef | undefined;
+}
+
+export interface SupportGrantRef {
+  grantId: string;
+  expiresAt: string;
 }
 
 export interface PermissionOverride {
@@ -85,7 +96,22 @@ export const PrincipalSchema = z
       .optional(),
     ownsClinic: z.boolean().optional(),
     clinicSuspended: z.boolean().optional(),
+    support: z.strictObject({ grantId: z.uuid(), expiresAt: z.iso.datetime() }).optional(),
   })
+  // A support session: a super admin in a tenant, holding only the synthesised tenant-wide owner
+  // role there, no member toggles, the clinic readable even when suspended (criterion 14).
+  .refine(
+    (p) =>
+      p.support === undefined ||
+      (p.platformAdmin &&
+        p.tenantId !== null &&
+        p.branchId === null &&
+        p.clinicSuspended !== true &&
+        (p.overrides ?? []).length === 0 &&
+        p.roles.length === 1 &&
+        p.roles.every((r) => r.role === 'owner' && r.branchId === null)),
+    { path: ['support'] },
+  )
   .refine((p) => p.clinicSuspended !== true || p.tenantId === null, {
     path: ['clinicSuspended'],
   })

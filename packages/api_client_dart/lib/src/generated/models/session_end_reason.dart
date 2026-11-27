@@ -11,7 +11,9 @@ enum SessionEndReason {
   @JsonValue('absolute')
   absolute('absolute'),
   @JsonValue('ended')
-  ended('ended');
+  ended('ended'),
+  @JsonValue('support_ended')
+  supportEnded('support_ended');
 
   const SessionEndReason(this.json);
 

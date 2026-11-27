@@ -102,6 +102,7 @@ describe('BetterAuthAdapter', () => {
       withUser: () => Promise.reject(new Error(`lookup failed for ${token}`)),
       withSetupLink: () => Promise.reject(new Error('unused')),
       withUserLink: () => Promise.reject(new Error('unused')),
+      withHandoff: () => Promise.reject(new Error('unused')),
       close: () => Promise.resolve(),
     };
     app = await buildTestApp({ db: testDb(), authDb: echoing });
@@ -123,6 +124,7 @@ describe('BetterAuthAdapter', () => {
       withUser: () => Promise.reject(new Error('offline')),
       withSetupLink: () => Promise.reject(new Error('offline')),
       withUserLink: () => Promise.reject(new Error('offline')),
+      withHandoff: () => Promise.reject(new Error('offline')),
       close: () => Promise.resolve(),
     };
     app = await buildTestApp({ db: testDb(), authDb: counting });

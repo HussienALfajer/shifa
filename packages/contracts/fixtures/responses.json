@@ -740,7 +740,8 @@
           "roles": [],
           "idleMinutes": 15,
           "idleExpiresAt": "2026-11-23T08:15:00.000Z",
-          "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+          "absoluteExpiresAt": "2026-11-23T20:00:00.000Z",
+          "support": null
         },
         "recoveryCodesLeft": 9
       }
@@ -775,7 +776,90 @@
         ],
         "idleMinutes": 30,
         "idleExpiresAt": "2026-11-23T08:30:00.000Z",
-        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z",
+        "support": null
+      }
+    },
+    {
+      "name": "a super admin's support session",
+      "schema": "SessionView",
+      "body": {
+        "userId": "0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d",
+        "sessionId": "1c7e3b5f-7d2e-4e8b-8c1f-3a5d6b7c8e9f",
+        "platformAdmin": true,
+        "mfa": "verified",
+        "mfaRequired": true,
+        "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+        "branchId": null,
+        "roles": [
+          {
+            "role": "owner",
+            "tenantId": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0",
+            "branchId": null
+          }
+        ],
+        "idleMinutes": 15,
+        "idleExpiresAt": "2026-11-23T08:15:00.000Z",
+        "absoluteExpiresAt": "2026-11-23T09:00:00.000Z",
+        "support": {
+          "grantId": "5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+          "clinicName": "عيادة تجريبية",
+          "reason": "مشكلة في الفروع",
+          "expiresAt": "2026-11-23T09:00:00.000Z",
+          "now": "2026-11-23T08:00:00.000Z"
+        }
+      }
+    },
+    {
+      "name": "support access of a clinic for the super admin",
+      "schema": "PlatformSupportGrants",
+      "body": {
+        "now": "2026-11-23T08:00:00.000Z",
+        "mine": null,
+        "grants": [
+          {
+            "id": "5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+            "adminName": "مشرف تجريبي",
+            "reason": "مشكلة في الفروع",
+            "startedAt": "2026-11-22T08:00:00.000Z",
+            "expiresAt": "2026-11-22T09:00:00.000Z",
+            "endedAt": "2026-11-22T08:20:00.000Z",
+            "endedBy": "owner",
+            "endedByName": "مالك تجريبي"
+          }
+        ]
+      }
+    },
+    {
+      "name": "the owner's support banner and log",
+      "schema": "ClinicSupportGrants",
+      "body": {
+        "now": "2026-11-23T08:00:00.000Z",
+        "open": [
+          {
+            "id": "5a1b2c3d-4e5f-4a6b-8c7d-9e0f1a2b3c4d",
+            "adminName": "مشرف تجريبي",
+            "reason": "مشكلة في الفروع",
+            "expiresAt": "2026-11-23T09:00:00.000Z"
+          }
+        ],
+        "grants": []
+      }
+    },
+    {
+      "name": "a support session that the owner ended",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "session_expired",
+          "message": "Unauthorized",
+          "reason": "support_ended",
+          "supportEnded": {
+            "endedBy": "owner",
+            "endedAt": "2026-11-23T08:20:00.000Z",
+            "ownerName": "مالك تجريبي"
+          }
+        }
       }
     },
     {
@@ -792,7 +876,8 @@
         "roles": [],
         "idleMinutes": 15,
         "idleExpiresAt": "2026-11-23T08:15:00.000Z",
-        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+        "absoluteExpiresAt": "2026-11-23T20:00:00.000Z",
+        "support": null
       }
     },
     {
@@ -874,7 +959,8 @@
           "roles": [],
           "idleMinutes": 15,
           "idleExpiresAt": "2026-11-23T08:15:00.000Z",
-          "absoluteExpiresAt": "2026-11-23T20:00:00.000Z"
+          "absoluteExpiresAt": "2026-11-23T20:00:00.000Z",
+          "support": null
         }
       }
     },
@@ -1183,6 +1269,36 @@
         "error": {
           "code": "setting_not_lockable",
           "message": "This setting cannot be locked for a clinic"
+        }
+      }
+    },
+    {
+      "name": "error support_active",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "support_active",
+          "message": "You already have open support access to this clinic"
+        }
+      }
+    },
+    {
+      "name": "error support_ended",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "support_ended",
+          "message": "This support access has ended"
+        }
+      }
+    },
+    {
+      "name": "error support_read_only",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "support_read_only",
+          "message": "Support access is read-only"
         }
       }
     }
