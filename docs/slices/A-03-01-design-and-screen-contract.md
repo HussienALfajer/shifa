@@ -71,6 +71,11 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 | 4 | Keyboard on the results: ↑ ↓ to move, Enter to open | none · none · search page | ~80 | A-03-09 |
 | 5 | A wide form panel (550 px) so name parts sit two by two (component change 1, sheet `A03SheetDrawerWide`) | none · Drawer `size="wide"` · form | ~120 | A-03-09 |
 
+### Owner review, search (2026-11-27)
+- Spec gaps 1 (term lengths), 2 (`truncated`), 3 (`GET /patients/count`) and 9 (`permissions[]` in the session, `allowed` on the chart) accepted as drawn; written into the spec with the other checkpoint 1 answers.
+- Improvements 1 (why each result matched, matched words heavier), 2 («فتحتها مؤخرًا») and 4 (arrows and Enter on the results) accepted.
+- The owner asked whether RecordList is the DataTable; answered (RecordList is a list of links, the DataTable a grid), decision pending.
+
 ### Component changes (proposed)
 1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
 
