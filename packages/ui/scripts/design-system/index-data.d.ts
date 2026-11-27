@@ -274,3 +274,27 @@ export interface MenuProps {
 }
 
 export declare const Menu: (props: MenuProps) => unknown;
+
+/** A strip above the top bar (A-02): announcements, the owner's support notice, the support session. */
+export interface PageBannerProps {
+  /** info and warning (announcements), support (solid, the support session). */
+  tone: 'info' | 'warning' | 'support';
+  /** The word in bold that names it («تنبيه:»). */
+  title: string;
+  text?: string;
+  /** Replaces the tone's icon (`eye` for the owner's notice). */
+  icon?: IconName;
+  /** The one button's label («إنهاء الدخول»). */
+  action?: string;
+  /** Several announcements shown in turn, with «1 من 3», previous and next. */
+  texts?: string[];
+  /** The one shown first, from 0. */
+  index?: number;
+  /** A close button that hides it (announcements only, never support). */
+  dismissible?: boolean;
+  dismissLabel?: string;
+  /** The region's name when several copies share a title on one page. */
+  'aria-label'?: string;
+}
+
+export declare const PageBanner: (props: PageBannerProps) => unknown;

@@ -167,6 +167,12 @@ export { MultiCombobox, type MultiComboboxProps } from './multi-combobox/multi-c
 export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
 export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
 export {
+  PageBanner,
+  type PageBannerPager,
+  type PageBannerProps,
+  type PageBannerTone,
+} from './page-banner/page-banner.tsx';
+export {
   type PageItem,
   Pagination,
   type PaginationCopy,
