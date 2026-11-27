@@ -1,6 +1,6 @@
 # Release 1 scope
 
-Status: Approved by owner (2026-11-07/08) · Last updated: 2026-11-08 · Owner: product owner
+Status: Approved by owner (2026-11-07/08; Excel import removed 2026-11-27, OD-142) · Last updated: 2026-11-27 · Owner: product owner
 Sources: RN-07, RN-08, RN-09, RN-10, RN-11, RN-12, RN-13, RN-14, RN-15
 
 This is the approved feature list for Release 1, one line per capability. Detailed, testable requirements live in the domain documents linked from each section; this file only says *what is in*. Anything not listed here is out of Release 1 (see the end). Build order is in [roadmap.md](../roadmap.md).
@@ -24,7 +24,7 @@ This is the approved feature list for Release 1, one line per capability. Detail
 
 **Patients** — [clinical-records](../domain/clinical-records.md)
 - Fast registration (name, phone, age/DOB, sex), auto file number, Arabic-normalised search, duplicate warning.
-- Several patients under one phone (family); one-screen patient summary; Excel import.
+- Several patients under one phone (family); one-screen patient summary. No patient import (owner, 2026-11-27, OD-142).
 
 **Appointments and queue** — [scheduling-queue](../domain/scheduling-queue.md)
 - Working hours per doctor per branch, exceptions, appointment types.
@@ -109,4 +109,4 @@ This is the approved feature list for Release 1, one line per capability. Detail
 
 ## Not in Release 1
 
-Other specialties · custom domains · clinic-facing template/form builder · doctor-specific custom features (mechanism ships, no modules built) · voice charting · AI (imaging, scribe, ceph landmarks) · CBCT implant planning, STL viewer, smile design · DC/TMD full protocol · arthroplasty digital templating · telemedicine · online payments and wallets · public reviews (OD-15) · medication reminders · lab/radiology test orders · inventory · payroll · insurance · waitlist and recurring appointments · cross-clinic record sharing · iOS app · Turkish UI (OD-16).
+Other specialties · custom domains · clinic-facing template/form builder · doctor-specific custom features (mechanism ships, no modules built) · voice charting · AI (imaging, scribe, ceph landmarks) · CBCT implant planning, STL viewer, smile design · DC/TMD full protocol · arthroplasty digital templating · telemedicine · online payments and wallets · public reviews (OD-15) · medication reminders · lab/radiology test orders · inventory · payroll · insurance · waitlist and recurring appointments · cross-clinic record sharing · patient import from Excel or other systems (OD-142) · iOS app · Turkish UI (OD-16).
