@@ -104,6 +104,12 @@ export interface SearchQuery {
   readonly key: string;
   readonly digits: string | null;
   readonly words: readonly string[];
+  /**
+   * The typed words keyed one by one (no particle join), when that differs: «آم الح» is the start
+   * of «آمنة الحلبي», but keyed whole it joins «ام» (a particle) to the next word. Looked up only
+   * when `words` find no chart.
+   */
+  readonly unjoined: readonly string[] | null;
   readonly states: readonly ChartRow['state'][];
 }
 
@@ -116,7 +122,14 @@ export function parseSearch(input: PatientSearchRequest): SearchQuery {
   if (digits === null && words.length === 0) throw tooShort();
   const states: ChartRow['state'][] =
     input.includeArchived === true ? ['active', 'archived'] : ['active'];
-  return { term, key, digits, words, states };
+  const separate = nameWordsOf(
+    term
+      .split(/\s+/u)
+      .map((w) => normaliseName(w))
+      .join(' '),
+  );
+  const unjoined = words.length > 0 && separate.join(' ') !== words.join(' ') ? separate : null;
+  return { term, key, digits, words, unjoined, states };
 }
 
 /** Every path's hits in answer order: numbers, phones, names (exported for the benchmark). */
@@ -138,7 +151,9 @@ export async function findHits(tx: Tx, q: SearchQuery): Promise<Hit[]> {
     for (const row of await byPhoneTail(tx, q.digits, q.states)) add(row, 'phone_tail');
   }
   if (q.words.length > 0) {
-    for (const hit of await byName(tx, q.words, q.key, q.states)) {
+    let names = await byName(tx, q.words, q.key, q.states);
+    if (names.length === 0 && q.unjoined) names = await byName(tx, q.unjoined, q.key, q.states);
+    for (const hit of names) {
       add(hit.row, nameKind(hit, q.term), {
         matchedParts: [...new Set(hit.wordParts.flat())].sort((a, b) => a - b),
       });
