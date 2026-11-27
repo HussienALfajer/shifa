@@ -1,8 +1,9 @@
 // A-03 criterion 6 and "Money, abuse and privacy" for A-03-03: search terms (a name and its
-// variant, a word start, phones in two spellings, a phone tail, a previous file number, a term
-// too short, an archived search refused) travel in the request body only and appear nowhere: not
-// in local logs, exported spans or log records, error events or audit rows. The route is
-// `POST /patients/search`; its URL carries no term.
+// variant, a typo, a word start, phones in two spellings, a phone tail, a previous file number, a
+// term too short, an archived search a receptionist may not make (403), searches past the limit
+// (429)) travel in the request body only and appear nowhere: not in local logs, exported spans or
+// log records, error events or audit rows. The route is `POST /patients/search`; its URL carries
+// no term. Runs in the telemetry project, so query spans are recorded.
 import { randomUUID } from 'node:crypto';
 import { JsonLogsSerializer, JsonTraceSerializer } from '@opentelemetry/otlp-transformer';
 import { auditEvent } from '@shifa/db';
@@ -29,10 +30,16 @@ import {
   signedInAdmin,
 } from '../platform/support.ts';
 import { buildTestApp, type TestApp } from '../support.ts';
+import { addMember, useMemberLink } from '../team/support.ts';
 import { type ErrorSink, errorSink, TEST_DSN } from './error-sink.ts';
 import { listen, startTestTelemetry, type TestTelemetry } from './support.ts';
 
-const [ADMIN, OWNER, CONTACT] = syntheticPhones(2026_12_05, 3) as [string, string, string];
+const [ADMIN, OWNER, CONTACT, RECEPTION] = syntheticPhones(2026_12_05, 4) as [
+  string,
+  string,
+  string,
+  string,
+];
 const GIVEN = 'جمانة';
 const FAMILY = 'القباني';
 const PREVIOUS = 'QB-9031';
@@ -41,6 +48,7 @@ const TERMS = [
   'جمانه القبانى',
   'جمان',
   'القباني جمانة',
+  'جمانة القبامي',
   CONTACT,
   `0${CONTACT.slice(4)}`,
   CONTACT.slice(-8),
@@ -103,6 +111,21 @@ beforeAll(async () => {
   expect(
     await send('POST', '/patients/search', { term: GIVEN, includeArchived: true }, owner),
   ).toBe(200);
+  // Refused: a receptionist may not include archived charts (403).
+  const added = await addMember(current, owner, {
+    phone: RECEPTION,
+    roles: [{ role: 'receptionist', branchId: null }],
+  });
+  const reception = await useMemberLink(current, added.linkUrl);
+  expect(
+    await send('POST', '/patients/search', { term: FAMILY, includeArchived: true }, reception),
+  ).toBe(403);
+  // Past the limit (429): the owner's searches above count too.
+  let last = 0;
+  for (let i = 0; i < 60 && last !== 429; i += 1) {
+    last = await send('POST', '/patients/search', { term: `${GIVEN} ${FAMILY}` }, owner);
+  }
+  expect(last).toBe(429);
   await new Promise((resolve) => setTimeout(resolve, 100));
   await flushErrors(2000);
 });

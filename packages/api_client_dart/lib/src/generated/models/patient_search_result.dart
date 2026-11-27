@@ -18,7 +18,10 @@ class PatientSearchResult {
     required this.birthDateEstimated,
     required this.contactPhone,
     required this.displayName,
+    required this.familyName,
+    required this.fatherName,
     required this.fileNumber,
+    required this.givenName,
     required this.id,
     required this.matchedBy,
     required this.matchedParts,
@@ -36,7 +39,12 @@ class PatientSearchResult {
   final bool birthDateEstimated;
   final String contactPhone;
   final String displayName;
+  @JsonKey(includeIfNull: true)
+  final String? familyName;
+  @JsonKey(includeIfNull: true)
+  final String? fatherName;
   final int fileNumber;
+  final String givenName;
   final String id;
   final PatientMatchKind matchedBy;
   final List<int> matchedParts;

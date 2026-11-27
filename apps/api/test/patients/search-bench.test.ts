@@ -18,7 +18,7 @@ import {
 import { createRandom, generatePatientCharts } from '@shifa/testing';
 import { type SQL, sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { nameQuery } from '../../src/modules/patients/search.ts';
+import { nameQuery } from '../../src/modules/patients/name-search.ts';
 import { findHits, parseSearch } from '../../src/modules/patients/search.service.ts';
 
 const CHARTS = 50_000;
@@ -90,6 +90,7 @@ async function measure(term: (chart: Chart, file: number) => string) {
   const random = createRandom(2026_12_07);
   const times: number[] = [];
   let found = 0;
+  let foreign = 0;
   for (const tenantId of CLINICS) {
     const list = charts.get(tenantId) ?? [];
     for (let i = 0; i < RUNS; i += 1) {
@@ -98,20 +99,34 @@ async function measure(term: (chart: Chart, file: number) => string) {
       if (!chart) continue;
       const query = parseSearch({ term: term(chart, index + 1) });
       const at = performance.now();
-      const hits = await db.withTenant(scopeOf(tenantId), (tx) => findHits(tx, query));
+      const { hits } = await db.withTenant(scopeOf(tenantId), (tx) => findHits(tx, query));
       times.push(performance.now() - at);
       if (hits.length > 0) found += 1;
+      // RLS: every hit is a chart of the clinic searched.
+      foreign += hits.filter((h) => h.row.tenantId !== tenantId).length;
     }
   }
   times.sort((a, b) => a - b);
   const at = (q: number) => Math.round((times[Math.ceil(times.length * q) - 1] ?? 0) * 10) / 10;
-  return { p50: at(0.5), p95: at(0.95), found };
+  return { p50: at(0.5), p95: at(0.95), found, foreign };
 }
+
+/** A typo inside the given name: its third letter replaced (the fallback must find the chart). */
+const typo = (word: string) => {
+  const letters = Array.from(word);
+  if (letters.length >= 3) letters[2] = letters[2] === 'ر' ? 'ز' : 'ر';
+  return letters.join('');
+};
 
 describe('search at 50,000 charts in each of two clinics, behind PgBouncer (criterion 5)', () => {
   it.each([
     ['name (given and family)', (c: Chart) => `${c.givenName} ${c.familyName}`],
     ['word starts', (c: Chart) => `${c.givenName.slice(0, 2)} ${c.familyName.slice(0, 3)}`],
+    ['one common start «ال»', () => 'ال'],
+    ['a given name and «ال»', (c: Chart) => `${c.givenName} ال`],
+    ['the first two letters alone', (c: Chart) => c.givenName.slice(0, 2)],
+    ['«ال» typed 33 times', () => Array.from({ length: 33 }, () => 'ال').join(' ')],
+    ['a typo in the given name', (c: Chart) => `${typo(c.givenName)} ${c.familyName}`],
     ['full name (duplicate check)', (c: Chart) => patientDisplayName(c)],
     ['contact phone (duplicate check)', (c: Chart) => c.contactPhone],
     ['phone tail', (c: Chart) => c.contactPhone.slice(-7)],
@@ -119,9 +134,13 @@ describe('search at 50,000 charts in each of two clinics, behind PgBouncer (crit
   ] as const)('%s: p95 within 150 ms', async (name, term) => {
     const result = await measure(term);
     process.stdout.write(
-      `search bench: ${name}: p50 ${String(result.p50)} ms, p95 ${String(result.p95)} ms\n`,
+      `search bench: ${name}: p50 ${String(result.p50)} ms, p95 ${String(result.p95)} ms, ` +
+        `found ${String(result.found)} of ${String(RUNS * CLINICS.length)}\n`,
     );
-    expect(result.found).toBe(RUNS * CLINICS.length);
+    // A typo sometimes lands on the first letters every candidate is read by: most, not all.
+    const least = name.startsWith('a typo') ? RUNS * CLINICS.length * 0.9 : RUNS * CLINICS.length;
+    expect(result.found).toBeGreaterThanOrEqual(least);
+    expect(result.foreign).toBe(0);
     expect(result.p95).toBeLessThanOrEqual(P95_MS);
   });
 });

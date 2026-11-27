@@ -1665,6 +1665,9 @@
           {
             "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
             "displayName": "ريم أحمد الحلبي",
+            "givenName": "ريم",
+            "fatherName": "أحمد",
+            "familyName": "الحلبي",
             "fileNumber": 1043,
             "sex": "female",
             "birthDate": "1990-03-12",
@@ -1679,6 +1682,9 @@
           {
             "id": "1c7a3f5e-6e8b-4d2f-8b4c-3a2f1e0d9c8b",
             "displayName": "نزار الصباغ",
+            "givenName": "نزار",
+            "fatherName": null,
+            "familyName": "الصباغ",
             "fileNumber": 12,
             "sex": "male",
             "birthDate": "1971-01-01",
@@ -1709,6 +1715,9 @@
       "body": {
         "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
         "displayName": "ريم أحمد الحلبي",
+        "givenName": "ريم",
+        "fatherName": "أحمد",
+        "familyName": "الحلبي",
         "fileNumber": 1043,
         "sex": "female",
         "birthDate": "1990-03-12",

@@ -244,8 +244,9 @@ export const PatientMatchKind = z
 export type PatientMatchKind = z.infer<typeof PatientMatchKind>;
 
 /**
- * One search result (criteria 4, 24): the chart's card, why it matched, and which display-name
- * parts matched (0 given, 1 father, 2 family; empty for a number or phone). `mergedFileNumber`:
+ * One search result (criteria 4, 24): the chart's card with its name parts, why it matched, and
+ * which parts matched (0 `givenName`, 1 `fatherName`, 2 `familyName`; empty for a number, a phone
+ * or a typo match), so the screen marks those parts' words in the display name. `mergedFileNumber`:
  * the merged chart's number that led here (A-03-08), else null. `familySize` and `relation`
  * come with A-03-04.
  */
@@ -253,6 +254,9 @@ export const PatientSearchResult = z
   .object({
     id: z.uuid(),
     displayName: z.string(),
+    givenName: z.string(),
+    fatherName: z.string().nullable(),
+    familyName: z.string().nullable(),
     fileNumber: z.int().min(1),
     sex: Sex,
     /** `YYYY-MM-DD`. */

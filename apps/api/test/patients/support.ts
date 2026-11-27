@@ -91,6 +91,9 @@ export function restore(world: TeamWorld, cookie: string, id: string, expectedUp
 export interface SearchHit {
   id: string;
   displayName: string;
+  givenName: string;
+  fatherName: string | null;
+  familyName: string | null;
   fileNumber: number;
   sex: 'male' | 'female';
   birthDate: string;

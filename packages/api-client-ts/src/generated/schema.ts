@@ -1966,7 +1966,10 @@ export interface components {
             birthDateEstimated: boolean;
             contactPhone: string;
             displayName: string;
+            familyName: string | null;
+            fatherName: string | null;
             fileNumber: number;
+            givenName: string;
             /** Format: uuid */
             id: string;
             matchedBy: components["schemas"]["PatientMatchKind"];

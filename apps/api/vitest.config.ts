@@ -60,6 +60,8 @@ const telemetry = [
   'test/telemetry/identity-leak.test.ts',
   // A-03-02 security review L2: with the SDK set up first, the leak test sees query spans too.
   'test/telemetry/patients-leak.test.ts',
+  // A-03-03 review 5: search terms, with query spans recorded.
+  'test/telemetry/patients-search-leak.test.ts',
 ];
 
 // The identity tests sign in up to 30 times per case, and every attempt verifies a scrypt hash on

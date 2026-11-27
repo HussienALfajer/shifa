@@ -2,12 +2,10 @@
 // query in the transaction TenantDb opened, so RLS bounds every row to the clinic:
 // - a file number or previous number, exact; a merged chart leads to the chart it was merged into;
 // - a phone, exact (E.164) or by its last 7+ digits (`*_phone_tail`, equality, then the suffix);
-// - a name: every typed word equal to a stored token (`(tenant_id, token)` index), the charts
-//   that hold all of them ranked by whole-word matches, then pg_trgm similarity of the stored
-//   key to the typed key, then file number.
+// - a name: `name-search.ts`.
 // Every comparison an index serves is an equality (texteq, int4eq, uuid_eq: leakproof), so RLS
 // never stops the planner from using it (OD-42).
-import { lookupToken, patientDisplayName } from '@shifa/contracts';
+import { patientDisplayName } from '@shifa/contracts';
 import { patient, type Tx } from '@shifa/db';
 import { and, asc, eq, inArray, or, sql } from 'drizzle-orm';
 
@@ -42,9 +40,30 @@ export async function byFileNumber(tx: Tx, n: number, states: readonly State[]) 
   return row ? numberHit(tx, row, states) : null;
 }
 
-/** A chart by its previous (paper) number, trimmed, exactly. */
+/** Arabic-Indic and Persian digits as ASCII. */
+export const asciiDigits = (text: string) =>
+  text.replace(/[\u{0660}-\u{0669}\u{06F0}-\u{06F9}]/gu, (d) => {
+    const code = d.charCodeAt(0);
+    return String(code >= 0x06f0 ? code - 0x06f0 : code - 0x0660);
+  });
+
+/** ASCII digits as Arabic-Indic. */
+const arabicDigits = (text: string) =>
+  text.replace(/\d/g, (d) => String.fromCharCode(0x0660 + Number(d)));
+
+/**
+ * A chart by its previous (paper) number, trimmed, as typed or in either digit system (the
+ * number is stored as it was typed).
+ */
 export async function byPreviousNumber(tx: Tx, previous: string, states: readonly State[]) {
-  const [row] = await tx.select().from(patient).where(eq(patient.previousFileNumber, previous));
+  const ascii = asciiDigits(previous);
+  const spellings = [...new Set([previous, ascii, arabicDigits(ascii)])];
+  const [row] = await tx
+    .select()
+    .from(patient)
+    .where(inArray(patient.previousFileNumber, spellings))
+    .orderBy(asc(patient.fileNumber))
+    .limit(1);
   return row ? numberHit(tx, row, states) : null;
 }
 
@@ -92,76 +111,6 @@ export function byPhoneTail(tx: Tx, digits: string, states: readonly State[]) {
     )
     .orderBy(asc(patient.fileNumber))
     .limit(PER_PATH);
-}
-
-export interface NameHit {
-  row: ChartRow;
-  /** For each typed word, in order, the parts (0–2) it matched. */
-  wordParts: number[][];
-}
-
-/**
- * Charts whose tokens hold every word of `words` (key words, two letters or more), best first.
- * `key` is the typed term's key, for the trigram rank.
- */
-export async function byName(
-  tx: Tx,
-  words: readonly string[],
-  key: string,
-  states: readonly State[],
-): Promise<NameHit[]> {
-  const { rows } = await tx.execute<{ id: string; word_parts: number[][] }>(
-    nameQuery(words, key, states),
-  );
-  if (rows.length === 0) return [];
-  const charts = await tx
-    .select()
-    .from(patient)
-    .where(
-      inArray(
-        patient.id,
-        rows.map((r) => r.id),
-      ),
-    );
-  const byId = new Map(charts.map((c) => [c.id, c]));
-  return rows.flatMap((r) => {
-    const row = byId.get(r.id);
-    return row ? [{ row, wordParts: r.word_parts }] : [];
-  });
-}
-
-/** The name query (exported for the plan check of the benchmark). */
-export function nameQuery(words: readonly string[], key: string, states: readonly State[]) {
-  const typed = sql.join(
-    words.map((w, i) => sql`(${i}::int, ${lookupToken(w)}::text)`),
-    sql`, `,
-  );
-  const stateList = sql.join(
-    states.map((s) => sql`${s}`),
-    sql`, `,
-  );
-  return sql`
-    with words(ord, token) as (values ${typed}),
-    hits as (
-      select t.patient_id, w.ord, max(case when t.whole then 2 else 1 end) as quality,
-             array_agg(distinct t.part order by t.part) as parts
-      from words w
-      join patient_name_token t on t.token = w.token
-      group by t.patient_id, w.ord
-    ),
-    matched as (
-      select patient_id, sum(quality) as score,
-             json_agg(parts order by ord) as word_parts
-      from hits
-      group by patient_id
-      having count(*) = ${words.length}
-    )
-    select p.id, m.word_parts
-    from matched m
-    join patient p on p.id = m.patient_id
-    where p.state in (${stateList})
-    order by m.score desc, coalesce(similarity(p.name_key, ${key}), 0) desc, p.file_number asc
-    limit ${PER_PATH}`;
 }
 
 /** The display name of a chart row. */

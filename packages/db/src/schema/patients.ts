@@ -147,6 +147,8 @@ export const patient = pgTable(
 export const patientNameToken = pgTable(
   'patient_name_token',
   {
+    /** Row key (every table's primary key is a uuid; schema-keys test). */
+    id: uuid('id').primaryKey().defaultRandom(),
     tenantId: uuid('tenant_id')
       .notNull()
       .references(() => tenant.id),
@@ -161,16 +163,14 @@ export const patientNameToken = pgTable(
     keyVersion: smallint('key_version').notNull(),
   },
   (t) => [
-    primaryKey({
-      name: 'patient_name_token_pkey',
-      columns: [t.tenantId, t.patientId, t.part, t.word, t.token],
-    }),
+    unique('patient_name_token_chart_key').on(t.tenantId, t.patientId, t.part, t.word, t.token),
     foreignKey({
       name: 'patient_name_token_patient_fk',
       columns: [t.tenantId, t.patientId],
       foreignColumns: [patient.tenantId, patient.id],
     }),
-    index('patient_name_token_tenant_id_token_idx').on(t.tenantId, t.token, t.patientId),
+    // `whole` before the chart: a common prefix reads whole-word matches first, then stops.
+    index('patient_name_token_tenant_id_token_idx').on(t.tenantId, t.token, t.whole, t.patientId),
     check('patient_name_token_part_check', sql`${t.part} between 0 and 2`),
     check('patient_name_token_word_check', sql`${t.word} between 0 and 40`),
     check('patient_name_token_token_check', sql`char_length(${t.token}) between 1 and 24`),

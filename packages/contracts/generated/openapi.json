@@ -2798,10 +2798,25 @@
           "displayName": {
             "type": "string"
           },
+          "familyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fatherName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
           "fileNumber": {
             "maximum": 9007199254740991,
             "minimum": 1,
             "type": "integer"
+          },
+          "givenName": {
+            "type": "string"
           },
           "id": {
             "format": "uuid",
@@ -2841,6 +2856,9 @@
         "required": [
           "id",
           "displayName",
+          "givenName",
+          "fatherName",
+          "familyName",
           "fileNumber",
           "sex",
           "birthDate",

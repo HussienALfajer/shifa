@@ -50,7 +50,9 @@ export const READ_IN_BODY_METADATA = 'shifa:access:read-in-body';
 /**
  * With @RequirePermission on a POST only (A-03-03): a read whose input travels in the body
  * because it is personal data (a patient search term, spec A-03 criterion 6). A support session
- * may call it like a GET; its transaction stays READ ONLY there. It must write nothing.
+ * may call it like a GET; its transaction stays READ ONLY there, so the handler must answer
+ * without writing in that scope (patient search skips its key backfill there) and must reach no
+ * other database or service that would write. The support matrix lists every such route.
  */
 export const ReadInBody = (): MethodDecorator => SetMetadata(READ_IN_BODY_METADATA, true);
 

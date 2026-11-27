@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "2cce5d47-fddc-4be3-bb00-906b2116e7df",
+  "id": "05418f39-cb04-412f-bc01-c952133cffa0",
   "prevIds": [
     "b913a714-de19-4080-bd4e-c251dfbadfe5"
   ],
@@ -20,7 +20,8 @@
         "e|tbl|public.patient_name_token",
         "n|rel|public.patient_name_token",
         "n|type|public.patient_name_token",
-        "n|rel|public.patient_name_token_pkey"
+        "n|rel|public.patient_name_token_pkey",
+        "n|rel|public.patient_name_token_chart_key"
       ],
       "reads": [
         "n|sch|public"
@@ -180,6 +181,7 @@
         "n|sch|public",
         "n|col|public.patient_name_token.tenant_id",
         "n|col|public.patient_name_token.token",
+        "n|col|public.patient_name_token.whole",
         "n|col|public.patient_name_token.patient_id"
       ]
     },
@@ -347,6 +349,22 @@
           "as": "right(second_phone, 7)",
           "type": "stored"
         },
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_name_token",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
         "identity": null,
         "entityType": "columns"
       }
@@ -579,6 +597,13 @@
             "opclass": null
           },
           {
+            "value": "whole",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
             "value": "patient_id",
             "isExpression": false,
             "asc": true,
@@ -643,14 +668,28 @@
         "table": "patient_name_token",
         "name": "patient_name_token_pkey",
         "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_name_token",
+        "name": "patient_name_token_chart_key",
+        "nameExplicit": true,
+        "columns": [
           "tenant_id",
           "patient_id",
           "part",
           "word",
           "token"
         ],
-        "nameExplicit": true,
-        "entityType": "pks"
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
       }
     },
     {

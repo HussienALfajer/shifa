@@ -68,11 +68,18 @@ export class PatientsController {
     @Body() body: RequestBody<typeof patientsSearch>,
     @CurrentScope() scope: RequestScope,
     @CurrentPrincipal() principal: Principal,
+    @ClientRequest() request: RequestMeta,
   ): Promise<PatientSearchResults> {
     if (body.includeArchived === true && !this.permissions.holds(principal, 'patients.archive')) {
       throw new ForbiddenException();
     }
-    return this.searches.search(scope, body);
+    // A member past the limit is logged by ids (a scraper can be named; never the term).
+    return this.searches.search(scope, body, () => {
+      request.logInfo(
+        { tenantId: scope.tenantId, userId: scope.userId },
+        'patient search rate limited',
+      );
+    });
   }
 
   @RequirePermission('patients.manage')

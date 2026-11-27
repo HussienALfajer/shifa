@@ -41,27 +41,26 @@ export async function writeNameKey(tx: Tx, chart: NameParts): Promise<void> {
     .where(eq(patient.id, chart.id));
 }
 
-/** Charts whose key is missing or older, written in batches; returns how many were written. */
-export async function backfillNameKeys(tx: Tx, batch = 500): Promise<number> {
-  let written = 0;
-  for (;;) {
-    // SKIP LOCKED: two searches of one clinic at once share the work instead of waiting.
-    const rows = await tx
-      .select({
-        id: patient.id,
-        tenantId: patient.tenantId,
-        givenName: patient.givenName,
-        fatherName: patient.fatherName,
-        familyName: patient.familyName,
-      })
-      .from(patient)
-      .where(lt(patient.nameKeyVersion, NAME_KEY_VERSION))
-      .limit(batch)
-      .for('update', { skipLocked: true });
-    for (const row of rows) await writeNameKey(tx, row);
-    written += rows.length;
-    if (rows.length < batch) return written;
-  }
+/**
+ * One batch of charts whose key is missing or older, written in `tx`; returns how many. The
+ * caller commits each batch in its own transaction, so its row locks are short.
+ */
+export async function backfillNameKeys(tx: Tx, batch: number): Promise<number> {
+  // SKIP LOCKED: two searches of one clinic at once share the work instead of waiting.
+  const rows = await tx
+    .select({
+      id: patient.id,
+      tenantId: patient.tenantId,
+      givenName: patient.givenName,
+      fatherName: patient.fatherName,
+      familyName: patient.familyName,
+    })
+    .from(patient)
+    .where(lt(patient.nameKeyVersion, NAME_KEY_VERSION))
+    .limit(batch)
+    .for('update', { skipLocked: true });
+  for (const row of rows) await writeNameKey(tx, row);
+  return rows.length;
 }
 
 /** True when a name part differs between two versions of a chart. */
