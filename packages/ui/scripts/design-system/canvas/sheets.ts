@@ -1,5 +1,6 @@
 // Every sheet of the "Shifa Components" page, in the system's order, and the index board.
 import { esc, GROUPS, page, WIDTH } from './page.ts';
+import { A02_SHEETS } from './sheets-a02.ts';
 import { ACTIONS } from './sheets-actions.ts';
 import { CHOICES } from './sheets-choices.ts';
 import { DISPLAY } from './sheets-display.ts';
@@ -17,6 +18,7 @@ export const SHEETS: SheetSpec[] = [
   ...OVERLAYS,
   ...DISPLAY,
   ...FEEDBACK,
+  ...A02_SHEETS,
 ];
 
 const MUTED = 'color: var(--shifa-color-text-muted);';

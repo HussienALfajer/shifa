@@ -26,6 +26,12 @@ export interface DataTableColumn<Row> {
   sortable?: boolean;
   /** Offered in the columns menu (default true; the first column never hides). */
   hideable?: boolean;
+  /**
+   * Free text (a reason, a note) shown whole on as many lines as it needs: the row grows to fit
+   * and the column takes the widest share of the row. Without it a cell is one line, cut with an
+   * ellipsis.
+   */
+  wrap?: boolean;
 }
 
 export type DataTableSortDirection = 'ascending' | 'descending';
@@ -40,6 +46,7 @@ export interface ColumnMeta {
   width: DataTableColumnWidth;
   render: ((row: unknown) => ReactNode) | undefined;
   header: string;
+  wrap: boolean;
 }
 
 /** A column as the table reads it. */
@@ -80,9 +87,22 @@ export interface TableLike<Row> {
   toggleAllRowsSelected: (value?: boolean) => void;
 }
 
-/** The grid track of a column: tokens only. */
-export function track(width: DataTableColumnWidth): string {
-  if (width === 'lg') return 'minmax(var(--shifa-width-60), 2fr)';
-  if (width === 'sm') return 'minmax(var(--shifa-space-16), 1fr)';
-  return 'minmax(calc(var(--shifa-space-16) * 2), 1fr)';
+const MIN: Record<DataTableColumnWidth, string> = {
+  sm: 'var(--shifa-space-16)',
+  md: 'calc(var(--shifa-space-16) * 2)',
+  lg: 'var(--shifa-width-60)',
+};
+
+/**
+ * The grid track of a column: tokens only. Columns share the width from their minimum (lg twice
+ * as much); a wrapping column takes three shares from a md minimum, the widest share of the row.
+ */
+export function track(width: DataTableColumnWidth, wrap = false): string {
+  if (wrap) return `minmax(${MIN.md}, 3fr)`;
+  return `minmax(${MIN[width]}, ${width === 'lg' ? '2fr' : '1fr'})`;
+}
+
+/** The sum of the columns' minimums: a wrapping table is never narrower (it scrolls sideways). */
+export function minimumWidth(widths: readonly DataTableColumnWidth[], selectable: boolean): string {
+  return `calc(${[...(selectable ? ['var(--shifa-space-12)'] : []), ...widths.map((w) => MIN[w])].join(' + ')})`;
 }

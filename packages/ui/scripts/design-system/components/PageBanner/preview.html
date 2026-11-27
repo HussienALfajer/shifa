@@ -1,0 +1,39 @@
+<!-- @dsCard group="Feedback" height=560 subtitle="Warning, several in turn, the owner's support notice, the support strip · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  var AR = [
+    { tone: 'support', title: 'دخول الدعم · للقراءة فقط', text: 'عيادة تجريبية بعرض المالك · حتى 14:12 (متبقٍّ 42 دقيقة)', action: 'إنهاء' },
+    { tone: 'warning', icon: 'eye', title: 'فريق شفاء يقرأ عيادتك الآن، للقراءة فقط.', text: 'السبب: مشكلة في الفروع لا تظهر للمالك · حتى 14:12', action: 'إنهاء الدخول' },
+    { tone: 'warning', title: 'تنبيه:', text: 'صيانة الليلة من 11 إلى 12. احفظوا عملكم قبلها.', dismissible: true },
+    { tone: 'info', title: 'معلومة:', index: 1, dismissible: true, texts: ['صيانة الليلة من 11 إلى 12.', 'صار بإمكانكم إضافة مدينة الفرع وحيّه من إعدادات الفروع.', 'تدريب على جدول المواعيد الجديد يوم السبت 10:00 عبر الهاتف.'] }
+  ];
+  var EN = [
+    { tone: 'support', title: 'Support access · read only', text: 'A sample clinic as its owner sees it · until 14:12 (42 minutes left)', action: 'End' },
+    { tone: 'warning', title: 'Warning:', text: 'Maintenance tonight from 11 to 12. Save your work before.', dismissible: true },
+    { tone: 'info', title: 'Information:', dismissible: true, texts: ['Maintenance tonight from 11 to 12.', 'You can now add the branch city and area.', 'Training on the new schedule on Saturday at 10:00.'] }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel, p) {
+    (p === 0 ? AR : EN).forEach(function (props, i) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      window.Shifa.mount(slot, 'PageBanner', Object.assign({ 'aria-label': props.title + ' ' + (p + 1) + '.' + (i + 1) }, props));
+    });
+  });
+</script>
+</body>
+</html>

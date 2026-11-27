@@ -98,7 +98,7 @@ const meta = {
     docs: {
       description: {
         component:
-          'A dense grid that stays fast with thousands of rows. Sorting, selection with select-all, column visibility (the columns menu under the table), sticky header and pinned first column, both densities, loading and empty states. Columns and rows in; no data fetching.\n\n**Accessibility.** A `role="grid"` named by the required `aria-label`, with `aria-rowcount` (`totalRows` when `rows` is one page) and `aria-colcount`. One Tab stop on the active cell; the arrows follow the reading direction (Left is the next column in Arabic), Home and End reach the row’s ends, Ctrl+Home and Ctrl+End the table’s, PageUp and PageDown move by a visible page; Space selects the row, Enter opens it (or sorts on a header, or enters a control in a cell; Escape comes back). A screen reader hears `aria-sort` on sortable headers, `aria-selected` on rows and a mixed state on select-all; while loading the grid is `aria-busy` and its skeleton rows are hidden. Latin cells (`kind: "latin"`) are isolated, so callers add no `<bdi>`.',
+          'A dense grid that stays fast with thousands of rows. Sorting, selection with select-all, column visibility (the columns menu under the table), sticky header and pinned first column, a wrapping column for free text (`wrap: true`, the row grows to fit), both densities, loading and empty states. Columns and rows in; no data fetching.\n\n**Accessibility.** A `role="grid"` named by the required `aria-label`, with `aria-rowcount` (`totalRows` when `rows` is one page) and `aria-colcount`. One Tab stop on the active cell; the arrows follow the reading direction (Left is the next column in Arabic), Home and End reach the row’s ends, Ctrl+Home and Ctrl+End the table’s, PageUp and PageDown move by a visible page; Space selects the row, Enter opens it (or sorts on a header, or enters a control in a cell; Escape comes back). A screen reader hears `aria-sort` on sortable headers, `aria-selected` on rows and a mixed state on select-all; while loading the grid is `aria-busy` and its skeleton rows are hidden. Latin cells (`kind: "latin"`) are isolated, so callers add no `<bdi>`.',
       },
     },
   },
@@ -179,6 +179,60 @@ export const Empty: Story = {
         title: 'لا مرضى بهذا الاسم',
         description: 'جرّب رقم الهاتف أو رقم الملف.',
       }}
+    />
+  ),
+};
+
+interface Grant {
+  id: string;
+  who: string;
+  reason: string;
+  start: string;
+  status: string;
+}
+
+const GRANTS: Grant[] = [
+  {
+    id: 'g1',
+    who: NAMES[0] ?? '',
+    reason: 'مشكلة في الفروع لا تظهر للمالك: فرع العزيزية غائب عن قائمة الفروع عنده منذ أمس',
+    start: '26/11/2026 13:12',
+    status: 'مفتوح',
+  },
+  {
+    id: 'g2',
+    who: NAMES[1] ?? '',
+    reason:
+      'المالك لا يرى موعدًا حجزه السكرتير صباح الأحد في فرع الجميلية، بينما يظهر الموعد في شاشة السكرتير ولا يظهر في تقويم الطبيب. نريد أن نرى ما يراه المالك قبل أن نطلب منه تصوير الشاشة.',
+    start: '24/11/2026 09:10',
+    status: 'انتهت المدة',
+  },
+  {
+    id: 'g3',
+    who: NAMES[0] ?? '',
+    reason: 'مراجعة إعداد الفروع بعد النقل',
+    start: '18/11/2026 16:02',
+    status: 'أنهاه المالك',
+  },
+];
+
+const GRANT_COLUMNS: DataTableColumn<Grant>[] = [
+  { id: 'who', header: 'من', value: (g) => g.who, sortable: true, width: 'md' },
+  { id: 'reason', header: 'السبب', value: (g) => g.reason, wrap: true },
+  { id: 'start', header: 'البداية', value: (g) => g.start, sortable: true },
+  { id: 'status', header: 'الحالة', value: (g) => g.status },
+];
+
+/** A wrapping column (A-02-01): «السبب» shown whole on as many lines as it needs, the row grows, the other cells stay at its top; one row selected. */
+export const WrappingColumn: Story = {
+  render: () => (
+    <DataTable
+      aria-label={useCopyLabel('سجل دخول الدعم')}
+      columns={GRANT_COLUMNS}
+      rows={GRANTS}
+      getRowId={(g) => g.id}
+      selectable
+      defaultSelected={['g2']}
     />
   ),
 };

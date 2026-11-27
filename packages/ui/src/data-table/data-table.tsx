@@ -12,7 +12,13 @@ import { EmptyState, type EmptyStateProps } from '../empty-state/empty-state.tsx
 import { cn } from '../lib/cn.ts';
 import { NUMBER_LOCALE } from '../number-input/number-input.tsx';
 import { useDirection } from '../providers/direction-provider.tsx';
-import { type ColumnMeta, type DataTableColumn, type DataTableSort, track } from './columns.ts';
+import {
+  type ColumnMeta,
+  type DataTableColumn,
+  type DataTableSort,
+  minimumWidth,
+  track,
+} from './columns.ts';
 import { ColumnsMenu, SkeletonCells, TableBar } from './parts.tsx';
 import { BodyRow, HeaderRow } from './rows.tsx';
 import { type Cell, controlIn, useGridKeyboard } from './use-grid-keyboard.ts';
@@ -88,10 +94,16 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
   const shown = table.getRowModel().rows;
   const leaves = table.getVisibleLeafColumns();
   const colCount = leaves.length + (selectable ? 1 : 0);
+  // A wrapping column makes rows of their own height (the virtualiser measures each drawn row)
+  // and takes the width the other columns leave.
+  const wraps = leaves.some((c) => (c.columnDef.meta as ColumnMeta).wrap);
   const columnsStyle = {
     gridTemplateColumns: [
       ...(selectable ? ['var(--shifa-space-12)'] : []),
-      ...leaves.map((c) => track((c.columnDef.meta as ColumnMeta).width)),
+      ...leaves.map((c) => {
+        const meta = c.columnDef.meta as ColumnMeta;
+        return track(meta.width, meta.wrap);
+      }),
     ].join(' '),
   };
 
@@ -129,7 +141,20 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     grid,
     rowCount: loading ? 0 : shown.length,
     colCount,
-    pageSize: () => Math.max(1, Math.floor((scroll.current?.clientHeight ?? 0) / rowHeight()) - 1),
+    pageSize: () => {
+      const box = scroll.current;
+      if (!wraps || box === null) {
+        return Math.max(1, Math.floor((box?.clientHeight ?? 0) / rowHeight()) - 1);
+      }
+      // Rows of their own height: count the measured rows that fit in the scroll box.
+      // Item offsets count from the scroll box's top (the header's height included).
+      const top = box.scrollTop + (body.current?.offsetTop ?? 0);
+      const bottom = box.scrollTop + box.clientHeight;
+      const inView = virtual
+        .getVirtualItems()
+        .filter((item) => item.start >= top && item.end <= bottom);
+      return Math.max(1, inView.length - 1);
+    },
     scrollToRow: (index) => {
       virtual.scrollToIndex(index, { align: 'auto' });
     },
@@ -154,6 +179,12 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     },
   });
   activeRow.current = keyboard.active.row - 1;
+
+  // When the wrapping column is hidden or shown again, the rows' measured heights no longer hold:
+  // measure afresh (a row no longer observed would keep its old height and leave a gap).
+  useLayoutEffect(() => {
+    virtual.measure();
+  }, [wraps, virtual]);
 
   // Controls inside cells are reached with Enter, never with Tab: keep them out of the Tab order.
   useLayoutEffect(() => {
@@ -216,7 +247,25 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
           aria-busy={loading || undefined}
           onKeyDown={keyboard.onKeyDown}
           onFocus={keyboard.onFocus}
-          className="w-max min-w-full text-data leading-tight in-data-[density=compact]:text-200"
+          // A wrapping table is as wide as its box, never narrower than its columns' minimums: the
+          // wrapped text never widens it.
+          {...(wraps
+            ? {
+                style: {
+                  minWidth: minimumWidth(
+                    leaves.map((c) => {
+                      const meta = c.columnDef.meta as ColumnMeta;
+                      return meta.wrap ? 'md' : meta.width;
+                    }),
+                    selectable,
+                  ),
+                },
+              }
+            : {})}
+          className={cn(
+            wraps ? 'w-full' : 'w-max min-w-full',
+            'text-data leading-tight in-data-[density=compact]:text-200',
+          )}
         >
           <HeaderRow table={table} {...common} />
           <div
@@ -252,6 +301,7 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
                     format={(n) => number.format(n)}
                     selectLabel={selectLabel(item.index)}
                     onRowAction={onRowAction}
+                    {...(wraps ? { measure: virtual.measureElement } : {})}
                     {...common}
                   />
                 );

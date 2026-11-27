@@ -128,13 +128,15 @@ export interface PaginationProps {
 
 export interface DataTableProps {
   'aria-label': string;
-  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`, `hideable`. */
+  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`, `hideable`, `wrap`. */
   columns: {
     id: string;
     header: string;
     kind?: 'text' | 'number' | 'latin';
     sortable?: boolean;
     hideable?: boolean;
+    /** Free text (a reason, a note) shown whole on several lines; the row grows to fit. */
+    wrap?: boolean;
   }[];
   /** Rows as cell values by column id. */
   rows: Record<string, string | number>[];
@@ -193,6 +195,41 @@ export declare const Toolbar: (props: ToolbarProps) => unknown;
 export declare const Pagination: (props: PaginationProps) => unknown;
 export declare const DataTable: (props: DataTableProps) => unknown;
 
+/** Daily counts of the last 30 days (A-02): bars, quarter axis, the average line, today in gold. */
+export interface UsageChartProps {
+  /** The chart's name: «آخر 30 يومًا». */
+  'aria-label': string;
+  /** Oldest first, the last is today: `{ date: '2026-11-26', count: 14 }`. None: the empty state. */
+  days: { date: string; count: number }[];
+  /** The figure's words in the tooltip, `{n}` for the count: «{n} تسجيل دخول». */
+  unit?: string;
+  /** The last day is today, drawn in gold (default true). */
+  lastIsToday?: boolean;
+  loading?: boolean;
+}
+
+export declare const UsageChart: (props: UsageChartProps) => unknown;
+
+/** Several choices by search (A-02): chips with a named remove, the list open after each pick. */
+export interface MultiComboboxProps {
+  label: string;
+  hint?: string;
+  /** Marks the field invalid; read with it. */
+  error?: string;
+  disabled?: boolean;
+  items: { value: string; label: string; disabled?: boolean }[];
+  /** The chosen values at mount. */
+  defaultValue?: string[];
+  emptyMessage: string;
+  placeholder?: string;
+  /** The list open at mount, to show it at rest. */
+  defaultOpen?: boolean;
+  /** The text in the field at mount, as if typed. */
+  defaultInputValue?: string;
+}
+
+export declare const MultiCombobox: (props: MultiComboboxProps) => unknown;
+
 /** A button that opens a list of actions, or a choice among groups (A-01-08). */
 export interface MenuProps {
   triggerLabel?: string;
@@ -237,3 +274,27 @@ export interface MenuProps {
 }
 
 export declare const Menu: (props: MenuProps) => unknown;
+
+/** A strip above the top bar (A-02): announcements, the owner's support notice, the support session. */
+export interface PageBannerProps {
+  /** info and warning (announcements), support (solid, the support session). */
+  tone: 'info' | 'warning' | 'support';
+  /** The word in bold that names it («تنبيه:»). */
+  title: string;
+  text?: string;
+  /** Replaces the tone's icon (`eye` for the owner's notice). */
+  icon?: IconName;
+  /** The one button's label («إنهاء الدخول»). */
+  action?: string;
+  /** Several announcements shown in turn, with «1 من 3», previous and next. */
+  texts?: string[];
+  /** The one shown first, from 0. */
+  index?: number;
+  /** A close button that hides it (announcements only, never support). */
+  dismissible?: boolean;
+  dismissLabel?: string;
+  /** The region's name when several copies share a title on one page. */
+  'aria-label'?: string;
+}
+
+export declare const PageBanner: (props: PageBannerProps) => unknown;
