@@ -15,6 +15,8 @@ export interface RequestMeta {
   cookie(name: string): string | undefined;
   /** Adds one Set-Cookie line to the reply. */
   setCookie(line: string): void;
+  /** An info line on the request's logger (ids and enum words only; never values from input). */
+  logInfo(fields: Record<string, string | number | boolean | null>, message: string): void;
 }
 
 /** Cookies of a Cookie header (first value wins; malformed encodings are kept as sent). */
@@ -49,6 +51,9 @@ export function requestMetaFactory(_data: unknown, context: ExecutionContext): R
     cookie: (name) => parseCookies(cookieHeader).get(name),
     setCookie: (line) => {
       void reply.header('set-cookie', line);
+    },
+    logInfo: (fields, message) => {
+      request.log.info(fields, message);
     },
   };
 }

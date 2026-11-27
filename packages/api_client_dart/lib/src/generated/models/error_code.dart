@@ -122,7 +122,13 @@ enum ErrorCode {
   @JsonValue('setting_locked')
   settingLocked('setting_locked'),
   @JsonValue('setting_not_lockable')
-  settingNotLockable('setting_not_lockable');
+  settingNotLockable('setting_not_lockable'),
+  @JsonValue('support_active')
+  supportActive('support_active'),
+  @JsonValue('support_ended')
+  supportEnded('support_ended'),
+  @JsonValue('support_read_only')
+  supportReadOnly('support_read_only');
 
   const ErrorCode(this.json);
 

@@ -73,13 +73,14 @@ describe('auth wrappers', () => {
 });
 
 describe('platform wrapper', () => {
-  it('clears every setting and names its event in app.admin_reason', async () => {
+  it('clears every setting, names its event in app.admin_reason and its actor in app.user_id', async () => {
     const platform = createPlatformDb(harnessUrl('platform'), { max: 1 });
     const action = { actorId: ADMIN, event: 'clinic.created' } as const;
     try {
       await platform.withPlatformAdmin(action, leaveSessionValues);
       expect(await platform.withPlatformAdmin(action, readSettings)).toEqual({
         ...empty,
+        user: ADMIN,
         reason: 'clinic.created',
       });
     } finally {

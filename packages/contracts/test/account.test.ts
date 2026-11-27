@@ -43,6 +43,7 @@ const sessionView = {
   idleMinutes: 15,
   idleExpiresAt: NOW,
   absoluteExpiresAt: NOW,
+  support: null,
 };
 
 function isContract(value: unknown): value is Contract {

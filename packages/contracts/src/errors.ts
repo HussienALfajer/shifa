@@ -73,6 +73,10 @@ export const ErrorCode = z
     // settings cascade (A-02-04)
     'setting_locked',
     'setting_not_lockable',
+    // support access (A-02-05)
+    'support_active',
+    'support_ended',
+    'support_read_only',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -108,12 +112,28 @@ export type ValidationIssue = z.infer<typeof ValidationIssue>;
 /**
  * `idle` and `absolute`: a limit ran out. `ended`: the cookie is genuine but its session is gone
  * (ended on another device, by the owner, by the super admin or by a change of password); a
- * session deleted after its limit by an earlier request reads `ended` too.
+ * session deleted after its limit by an earlier request reads `ended` too. `support_ended`: the
+ * support grant behind a support session ended (A-02-05; `supportEnded` says how).
  */
 export const SessionEndReason = z
-  .enum(['idle', 'absolute', 'ended'])
+  .enum(['idle', 'absolute', 'ended', 'support_ended'])
   .meta({ id: 'SessionEndReason' });
 export type SessionEndReason = z.infer<typeof SessionEndReason>;
+
+/** Who ended a support grant: the super admin, an owner of the clinic, or its expiry. */
+export const SupportEndedBy = z.enum(['admin', 'owner', 'expiry']).meta({ id: 'SupportEndedBy' });
+export type SupportEndedBy = z.infer<typeof SupportEndedBy>;
+
+/** How a support session's grant ended (A-02 criterion 12): the full page «انتهى دخول الدعم». */
+export const SupportEnded = z
+  .object({
+    endedBy: SupportEndedBy,
+    endedAt: z.iso.datetime(),
+    /** The owner who ended it («أنهاه المالك: …»); null unless `endedBy` is `owner`. */
+    ownerName: z.string().nullable(),
+  })
+  .meta({ id: 'SupportEnded' });
+export type SupportEnded = z.infer<typeof SupportEnded>;
 
 /** Which limit refused an add, its value and the use it was compared with (A-02 criterion 4). */
 export const LimitReached = z
@@ -139,6 +159,8 @@ export const ErrorBody = z
     reason: SessionEndReason.optional(),
     /** The limit that refused the add: only with `limit_reached` (A-02 criterion 4). */
     limitReached: LimitReached.optional(),
+    /** How the support grant ended: only with `session_expired`, reason `support_ended`. */
+    supportEnded: SupportEnded.optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -210,6 +232,9 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   feature_unavailable: 'This feature is not available to this clinic',
   setting_locked: 'This setting is locked by the platform',
   setting_not_lockable: 'This setting cannot be locked for a clinic',
+  support_active: 'You already have open support access to this clinic',
+  support_ended: 'This support access has ended',
+  support_read_only: 'Support access is read-only',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

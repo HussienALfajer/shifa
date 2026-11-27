@@ -36,6 +36,24 @@ export const PlatformAdmin = (): MethodDecorator => SetMetadata(PLATFORM_ADMIN_M
  */
 export const BeforeMfa = (): MethodDecorator => SetMetadata(BEFORE_MFA_METADATA, true);
 
+export const SUPPORT_WRITE_METADATA = 'shifa:access:support-write';
+
+/**
+ * With @SignedIn only (A-02-05, ADR-0050): the one write a support session may make, ending its
+ * own grant (`POST /auth/support/end`). Every other non-GET route answers 403 `support_read_only`
+ * in a support session; the start-up check refuses this marker on any other route.
+ */
+export const SupportSessionWrite = (): MethodDecorator => SetMetadata(SUPPORT_WRITE_METADATA, true);
+
+export const NOT_IN_SUPPORT_METADATA = 'shifa:access:not-in-support';
+
+/**
+ * A read an owner may make that a support session may not (A-02 Permissions: the subscription
+ * card, the support log; A-02-05 review 2): 403 `forbidden` in a support session.
+ */
+export const NotInSupportSession = (): MethodDecorator =>
+  SetMetadata(NOT_IN_SUPPORT_METADATA, true);
+
 export const ENTITLEMENT_GATE_METADATA = 'shifa:access:entitlement-gate';
 export const FLAG_GATE_METADATA = 'shifa:access:flag-gate';
 

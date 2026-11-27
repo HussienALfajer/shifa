@@ -42,6 +42,8 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   capabilities: [],
   // A-02-04: the settings cascade, and the owner's change of the idle sign-out (audited)
   settings: ['settingValue', 'platformSettingValue', 'auditEvent'],
+  // A-02-05: support grants (open, hand off, end, the owner's end, every request audited)
+  support: ['supportAccessGrant', 'auditEvent'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -55,6 +57,12 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     branch:
       'read: the active branch is checked against the clinic; the chooser and an invitation name branches',
     setupLink: 'opening and using a link on the auth path, by its token hash alone',
+    supportAccessGrant:
+      'a support session reads its grant per request; a hand-off finds it by its token hash (A-02-05)',
+  },
+  support: {
+    tenant: 'read: a grant is opened on an existing clinic, suspended too (A-02 criterion 14)',
+    membership: 'read: the ending owner’s name, shown on the support tab’s ended page',
   },
   platform: {
     membership: 'the owner card of a clinic (owner memberships only, by policy)',
@@ -85,6 +93,8 @@ const WRITES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   identity: {
     membership: 'accepting a link or an invitation binds it; a request stamps last_active_at',
     setupLink: 'using a link marks it used, on the auth path',
+    supportAccessGrant:
+      'a hand-off is used once (its hash cleared); an expired grant is closed as `expiry`, once',
   },
 };
 

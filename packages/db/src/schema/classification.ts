@@ -105,6 +105,31 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'restrictive: the auth path reads the organization’s session.idle_minutes of the person’s own clinics and no other setting, even with a tenant set',
     },
   },
+  // A-02-05: read-only support access (criteria 11–14, ADR-0050). shifa_app reads its own grants
+  // and an owner ends an open one (restrictive policy, no reason needed).
+  support_access_grant: {
+    kind: 'tenant',
+    roleAccess: {
+      support_access_grant_platform_only_in_support:
+        'restrictive: shifa_platform reads a clinic’s support grants only inside that clinic in a support action (list, open, hand-off, end; A-02 criteria 11, 12)',
+      support_access_grant_platform_open_only:
+        'restrictive: shifa_platform inserts only an open grant of the acting super admin, opened now and at most 4 hours long, in a support.opened action (A-02 criterion 11)',
+      support_access_grant_platform_change_only:
+        'restrictive: shifa_platform changes only an open grant: a hand-off of its own in support.handoff_issued, its own end in support.ended, or the close of an expired grant (A-02 criteria 11, 12)',
+      support_access_grant_auth_handoff_read:
+        'exchanging a hand-off finds the grant by the token hash alone, before anyone is signed in on clinic web (ADR-0050)',
+      support_access_grant_auth_own_read:
+        'each request of a support session reads its grant (ended, expired) as the signed-in super admin (A-02 criterion 12)',
+      support_access_grant_auth_handoff_use:
+        'a hand-off of an open grant is used once: its hash is cleared (ADR-0050)',
+      support_access_grant_auth_expire:
+        'a support session that finds its grant expired closes it as `expiry`, once (A-02 criteria 12, 14)',
+      support_access_grant_auth_only_own:
+        'restrictive: even with a tenant set, shifa_auth reads only the grant of its hand-off hash or the signed-in super admin’s own',
+      support_access_grant_auth_only_use_or_expire:
+        'restrictive: even with a tenant set, shifa_auth changes only an open grant: clears its hand-off or closes it as expired (never re-opens an ended one)',
+    },
+  },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

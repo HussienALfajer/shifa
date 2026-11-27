@@ -4,6 +4,8 @@
 // @PlatformAdmin → a super admin (403), @RequirePermission → the key in the principal's active
 // tenant/branch, role grants ± the member's sensitive overrides (403), then the route's
 // @RequireEntitlement / @RequireFlag gates for that clinic (403 `feature_unavailable`, A-02-03).
+// A support session (A-02-05, ADR-0050) is audited first, refused every write but its own end
+// (403 `support_read_only`) and every platform route, and gets a READ ONLY scope.
 // The principal is kept for @CurrentPrincipal(); the checked `{ tenant, branch, person }` for
 // @CurrentScope() (A-01b 8).
 import {
@@ -33,15 +35,30 @@ import {
   type PermissionCatalogue,
   type PermissionKey,
 } from './permissions.ts';
-import { isGranted, mfaBlock } from './principal.ts';
+import { isGranted, mfaBlock, type Principal } from './principal.ts';
 import type { RoleGrants } from './roles.ts';
 import { bindScope, type RequestScope } from './scope.ts';
+import { findSupportAudit } from './support.ts';
 
 export { ROLE_GRANTS };
 
 type GuardRequest = Pick<FastifyRequest, 'log'> & {
   routeOptions?: { url?: string | undefined };
+  method?: string;
+  params?: unknown;
+  id?: string;
 };
+
+/** The only methods a support session may use, besides its one marked write (A-02 criterion 12). */
+const READ_METHODS = new Set(['GET', 'HEAD']);
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** The path's `:id` when it is a UUID, lower-cased (the audit row's target); otherwise null. */
+function targetIdOf(params: unknown): string | null {
+  if (typeof params !== 'object' || params === null) return null;
+  const id = (params as Record<string, unknown>)['id'];
+  return typeof id === 'string' && UUID.test(id) ? id.toLowerCase() : null;
+}
 
 @Injectable()
 export class AccessGuard implements CanActivate {
@@ -77,6 +94,9 @@ export class AccessGuard implements CanActivate {
       throw new UnauthorizedException();
     }
     rememberPrincipal(request, principal);
+    if (principal.support) {
+      await this.#supportSession(request, principal, access, { handler, route });
+    }
 
     const block = access.beforeMfa ? null : mfaBlock(principal);
     if (block) {
@@ -112,9 +132,52 @@ export class AccessGuard implements CanActivate {
       tenantId: principal.tenantId,
       branchId: principal.branchId,
       userId: principal.userId,
+      // A support session reads only: every transaction of the request is READ ONLY.
+      ...(principal.support ? { readOnly: true as const } : {}),
     });
     await this.#checkGates(request, access, bound, { handler, route, userId: principal.userId });
     return true;
+  }
+
+  /**
+   * A support session (A-02 criteria 12, 14; ADR-0050): the request is audited first (refused
+   * ones too); platform routes are refused (the admin session never travels in a tenant, nor the
+   * support session out of one); every route but GET/HEAD and the one marked write answers 403
+   * `support_read_only` before the handler. Logs carry the grant id, never the reason.
+   */
+  async #supportSession(
+    request: GuardRequest,
+    principal: Principal,
+    access: AccessAnnotations,
+    fields: { handler: string; route: string | undefined },
+  ): Promise<void> {
+    const grantId = principal.support?.grantId;
+    const recorder = this.moduleRef ? findSupportAudit(this.moduleRef) : null;
+    if (!recorder) {
+      request.log.error({ ...fields, grantId }, 'support session without a request audit');
+      throw new InternalServerErrorException();
+    }
+    const method = (request.method ?? '').toUpperCase();
+    await recorder.recordRequest(principal, {
+      method,
+      route: fields.route ?? 'unknown',
+      targetId: targetIdOf(request.params),
+      requestId: request.id,
+    });
+    if (!READ_METHODS.has(method) && !access.supportWrite) {
+      request.log.info(
+        { status: 403, ...fields, userId: principal.userId, grantId, reason: 'support_read_only' },
+        'access denied',
+      );
+      throw new ApiError(403, 'support_read_only');
+    }
+    if (access.platformAdmin) {
+      this.#deny(request, { ...fields, userId: principal.userId, grantId, platformAdmin: true });
+    }
+    // An owner's read the spec keeps from support (subscription card, support log; review 2).
+    if (access.notInSupport) {
+      this.#deny(request, { ...fields, userId: principal.userId, grantId, notInSupport: true });
+    }
   }
 
   /** After the permission: the route's feature and flag gates for the clinic (A-02-03). */

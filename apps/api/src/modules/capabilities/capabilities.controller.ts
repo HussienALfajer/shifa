@@ -9,7 +9,12 @@ import {
   clinicSubscription,
   type Subscription,
 } from '@shifa/contracts';
-import { CurrentScope, type RequestScope, RequirePermission } from '../../access/index.ts';
+import {
+  CurrentScope,
+  NotInSupportSession,
+  type RequestScope,
+  RequirePermission,
+} from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { CapabilitiesService } from './capabilities.service.ts';
 
@@ -24,7 +29,9 @@ export class CapabilitiesController {
     return this.service.capabilities(scope);
   }
 
+  // A-02 Permissions: the subscription card is the owner's, never a support session's.
   @RequirePermission('clinic.settings.manage')
+  @NotInSupportSession()
   @Contract(clinicSubscription)
   @Get('subscription')
   subscription(@CurrentScope() scope: RequestScope): Promise<Subscription> {

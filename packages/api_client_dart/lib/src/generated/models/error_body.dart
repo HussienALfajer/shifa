@@ -7,6 +7,7 @@ import 'package:json_annotation/json_annotation.dart';
 import 'error_code.dart';
 import 'limit_reached.dart';
 import 'session_end_reason.dart';
+import 'support_ended.dart';
 import 'validation_issue.dart';
 
 part 'error_body.g.dart';
@@ -19,6 +20,7 @@ class ErrorBody {
     this.details,
     this.limitReached,
     this.reason,
+    this.supportEnded,
     this.until,
   });
 
@@ -33,6 +35,8 @@ class ErrorBody {
   final String message;
   @JsonKey(includeIfNull: false)
   final SessionEndReason? reason;
+  @JsonKey(includeIfNull: false)
+  final SupportEnded? supportEnded;
   @JsonKey(includeIfNull: false)
   final DateTime? until;
 

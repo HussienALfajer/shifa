@@ -117,6 +117,7 @@ export function offlineAuthDb(): AuthDb {
     withUser: refuse,
     withSetupLink: refuse,
     withUserLink: refuse,
+    withHandoff: refuse,
     close: () => Promise.resolve(),
   };
 }

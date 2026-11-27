@@ -29,6 +29,7 @@ export const SESSION: SessionView = {
   idleMinutes: 15,
   idleExpiresAt: '2026-11-24T10:15:00.000Z',
   absoluteExpiresAt: '2026-11-24T22:00:00.000Z',
+  support: null,
 };
 
 export const json = (status: number, body: unknown) =>

@@ -43,6 +43,8 @@ describe('the A-01 catalogue and grants', () => {
       ['clinical.notes.view', true],
       // A-02-03
       ['clinic.capabilities.view', false],
+      // A-02-05 (PLT-46): reserved, granted to nobody
+      ['support.elevate', false],
     ]);
   });
 

@@ -18,6 +18,7 @@ import '../models/clinic_entitlements.dart';
 import '../models/clinic_list.dart';
 import '../models/clinic_setting_list.dart';
 import '../models/clinic_settings.dart';
+import '../models/clinic_support_grants.dart';
 import '../models/clinic_type.dart';
 import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
@@ -39,9 +40,12 @@ import '../models/mfa_passed.dart';
 import '../models/mfa_status.dart';
 import '../models/my_clinics.dart';
 import '../models/my_profile.dart';
+import '../models/open_support_grant_request.dart';
+import '../models/opened_support_grant.dart';
 import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
 import '../models/permission_defaults.dart';
+import '../models/platform_support_grants.dart';
 import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
@@ -55,6 +59,9 @@ import '../models/setup_link_request.dart';
 import '../models/setup_link_view.dart';
 import '../models/sign_in_request.dart';
 import '../models/subscription.dart';
+import '../models/support_grant_view.dart';
+import '../models/support_handoff.dart';
+import '../models/support_handoff_request.dart';
 import '../models/switch_request.dart';
 import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
@@ -151,6 +158,16 @@ abstract class CoreClient {
   @POST('/auth/sign-out')
   Future<void> authSignOut();
 
+  /// End the support grant of this support session (the one write it may make)
+  @POST('/auth/support/end')
+  Future<void> authEndSupport();
+
+  /// Exchange a support hand-off for a support session; sets the support cookie
+  @POST('/auth/support/session')
+  Future<SessionView> authSupportSession({
+    @Body() required SupportHandoffRequest body,
+  });
+
   /// The clinic’s active and archived branches
   @GET('/branches')
   Future<BranchList> branchesList();
@@ -197,6 +214,16 @@ abstract class CoreClient {
   /// The clinic’s plan, status, end date, limits with use and enabled features (owner)
   @GET('/clinic/subscription')
   Future<Subscription> clinicSubscription();
+
+  /// The clinic’s open support grants (banner) and every grant (log)
+  @GET('/clinic/support-grants')
+  Future<ClinicSupportGrants> clinicSupportGrants();
+
+  /// An owner ends a super admin’s support access to the clinic
+  @POST('/clinic/support-grants/{id}/end')
+  Future<SupportGrantView> clinicEndSupportGrant({
+    @Path('id') required String id,
+  });
 
   /// Liveness probe
   @GET('/health/live')
@@ -323,6 +350,19 @@ abstract class CoreClient {
     @Body() required LockSettingRequest body,
   });
 
+  /// A clinic’s support grants: this super admin’s open one and the log
+  @GET('/platform/clinics/{id}/support-grants')
+  Future<PlatformSupportGrants> platformSupportGrants({
+    @Path('id') required String id,
+  });
+
+  /// Open read-only support access to a clinic; answers the hand-off URL
+  @POST('/platform/clinics/{id}/support-grants')
+  Future<OpenedSupportGrant> platformOpenSupportGrant({
+    @Path('id') required String id,
+    @Body() required OpenSupportGrantRequest body,
+  });
+
   /// The limits a clinic would have under another type, against its current use
   @GET('/platform/clinics/{id}/type-preview')
   Future<TypePreview> platformTypePreview({
@@ -339,6 +379,18 @@ abstract class CoreClient {
   Future<FlagView> platformSetFlag({
     @Path('key') required String key,
     @Body() required SetFlagRequest body,
+  });
+
+  /// End this super admin’s open grant
+  @POST('/platform/support-grants/{id}/end')
+  Future<SupportGrantView> platformEndSupportGrant({
+    @Path('id') required String id,
+  });
+
+  /// A new single-use hand-off for this super admin’s open grant («فتح عيادة الويب»)
+  @POST('/platform/support-grants/{id}/handoff')
+  Future<SupportHandoff> platformSupportHandoff({
+    @Path('id') required String id,
   });
 
   /// The clinic’s members with roles, scope and status

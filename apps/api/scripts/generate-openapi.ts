@@ -31,6 +31,7 @@ const authDb: AuthDb = {
   withUser: refuse,
   withSetupLink: refuse,
   withUserLink: refuse,
+  withHandoff: refuse,
   close: () => Promise.resolve(),
 };
 const platformDb: PlatformDb = {

@@ -3474,6 +3474,18 @@
   "@errorsSettingNotLockable": {
     "description": "errors.setting_not_lockable"
   },
+  "errorsSupportActive": "لديك دخول مفتوح لهذه العيادة.",
+  "@errorsSupportActive": {
+    "description": "errors.support_active"
+  },
+  "errorsSupportEnded": "انتهى دخول الدعم.",
+  "@errorsSupportEnded": {
+    "description": "errors.support_ended"
+  },
+  "errorsSupportReadOnly": "للقراءة فقط: دخول الدعم لا يغيّر شيئًا.",
+  "@errorsSupportReadOnly": {
+    "description": "errors.support_read_only"
+  },
   "errorsTooManyRequests": "طلبات كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.",
   "@errorsTooManyRequests": {
     "description": "errors.too_many_requests"

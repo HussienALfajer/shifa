@@ -185,10 +185,13 @@ describe('OpenAPI document', () => {
       const row = EXPECTED_MATRIX[route];
       const isPublic = row?.anonymous === 200;
       // Signed-in routes: 401 for anonymous, 200 for every role.
+      // A-02-05: ending support from the support tab is @SignedIn, and refuses every session
+      // that is not a support session (the matrix shows 403 for each role).
       const isSignedIn =
-        !isPublic &&
-        row !== undefined &&
-        Object.entries(row).every(([c, s]) => c === 'anonymous' || s === 200);
+        route === 'POST /auth/support/end' ||
+        (!isPublic &&
+          row !== undefined &&
+          Object.entries(row).every(([c, s]) => c === 'anonymous' || s === 200));
       // Super-admin routes: 401 for anonymous, 200 for platform_admin only.
       const isPlatformAdmin =
         !isPublic &&
@@ -242,6 +245,8 @@ describe('OpenAPI document', () => {
       '/auth/setup-link/view',
       '/auth/sign-in',
       '/auth/sign-out',
+      '/auth/support/end',
+      '/auth/support/session',
       '/branches',
       '/branches/{id}',
       '/branches/{id}/archive',
@@ -250,6 +255,8 @@ describe('OpenAPI document', () => {
       '/clinic/capabilities',
       '/clinic/settings',
       '/clinic/subscription',
+      '/clinic/support-grants',
+      '/clinic/support-grants/{id}/end',
       '/health/live',
       '/health/ready',
       '/invitations/accept',
@@ -269,9 +276,12 @@ describe('OpenAPI document', () => {
       '/platform/clinics/{id}/owner/setup-link',
       '/platform/clinics/{id}/settings',
       '/platform/clinics/{id}/settings/{key}/lock',
+      '/platform/clinics/{id}/support-grants',
       '/platform/clinics/{id}/type-preview',
       '/platform/flags',
       '/platform/flags/{key}',
+      '/platform/support-grants/{id}/end',
+      '/platform/support-grants/{id}/handoff',
       '/team/members',
       '/team/members/{id}',
       '/team/members/{id}/deactivate',

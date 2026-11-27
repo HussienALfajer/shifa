@@ -61,8 +61,16 @@ export const session = pgTable(
     lastActiveAt: at('last_active_at'),
     /** When this session passed the TOTP challenge or enrolment (A-01-03); null: not yet. */
     mfaVerifiedAt: at('mfa_verified_at'),
+    /**
+     * A support session (A-02-05, ADR-0050): the grant it reads a clinic under, read-only, as its
+     * owner sees it. No foreign key (the grant is a tenant row); null for every other session.
+     */
+    supportGrantId: uuid('support_grant_id'),
   },
-  (t) => [index('session_user_id_idx').on(t.userId)],
+  (t) => [
+    index('session_user_id_idx').on(t.userId),
+    index('session_support_grant_id_idx').on(t.supportGrantId),
+  ],
 );
 
 export const account = pgTable(

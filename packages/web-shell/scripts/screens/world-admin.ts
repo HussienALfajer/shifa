@@ -41,6 +41,7 @@ export function adminSession(over: Partial<SessionView> = {}): SessionView {
     idleMinutes: 15,
     idleExpiresAt: at(15 * MINUTE),
     absoluteExpiresAt: at(11 * 60 * MINUTE),
+    support: null,
     ...over,
   };
 }

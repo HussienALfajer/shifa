@@ -25,6 +25,8 @@ export function withScope<T>(
       tenantId: scope.tenantId,
       ...(scope.branchId === null ? {} : { branchId: scope.branchId }),
       userId: scope.userId,
+      // A support session's scope: the second wall behind the guard (A-02 criterion 12).
+      ...(scope.readOnly === true ? { readOnly: true } : {}),
     },
     fn,
   );

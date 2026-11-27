@@ -22,6 +22,10 @@ import { SessionIssuer } from './session-issuer.ts';
 import { SessionsService } from './sessions.service.ts';
 import { SetupLinksService } from './setup-links.service.ts';
 import { SignInService } from './sign-in.service.ts';
+import { SupportDirectory } from './support-directory.ts';
+import { SupportHandoffs } from './support-handoff.ts';
+import { SupportSessionController } from './support-session.controller.ts';
+import { SupportSessions } from './support-sessions.ts';
 import { SwitcherService } from './switcher.service.ts';
 import { ThrottleService } from './throttle.service.ts';
 import {
@@ -53,7 +57,13 @@ export class IdentityModule implements OnApplicationShutdown {
   }: IdentityModuleOptions): DynamicModule {
     return {
       module: IdentityModule,
-      controllers: [IdentityController, OnboardingController, InvitationsController, MeController],
+      controllers: [
+        IdentityController,
+        OnboardingController,
+        InvitationsController,
+        MeController,
+        SupportSessionController,
+      ],
       providers: [
         { provide: AUTH_DB, useValue: authDb },
         { provide: IDENTITY_CONFIG, useValue: secrets },
@@ -61,7 +71,10 @@ export class IdentityModule implements OnApplicationShutdown {
         { provide: CLINIC_WEB_URL, useValue: clinicWebUrl },
         IdentityAudit,
         ThrottleService,
+        SupportSessions,
         SessionsService,
+        SupportHandoffs,
+        SupportDirectory,
         SessionIssuer,
         {
           provide: BETTER_AUTH,
@@ -85,7 +98,7 @@ export class IdentityModule implements OnApplicationShutdown {
         AccountService,
         BetterAuthAdapter,
       ],
-      exports: [BetterAuthAdapter, OwnerAccounts, MemberAccounts, CLOCK],
+      exports: [BetterAuthAdapter, OwnerAccounts, MemberAccounts, SupportDirectory, CLOCK],
     };
   }
 

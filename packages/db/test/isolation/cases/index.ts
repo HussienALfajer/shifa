@@ -12,6 +12,7 @@ import { permissionOverrideCase } from './permission-override.ts';
 import { roleAssignmentCase } from './role-assignment.ts';
 import { settingValueCase } from './setting-value.ts';
 import { setupLinkCase } from './setup-link.ts';
+import { supportAccessGrantCase } from './support-access-grant.ts';
 
 export const ISOLATION_CASES: readonly IsolationCase[] = [
   organizationCase,
@@ -27,4 +28,5 @@ export const ISOLATION_CASES: readonly IsolationCase[] = [
   tenantOverrideEventCase,
   featureFlagTenantCase,
   settingValueCase,
+  supportAccessGrantCase,
 ];
