@@ -50,11 +50,31 @@ Built with `/ui-component` in the component PR (`feat/A-02-components`), synced 
 - **UsageChart:** as the sheet: quarter axis of whole numbers (top = 4 × ⌈highest ÷ 4⌉), dashed gold average named at the oldest days, today gold, empty days a thin line, each bar the system's Tooltip («14 تسجيل دخول · 26/11»), one Tab stop, a summary for screen readers, the empty state «لا بيانات بعد» and a loading placeholder; the series switch and the figures stay on the screen. Differences: the x-axis labels sit under their own bars (every seventh day from the oldest, then «اليوم») rather than spread evenly; Left and Right follow the drawing (Left is the older day) in both directions, since time runs left to right.
 
 ## Stopped at
-Planned.
+Checkpoints 1–3 built (2026-11-27, cloud session): contract check, the four tabs and the list columns, page tests green; checkpoint 4 (journeys, screenshots, review) next.
+
+## Built (2026-11-27)
+- `packages/web-shell/src/admin/`: `clinic-page.tsx` gains the five tabs (`Tabs` of `@shifa/ui`; «العيادة» keeps the A-01-10 cards; the chosen tab is page state, not in the URL); `limits-tab.tsx` with `override-dialog.tsx`, `override-history.tsx` (Drawer) and `type-dialog.tsx`; `settings-tab.tsx`; `support-tab.tsx` with `support-log.tsx` (DataTable, «السبب» `wrap: true`, «من» `width: 'md'`) and `support-handoff.ts`; `usage-tab.tsx` (UsageChart); `clinic-data.ts` (reads keyed `['platform', 'clinic', id, …]`, key and source words, Damascus today, last activity in words); `tab-parts.tsx`. `clinics-page.tsx` gains «آخر نشاط», «الدخول (7 أيام)» (both sortable) and the Switch «بلا نشاط منذ 7 أيام (n)», combined with the status filter and the search.
+- Hand-off handling (for `security-reviewer`): the new tab is opened empty inside the click (`window.open('', '_blank')`), its `opener` is cut, and it is sent with `location.replace` only to an `http:`/`https:` address; anything else closes it. The hand-off is never logged, stored or put in the query cache; a refused pop-up says so.
+- Time left on the open grant runs on the server's clock (`now` of the last answer minus the time it was read), re-drawn every 15 s.
+- i18n: one block of keys in `common.json`, after `clinicUnknownText`, so the parallel A-02-09 branch merges cleanly; no shared router, navigation or layout file changed.
+- e2e: a fifth seeded super admin (`tabsAdmin`, `e2e/scripts/seed.ts`, `e2e/support/run.ts`) and `e2e/tests/admin-clinic-tabs.spec.ts` (the five journeys; journey 1 also runs the contract check).
+
+## Locked tests changed with the owner's approval (2026-11-27)
+After the red phase, four mechanical fixes, none removing or weakening an assertion: the reason field found by role (`getByRole('textbox', { name: 'السبب' })`, the label text carries the required «*»), the support journey waits for the clinic web address before reading it (the tab opens empty first), an `import()` type annotation made a named import (lint), Biome's import order.
+
+## Differences from the approved drawings (A02Clinic, A02Clinics)
+1. The override reason's hint and the history drawer say the reason is kept in the limit's own history («سجل هذا الحد»), not «سجل التدقيق»: criterion 20 and the contract keep reasons out of the audit log. The removal question says «يُسجَّل في سجل الحد» for the same reason.
+2. Type change: the current type is listed with «(الحالي)» but disabled (the contract: "not offered"); the first other type is chosen and previewed at once.
+3. Support log: a grant the super admin ended reads «أنهاه: <name>» instead of «أنهيته», since a grant carries no account id to recognise one's own.
+4. Usage: the chart is the real UsageChart (x-axis labels under their bars, as its sheet), not the board's hand-drawn bars. The empty state says the first figures appear after the first sign-in (the counters fill the same Damascus day), not «غدًا».
+5. The lock dialog's Select starts at the current value (the board showed 60 as a sample choice).
+6. Tablet (1024 px): the limits grid keeps the «المستخدم» column (the board hides it); the stats and figures fall to two columns below 1280 px.
 
 ## Evidence
-- Contract check: —
-- `verify` (full): —
+- Contract check (checkpoint 1): every admin-web row of «الاشتراك والحدود», «الإعدادات», «دخول الدعم», «الاستخدام» and the clinics list against `@shifa/contracts`, the generated client and the API handlers: routes, fields and error codes as the contract lists them (`body.expiresAt` today or past answers `too_small`; `query.type` of the current type 400; `support_active`, `support_ended`, `setting_not_lockable` 409). Real calls in journey 1 against the built API: entitlements (fields of each item), type preview (fields; the current type 400), override history (empty), settings (fields), support grants (`now`, `mine: null`), usage (30 days, `hasData`), clinics list (`lastActivityAt: null`, `signIns7d: 0` for a new clinic). No gap found; no API or contract change.
+- Page tests: `admin-limits.test.tsx` (8), `admin-settings-support.test.tsx` (12), `admin-usage.test.tsx` (7) — 27 written first, failing for the right reason (no tabs), then green; the A-01-10 admin tests still green.
+- Journeys: `pnpm --filter @shifa/e2e exec playwright test tests/admin-clinic-tabs.spec.ts` — 5 passed, every screen axe clean in light and dark.
+- `verify` (fast): —
 - Screenshots: —
 - Reviewer findings fixed: —; deferred to backlog: —
 

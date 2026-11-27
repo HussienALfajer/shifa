@@ -12,6 +12,7 @@ import {
   EmptyState,
   Input,
   SegmentedControl,
+  Switch,
 } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link } from '@tanstack/react-router';
@@ -22,6 +23,7 @@ import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
 import { AdminFrame } from './admin-frame.tsx';
 import { ButtonLink } from './button-link.tsx';
+import { activityText } from './clinic-data.ts';
 import {
   type ClinicStatus,
   type ClinicSummary,
@@ -110,6 +112,28 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
         </span>
       ),
     },
+    // A-02-08 (board `A02Clinics`, criteria 17, 21): the last activity and the sign-ins of the
+    // last seven Damascus days, both sortable.
+    {
+      id: 'lastActivity',
+      header: text('colLastActivity'),
+      width: 'sm',
+      sortable: true,
+      value: (c) => c.lastActivityAt ?? '',
+      cell: (c) => (
+        <span className={c.lastActivityAt ? 'tabular-nums' : 'text-text-muted'}>
+          {activityText(text, c.lastActivityAt)}
+        </span>
+      ),
+    },
+    {
+      id: 'signIns7d',
+      header: text('colSignIns7d'),
+      width: 'sm',
+      kind: 'number',
+      sortable: true,
+      value: (c) => c.signIns7d,
+    },
     {
       id: 'created',
       header: text('colCreated'),
@@ -127,6 +151,7 @@ export function ClinicsPage() {
   const [typed, setTyped] = useState('');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
+  const [inactive, setInactive] = useState(false);
   useEffect(() => {
     let live = true;
     const timer = setTimeout(() => {
@@ -149,7 +174,9 @@ export function ClinicsPage() {
   const columns = useColumns();
   const all = data ?? [];
   const count = (s: ClinicStatus) => all.filter((c) => c.status === s).length;
-  const rows = filter === 'all' ? all : all.filter((c) => c.status === filter);
+  const quiet = (c: ClinicSummary) => c.signIns7d === 0;
+  const inStatus = filter === 'all' ? all : all.filter((c) => c.status === filter);
+  const rows = inactive ? inStatus.filter(quiet) : inStatus;
   const nothingYet = !isPending && search === '' && all.length === 0;
   const create = (
     <ButtonLink to="/clinics/new" variant="primary" icon="plus">
@@ -178,14 +205,21 @@ export function ClinicsPage() {
           loading={isPending}
           loadingRows={5}
           empty={
-            // A search that matched nothing, or only a status with no clinic (review 6).
-            search === ''
-              ? { title: text('clinicsNoneInStatus'), icon: 'magnifying-glass' }
-              : {
-                  title: text('clinicsNoMatchTitle'),
-                  description: text('clinicsNoMatchText'),
-                  icon: 'magnifying-glass',
+            // Every clinic was active (criterion 21); a search that matched nothing, or only a
+            // status with no clinic (review 6).
+            inactive && inStatus.length > 0
+              ? {
+                  title: text('clinicsAllActiveTitle'),
+                  description: text('clinicsAllActiveText'),
+                  icon: 'check-circle',
                 }
+              : search === ''
+                ? { title: text('clinicsNoneInStatus'), icon: 'magnifying-glass' }
+                : {
+                    title: text('clinicsNoMatchTitle'),
+                    description: text('clinicsNoMatchText'),
+                    icon: 'magnifying-glass',
+                  }
           }
           toolbar={
             <div className="flex flex-1 flex-wrap items-center gap-3">
@@ -213,9 +247,17 @@ export function ClinicsPage() {
                   })),
                 ]}
               />
+              <Switch checked={inactive} onCheckedChange={setInactive}>
+                {text('clinicsInactive', { count: all.filter(quiet).length })}
+              </Switch>
             </div>
           }
         />
+      )}
+      {!nothingYet && !(isError && !data) && (
+        <p className="m-0 text-caption leading-heading text-text-muted">
+          {text('clinicsUsageCaption')}
+        </p>
       )}
     </AdminFrame>
   );

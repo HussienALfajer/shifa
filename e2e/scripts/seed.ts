@@ -64,6 +64,16 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       clinicWebUrl: urls.clinicWebUrl,
     });
     const teamToken = new URL(team.setupUrl).hash.slice(1);
+    // The A-02-08 journeys' super admin: the clinic page tabs on a clinic of their own.
+    const tabsPhone = generatePhone(random, 'SY');
+    const tabs = await seedSuperAdmin({
+      authDb,
+      platformDb,
+      phone: tabsPhone,
+      name: person(),
+      clinicWebUrl: urls.clinicWebUrl,
+    });
+    const tabsToken = new URL(tabs.setupUrl).hash.slice(1);
     const clinics: Seeded['clinics'] = [];
     // A-01-07 checkpoint 5: the third clinic's owner walks the screens by keyboard; the fourth's
     // link checks the browser history and the used-link page (refusals.spec.ts).
@@ -99,6 +109,7 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       journeyAdmin: { phone: journeyPhone, token: journeyToken },
       accountAdmin: { phone: accountPhone, token: accountToken },
       teamAdmin: { phone: teamPhone, token: teamToken },
+      tabsAdmin: { phone: tabsPhone, token: tabsToken },
       clinics,
     };
   } finally {

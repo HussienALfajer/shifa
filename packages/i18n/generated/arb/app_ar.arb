@@ -64,6 +64,37 @@
   "@commonActionFailedTitle": {
     "description": "common.actionFailedTitle"
   },
+  "commonActivityDaysAgo": "{count, plural, zero {اليوم} one {قبل يوم} two {قبل يومين} few {قبل {count} أيام} many {قبل {count} يومًا} other {قبل {count} يوم}}",
+  "@commonActivityDaysAgo": {
+    "description": "common.activityDaysAgo",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonActivityNone": "لا نشاط بعد",
+  "@commonActivityNone": {
+    "description": "common.activityNone"
+  },
+  "commonActivityToday": "اليوم {time}",
+  "@commonActivityToday": {
+    "description": "common.activityToday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonActivityYesterday": "أمس {time}",
+  "@commonActivityYesterday": {
+    "description": "common.activityYesterday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "commonAddNetworkText": "لم نعرف إن أُضيف. حدّثنا القائمة؛ إن لم يظهر فيها فأعد المحاولة.",
   "@commonAddNetworkText": {
     "description": "common.addNetworkText"
@@ -570,6 +601,26 @@
   "@commonClinicSaved": {
     "description": "common.clinicSaved"
   },
+  "commonClinicSettingsLoading": "جارٍ تحميل الإعدادات",
+  "@commonClinicSettingsLoading": {
+    "description": "common.clinicSettingsLoading"
+  },
+  "commonClinicSettingsNoneText": "تظهر هنا الإعدادات التي تعرّفها الشيفرة على مستوى العيادة.",
+  "@commonClinicSettingsNoneText": {
+    "description": "common.clinicSettingsNoneText"
+  },
+  "commonClinicSettingsNoneTitle": "لا إعدادات للعيادة بعد",
+  "@commonClinicSettingsNoneTitle": {
+    "description": "common.clinicSettingsNoneTitle"
+  },
+  "commonClinicSettingsText": "القيمة السارية ومن أين جاءت. تقفل الإدارة قيمة فلا يغيّرها أحد في العيادة.",
+  "@commonClinicSettingsText": {
+    "description": "common.clinicSettingsText"
+  },
+  "commonClinicSettingsTitle": "الإعدادات",
+  "@commonClinicSettingsTitle": {
+    "description": "common.clinicSettingsTitle"
+  },
   "commonClinicStatusActive": "فعّالة",
   "@commonClinicStatusActive": {
     "description": "common.clinicStatusActive"
@@ -594,6 +645,30 @@
   "@commonClinicSuspendTitle": {
     "description": "common.clinicSuspendTitle"
   },
+  "commonClinicTabInfo": "العيادة",
+  "@commonClinicTabInfo": {
+    "description": "common.clinicTabInfo"
+  },
+  "commonClinicTabLimits": "الاشتراك والحدود",
+  "@commonClinicTabLimits": {
+    "description": "common.clinicTabLimits"
+  },
+  "commonClinicTabSettings": "الإعدادات",
+  "@commonClinicTabSettings": {
+    "description": "common.clinicTabSettings"
+  },
+  "commonClinicTabSupport": "دخول الدعم",
+  "@commonClinicTabSupport": {
+    "description": "common.clinicTabSupport"
+  },
+  "commonClinicTabUsage": "الاستخدام",
+  "@commonClinicTabUsage": {
+    "description": "common.clinicTabUsage"
+  },
+  "commonClinicTabs": "أقسام العيادة",
+  "@commonClinicTabs": {
+    "description": "common.clinicTabs"
+  },
   "commonClinicTypeMultiBranch": "متعددة الفروع",
   "@commonClinicTypeMultiBranch": {
     "description": "common.clinicTypeMultiBranch"
@@ -609,6 +684,14 @@
   "commonClinicUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن حُفظ التغيير. احفظ مرة أخرى؛ لا ضرر في التكرار.",
   "@commonClinicUnknownText": {
     "description": "common.clinicUnknownText"
+  },
+  "commonClinicsAllActiveText": "سجّل أحد الدخول في كل عيادة خلال آخر 7 أيام.",
+  "@commonClinicsAllActiveText": {
+    "description": "common.clinicsAllActiveText"
+  },
+  "commonClinicsAllActiveTitle": "كل العيادات نشطة",
+  "@commonClinicsAllActiveTitle": {
+    "description": "common.clinicsAllActiveTitle"
   },
   "commonClinicsCreate": "إنشاء عيادة",
   "@commonClinicsCreate": {
@@ -662,6 +745,15 @@
       }
     }
   },
+  "commonClinicsInactive": "بلا نشاط منذ 7 أيام ({count})",
+  "@commonClinicsInactive": {
+    "description": "common.clinicsInactive",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
   "commonClinicsLoading": "جارٍ تحميل العيادات",
   "@commonClinicsLoading": {
     "description": "common.clinicsLoading"
@@ -689,6 +781,10 @@
   "commonClinicsTitle": "العيادات",
   "@commonClinicsTitle": {
     "description": "common.clinicsTitle"
+  },
+  "commonClinicsUsageCaption": "«آخر نشاط» آخر طلب من أي عضو في العيادة. «الدخول (7 أيام)» تسجيلات الدخول في آخر سبعة أيام بتوقيت دمشق، اليوم منها. «بلا نشاط منذ 7 أيام» العيادات التي لم يسجّل فيها أحد الدخول في هذه الأيام، ويجتمع مع فلتر الحالة والبحث.",
+  "@commonClinicsUsageCaption": {
+    "description": "common.clinicsUsageCaption"
   },
   "commonClockSkewText": "افتح إعدادات الهاتف واجعل التاريخ والوقت «تلقائياً»، ثم اكتب الرمز الجديد من التطبيق.",
   "@commonClockSkewText": {
@@ -882,9 +978,17 @@
   "@commonColEnd": {
     "description": "common.colEnd"
   },
+  "commonColLastActivity": "آخر نشاط",
+  "@commonColLastActivity": {
+    "description": "common.colLastActivity"
+  },
   "commonColOwner": "المالك",
   "@commonColOwner": {
     "description": "common.colOwner"
+  },
+  "commonColSignIns7d": "الدخول (7 أيام)",
+  "@commonColSignIns7d": {
+    "description": "common.colSignIns7d"
   },
   "commonColStatus": "الحالة",
   "@commonColStatus": {
@@ -1209,6 +1313,14 @@
   "@commonEnrolWhyOwner": {
     "description": "common.enrolWhyOwner"
   },
+  "commonFeatureOff": "مطفأة",
+  "@commonFeatureOff": {
+    "description": "common.featureOff"
+  },
+  "commonFeatureOn": "مفعّلة",
+  "@commonFeatureOn": {
+    "description": "common.featureOn"
+  },
   "commonFieldClinicName": "اسم العيادة",
   "@commonFieldClinicName": {
     "description": "common.fieldClinicName"
@@ -1247,6 +1359,109 @@
     "placeholders": {
       "count": {
         "type": "num"
+      }
+    }
+  },
+  "commonHistoryByExpiry": "انتهت المدة",
+  "@commonHistoryByExpiry": {
+    "description": "common.historyByExpiry"
+  },
+  "commonHistoryByGone": "حساب لم يعد موجودًا",
+  "@commonHistoryByGone": {
+    "description": "common.historyByGone"
+  },
+  "commonHistoryChanged": "عُدّل",
+  "@commonHistoryChanged": {
+    "description": "common.historyChanged"
+  },
+  "commonHistoryChangedLine": "من {before} إلى {after}، {end}",
+  "@commonHistoryChangedLine": {
+    "description": "common.historyChangedLine",
+    "placeholders": {
+      "after": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHistoryEmpty": "لا تغييرات على هذا الحد بعد",
+  "@commonHistoryEmpty": {
+    "description": "common.historyEmpty"
+  },
+  "commonHistoryExpired": "انتهى",
+  "@commonHistoryExpired": {
+    "description": "common.historyExpired"
+  },
+  "commonHistoryExpiredLine": "انتهى تجاوز {value}، وعاد الحد إلى قيمة الخطة",
+  "@commonHistoryExpiredLine": {
+    "description": "common.historyExpiredLine",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHistoryLoading": "جارٍ تحميل السجل",
+  "@commonHistoryLoading": {
+    "description": "common.historyLoading"
+  },
+  "commonHistoryReason": "السبب: {reason}",
+  "@commonHistoryReason": {
+    "description": "common.historyReason",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHistoryRemoved": "أُزيل",
+  "@commonHistoryRemoved": {
+    "description": "common.historyRemoved"
+  },
+  "commonHistoryRemovedLine": "أُزيل تجاوز {value}، وعاد الحد إلى قيمة الخطة",
+  "@commonHistoryRemovedLine": {
+    "description": "common.historyRemovedLine",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHistorySet": "وُضع",
+  "@commonHistorySet": {
+    "description": "common.historySet"
+  },
+  "commonHistoryText": "كل تغيير على هذا الحد، الأحدث أولًا.",
+  "@commonHistoryText": {
+    "description": "common.historyText"
+  },
+  "commonHistoryTitle": "سجل حد {name}",
+  "@commonHistoryTitle": {
+    "description": "common.historyTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonHistoryTypeChanged": "تغيّر النوع",
+  "@commonHistoryTypeChanged": {
+    "description": "common.historyTypeChanged"
+  },
+  "commonHistoryTypeLine": "الخطة من {before} إلى {after}",
+  "@commonHistoryTypeLine": {
+    "description": "common.historyTypeLine",
+    "placeholders": {
+      "after": {
+        "type": "String"
+      },
+      "before": {
+        "type": "String"
       }
     }
   },
@@ -1528,6 +1743,54 @@
       }
     }
   },
+  "commonLimitBranches": "الفروع",
+  "@commonLimitBranches": {
+    "description": "common.limitBranches"
+  },
+  "commonLimitColEffective": "السارية",
+  "@commonLimitColEffective": {
+    "description": "common.limitColEffective"
+  },
+  "commonLimitColKey": "البند",
+  "@commonLimitColKey": {
+    "description": "common.limitColKey"
+  },
+  "commonLimitColOverride": "التجاوز",
+  "@commonLimitColOverride": {
+    "description": "common.limitColOverride"
+  },
+  "commonLimitColPlan": "الخطة",
+  "@commonLimitColPlan": {
+    "description": "common.limitColPlan"
+  },
+  "commonLimitColUsed": "المستخدم",
+  "@commonLimitColUsed": {
+    "description": "common.limitColUsed"
+  },
+  "commonLimitCustomFields": "الحقول المخصّصة",
+  "@commonLimitCustomFields": {
+    "description": "common.limitCustomFields"
+  },
+  "commonLimitPractitioners": "الأطباء",
+  "@commonLimitPractitioners": {
+    "description": "common.limitPractitioners"
+  },
+  "commonLimitsCaption": "يُحتسب الأطباء غير المعطّلين (والمدعوون منهم) والفروع غير المؤرشفة. الحقول المخصّصة تُحتسب من A-03.",
+  "@commonLimitsCaption": {
+    "description": "common.limitsCaption"
+  },
+  "commonLimitsLoading": "جارٍ تحميل الحدود",
+  "@commonLimitsLoading": {
+    "description": "common.limitsLoading"
+  },
+  "commonLimitsText": "القيمة السارية: تجاوز غير منتهٍ، وإلا قيمة الخطة.",
+  "@commonLimitsText": {
+    "description": "common.limitsText"
+  },
+  "commonLimitsTitle": "الحدود",
+  "@commonLimitsTitle": {
+    "description": "common.limitsTitle"
+  },
   "commonLinkCopied": "نُسخ",
   "@commonLinkCopied": {
     "description": "common.linkCopied"
@@ -1613,6 +1876,10 @@
   "@commonLoading": {
     "description": "common.loading"
   },
+  "commonLockAction": "قفل",
+  "@commonLockAction": {
+    "description": "common.lockAction"
+  },
   "commonLockIpText": "محاولات خاطئة كثيرة من هذا الاتصال.",
   "@commonLockIpText": {
     "description": "common.lockIpText"
@@ -1629,6 +1896,22 @@
   "@commonLockMfaTitle": {
     "description": "common.lockMfaTitle"
   },
+  "commonLockNote": "بعد القفل لا يغيّر أحد في العيادة هذه القيمة، ويرى المالك «مقفل من الإدارة».",
+  "@commonLockNote": {
+    "description": "common.lockNote"
+  },
+  "commonLockNow": "القيمة الآن {value}، {source}.",
+  "@commonLockNow": {
+    "description": "common.lockNow",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
   "commonLockPhoneText": "محاولات خاطئة كثيرة بهذا الرقم.",
   "@commonLockPhoneText": {
     "description": "common.lockPhoneText"
@@ -1636,6 +1919,23 @@
   "commonLockPhoneTitle": "توقّف الدخول بهذا الرقم مؤقتاً",
   "@commonLockPhoneTitle": {
     "description": "common.lockPhoneTitle"
+  },
+  "commonLockTitle": "قفل «{name}»",
+  "@commonLockTitle": {
+    "description": "common.lockTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLockValue": "القيمة المقفلة",
+  "@commonLockValue": {
+    "description": "common.lockValue"
+  },
+  "commonLockValueInvalid": "هذه القيمة غير مقبولة لهذا الإعداد.",
+  "@commonLockValueInvalid": {
+    "description": "common.lockValueInvalid"
   },
   "commonLockWait": "يمكنك المحاولة بعد {wait} (الساعة {time}).",
   "@commonLockWait": {
@@ -1654,6 +1954,19 @@
     "description": "common.lockWaitAt",
     "placeholders": {
       "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonLockedText": "لا يستطيع أحد في العيادة تغييره حتى تفتح القفل.",
+  "@commonLockedText": {
+    "description": "common.lockedText"
+  },
+  "commonLockedTitle": "قُفل الإعداد على {value}",
+  "@commonLockedTitle": {
+    "description": "common.lockedTitle",
+    "placeholders": {
+      "value": {
         "type": "String"
       }
     }
@@ -2193,6 +2506,14 @@
   "@commonNotFound": {
     "description": "common.notFound"
   },
+  "commonNotLockableText": "قفلته المنصة أو الخطة لكل العيادات في الأثناء. حدّثنا القائمة.",
+  "@commonNotLockableText": {
+    "description": "common.notLockableText"
+  },
+  "commonNotLockableTitle": "لا يمكن قفل هذا الإعداد",
+  "@commonNotLockableTitle": {
+    "description": "common.notLockableTitle"
+  },
   "commonNoticeAbsoluteText": "تُغلق كل جلسة بعد مدة محددة مهما كان النشاط، لحماية البيانات. ادخل من جديد لتتابع.",
   "@commonNoticeAbsoluteText": {
     "description": "common.noticeAbsoluteText"
@@ -2257,6 +2578,237 @@
   "commonNoticeSignedOutTitle": "خرجت من حسابك",
   "@commonNoticeSignedOutTitle": {
     "description": "common.noticeSignedOutTitle"
+  },
+  "commonOverrideAdd": "تجاوز",
+  "@commonOverrideAdd": {
+    "description": "common.overrideAdd"
+  },
+  "commonOverrideEdit": "تعديل",
+  "@commonOverrideEdit": {
+    "description": "common.overrideEdit"
+  },
+  "commonOverrideExpiredOn": "انتهى {date}",
+  "@commonOverrideExpiredOn": {
+    "description": "common.overrideExpiredOn",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideExpiry": "ينتهي في",
+  "@commonOverrideExpiry": {
+    "description": "common.overrideExpiry"
+  },
+  "commonOverrideExpiryHint": "اختياري. بعده يعود الحد إلى قيمة الخطة.",
+  "@commonOverrideExpiryHint": {
+    "description": "common.overrideExpiryHint"
+  },
+  "commonOverrideExpiryPast": "اختر تاريخًا بعد اليوم.",
+  "@commonOverrideExpiryPast": {
+    "description": "common.overrideExpiryPast"
+  },
+  "commonOverrideFeature": "مفعّلة لهذه العيادة",
+  "@commonOverrideFeature": {
+    "description": "common.overrideFeature"
+  },
+  "commonOverrideGoneText": "حدّثنا القائمة. راجعها ثم أعد المحاولة.",
+  "@commonOverrideGoneText": {
+    "description": "common.overrideGoneText"
+  },
+  "commonOverrideGoneTitle": "تغيّرت الحدود في الأثناء",
+  "@commonOverrideGoneTitle": {
+    "description": "common.overrideGoneTitle"
+  },
+  "commonOverrideHistory": "السجل",
+  "@commonOverrideHistory": {
+    "description": "common.overrideHistory"
+  },
+  "commonOverrideNoEnd": "دون تاريخ نهاية",
+  "@commonOverrideNoEnd": {
+    "description": "common.overrideNoEnd"
+  },
+  "commonOverrideNoLongerCounts": "{reason} · لم يعد يُحتسب",
+  "@commonOverrideNoLongerCounts": {
+    "description": "common.overrideNoLongerCounts",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideNone": "لا تجاوز",
+  "@commonOverrideNone": {
+    "description": "common.overrideNone"
+  },
+  "commonOverridePlan": "الخطة: {plan}.",
+  "@commonOverridePlan": {
+    "description": "common.overridePlan",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverridePlanUsed": "الخطة: {plan} · المستخدم الآن: {used}. قيمة أقل من المستخدم تُبقي الموجود وتمنع الإضافة.",
+  "@commonOverridePlanUsed": {
+    "description": "common.overridePlanUsed",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideReason": "السبب",
+  "@commonOverrideReason": {
+    "description": "common.overrideReason"
+  },
+  "commonOverrideReasonHint": "من 10 إلى 500 حرف. يُحفظ في سجل هذا الحد مع القيمة قبل التغيير وبعده.",
+  "@commonOverrideReasonHint": {
+    "description": "common.overrideReasonHint"
+  },
+  "commonOverrideReasonMissing": "اكتب سبب التجاوز.",
+  "@commonOverrideReasonMissing": {
+    "description": "common.overrideReasonMissing"
+  },
+  "commonOverrideRemove": "إزالة",
+  "@commonOverrideRemove": {
+    "description": "common.overrideRemove"
+  },
+  "commonOverrideRemoveAction": "إزالة التجاوز",
+  "@commonOverrideRemoveAction": {
+    "description": "common.overrideRemoveAction"
+  },
+  "commonOverrideRemoveFits": "يعود حد {name} إلى قيمة الخطة ({plan}). العيادة تستخدم {used} فلا يتأثر أحد. يُسجَّل في سجل الحد.",
+  "@commonOverrideRemoveFits": {
+    "description": "common.overrideRemoveFits",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "plan": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideRemoveOver": "يعود حد {name} إلى قيمة الخطة ({plan}). العيادة تستخدم {used}: يبقى الموجود وتُمنع الإضافة. يُسجَّل في سجل الحد.",
+  "@commonOverrideRemoveOver": {
+    "description": "common.overrideRemoveOver",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "plan": {
+        "type": "String"
+      },
+      "used": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideRemovePlain": "يعود حد {name} إلى قيمة الخطة ({plan}). يُسجَّل في سجل الحد.",
+  "@commonOverrideRemovePlain": {
+    "description": "common.overrideRemovePlain",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideRemoveTitle": "إزالة تجاوز حد {name}؟",
+  "@commonOverrideRemoveTitle": {
+    "description": "common.overrideRemoveTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideRemovedText": "حد {name} الآن {value}، قيمة الخطة.",
+  "@commonOverrideRemovedText": {
+    "description": "common.overrideRemovedText",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideRemovedTitle": "أُزيل التجاوز",
+  "@commonOverrideRemovedTitle": {
+    "description": "common.overrideRemovedTitle"
+  },
+  "commonOverrideSave": "حفظ التجاوز",
+  "@commonOverrideSave": {
+    "description": "common.overrideSave"
+  },
+  "commonOverrideSavedNoEnd": "حد {name} الآن {value} دون تاريخ نهاية. يسري خلال دقيقة على كل الخوادم.",
+  "@commonOverrideSavedNoEnd": {
+    "description": "common.overrideSavedNoEnd",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideSavedTitle": "حُفظ التجاوز",
+  "@commonOverrideSavedTitle": {
+    "description": "common.overrideSavedTitle"
+  },
+  "commonOverrideSavedUntil": "حد {name} الآن {value} حتى {date}. يسري خلال دقيقة على كل الخوادم.",
+  "@commonOverrideSavedUntil": {
+    "description": "common.overrideSavedUntil",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideTitle": "تجاوز حد {name}",
+  "@commonOverrideTitle": {
+    "description": "common.overrideTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideUntil": "حتى {date}",
+  "@commonOverrideUntil": {
+    "description": "common.overrideUntil",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonOverrideValue": "القيمة",
+  "@commonOverrideValue": {
+    "description": "common.overrideValue"
+  },
+  "commonOverrideValueInvalid": "اكتب عددًا صحيحًا من 0 فأكثر.",
+  "@commonOverrideValueInvalid": {
+    "description": "common.overrideValueInvalid"
   },
   "commonOwnerAccountExistsText": "لا يُصحَّح الرقم بعد الإعداد. حدّثنا الصفحة.",
   "@commonOwnerAccountExistsText": {
@@ -2430,6 +2982,19 @@
   "commonPhoneInvalid": "رقم الهاتف غير صحيح. اكتبه مع رمز البلد.",
   "@commonPhoneInvalid": {
     "description": "common.phoneInvalid"
+  },
+  "commonPlanText": "خطة العيادة من نوعها: {plan}. بلا أسعار في هذا الإصدار.",
+  "@commonPlanText": {
+    "description": "common.planText",
+    "placeholders": {
+      "plan": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlanTitle": "الخطة",
+  "@commonPlanTitle": {
+    "description": "common.planTitle"
   },
   "commonPwCardText": "بعد تغييرها تبقى داخلاً على هذا الجهاز، ونُخرج أجهزتك الأخرى كلها.",
   "@commonPwCardText": {
@@ -2689,6 +3254,51 @@
         "type": "String"
       }
     }
+  },
+  "commonSettingColKey": "الإعداد",
+  "@commonSettingColKey": {
+    "description": "common.settingColKey"
+  },
+  "commonSettingColSource": "المصدر",
+  "@commonSettingColSource": {
+    "description": "common.settingColSource"
+  },
+  "commonSettingColValue": "القيمة",
+  "@commonSettingColValue": {
+    "description": "common.settingColValue"
+  },
+  "commonSettingFalse": "لا",
+  "@commonSettingFalse": {
+    "description": "common.settingFalse"
+  },
+  "commonSettingIdle": "الخروج عند عدم النشاط",
+  "@commonSettingIdle": {
+    "description": "common.settingIdle"
+  },
+  "commonSettingLock": "قفل بقيمة",
+  "@commonSettingLock": {
+    "description": "common.settingLock"
+  },
+  "commonSettingLocked": "مقفل من الإدارة",
+  "@commonSettingLocked": {
+    "description": "common.settingLocked"
+  },
+  "commonSettingMinutes": "{count, plural, zero {{count} دقيقة} one {دقيقة واحدة} two {دقيقتان} few {{count} دقائق} many {{count} دقيقة} other {{count} دقيقة}}",
+  "@commonSettingMinutes": {
+    "description": "common.settingMinutes",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonSettingTrue": "نعم",
+  "@commonSettingTrue": {
+    "description": "common.settingTrue"
+  },
+  "commonSettingUnlock": "فتح القفل",
+  "@commonSettingUnlock": {
+    "description": "common.settingUnlock"
   },
   "commonSettingsBranchesArchived": "الفروع المؤرشفة ({count})",
   "@commonSettingsBranchesArchived": {
@@ -2963,6 +3573,254 @@
     "description": "common.signedInAs",
     "placeholders": {
       "userId": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSourceAdmin": "من: الإدارة",
+  "@commonSourceAdmin": {
+    "description": "common.sourceAdmin"
+  },
+  "commonSourceBranch": "من: الفرع",
+  "@commonSourceBranch": {
+    "description": "common.sourceBranch"
+  },
+  "commonSourceClinic": "من: العيادة",
+  "@commonSourceClinic": {
+    "description": "common.sourceClinic"
+  },
+  "commonSourceDefault": "موروث من: الإعداد الافتراضي",
+  "@commonSourceDefault": {
+    "description": "common.sourceDefault"
+  },
+  "commonSourcePack": "من: حزمة الاختصاص",
+  "@commonSourcePack": {
+    "description": "common.sourcePack"
+  },
+  "commonSourcePlan": "من: الخطة",
+  "@commonSourcePlan": {
+    "description": "common.sourcePlan"
+  },
+  "commonSourcePlatform": "من: المنصة",
+  "@commonSourcePlatform": {
+    "description": "common.sourcePlatform"
+  },
+  "commonSourcePractitioner": "من: الطبيب",
+  "@commonSourcePractitioner": {
+    "description": "common.sourcePractitioner"
+  },
+  "commonSourceUser": "من: المستخدم",
+  "@commonSourceUser": {
+    "description": "common.sourceUser"
+  },
+  "commonSupportActiveShow": "عرض الدخول المفتوح",
+  "@commonSupportActiveShow": {
+    "description": "common.supportActiveShow"
+  },
+  "commonSupportActiveText": "فُتح من تبويب آخر قبل قليل. أنهِه أو انتظر انتهاءه قبل فتح دخول جديد.",
+  "@commonSupportActiveText": {
+    "description": "common.supportActiveText"
+  },
+  "commonSupportActiveTitle": "لديك دخول مفتوح لهذه العيادة",
+  "@commonSupportActiveTitle": {
+    "description": "common.supportActiveTitle"
+  },
+  "commonSupportByAdmin": "أنهاه: {name}",
+  "@commonSupportByAdmin": {
+    "description": "common.supportByAdmin",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportByExpiry": "انتهت المدة",
+  "@commonSupportByExpiry": {
+    "description": "common.supportByExpiry"
+  },
+  "commonSupportByOwner": "أنهاه المالك: {name}",
+  "@commonSupportByOwner": {
+    "description": "common.supportByOwner",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportColEnd": "النهاية",
+  "@commonSupportColEnd": {
+    "description": "common.supportColEnd"
+  },
+  "commonSupportColReason": "السبب",
+  "@commonSupportColReason": {
+    "description": "common.supportColReason"
+  },
+  "commonSupportColStart": "البداية",
+  "@commonSupportColStart": {
+    "description": "common.supportColStart"
+  },
+  "commonSupportColState": "الحالة",
+  "@commonSupportColState": {
+    "description": "common.supportColState"
+  },
+  "commonSupportColWho": "من",
+  "@commonSupportColWho": {
+    "description": "common.supportColWho"
+  },
+  "commonSupportDuration": "المدة",
+  "@commonSupportDuration": {
+    "description": "common.supportDuration"
+  },
+  "commonSupportEnd": "إنهاء",
+  "@commonSupportEnd": {
+    "description": "common.supportEnd"
+  },
+  "commonSupportEndAction": "إنهاء الدخول",
+  "@commonSupportEndAction": {
+    "description": "common.supportEndAction"
+  },
+  "commonSupportEndText": "يُغلق تبويب العيادة عند طلبه التالي. لفتح دخول جديد تكتب سببًا من جديد.",
+  "@commonSupportEndText": {
+    "description": "common.supportEndText"
+  },
+  "commonSupportEndTitle": "إنهاء دخول الدعم؟",
+  "@commonSupportEndTitle": {
+    "description": "common.supportEndTitle"
+  },
+  "commonSupportEndedText": "أُغلق دخول الدعم في {time}. أي طلب بعده من تبويب العيادة يُرفض.",
+  "@commonSupportEndedText": {
+    "description": "common.supportEndedText",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportEndedTitle": "انتهى دخولك",
+  "@commonSupportEndedTitle": {
+    "description": "common.supportEndedTitle"
+  },
+  "commonSupportFormText": "تقرأ عيادة الويب كما يراها المالك، في تبويب جديد، دون أي تعديل. يُسجَّل كل طلب.",
+  "@commonSupportFormText": {
+    "description": "common.supportFormText"
+  },
+  "commonSupportFormTitle": "فتح دخول الدعم",
+  "@commonSupportFormTitle": {
+    "description": "common.supportFormTitle"
+  },
+  "commonSupportGoneText": "انتهت مدته أو أنهاه المالك. حدّثنا السجل.",
+  "@commonSupportGoneText": {
+    "description": "common.supportGoneText"
+  },
+  "commonSupportGoneTitle": "انتهى الدخول في الأثناء",
+  "@commonSupportGoneTitle": {
+    "description": "common.supportGoneTitle"
+  },
+  "commonSupportLeft": "{count, plural, zero {انتهى الوقت} one {متبقٍّ دقيقة واحدة} two {متبقٍّ دقيقتان} few {متبقٍّ {count} دقائق} many {متبقٍّ {count} دقيقة} other {متبقٍّ {count} دقيقة}}",
+  "@commonSupportLeft": {
+    "description": "common.supportLeft",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonSupportLogEmpty": "لا دخول دعم لهذه العيادة بعد",
+  "@commonSupportLogEmpty": {
+    "description": "common.supportLogEmpty"
+  },
+  "commonSupportLogTitle": "سجل دخول الدعم",
+  "@commonSupportLogTitle": {
+    "description": "common.supportLogTitle"
+  },
+  "commonSupportMinutes120": "ساعتان",
+  "@commonSupportMinutes120": {
+    "description": "common.supportMinutes120"
+  },
+  "commonSupportMinutes240": "4 ساعات",
+  "@commonSupportMinutes240": {
+    "description": "common.supportMinutes240"
+  },
+  "commonSupportMinutes30": "30 دقيقة",
+  "@commonSupportMinutes30": {
+    "description": "common.supportMinutes30"
+  },
+  "commonSupportMinutes60": "ساعة",
+  "@commonSupportMinutes60": {
+    "description": "common.supportMinutes60"
+  },
+  "commonSupportOpen": "فتح الدخول",
+  "@commonSupportOpen": {
+    "description": "common.supportOpen"
+  },
+  "commonSupportOpenLine": "للقراءة فقط بعرض المالك · من {start} حتى {end} · السبب: {reason}",
+  "@commonSupportOpenLine": {
+    "description": "common.supportOpenLine",
+    "placeholders": {
+      "end": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "commonSupportOpenTitle": "دخولك مفتوح",
+  "@commonSupportOpenTitle": {
+    "description": "common.supportOpenTitle"
+  },
+  "commonSupportOpenWeb": "فتح عيادة الويب",
+  "@commonSupportOpenWeb": {
+    "description": "common.supportOpenWeb"
+  },
+  "commonSupportOwnersSee": "يرى كل مالك للعيادة شريطًا باسمك وسببك ووقت النهاية، ويستطيع إنهاء الدخول.",
+  "@commonSupportOwnersSee": {
+    "description": "common.supportOwnersSee"
+  },
+  "commonSupportReason": "السبب",
+  "@commonSupportReason": {
+    "description": "common.supportReason"
+  },
+  "commonSupportReasonHint": "من 10 إلى 500 حرف. يراه المالك في الشريط وفي سجل الدخول.",
+  "@commonSupportReasonHint": {
+    "description": "common.supportReasonHint"
+  },
+  "commonSupportReasonShort": "اكتب سببًا من 10 أحرف على الأقل.",
+  "@commonSupportReasonShort": {
+    "description": "common.supportReasonShort"
+  },
+  "commonSupportStateOpen": "مفتوح",
+  "@commonSupportStateOpen": {
+    "description": "common.supportStateOpen"
+  },
+  "commonSupportSuspendedText": "يمكن فتح دخول الدعم لعيادة موقوفة. القراءة فقط، كما في أي دخول دعم.",
+  "@commonSupportSuspendedText": {
+    "description": "common.supportSuspendedText"
+  },
+  "commonSupportSuspendedTitle": "العيادة موقوفة",
+  "@commonSupportSuspendedTitle": {
+    "description": "common.supportSuspendedTitle"
+  },
+  "commonSupportTabBlockedText": "منع المتصفح فتح تبويب جديد. اسمح بالنوافذ المنبثقة لهذا الموقع ثم اضغط «فتح عيادة الويب».",
+  "@commonSupportTabBlockedText": {
+    "description": "common.supportTabBlockedText"
+  },
+  "commonSupportTabFailedText": "وصل الرابط بشكل غير متوقع فلم نفتحه. اضغط «فتح عيادة الويب» مرة أخرى.",
+  "@commonSupportTabFailedText": {
+    "description": "common.supportTabFailedText"
+  },
+  "commonSupportTabFailedTitle": "لم يُفتح تبويب العيادة",
+  "@commonSupportTabFailedTitle": {
+    "description": "common.supportTabFailedTitle"
+  },
+  "commonSupportUntil": "حتى {time}",
+  "@commonSupportUntil": {
+    "description": "common.supportUntil",
+    "placeholders": {
+      "time": {
         "type": "String"
       }
     }
@@ -3258,6 +4116,117 @@
   "@commonThemeSystem": {
     "description": "common.themeSystem"
   },
+  "commonTypeChange": "تغيير النوع",
+  "@commonTypeChange": {
+    "description": "common.typeChange"
+  },
+  "commonTypeColLimit": "الحد",
+  "@commonTypeColLimit": {
+    "description": "common.typeColLimit"
+  },
+  "commonTypeColNext": "بعد التغيير",
+  "@commonTypeColNext": {
+    "description": "common.typeColNext"
+  },
+  "commonTypeColNow": "الآن",
+  "@commonTypeColNow": {
+    "description": "common.typeColNow"
+  },
+  "commonTypeCurrent": "{type} (الحالي)",
+  "@commonTypeCurrent": {
+    "description": "common.typeCurrent",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeLoading": "جارٍ حساب الحدود الجديدة",
+  "@commonTypeLoading": {
+    "description": "common.typeLoading"
+  },
+  "commonTypeNew": "النوع الجديد",
+  "@commonTypeNew": {
+    "description": "common.typeNew"
+  },
+  "commonTypeNotSavedText": "حدث خطأ في الخادم. ما زال نوع العيادة «{type}».",
+  "@commonTypeNotSavedText": {
+    "description": "common.typeNotSavedText",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeOverText": "يبقى الموجود كما هو، ويُرفض ما يزيد على الحد الجديد حتى ينزل المستخدم تحته.",
+  "@commonTypeOverText": {
+    "description": "common.typeOverText"
+  },
+  "commonTypeOverTitle": "{names} فوق الحد الجديد",
+  "@commonTypeOverTitle": {
+    "description": "common.typeOverTitle",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeOverride": "{value} (تجاوز)",
+  "@commonTypeOverride": {
+    "description": "common.typeOverride",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeOverrideKept": "{value} (يبقى التجاوز)",
+  "@commonTypeOverrideKept": {
+    "description": "common.typeOverrideKept",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeSavedText": "صارت خطتها «{type}» الآن. يبقى الموجود كما هو، ويُرفض ما يزيد على الحدود الجديدة.",
+  "@commonTypeSavedText": {
+    "description": "common.typeSavedText",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeSavedTitle": "تغيّر نوع العيادة إلى «{type}»",
+  "@commonTypeSavedTitle": {
+    "description": "common.typeSavedTitle",
+    "placeholders": {
+      "type": {
+        "type": "String"
+      }
+    }
+  },
+  "commonTypeTitle": "تغيير نوع العيادة",
+  "@commonTypeTitle": {
+    "description": "common.typeTitle"
+  },
+  "commonTypeUnknownText": "لم يصلنا ردّ الخادم، فلا نعرف إن تغيّر النوع. أعد فتح الصفحة لترى النوع الحالي.",
+  "@commonTypeUnknownText": {
+    "description": "common.typeUnknownText"
+  },
+  "commonUnlockText": "تعود القيمة إلى ما تختاره العيادة، أو إلى الإعداد الافتراضي.",
+  "@commonUnlockText": {
+    "description": "common.unlockText"
+  },
+  "commonUnlockTitle": "فتح قفل الإعداد؟",
+  "@commonUnlockTitle": {
+    "description": "common.unlockTitle"
+  },
+  "commonUnlockedTitle": "فُتح القفل",
+  "@commonUnlockedTitle": {
+    "description": "common.unlockedTitle"
+  },
   "commonUnreachableText": "تأكد من الاتصال بالإنترنت. سنعيد المحاولة بأنفسنا حين يعود الاتصال.",
   "@commonUnreachableText": {
     "description": "common.unreachableText"
@@ -3265,6 +4234,150 @@
   "commonUnreachableTitle": "تعذّر الوصول إلى الخادم",
   "@commonUnreachableTitle": {
     "description": "common.unreachableTitle"
+  },
+  "commonUsage30": "آخر 30 يومًا",
+  "@commonUsage30": {
+    "description": "common.usage30"
+  },
+  "commonUsageActiveBranches": "الفروع النشطة",
+  "@commonUsageActiveBranches": {
+    "description": "common.usageActiveBranches"
+  },
+  "commonUsageActiveMembers": "الأعضاء النشطون",
+  "@commonUsageActiveMembers": {
+    "description": "common.usageActiveMembers"
+  },
+  "commonUsageAllBranches": "كل الفروع",
+  "@commonUsageAllBranches": {
+    "description": "common.usageAllBranches"
+  },
+  "commonUsageAverage": "المتوسط اليومي",
+  "@commonUsageAverage": {
+    "description": "common.usageAverage"
+  },
+  "commonUsageChange": "{change}% عن الثلاثين السابقة",
+  "@commonUsageChange": {
+    "description": "common.usageChange",
+    "placeholders": {
+      "change": {
+        "type": "String"
+      }
+    }
+  },
+  "commonUsageEmptyText": "تُحسب الأرقام كل يوم بتوقيت دمشق. تظهر أولاها بعد أول تسجيل دخول في العيادة.",
+  "@commonUsageEmptyText": {
+    "description": "common.usageEmptyText"
+  },
+  "commonUsageEmptyTitle": "لا بيانات استخدام بعد",
+  "@commonUsageEmptyTitle": {
+    "description": "common.usageEmptyTitle"
+  },
+  "commonUsageIdleDays": "أيام بلا نشاط",
+  "@commonUsageIdleDays": {
+    "description": "common.usageIdleDays"
+  },
+  "commonUsageLast": "آخر نشاط: {when} · الأيام بتوقيت دمشق",
+  "@commonUsageLast": {
+    "description": "common.usageLast",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonUsageLoading": "جارٍ تحميل الاستخدام",
+  "@commonUsageLoading": {
+    "description": "common.usageLoading"
+  },
+  "commonUsageMembersToday": "أعضاء سجّلوا الدخول اليوم",
+  "@commonUsageMembersToday": {
+    "description": "common.usageMembersToday"
+  },
+  "commonUsageOfBranches": "{count, plural, zero {لا فروع} one {من فرع واحد} two {من فرعين} few {من {count} فروع} many {من {count} فرعًا} other {من {count} فرع}}",
+  "@commonUsageOfBranches": {
+    "description": "common.usageOfBranches",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonUsageOfMembers": "{count, plural, zero {لا أعضاء غير معطّلين} one {من عضو واحد غير معطّل} two {من عضوين غير معطّلين} few {من {count} أعضاء غير معطّلين} many {من {count} عضوًا غير معطّل} other {من {count} عضو غير معطّل}}",
+  "@commonUsageOfMembers": {
+    "description": "common.usageOfMembers",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonUsagePeak": "أعلى يوم ({day})",
+  "@commonUsagePeak": {
+    "description": "common.usagePeak",
+    "placeholders": {
+      "day": {
+        "type": "String"
+      }
+    }
+  },
+  "commonUsagePeakNone": "أعلى يوم",
+  "@commonUsagePeakNone": {
+    "description": "common.usagePeakNone"
+  },
+  "commonUsageSeries": "ما يعرضه المخطط",
+  "@commonUsageSeries": {
+    "description": "common.usageSeries"
+  },
+  "commonUsageSeriesMembers": "الأعضاء الذين سجّلوا الدخول",
+  "@commonUsageSeriesMembers": {
+    "description": "common.usageSeriesMembers"
+  },
+  "commonUsageSeriesSignIns": "تسجيلات الدخول",
+  "@commonUsageSeriesSignIns": {
+    "description": "common.usageSeriesSignIns"
+  },
+  "commonUsageSignInsToday": "تسجيلات الدخول اليوم",
+  "@commonUsageSignInsToday": {
+    "description": "common.usageSignInsToday"
+  },
+  "commonUsageSubMembers": "الأعضاء الذين سجّلوا الدخول في اليوم",
+  "@commonUsageSubMembers": {
+    "description": "common.usageSubMembers"
+  },
+  "commonUsageSubSignIns": "تسجيلات الدخول في اليوم",
+  "@commonUsageSubSignIns": {
+    "description": "common.usageSubSignIns"
+  },
+  "commonUsageTotal": "المجموع",
+  "@commonUsageTotal": {
+    "description": "common.usageTotal"
+  },
+  "commonUsageUnitMembers": "{count, plural, zero {لا أعضاء سجّلوا الدخول} one {عضو واحد سجّل الدخول} two {عضوان سجّلا الدخول} few {{count} أعضاء سجّلوا الدخول} many {{count} عضوًا سجّلوا الدخول} other {{count} عضو سجّلوا الدخول}}",
+  "@commonUsageUnitMembers": {
+    "description": "common.usageUnitMembers",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonUsageUnitSignIns": "{count, plural, zero {لا تسجيل دخول} one {تسجيل دخول واحد} two {تسجيلا دخول} few {{count} تسجيلات دخول} many {{count} تسجيل دخول} other {{count} تسجيل دخول}}",
+  "@commonUsageUnitSignIns": {
+    "description": "common.usageUnitSignIns",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonUsageYesterday": "أمس {count}",
+  "@commonUsageYesterday": {
+    "description": "common.usageYesterday",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
   },
   "errorsAccountShared": "هذا الحساب مستخدم في عيادة أخرى؛ استعادة كلمة المرور عبر إدارة المنصة.",
   "@errorsAccountShared": {

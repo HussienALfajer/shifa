@@ -15,6 +15,8 @@ export interface Seeded {
   accountAdmin: SeededPerson;
   /** A fourth super admin, for the A-01-08 team journeys: creates their clinics through the API. */
   teamAdmin: SeededPerson;
+  /** A fifth super admin, for the A-02-08 clinic page tabs: creates a clinic through the API. */
+  tabsAdmin: SeededPerson;
   clinics: { tenantId: string; owner: SeededPerson }[];
 }
 
