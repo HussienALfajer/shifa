@@ -139,6 +139,10 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 ### Owner review, read log (2026-11-27)
 - Spec gap 14 accepted (numbered pages of 50; the column «مع الحقول الحساسة»). Improvement 6 («الدعم الفني» filter with counts) accepted. No new component on this screen.
 
+### Owner review, patient fields (2026-11-27)
+- Spec gaps 15 (at least 2 active choices, unique after folding), 16 (active field labels unique after folding), 17 (fields move within their section; sections keep creation order) and 18 (value shape presets, a custom expression checked with a safe engine and a length cap) accepted. Improvement 8 (charts holding each field and choice) accepted.
+- EditableList approved; RecordList's type icon and small row tools approved and added to its sheet.
+
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
