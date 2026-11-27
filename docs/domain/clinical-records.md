@@ -1,6 +1,6 @@
 # Clinical Records (General Template)
 
-Status: Draft · Last updated: 2026-11-08 · Owner: product owner
+Status: Draft · Last updated: 2026-11-27 · Owner: product owner
 Sources: RN-04, RN-07, RN-08, RN-11, RN-01
 
 Purpose: defines the clinical record every doctor gets regardless of specialty — the patient file summary, visit note, vitals, diagnoses, history, attachments, prescriptions, medical reports and the versioned template engine that specialty packs ([dental](dental.md), [orthopedics](orthopedics.md)) build on. Build phase: **Phase A** (core platform). Imaging is specified separately in [imaging](imaging.md).
@@ -13,6 +13,19 @@ Related decisions: ADR-0006 (one organisation model, global identities), ADR-000
 - Speed over completeness: doctors spend about half their clinic time on documentation; every screen offers "normal / same as last time" shortcuts and saved bundles. [RN-08 §1], [RN-11 §4]
 - Clinical data flows only through versioned templates; administrative custom fields (ADR-0008) never hold clinical data.
 - Signed content is immutable; corrections are addenda. [RN-04 §6]
+
+## Patient registration and search
+
+Added with spec A-03 (OD-135 to OD-144); IDs follow the existing ones.
+
+- CLN-39 Fast registration: given name, father's name and family name (the last two optional), optional mother's name, contact phone, sex, and date of birth or age (stored as an estimated date of birth). Each chart gets the clinic's next file number, one counter for all branches, never reused; an optional previous (paper) file number is kept and searchable (OD-136, OD-137).
+- CLN-40 One search box finds charts by Arabic-normalised, typo-tolerant name, phone, file number, previous file number and searchable custom fields, inside the tenant's RLS (ADR-0034, OD-42).
+- CLN-41 Registration warns of possible duplicates (same phone and similar given name, or similar full name and close birth year); the owner merges two charts of one person, the merged chart staying read-only and leading to the kept one (OD-139).
+- CLN-42 Charts that share a contact phone form a family, each with an optional relation to the phone's holder (OD-138).
+- CLN-43 A chart lists its treating doctors; this list is what the "my patients only" setting (PLT-44) filters on (OD-140).
+- CLN-44 Charts are never deleted; the owner archives and restores them (OD-143).
+- CLN-45 The owner sees, on each chart, who opened it, with role, branch and time (OD-141).
+- There is no patient import, from Excel or any other system, in Release 1 (OD-142).
 
 ## Patient file summary
 

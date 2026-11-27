@@ -94,7 +94,7 @@ A doctor's custom request is handled as a generic module behind an entitlement. 
 
 - PLT-42 Predefined roles: Owner/Admin, Doctor, Receptionist, Assistant/Nurse and Accountant, each with simple permission toggles. Custom roles are Later.
 - PLT-43 Receptionists cannot see clinical notes by default.
-- PLT-44 The organization setting "my patients only" restricts a doctor to charts where they are the treating practitioner. The default is all clinic patients.
+- PLT-44 The organization setting "my patients only" restricts a doctor to charts where they are the treating practitioner. The default is all clinic patients. A doctor is treating when the chart lists them (CLN-43, OD-140).
 - PLT-45 Permissions are scoped per organization and per branch. A user can hold different roles in different branches.
 - PLT-46 Sensitive actions (discounts, refunds, rate overrides, voids, data export, support elevation) each have their own permission.
 
