@@ -227,7 +227,16 @@ export function BodyRow<Row extends object>({
               meta.wrap && WRAP,
             )}
           >
-            {meta.wrap ? content(meta, c.getValue()) : band(content(meta, c.getValue()))}
+            {meta.wrap
+              ? content(meta, c.getValue())
+              : band(
+                  wraps ? (
+                    // One line, cut with an ellipsis in a narrow box.
+                    <span className="min-w-0 truncate">{content(meta, c.getValue())}</span>
+                  ) : (
+                    content(meta, c.getValue())
+                  ),
+                )}
           </div>
         );
       })}

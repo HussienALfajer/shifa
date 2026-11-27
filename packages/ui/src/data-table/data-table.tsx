@@ -141,7 +141,20 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     grid,
     rowCount: loading ? 0 : shown.length,
     colCount,
-    pageSize: () => Math.max(1, Math.floor((scroll.current?.clientHeight ?? 0) / rowHeight()) - 1),
+    pageSize: () => {
+      const box = scroll.current;
+      if (!wraps || box === null) {
+        return Math.max(1, Math.floor((box?.clientHeight ?? 0) / rowHeight()) - 1);
+      }
+      // Rows of their own height: count the measured rows that fit in the scroll box.
+      // Item offsets count from the scroll box's top (the header's height included).
+      const top = box.scrollTop + (body.current?.offsetTop ?? 0);
+      const bottom = box.scrollTop + box.clientHeight;
+      const inView = virtual
+        .getVirtualItems()
+        .filter((item) => item.start >= top && item.end <= bottom);
+      return Math.max(1, inView.length - 1);
+    },
     scrollToRow: (index) => {
       virtual.scrollToIndex(index, { align: 'auto' });
     },
@@ -166,6 +179,12 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
     },
   });
   activeRow.current = keyboard.active.row - 1;
+
+  // When the wrapping column is hidden or shown again, the rows' measured heights no longer hold:
+  // measure afresh (a row no longer observed would keep its old height and leave a gap).
+  useLayoutEffect(() => {
+    virtual.measure();
+  }, [wraps, virtual]);
 
   // Controls inside cells are reached with Enter, never with Tab: keep them out of the Tab order.
   useLayoutEffect(() => {
@@ -234,7 +253,10 @@ export function DataTable<Row extends object>(props: DataTableProps<Row>) {
             ? {
                 style: {
                   minWidth: minimumWidth(
-                    leaves.map((c) => (c.columnDef.meta as ColumnMeta).width),
+                    leaves.map((c) => {
+                      const meta = c.columnDef.meta as ColumnMeta;
+                      return meta.wrap ? 'md' : meta.width;
+                    }),
                     selectable,
                   ),
                 },

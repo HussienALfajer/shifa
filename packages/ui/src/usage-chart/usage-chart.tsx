@@ -33,7 +33,8 @@ export interface UsageChartLabels {
   emptyDescription: string;
   loading: string;
   /** The screen reader's summary from the figures. */
-  summary: (s: { total: string; average: string; highest: string; day: string }) => string;
+  /** `day` is null when no day had any count. */
+  summary: (s: { total: string; average: string; highest: string; day: string | null }) => string;
 }
 
 const LABELS: Record<'rtl' | 'ltr', UsageChartLabels> = {
@@ -47,7 +48,9 @@ const LABELS: Record<'rtl' | 'ltr', UsageChartLabels> = {
     emptyDescription: 'تظهر أولى الأرقام غدًا.',
     loading: 'جارٍ التحميل',
     summary: (s) =>
-      `المجموع ${s.total}، المتوسط اليومي ${s.average}، أعلى يوم ${s.highest} في ${s.day}.`,
+      s.day === null
+        ? 'لا نشاط في هذه الأيام.'
+        : `المجموع ${s.total}، المتوسط اليومي ${s.average}، أعلى يوم ${s.highest} في ${s.day}.`,
   },
   ltr: {
     average: 'Average',
@@ -59,7 +62,9 @@ const LABELS: Record<'rtl' | 'ltr', UsageChartLabels> = {
     emptyDescription: 'The first figures show tomorrow.',
     loading: 'Loading',
     summary: (s) =>
-      `Total ${s.total}, daily average ${s.average}, highest day ${s.highest} on ${s.day}.`,
+      s.day === null
+        ? 'No activity on these days.'
+        : `Total ${s.total}, daily average ${s.average}, highest day ${s.highest} on ${s.day}.`,
   },
 };
 
@@ -68,7 +73,7 @@ export interface UsageChartProps {
   'aria-label': string;
   /** Oldest first; the last is today (drawn in gold). None: the empty state. */
   days: readonly UsageChartDay[];
-  /** A count with its unit, for the tooltip and the summary: `(n) => \`${n} تسجيل دخول\``. */
+  /** A count with its unit, for each bar's tooltip and name: `(n) => \`${n} تسجيل دخول\``. */
   unit: (count: number) => string;
   /** The last day is today, still counting (default true). */
   lastIsToday?: boolean;
@@ -104,8 +109,10 @@ export function UsageChart({
     [dir],
   );
   const summaryId = useId();
-  const [active, setActive] = useState(days.length - 1);
-  const focusIndex = Math.min(Math.max(active, 0), days.length - 1);
+  // The day with the Tab stop; null until one is focused: today (the last day), also once data
+  // arrives after loading.
+  const [active, setActive] = useState<number | null>(null);
+  const focusIndex = Math.min(Math.max(active ?? days.length - 1, 0), days.length - 1);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
 
   const total = days.reduce((sum, d) => sum + d.count, 0);
@@ -159,7 +166,10 @@ export function UsageChart({
               total: number.format(total),
               average: number.format(average),
               highest: number.format(days[highestIndex]?.count ?? 0),
-              day: dayMonth(days[highestIndex]?.date ?? ''),
+              day:
+                (days[highestIndex]?.count ?? 0) > 0
+                  ? dayMonth(days[highestIndex]?.date ?? '')
+                  : null,
             })}
           </p>
           <div dir="ltr" className="mt-4 flex gap-2">
@@ -279,7 +289,7 @@ function Axis({ days, today }: { days: readonly UsageChartDay[]; today: string |
             key={i}
             className={cn(
               'absolute top-0 whitespace-nowrap',
-              i === 0 ? 'translate-x-0' : i === last ? '-translate-x-full' : '-translate-x-1/2',
+              i === last ? '-translate-x-full' : i === 0 ? 'translate-x-0' : '-translate-x-1/2',
             )}
             style={{
               insetInlineStart: i === last ? '100%' : `${String(((i + 0.5) / days.length) * 100)}%`,

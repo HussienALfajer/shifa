@@ -29,6 +29,11 @@ import { useDirection } from '../providers/direction-provider.tsx';
 
 export interface MultiComboboxProps {
   label: ReactNode;
+  /**
+   * The options. With results from a server search, pass the chosen ones too (with the results):
+   * a chip's label is read from `items`, and a chosen value missing from them shows its raw id.
+   * An item's `description` is not shown here.
+   */
   items: readonly ComboboxItem[];
   /** The chosen values, controlled; or `defaultValue`. */
   value?: readonly string[] | undefined;

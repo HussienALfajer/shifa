@@ -17,7 +17,7 @@ A name matches when one of its words starts with the typed text, Arabic folded a
 ## What you provide (design system)
 `label`, `items` (`value`, `label`), `defaultValue` (the chosen values), `emptyMessage`, `placeholder`, `hint`, `error`, `disabled`, `defaultOpen`, `defaultInputValue`.
 
-In code: the same, with `value` and `onValueChange` for a controlled choice, `removeLabel` for the remove buttons' names, `open` and `onOpenChange`.
+In code: the same (with results from a server search, `items` holds the chosen ones as well, since a chip's label is read from them), with `value` and `onValueChange` for a controlled choice, `removeLabel` for the remove buttons' names, `open` and `onOpenChange`.
 
 ## Tokens
 `shifa-input-border`, `shifa-input-bg`, `shifa-input-fg`, `shifa-color-border-focus`, `shifa-shadow-focus`, `shifa-color-status-danger-fg`, `shifa-color-selection-default`, `-strong`, `-subtle`, `shifa-color-brand-primary`, `shifa-shape-radius-input`, `shifa-width-37-5`.

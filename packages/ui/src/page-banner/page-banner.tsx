@@ -64,7 +64,11 @@ export interface PageBannerProps {
   icon?: IconName;
   /** At most one small button («إنهاء الدخول»). */
   action?: ReactNode;
-  /** Several announcements in turn: «1 من 3» between previous and next. */
+  /**
+   * Several announcements in turn: «1 من 3» between previous and next (none for one). The index
+   * is kept inside the list. Announcements only: on the solid `support` tone the ghost buttons
+   * lack contrast, and a support banner is never paged or hidden.
+   */
   pager?: PageBannerPager;
   /** A close button; leave it out where the banner cannot be hidden (support). */
   onDismiss?: () => void;
@@ -88,6 +92,8 @@ export function PageBanner({
 }: PageBannerProps) {
   const words = WORDS[useDirection()];
   const { box, glyph } = TONE[tone];
+  // The shown one, kept inside the list when it shrinks (an announcement dismissed or ended).
+  const index = pager === undefined ? 0 : Math.min(Math.max(pager.index, 0), pager.count - 1);
   return (
     <div
       role="region"
@@ -111,30 +117,26 @@ export function PageBanner({
             {children !== undefined && <span>{children}</span>}
           </p>
         </div>
-        {pager !== undefined && (
+        {pager !== undefined && pager.count > 1 && (
           <span
             data-slot="page-banner-pager"
             className="inline-flex items-center gap-1 whitespace-nowrap tabular-nums"
           >
-            <IconButton
+            <PagerStep
               icon="caret-back"
-              variant="ghost"
-              size="sm"
               label={pager.previousLabel ?? words.previous}
-              disabled={pager.index <= 0}
-              onClick={() => {
-                pager.onIndexChange(pager.index - 1);
+              at={index <= 0}
+              onStep={() => {
+                pager.onIndexChange(index - 1);
               }}
             />
-            <span>{words.of(pager.index + 1, pager.count)}</span>
-            <IconButton
+            <span>{words.of(index + 1, pager.count)}</span>
+            <PagerStep
               icon="caret-forward"
-              variant="ghost"
-              size="sm"
               label={pager.nextLabel ?? words.next}
-              disabled={pager.index >= pager.count - 1}
-              onClick={() => {
-                pager.onIndexChange(pager.index + 1);
+              at={index >= pager.count - 1}
+              onStep={() => {
+                pager.onIndexChange(index + 1);
               }}
             />
           </span>
@@ -153,5 +155,35 @@ export function PageBanner({
         )}
       </div>
     </div>
+  );
+}
+
+/**
+ * A pager step. At an end it stays focusable and says so (`aria-disabled`), as Pagination's do,
+ * and ignores the press: a native `disabled` would drop the keyboard's focus to the page.
+ */
+function PagerStep({
+  icon,
+  label,
+  at,
+  onStep,
+}: {
+  icon: IconName;
+  label: string;
+  at: boolean;
+  onStep: () => void;
+}) {
+  return (
+    <IconButton
+      icon={icon}
+      variant="ghost"
+      size="sm"
+      label={label}
+      aria-disabled={at || undefined}
+      className="aria-disabled:cursor-not-allowed aria-disabled:bg-transparent aria-disabled:text-text-disabled"
+      onClick={() => {
+        if (!at) onStep();
+      }}
+    />
   );
 }
