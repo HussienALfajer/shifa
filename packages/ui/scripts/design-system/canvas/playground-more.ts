@@ -138,6 +138,7 @@ export const MORE_PLAYGROUNDS: Record<string, Playground> = {
       text('title', DRAWER.title),
       text('description', DRAWER.description),
       pick('side', ['end', 'start', 'bottom']),
+      pick('size', ['default', 'wide']),
       text('cancelLabel', DRAWER.cancelLabel),
       text('saveLabel', DRAWER.saveLabel),
       flag('triggerDisabled'),
@@ -146,6 +147,7 @@ export const MORE_PLAYGROUNDS: Record<string, Playground> = {
     scenarios: [
       { label: 'Open', set: { defaultOpen: true } },
       { label: 'From the bottom', set: { defaultOpen: true, side: 'bottom' } },
+      { label: 'Wide', set: { defaultOpen: true, size: 'wide' } },
     ],
   },
   Popover: {

@@ -20,6 +20,18 @@ const NOTE = {
 };
 const SHOW = 'إظهار الإشعارات';
 const open = { defaultOpen: true };
+/** The wide drawer's form, «مريض جديد» (A-03-01, A03SheetDrawerWide). */
+const WIDE_FORM = {
+  title: 'مريض جديد',
+  description: 'يأخذ الملف رقمه التالي عند الحفظ',
+  fields: [
+    { label: 'الاسم', value: 'روان' },
+    { label: 'اسم الأب', value: 'بلال' },
+    { label: 'الكنية', value: 'الجاسم' },
+  ],
+  cancelLabel: 'إلغاء',
+  saveLabel: 'حفظ الملف',
+};
 const TOAST_KINDS: [string, string, string][] = [
   ['success', 'حُفظت الوصفة', 'نجاح'],
   ['info', 'نُقل الموعد إلى الخميس', 'معلومة'],
@@ -116,6 +128,10 @@ export const OVERLAYS: SheetSpec[] = [
           ),
           st({ ...DRAWER, triggerLabel: 'من البداية', side: 'start' }, 'side start'),
           st({ ...DRAWER, triggerLabel: 'من الأسفل', side: 'bottom' }, 'side bottom'),
+          st(
+            { ...DRAWER, triggerLabel: 'مريض جديد', size: 'wide', triggerIcon: 'plus' },
+            'size wide (550 px)',
+          ),
           st({ ...DRAWER, triggerLabel: 'تعديل', triggerDisabled: true }, 'trigger disabled'),
         ],
       },
@@ -134,6 +150,13 @@ export const OVERLAYS: SheetSpec[] = [
         640,
         { ...DRAWER, triggerLabel: 'تعديل', side: 'start', ...open },
         'Open: from the start',
+      ),
+      view(
+        'OpenWide',
+        'مفتوح · عريض',
+        640,
+        { ...DRAWER, triggerLabel: 'مريض جديد', size: 'wide', ...WIDE_FORM, ...open },
+        'Open: wide, 550 px, for a long form (never wider than the screen)',
       ),
       view(
         'OpenBottom',
