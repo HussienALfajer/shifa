@@ -34,7 +34,7 @@ Tests written first: none (no code). The proof is the owner's approval of both c
 Estimated hand-written lines: ~1,000 in the repository (contract ~650, spec amendments ~150, slice and roadmap updates ~200); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 drawn (2026-11-27): `A03Search`, `A03Register`, `A03Chart` with tablet and phone boards, the contract rows of checkpoint 1 in `docs/specs/patients/A-03-screen-contract.md`, the analysis below. Waiting for the owner's review of checkpoint 1; checkpoint 2 starts after it.
+Checkpoint 1 drawn (2026-11-27), round 2 the same day (real components everywhere, three proposed components and the Drawer «wide» change on their sheets, every state rendered in Chromium): `A03Search`, `A03Register`, `A03Chart` with tablet and phone boards, the contract rows of checkpoint 1 in `docs/specs/patients/A-03-screen-contract.md`, the analysis below. Waiting for the owner's review of checkpoint 1; checkpoint 2 starts after it.
 
 ## Checkpoint 1 (reception and charts)
 ### What is drawn
@@ -47,8 +47,9 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 
 ### Design system check
 - Shifa Design System found by name, README read, canvas copy refreshed (bundle, its stylesheet, tokens) and its record updated.
-- Real components for every control, badge, callout, field, empty state, skeleton, question, banner, menu and tooltip (`Shifa.*`). Drawn from tokens where the bundle has no such part: the clinic frame (as `app-frame.tsx`), result rows, family and candidate rows, the form panel (the bundle's Drawer takes text fields only), the chart's header and cards (the bundle's Card takes text only).
-- Static check of every A-03 board and `a03/a03.css` (script in the session's scratchpad): 0 literal colours, 0 unknown `--shifa-` names; the only literal lengths are the board sizes (1100, 1368, 1400, 1500, 734).
+- Round 2 (owner, 2026-11-27: real components on every screen, a new one drawn where none fits). Every control, badge, callout, field, empty state, skeleton, question, banner, menu, tooltip and table is the bundle's (`Shifa.*`); «من فتح هذا الملف» is the real DataTable with a wrapping column, as the owner asked for the support log in A-02-01. What no bundle component holds is one of three proposed components, each drawn once from tokens and mounted from that one source by the screens and its sheet: `A03RecordList` (results, family, candidates, treating doctors, recently opened), `A03RecordHeader` (the chart's identity, the saved file), `A03DescriptionList` (the clinic's fields). The form panel stays drawn from the Drawer's tokens, since the bundle's Drawer takes text fields only (proposed change 1, wide).
+- Static check of every A-03 board, the components, the sheets, `a03/a03.css` and `a03/components.css` (script in the session's scratchpad): 0 literal colours, 0 unknown `--shifa-` names; literal lengths only for board sizes, placeholder sizes and the 358 px narrow specimens.
+- Every state of `A03Search`, `A03Register` and `A03Chart` rendered in Chromium on the three sizes, light and dark, with a local copy of the canvas runtime (288 renders): 0 page errors, 0 unfilled values, nothing wider than its window, except the owner's «المزيد» menu on tablet and phone, which opens as the Menu's bottom sheet over the whole board (a portal, as in the app). The four sheets rendered with 0 errors.
 
 ### Spec gaps (answers go into the spec after approval)
 1. Search term lengths: a name needs 2 letters; digits search from the first digit for a file number, from 7 for a phone tail. Drawn so (`short`).
@@ -68,18 +69,20 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 | 2 | «فتحتها مؤخرًا»: the last 8 charts this member opened, under the empty search box | `GET /patients/recent` from the member's own `patient.chart_viewed` rows, visibility applied · none · search page | ~220 | A-03-07, A-03-09 |
 | 3 | «فرد آخر من العائلة» after saving: a new form with the same phone | none · none · saved state | ~40 | A-03-09 |
 | 4 | Keyboard on the results: ↑ ↓ to move, Enter to open | none · none · search page | ~80 | A-03-09 |
-| 5 | A wide form panel (550 px) so name parts sit two by two (component change 1) | none · Drawer `size="wide"` · form | ~120 | A-03-09 |
+| 5 | A wide form panel (550 px) so name parts sit two by two (component change 1, sheet `A03SheetDrawerWide`) | none · Drawer `size="wide"` · form | ~120 | A-03-09 |
 
 ### Component changes (proposed)
-1. **Drawer: a wide size** (improvement 5). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. If accepted, its sheet is drawn (every state, light and dark, RTL and LTR, both densities) and approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
+1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
 
-### Missing components (checkpoint 1)
-- Age or date of birth with «~»: composed in the screen from SegmentedControl, DatePicker, NumberInput and Select; no new component.
-- Phone with the family preview: an Input with a list of family rows under it; a screen part of clinic web, no new component.
+### Missing components (proposed; each on its sheet, every state, light and dark, Arabic RTL and English LTR, both densities, a 358 px width)
+1. **RecordList** «قائمة السجلات» (sheet `A03SheetRecordList`, source `A03RecordList`): rows of people or records; avatar, title with the matched words in a heavier weight, a second line of badges and short texts, optional columns, and at the end a chevron (the row is a link), a button or a badge; three layouts (table, two lines, tiles), sizes md and sm; a locked row (no name, no avatar) for a chart hidden by "my patients only"; dim (archived), current; loading and empty. One Tab stop, arrows and Enter (code). Used by search, recently opened, family (form and chart), duplicate candidates, treating doctors. Estimate ~450 lines (component, stories, tests, screenshots) in A-03-09.
+2. **RecordHeader** «رأس السجل» (sheet `A03SheetRecordHeader`, source `A03RecordHeader`): a record's identity at the top of its page: avatar, title, the record number in a gold tag, badges (one with a Tooltip for an estimated age), facts, a meta line, actions (buttons and one menu) or «للقراءة فقط»; muted for archived or merged; compact in a panel (the saved file); loading. Estimate ~300 lines in A-03-10.
+3. **DescriptionList** «قائمة الوصف» (sheet `A03SheetDescriptionList`, source `A03DescriptionList`): labels and values by section, «—» for an empty value, one badge per value («حساس»), latin values isolated, one or two columns; loading. Estimate ~200 lines in A-03-10.
+- Not new components: age or date of birth with «~» (SegmentedControl, DatePicker, NumberInput, Select), the phone with its family (Input, Callout, RecordList, Select), the duplicate box (Callout, RecordList, Checkbox).
 - The merge chooser and the field-type builder are drawn at checkpoint 2.
 
 ## Evidence
-- Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on `A03Search`, `A03Register`, `A03Chart` (and tablet, phone) and `a03/a03.css` (2026-11-27); checkpoint 2: <pending>
+- Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
 - Owner approvals (dates): <checkpoint 1, checkpoint 2, re-plan>
 - Improvements accepted / declined: <list>
 
