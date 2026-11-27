@@ -46,7 +46,7 @@ Built with `/ui-component` in the component PR (`feat/A-02-components`), synced 
 - **PageBanner:** as the sheet: `info`, `warning` and the solid `support` tone, icon and word, the text, at most one action, the pager «1 من 3», a named close only where it can be hidden, a region named by its word, the buttons under the text on a phone. Differences: previous uses `caret-back` and next `caret-forward`, as Pagination does (the sheet drew `caret-forward` for previous); previous and next are disabled at the ends (the sheet showed only the middle one); the phone layout starts under 430 px of the banner's own width (Pagination's container breakpoint). The text is a polite live region, so paging is read; a banner already there when the page loads is not announced by itself: A-02-10 decides how a newly arrived announcement is announced once (backlog).
 
 ## Stopped at
-Planned.
+Checkpoints 1–3 built and green (`verify` fast); checkpoint 4 (journeys, screenshots, review) next.
 
 ## Evidence
 - Contract check: —
