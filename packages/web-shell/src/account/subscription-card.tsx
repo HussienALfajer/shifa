@@ -12,6 +12,7 @@ import { damascusToday, keyWord } from '../admin/clinic-data.ts';
 import { calendarDate, STATUS_TONE, STATUS_WORD, TYPE_WORD } from '../admin/data.ts';
 import { BRANCHES, isFull, type LimitUse, limitsOf, PRACTITIONERS } from '../capabilities.ts';
 import { useShell } from '../providers.tsx';
+import { useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import { LoadFailed } from './load-failed.tsx';
 
@@ -23,7 +24,7 @@ const DAY = 86_400_000;
 
 export const subscriptionKey = (tenantId: string) => ['clinic', tenantId, 'subscription'] as const;
 
-function useSubscription(tenantId: string) {
+function useSubscription(tenantId: string, enabled: boolean) {
   const { shell } = useShell();
   return useQuery({
     queryKey: subscriptionKey(tenantId),
@@ -34,6 +35,7 @@ function useSubscription(tenantId: string) {
       const limits = limitsOf(data);
       return limits && Array.isArray(data.features) ? { ...data, limits } : null;
     },
+    enabled,
     staleTime: 60_000,
     retry: false,
     refetchOnWindowFocus: false,
@@ -107,8 +109,10 @@ function Kpi({ label, children }: { label: string; children: React.ReactNode }) 
 
 export function SubscriptionCard({ tenantId }: { tenantId: string }) {
   const text = useText();
-  const { data, isError, isPending, refetch } = useSubscription(tenantId);
-  if (data === null) return null;
+  // A support session never reads the card (spec: «–»; the server refuses it, A-02-05).
+  const support = useReadOnly();
+  const { data, isError, isPending, refetch } = useSubscription(tenantId, !support);
+  if (support || data === null) return null;
   const days = data?.subscriptionEnd ? daysUntil(data.subscriptionEnd) : null;
   return (
     <Card className="gap-4 p-(--shifa-card-padding)">
