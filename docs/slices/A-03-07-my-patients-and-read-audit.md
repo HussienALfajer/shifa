@@ -30,6 +30,12 @@ Estimated hand-written lines: ~2,900 (contracts ~200, database ~150, setting and
 - Components: none (API slice).
 - New estimate: ~3,510 (contracts ~300, database ~150, setting and predicate ~700, permissions and `allowed` ~300, read audit and log ~730, recent ~130, impact ~100, tests ~1,100).
 
+## From A-03-02 (security review M1, 2026-11-27)
+- Every answer that carries a `PatientChart` reads a chart, not only `GET /patients/:id`: an edit that changes nothing (200 with the chart, no audit row; the 409 `stale` body gives the `updatedAt` it needs), the archive, the restore and a replayed create. This slice must:
+  - apply the one visibility predicate wherever a chart is looked up (`findChart` in `modules/patients/charts.ts`), so `PATCH /patients/:id`, archive, restore and a replay answer 404 `not_found` for a hidden chart, and a limited doctor learns nothing from 409 `stale` about a chart they cannot see;
+  - write `patient.chart_viewed` for every answer carrying a chart that has no audit row of its own (the no-op edit, the replay), or answer them without the chart.
+- Tests: one per route above with "my patients only" on (404) and one read row per no-op edit and replay.
+
 ## Stopped at
 Planned.
 

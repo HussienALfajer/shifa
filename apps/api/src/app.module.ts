@@ -13,6 +13,7 @@ import {
   IdentityModule,
   type IdentitySecrets,
 } from './modules/identity/index.ts';
+import { PatientsModule } from './modules/patients/index.ts';
 import { PlacesModule } from './modules/places/index.ts';
 import { PlatformModule } from './modules/platform/index.ts';
 import { type SettingDefinition, SettingsModule } from './modules/settings/index.ts';
@@ -98,6 +99,7 @@ export class AppModule {
         }),
         BranchesModule.register({ identity, entitlements }),
         PlacesModule.register({ platformDb, identity }),
+        PatientsModule.register({ identity }),
         AnnouncementsModule.register({ platformDb, identity }),
         UsageModule.register({ platformDb, identity }),
         SupportModule.register({

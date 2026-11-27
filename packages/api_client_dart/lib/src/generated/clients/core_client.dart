@@ -31,6 +31,7 @@ import '../models/clinic_usage.dart';
 import '../models/create_announcement_request.dart';
 import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
+import '../models/create_patient_request.dart';
 import '../models/dismiss_announcement_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/entitlement_item.dart';
@@ -55,6 +56,9 @@ import '../models/open_support_grant_request.dart';
 import '../models/opened_support_grant.dart';
 import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
+import '../models/patient_chart.dart';
+import '../models/patient_count.dart';
+import '../models/patient_state_change_request.dart';
 import '../models/permission_defaults.dart';
 import '../models/place_name_request.dart';
 import '../models/platform_support_grants.dart';
@@ -86,6 +90,7 @@ import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_clinic_settings_request.dart';
 import '../models/update_member_request.dart';
+import '../models/update_patient_request.dart';
 
 part 'core_client.g.dart';
 
@@ -286,6 +291,41 @@ abstract class CoreClient {
   /// Switch the session to one of the person’s clinics and branches
   @POST('/me/switch')
   Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});
+
+  /// Register a chart; the same id and body again returns the stored chart
+  @POST('/patients')
+  Future<PatientChart> patientsCreate({
+    @Body() required CreatePatientRequest body,
+  });
+
+  /// How many active and archived charts the clinic holds
+  @GET('/patients/count')
+  Future<PatientCount> patientsCount();
+
+  /// A chart’s summary (identity part)
+  @GET('/patients/{id}')
+  Future<PatientChart> patientsGet({@Path('id') required String id});
+
+  /// Edit a chart’s identity
+  @PATCH('/patients/{id}')
+  Future<PatientChart> patientsUpdate({
+    @Path('id') required String id,
+    @Body() required UpdatePatientRequest body,
+  });
+
+  /// Archive a chart (never deleted)
+  @POST('/patients/{id}/archive')
+  Future<PatientChart> patientsArchive({
+    @Path('id') required String id,
+    @Body() required PatientStateChangeRequest body,
+  });
+
+  /// Restore an archived chart
+  @POST('/patients/{id}/restore')
+  Future<PatientChart> patientsRestore({
+    @Path('id') required String id,
+    @Body() required PatientStateChangeRequest body,
+  });
 
   /// Announcements by status, with the counts of each status and of dismissals
   @GET('/platform/announcements')

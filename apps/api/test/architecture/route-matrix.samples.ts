@@ -1,5 +1,6 @@
 // Sample requests of the A-02 console routes (cities and areas, A-02-06; announcements and usage,
 // A-02-07), kept beside route-matrix.expected.ts, which spreads them into SAMPLE_REQUESTS.
+import { randomUUID } from 'node:crypto';
 import type { Sample } from './route-matrix.expected.ts';
 
 export const A02_CONSOLE_SAMPLES: Readonly<Record<string, Sample>> = {
@@ -52,4 +53,34 @@ export const A02_CONSOLE_SAMPLES: Readonly<Record<string, Sample>> = {
     body: { version: 1 },
   }),
   'GET /platform/clinics/:id/usage': (ctx) => ({ url: `/platform/clinics/${ctx.clinicId}/usage` }),
+};
+
+/** Sample requests of the A-03-02 chart routes: a fresh chart per call (edits move updatedAt). */
+export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
+  'POST /patients': (ctx) => ({
+    body: {
+      id: randomUUID(),
+      givenName: 'مريض',
+      familyName: 'المصفوفة',
+      contactPhone: ctx.nextPhone(),
+      sex: 'female',
+      age: { value: 30, unit: 'years' },
+    },
+  }),
+  'GET /patients/:id': async (ctx) => ({ url: `/patients/${(await ctx.chart()).id}` }),
+  'PATCH /patients/:id': async (ctx) => {
+    const chart = await ctx.chart();
+    return {
+      url: `/patients/${chart.id}`,
+      body: { expectedUpdatedAt: chart.updatedAt, motherName: 'ليلى' },
+    };
+  },
+  'POST /patients/:id/archive': async (ctx) => {
+    const chart = await ctx.chart();
+    return { url: `/patients/${chart.id}/archive`, body: { expectedUpdatedAt: chart.updatedAt } };
+  },
+  'POST /patients/:id/restore': async (ctx) => {
+    const chart = await ctx.chart('archived');
+    return { url: `/patients/${chart.id}/restore`, body: { expectedUpdatedAt: chart.updatedAt } };
+  },
 };

@@ -6039,6 +6039,22 @@
   "@errorsPasswordUnchanged": {
     "description": "errors.password_unchanged"
   },
+  "errorsPatientArchived": "هذا الملف مؤرشف ولا يمكن تعديله.",
+  "@errorsPatientArchived": {
+    "description": "errors.patient_archived"
+  },
+  "errorsPatientIdTaken": "تعذّر حفظ الملف. ابدأ التسجيل من جديد.",
+  "@errorsPatientIdTaken": {
+    "description": "errors.patient_id_taken"
+  },
+  "errorsPatientMerged": "دُمج هذا الملف في ملف آخر ولا يمكن تعديله.",
+  "@errorsPatientMerged": {
+    "description": "errors.patient_merged"
+  },
+  "errorsPatientNotArchived": "هذا الملف غير مؤرشف.",
+  "@errorsPatientNotArchived": {
+    "description": "errors.patient_not_archived"
+  },
   "errorsPayloadTooLarge": "حجم البيانات المرسلة أكبر من المسموح.",
   "@errorsPayloadTooLarge": {
     "description": "errors.payload_too_large"
@@ -6067,6 +6083,10 @@
   "@errorsPlaceNotArchived": {
     "description": "errors.place_not_archived"
   },
+  "errorsPreviousFileNumberTaken": "رقم الملف السابق هذا مسجّل لمريض آخر في العيادة.",
+  "@errorsPreviousFileNumberTaken": {
+    "description": "errors.previous_file_number_taken"
+  },
   "errorsRequestTimeout": "استغرق الطلب وقتًا طويلًا. حاول مرة أخرى.",
   "@errorsRequestTimeout": {
     "description": "errors.request_timeout"
@@ -6090,6 +6110,10 @@
   "errorsSettingNotLockable": "لا يمكن قفل هذا الإعداد لعيادة.",
   "@errorsSettingNotLockable": {
     "description": "errors.setting_not_lockable"
+  },
+  "errorsStale": "عدّل غيرك هذا الملف للتو. حمّل التعديل الأحدث ثم أعد المحاولة.",
+  "@errorsStale": {
+    "description": "errors.stale"
   },
   "errorsSupportActive": "لديك دخول مفتوح لهذه العيادة.",
   "@errorsSupportActive": {

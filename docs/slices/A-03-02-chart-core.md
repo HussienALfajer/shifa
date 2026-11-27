@@ -1,6 +1,6 @@
 # A-03-02 Chart core: registration, file number, edit, archive
 
-Status: Planned · Tier: T0 · Branch: `feat/A-03-02-chart-core`
+Status: Built, in review · Tier: T0 · Branch: `claude/jolly-hawking-4nj8kv` (the cloud session's branch; planned as `feat/A-03-02-chart-core`)
 Spec: [A-03](../specs/patients/A-03-patients.md) criteria 1–3, 12 (identity part), 13, 20 (created, edited, archived, restored); from A-03-01: criteria 22, 28, 32 · Requirements: CLN-01 (identity), CLN-39, CLN-44, PLT-07, PLT-08 (per-clinic chart) · Decisions: ADR-0006, ADR-0031, OD-136, OD-137, OD-143
 
 First API slice of A-03, after the design slice [A-03-01](A-03-01-design-and-screen-contract.md) (approved). Schema changes of A-03 are serialised: A-03-02 → 03 → 04 → 05 → 06 → 07 → 08.
@@ -34,13 +34,35 @@ Estimated hand-written lines: ~3,700 (contracts ~350, database ~500, generator ~
 - Moved out: `permissions[]` in the session and `allowed` on the summary go to A-03-07, which owns visibility, so this slice stays inside the ~4,000 budget.
 - New estimate: ~3,990 (contracts ~380, database ~520, generator ~200, API ~1,330, tests ~1,560).
 
+## Built (2026-11-27)
+- **Contracts** (`packages/contracts/src/patients.ts`): `isPatientNamePart` (Arabic or Latin letters with their marks, space, hyphen, apostrophes; at least one letter; the shared rule), `patientDisplayName`, `Sex`, `AgeUnit`, `PatientAge` (2–130 years or 0–23 months), `PatientState`, `PatientChart`, `CreatePatientRequest` (a date of birth or an age, exactly one), `UpdatePatientRequest` (`expectedUpdatedAt`; not both), `PatientStateChangeRequest`, `PatientCount`; codes `previous_file_number_taken`, `patient_id_taken`, `patient_archived`, `patient_not_archived`, `patient_merged`, `stale` (with `StaleChange`: `updatedAt`, `updatedByName`).
+- **Database** (expand only): `20261127153450_a03_patients` (tables) and `20261127153456_a03_patient_policies` (ENABLE + FORCE RLS, tenant policies, grants). `patient`: primary key `(tenant_id, id)` (the target of every later chart foreign key; the same client id may exist in two clinics, so an id never reveals another clinic's chart), unique `(tenant_id, file_number)` and `(tenant_id, previous_file_number)` (stored trimmed), composite foreign keys to `branch` and to itself (`merged_into_id`), CHECKs on every text column, state, archive and merge consistency. `patient_file_counter`: one row per clinic, taken by an upsert inside the registration's transaction. shifa_app holds SELECT, INSERT, UPDATE on both and no DELETE (charts are never deleted; pinned in `test/privileges.test.ts`). Rollback: drop the policies, disable RLS, revoke the grants; the tables go with a contract migration.
+- **Generator**: `generatePatientCharts({ random, count, today })` in `@shifa/testing` (families of one to four on a shared synthetic phone and family name, exact dates or typed ages with their estimated dates). The name lists are now typed `readonly string[]` (their literal types were unused).
+- **API** (`modules/patients`): the six permission keys and their grants; `GET /patients/count`, `POST /patients`, `GET /patients/:id`, `PATCH /patients/:id`, `POST /patients/:id/archive`, `POST /patients/:id/restore`; audit `patient.created`, `patient.edited` (changed keys as `true` only), `patient.archived`, `patient.restored`. `PermissionCheck` in `src/access/` answers the count's second key (`patients.archive`) by the guard's rule.
+
+### Decisions taken during the build (reported to the owner)
+- **Registered branch:** the session's active branch; a member with a clinic-wide role and no active branch registers in the clinic's only active branch, or in none (`registeredBranch: null`) when the clinic has several. The contract row's `registeredBranch` is therefore nullable.
+- **Replay:** a SHA-256 of the parsed request (keys sorted) is kept on the chart (`create_hash`); the same id and body answers 201 with the stored chart and takes no number; another body with that id answers 409 `patient_id_taken` (a new code; the plan said only "409"). Two saves of one id at once give one chart.
+- **Stale:** `updatedAt` is written by the API at millisecond precision and always moves forward, so `expectedUpdatedAt` compares exactly. Edit and archive check the state first (`patient_merged`, `patient_archived`), then `stale`; restore checks `patient_not_archived`, then `stale`.
+- **An edit that changes nothing** answers the chart unchanged, with no audit row and the same `updatedAt`.
+- **Create status:** a replay answers 201 like the first save (one status per route).
+- **Dates on the wire:** `birthDate` is a `YYYY-MM-DD` string (as in `platform.ts`; generated clients turn `format: date` into a timestamp); an input date must exist (no 30 February).
+- **Support session and the count (question for the owner):** a support session answers every GET as the owner does (A-02 rule), so `GET /patients/count` shows it the archived count too. The spec's table gives support "–" for archive (a write); kept as is unless the owner wants `archived: 0` there.
+- **Dart client budget** raised to 430 files and 16,600 lines (`scripts/drift.config.mjs`, with its reason): this slice took it to 285 files and 11,072 lines.
+- **Locked tests:** four `no-unused-vars` errors and one import order in three locked tests were fixed after the owner unlocked them (no assertion changed); their type errors were fixed in the implementation instead (`birthOf` overloads, the list types).
+
 ## Stopped at
-Planned.
+Built, reviewed and verified; PR open. Locked tests: the owner unlocked three of them on 2026-11-27 for a lint-only fix (no assertion changed); relocked, then cleared when the PR opened.
 
 ## Evidence
-- `verify` (full): <summary line>
-- Isolation suite: <summary line>
-- Reviewer and security-reviewer findings fixed: <list>; deferred to backlog: <list>
+- Patient tests: `vitest run test/patients test/telemetry/patients-leak.test.ts` → 4 files, 36 tests passed (registration, edit and archive, birth, leak).
+- API suite: 130 files, 934 tests passed (after moving the metrics test's unrouted probe off `/patients/…`).
+- DB suite: 64 files, 471 tests passed (RLS presence, isolation direct and pooled with `patient` and `patient_file_counter`, privileges).
+- Contracts: 87 tests passed; testing: 238 tests passed; drift `--full`: every check CLEAN.
+- `pnpm verify` (fast, final tree): every step green except two that timed out under the parallel load, and both passed when run again alone: `route-matrix.test.ts` (setup hook over 90 s; alone 9 of 9 in 30 s) and one e2e journey (`account-clinics.spec.ts` (4), an axe check on a page this slice does not touch; alone the whole e2e run: 33 of 33). The Docker-backed suites ran in the session (OD-83); CI's `verify (full)` is the gate. `verify:full` locally was not run in full; its drift step (`check-drift --full`) is CLEAN.
+- Reviewer (fresh context): 1 blocking, fixed: a merged chart refuses edit and archive (409 `patient_merged`) and restore (409 `patient_not_archived`), and its summary leads to the kept chart. 3 low, fixed: answers parsed with the contract schemas; the registering-branch rule tested (branch-scoped, the only branch, none of several); six saves of one id give one chart and take one number. All in `test/patients/review.test.ts`. Its question (the archived count in a support session) is a decision above, for the owner.
+- Security reviewer: M1 (a no-op edit or a replay answers the chart without an audit row; the 409 `stale` body gives the `updatedAt`) recorded in the A-03-07 plan ("From A-03-02"): the visibility predicate on every chart lookup and a read row for those answers. L1 fixed (no control, format or invisible characters in the previous number; 400 instead of a 500 on NUL). L2 fixed (the leak test runs in the telemetry project, so it sees query spans). L4 fixed (archive and restore of another clinic's chart: 404). Deferred to `docs/backlog.md`: L3 (a keyed replay hash before A-05) and the two older leak tests outside the telemetry project.
+- Patient tests after the fixes: 5 files, 43 tests passed.
 
 ## Notes for the next session
 - Keep the chart repository the only writer of `patient`: A-03-03 adds the name tokens to the same write path.

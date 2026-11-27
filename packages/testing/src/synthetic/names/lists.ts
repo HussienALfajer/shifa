@@ -10,7 +10,7 @@
  */
 
 /** Common Syrian male given names; also the source of father and grandfather names. */
-export const MALE_GIVEN_NAMES = [
+export const MALE_GIVEN_NAMES: readonly string[] = [
   'محمد',
   'أحمد',
   'علي',
@@ -54,10 +54,10 @@ export const MALE_GIVEN_NAMES = [
   'غسان',
   'عدنان',
   'صالح',
-] as const;
+];
 
 /** Common Syrian female given names; also the source of mothers' given names. */
-export const FEMALE_GIVEN_NAMES = [
+export const FEMALE_GIVEN_NAMES: readonly string[] = [
   'فاطمة',
   'عائشة',
   'مريم',
@@ -93,10 +93,10 @@ export const FEMALE_GIVEN_NAMES = [
   'غادة',
   'لمى',
   'رشا',
-] as const;
+];
 
 /** Common Syrian family-name patterns: city-derived, trade-derived and patronymic forms. */
-export const FAMILY_NAMES = [
+export const FAMILY_NAMES: readonly string[] = [
   'الحلبي',
   'الأحمد',
   'المصري',
@@ -135,10 +135,10 @@ export const FAMILY_NAMES = [
   'حجازي',
   'ملا',
   'دلال',
-] as const;
+];
 
 /** Turkmen and Turkish-format family names written in Arabic script (Azaz area patterns). */
-export const TURKMEN_FAMILY_NAMES = [
+export const TURKMEN_FAMILY_NAMES: readonly string[] = [
   'حاجي أوغلو',
   'قره أوغلو',
   'أوزتورك',
@@ -162,4 +162,4 @@ export const TURKMEN_FAMILY_NAMES = [
   'قورت',
   'بولات',
   'جاووش',
-] as const;
+];

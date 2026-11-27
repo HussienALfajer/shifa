@@ -17,6 +17,9 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
       : LimitReached.fromJson(json['limitReached'] as Map<String, dynamic>),
   place: $enumDecodeNullable(_$PlaceKindEnumMap, json['place']),
   reason: $enumDecodeNullable(_$SessionEndReasonEnumMap, json['reason']),
+  stale: json['stale'] == null
+      ? null
+      : StaleChange.fromJson(json['stale'] as Map<String, dynamic>),
   supportEnded: json['supportEnded'] == null
       ? null
       : SupportEnded.fromJson(json['supportEnded'] as Map<String, dynamic>),
@@ -30,6 +33,7 @@ Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'message': instance.message,
   'place': ?instance.place,
   'reason': ?instance.reason,
+  'stale': ?instance.stale,
   'supportEnded': ?instance.supportEnded,
   'until': ?instance.until?.toIso8601String(),
 };
@@ -101,6 +105,12 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.placeNotArchived: 'place_not_archived',
   ErrorCode.announcementLink: 'announcement_link',
   ErrorCode.announcementEnded: 'announcement_ended',
+  ErrorCode.previousFileNumberTaken: 'previous_file_number_taken',
+  ErrorCode.patientIdTaken: 'patient_id_taken',
+  ErrorCode.patientArchived: 'patient_archived',
+  ErrorCode.patientNotArchived: 'patient_not_archived',
+  ErrorCode.patientMerged: 'patient_merged',
+  ErrorCode.stale: 'stale',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};

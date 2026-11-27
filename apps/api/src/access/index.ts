@@ -19,6 +19,7 @@ export {
   SupportSessionWrite,
 } from './decorators.ts';
 export { GATE_PORT, type GatePort } from './gates.ts';
+export { PermissionCheck } from './permission-check.ts';
 export type { PermissionKey } from './permissions.ts';
 export {
   PERMISSION_CATALOGUE,
