@@ -1,6 +1,6 @@
 # A-03 screen-to-API contract
 
-Status: Checkpoint 1 rows (reception and charts) approved by the owner in [A-03-01](../../slices/A-03-01-design-and-screen-contract.md) 2026-11-27; owner tools and settings rows follow at checkpoint 2 · Date: 2026-11-27 · Owner: product owner
+Status: Approved by the owner in [A-03-01](../../slices/A-03-01-design-and-screen-contract.md): reception and chart rows at checkpoint 1, owner tools and settings rows at checkpoint 2 (both 2026-11-27) · Date: 2026-11-27 · Owner: product owner
 Companion of [spec A-03](A-03-patients.md) (ADR-0047). Rows come from the drawings. After approval a row changes only in the slice that owns it, with the drawing updated and the owner told.
 
 ## How to read and use it
@@ -53,7 +53,7 @@ Companion of [spec A-03](A-03-patients.md) (ADR-0047). Rows come from the drawin
 | Family: «إضافة فرد من العائلة» | none: opens `A03Register` with `contactPhone` filled | | | | `patients.manage` | — |
 | Merge (menu «دمج مع ملف آخر») | rows at checkpoint 2 (`A03Merge`) | | | | `patients.merge` | A-03-08 |
 
-## Contract: owner tools and settings (checkpoint 2, for the owner's review)
+## Contract: owner tools and settings (checkpoint 2, approved 2026-11-27)
 
 ### Merge (`A03Merge`, owner)
 | Screen · state | Route (method, path) | Request fields | Response fields → what they drive | Errors and statuses → screen behaviour | Access | Owner |
@@ -84,8 +84,8 @@ Companion of [spec A-03](A-03-patients.md) (ADR-0047). Rows come from the drawin
 | Impact (improvement 7) | `GET /patients/my-patients/impact` (new; numbers only) | — | `doctorsAffected`, `doctorsTotal`, `ownerDoctors[]` (names), `chartsWithoutDoctor` → DescriptionList «أثر الإعداد» | 5xx → the list is left out | `clinic.settings.manage` | A-03-07 |
 | «حقول ملف المريض» link | `GET /clinic/capabilities` (existing; `limits.custom_fields` use, A-03-05) and `GET /patients/fields/definitions` `limits` | — | «7 من 20 · 2 من 5 قابلة للبحث» | | owner | A-03-05 |
 
-## Routes no screen uses (checkpoint 1)
-- None of the new routes above is left without a screen. The merge, read-log page, field definitions and setting routes are listed at checkpoint 2.
+## Routes no screen uses
+- None. Every new route above has a screen; `GET /patients/fields` (the member's view) feeds the registration form and `GET /patients/fields/definitions` (the owner's view) the fields screen.
 
 ## Existing API met by these screens (checkpoint 1)
 1. `GET /team/members` needs `members.view`, which only the owner holds, so reception cannot list the doctors to pick. A narrow `GET /patients/doctors` (names and `active` only) is added in A-03-04 instead of widening the team list.

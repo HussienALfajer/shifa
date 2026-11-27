@@ -1,6 +1,6 @@
 # Spec A-03: patients — registration, search, duplicates, family, summary, custom fields, chart-read audit
 
-Status: Approved by the owner 2026-11-27; criteria 21–33 added from A-03-01 checkpoint 1 (owner, 2026-11-27) · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
+Status: Approved by the owner 2026-11-27; criteria 21–33 and 34–41 added from A-03-01 checkpoints 1 and 2 (owner, 2026-11-27) · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
 Builds on [A-01a](../platform/A-01a-clinic-owner-sign-in.md), [A-01b](../platform/A-01b-team-roles-branches-switcher.md) and [A-02](../platform/A-02-settings-entitlements-console.md) (order: OD-75). Decisions: ADR-0004, ADR-0006, ADR-0008, ADR-0031, ADR-0034, ADR-0047; OD-42, OD-135 to OD-144. One spec by the owner's choice (OD-135), above the usual size. Screens: inventory below; drawn in the design slice before the API, with a screen-to-API contract (ADR-0047).
 
 ## Goal
@@ -68,6 +68,16 @@ Added at A-03-01 checkpoint 1 (owner, 2026-11-27; drawings `A03Search`, `A03Regi
 32. The summary shows the registering branch and date, and who last edited the chart and when (`createdAt`, `createdByName`, `updatedAt`, `updatedByName`).
 33. «من فتح هذا الملف» on the chart always lists at least the current opening; the full log keeps a "none yet" state for safety only.
 
+Added at A-03-01 checkpoint 2 (owner, 2026-11-27; drawings `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`)
+34. The merge proposes the older chart (lower file number) as the one kept; the owner can swap. Only differing identity fields are offered, each defaulting to the kept chart's value; when the kept contact phone differs and the kept chart has no second phone, the other contact phone becomes its second phone.
+35. A chart that is archived or merged cannot be merged (409 `patient_not_active`); the merge sends `expectedUpdatedAt` for both charts and a change meanwhile answers 409 `stale` with nothing merged.
+36. The full read log pages by page number (50 per page) and shows whether sensitive fields were included in each opening; a filter shows support openings only, with the count of each (`supportTotal`).
+37. A choice field needs at least 2 active choices; choice names are unique within a field and active field labels unique in the clinic, both after Arabic folding.
+38. Fields move up and down within their section; sections keep their creation order.
+39. A text field's value shape is a preset (any text, digits only, letters only) or a custom expression, which the server checks with a safe engine and a length cap.
+40. The fields list and the choice editor show how many charts hold each field and each choice, and the archive question names the number of charts whose values will be removed.
+41. «مرضاي فقط» shows its impact before and after it is on: doctors it covers out of all doctors, doctors who are also owners (not covered), and charts with no treating doctor; numbers only.
+
 ## Edge cases and offline
 - Twins on one phone: different given names are no duplicate; the same name warns and reception registers anyway.
 - A child without a phone uses a guardian's; an Azaz patient a +90 number.
@@ -108,6 +118,10 @@ No money. Tenant scoping: the chart, the file-number counter, name tokens, treat
 | 23 | Contract tests of `permissions[]` with an override and of `allowed` per role, chart state and support session |
 | 27, 28, 29 | API tests: archived candidate registered anyway and audited; 409 `stale` on edit and archive; relation required only with a holder |
 | 30, 31, 32, 33 | UI checks against the drawings; contract test of the summary's created and updated fields |
+| 34, 35 | API tests: default kept chart, differences only, second phone filled, 409 `patient_not_active` and `stale` |
+| 36 | API tests: page numbers, `sensitiveIncluded`, support filter and `supportTotal` |
+| 37, 38, 39 | API tests: two choices minimum, folded uniqueness of choices and labels, order within a section, presets and an unsafe custom expression refused |
+| 40, 41 | API tests: chart counts per field and choice; impact numbers (covered doctors, owner-doctors, charts without a doctor) |
 | Screens | Design slice: drawings, screen-to-API contract and analysis approved; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (register with a family phone; duplicate warning then open existing; search by a variant spelling; owner merges; "my patients only" hides a chart) |
 
 ## Screens (inventory; drawn before the API, ADR-0047)

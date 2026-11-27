@@ -1,6 +1,6 @@
 # A-03-01 Design slice: every A-03 screen and the screen-to-API contract
 
-Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
+Status: In progress (checkpoints 1 and 2 approved 2026-11-27; checkpoint 3, re-plan, next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
 Spec: [A-03](../specs/patients/A-03-patients.md), section "Screens" (all of it), criteria 1–20 as seen on screen · Requirements: CLN-01, CLN-27, CLN-39 to CLN-45, PLT-07, PLT-08, PLT-13, PLT-30 to PLT-36, PLT-44, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, ADR-0049, OD-80
 
 First slice of A-03 (ADR-0047): nothing of A-03 is built before its drawings, contract and improvements are approved. It may run beside the A-02 UI code slices (A-02-08 to A-02-10): it writes no product code.
@@ -34,7 +34,7 @@ Tests written first: none (no code). The proof is the owner's approval of both c
 Estimated hand-written lines: ~1,000 in the repository (contract ~650, spec amendments ~150, slice and roadmap updates ~200); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Checkpoint 2 drawn the same day: `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`, the EditableList sheet, contract rows and analysis; waiting for the owner's review screen by screen.
+Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Checkpoint 2 approved the same day: `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`, gaps 10–18, improvements 6–8, EditableList; spec criteria 34–41. Next: checkpoint 3, the re-plan of A-03-02 to A-03-11.
 
 ## Checkpoint 1 (reception and charts)
 ### What is drawn
@@ -143,11 +143,15 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 - Spec gaps 15 (at least 2 active choices, unique after folding), 16 (active field labels unique after folding), 17 (fields move within their section; sections keep creation order) and 18 (value shape presets, a custom expression checked with a safe engine and a length cap) accepted. Improvement 8 (charts holding each field and choice) accepted.
 - EditableList approved; RecordList's type icon and small row tools approved and added to its sheet.
 
+### Owner review, clinic settings «المرضى» (2026-11-27)
+- Improvement 7 (the impact of «مرضاي فقط») accepted. No spec gap; the source and lock follow A-02.
+- Checkpoint 2 approved (2026-11-27); its answers are spec criteria 34–41.
+
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
-- Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 <pending>; re-plan <pending>
-- Improvements accepted / declined: 1–5 accepted (2026-11-27); none declined
+- Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 2026-11-27 (merge, read log, fields, «مرضاي فقط», the EditableList sheet); re-plan <pending>
+- Improvements accepted / declined: 1–8 accepted (2026-11-27); none declined
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record page and artboard names and approval dates here.
