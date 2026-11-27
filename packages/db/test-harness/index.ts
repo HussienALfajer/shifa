@@ -9,8 +9,8 @@ import {
   type CreateDbOptions,
   createDb,
   runWithoutTenantForTests,
-  sharePool,
   type ShifaDb,
+  sharePool,
 } from '../src/client.ts';
 import { createPlatformDb, type PlatformDb } from '../src/platform.ts';
 import { TABLE_CLASSIFICATION } from '../src/schema/classification.ts';

@@ -11,7 +11,6 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { linkScope } from '../../src/access/index.ts';
 import { ENTITLEMENTS, type EntitlementsPort } from '../../src/modules/entitlements/index.ts';
 import { get, testClock } from '../identity/support.ts';
-import type { TestApp } from '../support.ts';
 import {
   createClinicViaApi,
   platformApp,
@@ -20,6 +19,7 @@ import {
   type SignedInAdmin,
   signedInAdmin,
 } from '../platform/support.ts';
+import type { TestApp } from '../support.ts';
 import { damascusDay, del, overrideEventRows, put, signInAgain } from './support.ts';
 
 const phones = syntheticPhones(2026_12_02, 6);

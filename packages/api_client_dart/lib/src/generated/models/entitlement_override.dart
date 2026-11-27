@@ -4,8 +4,6 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'entitlement_value.dart';
-
 part 'entitlement_override.g.dart';
 
 @JsonSerializable()
@@ -29,7 +27,7 @@ class EntitlementOverride {
   final DateTime setAt;
   @JsonKey(includeIfNull: true)
   final String? setByName;
-  final EntitlementValue value;
+  final dynamic value;
 
   Map<String, Object?> toJson() => _$EntitlementOverrideToJson(this);
 }

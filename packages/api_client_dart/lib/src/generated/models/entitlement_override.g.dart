@@ -13,7 +13,7 @@ EntitlementOverride _$EntitlementOverrideFromJson(Map<String, dynamic> json) =>
       reason: json['reason'] as String,
       setAt: DateTime.parse(json['setAt'] as String),
       setByName: json['setByName'] as String?,
-      value: EntitlementValue.fromJson(json['value'] as Map<String, dynamic>),
+      value: json['value'],
     );
 
 Map<String, dynamic> _$EntitlementOverrideToJson(
@@ -24,5 +24,5 @@ Map<String, dynamic> _$EntitlementOverrideToJson(
   'reason': instance.reason,
   'setAt': instance.setAt.toIso8601String(),
   'setByName': instance.setByName,
-  'value': instance.value,
+  'value': ?instance.value,
 };

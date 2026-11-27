@@ -8,7 +8,6 @@ import { syntheticPhones } from '@shifa/db/testing';
 import type { FixedClock } from '@shifa/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { get, testClock } from '../identity/support.ts';
-import type { TestApp } from '../support.ts';
 import {
   createClinicViaApi,
   patch,
@@ -17,6 +16,7 @@ import {
   resetDatabase,
   signedInAdmin,
 } from '../platform/support.ts';
+import type { TestApp } from '../support.ts';
 import { addBranch, addDoctor, put } from './support.ts';
 
 const phones = syntheticPhones(2026_12_03, 12);

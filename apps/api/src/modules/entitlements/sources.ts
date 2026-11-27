@@ -1,9 +1,9 @@
 // Reading what a clinic holds (plan values, add-ons, overrides) for resolution, on either path:
 // as the clinic (shifa_app, inside the guard's scope) or as the platform inside the clinic's
-// tenant context. RLS keeps both to the one clinic.
+// tenant context. RLS keeps both to the one clinic. Resolution reads an override's key, value and
+// expiry only: its reason and author are for super admins (security review L2).
 import {
   addon,
-  type EntitlementValue,
   planFeature,
   type TenantType,
   type Tx,
@@ -20,6 +20,7 @@ export function planValues(tx: Tx, type: TenantType) {
     .where(eq(planFeature.planType, type));
 }
 
+/** Every override of the clinic, all columns (the super admin's view). */
 export function overrideRows(tx: Tx) {
   return tx.select().from(tenantOverride);
 }
@@ -31,13 +32,16 @@ export async function loadSources(tx: Tx, type: TenantType): Promise<Entitlement
     .select({ key: addon.key, mode: addon.mode, value: addon.value })
     .from(tenantAddon)
     .innerJoin(addon, eq(addon.id, tenantAddon.addonId));
-  const overrides = await overrideRows(tx);
+  const overrides = await tx
+    .select({
+      key: tenantOverride.key,
+      value: tenantOverride.value,
+      expiresAt: tenantOverride.expiresAt,
+    })
+    .from(tenantOverride);
   return {
-    planValues: Object.fromEntries(plan.map((p) => [p.key, p.value])) as Record<
-      string,
-      EntitlementValue
-    >,
+    planValues: Object.fromEntries(plan.map((p) => [p.key, p.value])),
     addons,
-    overrides: overrides.map((o) => ({ key: o.key, value: o.value, expiresAt: o.expiresAt })),
+    overrides,
   };
 }

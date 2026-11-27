@@ -27,7 +27,6 @@ export 'models/ended_sessions.dart';
 export 'models/entitlement_item.dart';
 export 'models/entitlement_kind.dart';
 export 'models/entitlement_override.dart';
-export 'models/entitlement_value.dart';
 export 'models/error_body.dart';
 export 'models/error_code.dart';
 export 'models/error_envelope.dart';

@@ -8,9 +8,7 @@ part of 'entitlement_item.dart';
 
 EntitlementItem _$EntitlementItemFromJson(Map<String, dynamic> json) =>
     EntitlementItem(
-      effective: EntitlementValue.fromJson(
-        json['effective'] as Map<String, dynamic>,
-      ),
+      effective: json['effective'],
       key: json['key'] as String,
       kind: $enumDecode(_$EntitlementKindEnumMap, json['kind']),
       override: json['override'] == null
@@ -18,18 +16,16 @@ EntitlementItem _$EntitlementItemFromJson(Map<String, dynamic> json) =>
           : EntitlementOverride.fromJson(
               json['override'] as Map<String, dynamic>,
             ),
-      planValue: EntitlementValue.fromJson(
-        json['planValue'] as Map<String, dynamic>,
-      ),
+      planValue: json['planValue'],
     );
 
 Map<String, dynamic> _$EntitlementItemToJson(EntitlementItem instance) =>
     <String, dynamic>{
-      'effective': instance.effective,
+      'effective': ?instance.effective,
       'key': instance.key,
       'kind': instance.kind,
       'override': instance.override,
-      'planValue': instance.planValue,
+      'planValue': ?instance.planValue,
     };
 
 const _$EntitlementKindEnumMap = {

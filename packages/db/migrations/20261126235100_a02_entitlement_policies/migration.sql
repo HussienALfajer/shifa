@@ -8,7 +8,7 @@
 -- * tenant_override_event (tenant): shifa_app reads its own; shifa_platform reads it and appends
 --   in the actions that change a key; nobody updates or deletes it (no privilege, and a trigger).
 -- * tenant_usage_counts(uuid): the integers a type preview needs (doctors, branches), for
---   shifa_platform inside a platform action only; no row or name leaves it (spec A-02, "Money,
+--   shifa_platform inside a type preview or change only; no row or name leaves it (spec A-02, "Money,
 --   abuse and privacy"; the ADR amending ADR-0043 comes with A-02-06).
 -- Every policy for shifa_platform has its reason in src/schema/classification.ts.
 -- Rollback: drop the function, the trigger and its function, every policy below, disable RLS on
@@ -87,7 +87,8 @@ CREATE TRIGGER tenant_override_event_append_only BEFORE UPDATE OR DELETE ON "ten
   FOR EACH STATEMENT EXECUTE FUNCTION public.tenant_override_event_append_only();
 --> statement-breakpoint
 -- Runs as its owner (FORCE RLS still applies): the clinic is set as tenant for the two counts and
--- the caller's setting restored. Only inside a platform action (app.admin_reason set).
+-- the caller's setting restored. Only inside a type preview or type change (security review L3);
+-- a later slice that needs the counts elsewhere widens this list in its own migration.
 CREATE FUNCTION public.tenant_usage_counts(p_tenant uuid)
   RETURNS TABLE (practitioners integer, branches integer)
   LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
@@ -95,8 +96,10 @@ CREATE FUNCTION public.tenant_usage_counts(p_tenant uuid)
 DECLARE
   previous text := coalesce(current_setting('app.tenant_id', true), '');
 BEGIN
-  IF coalesce(current_setting('app.admin_reason', true), '') = '' OR p_tenant IS NULL THEN
-    RAISE EXCEPTION 'tenant_usage_counts runs inside a platform action' USING ERRCODE = '42501';
+  IF coalesce(current_setting('app.admin_reason', true), '')
+       NOT IN ('clinic.type_previewed', 'clinic.type_changed') OR p_tenant IS NULL THEN
+    RAISE EXCEPTION 'tenant_usage_counts runs inside a type preview or change'
+      USING ERRCODE = '42501';
   END IF;
   PERFORM set_config('app.tenant_id', p_tenant::text, true);
   SELECT count(DISTINCT m.id)::integer INTO practitioners

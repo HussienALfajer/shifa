@@ -3,8 +3,8 @@
 import { randomUUID } from 'node:crypto';
 import { branch, membership, roleAssignment, tenantOverrideEvent } from '@shifa/db';
 import { superuserDb, workerDatabaseName } from '@shifa/db/testing';
-import { eq } from 'drizzle-orm';
 import type { FixedClock } from '@shifa/testing';
+import { eq } from 'drizzle-orm';
 import { sessionCookie, signIn } from '../identity/support.ts';
 import { totpAt } from '../identity/totp.ts';
 import { post, type SignedInAdmin } from '../platform/support.ts';

@@ -1049,12 +1049,12 @@
   ],
   "invalid": [
     {
-      "name": "entitlement item with a text value",
+      "name": "entitlement item with an unknown kind",
       "schema": "EntitlementItem",
       "body": {
         "key": "limits.branches",
-        "kind": "limit",
-        "planValue": "ten",
+        "kind": "quota",
+        "planValue": 1,
         "override": null,
         "effective": 1
       }

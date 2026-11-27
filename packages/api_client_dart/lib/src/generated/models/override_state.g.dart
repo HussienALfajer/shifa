@@ -9,8 +9,11 @@ part of 'override_state.dart';
 OverrideState _$OverrideStateFromJson(Map<String, dynamic> json) =>
     OverrideState(
       expiresAt: json['expiresAt'] as String?,
-      value: EntitlementValue.fromJson(json['value'] as Map<String, dynamic>),
+      value: json['value'],
     );
 
 Map<String, dynamic> _$OverrideStateToJson(OverrideState instance) =>
-    <String, dynamic>{'expiresAt': instance.expiresAt, 'value': instance.value};
+    <String, dynamic>{
+      'expiresAt': instance.expiresAt,
+      'value': ?instance.value,
+    };

@@ -12,10 +12,11 @@ const CalendarDate = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[0
 export const EntitlementKind = z.enum(['limit', 'feature']).meta({ id: 'EntitlementKind' });
 export type EntitlementKind = z.infer<typeof EntitlementKind>;
 
-/** A limit's number (whole, ≥ 0) or a feature's on/off. */
-export const EntitlementValue = z
-  .union([z.number().int().min(0).max(100_000), z.boolean()])
-  .meta({ id: 'EntitlementValue' });
+/**
+ * A limit's number (whole, ≥ 0) or a feature's on/off. Inline, not a component: the Dart
+ * generator makes a named primitive union an empty class (it reads as a plain JSON value inline).
+ */
+const EntitlementValue = z.union([z.number().int().min(0).max(100_000), z.boolean()]);
 export type EntitlementValue = z.infer<typeof EntitlementValue>;
 
 /** A catalogue key, e.g. `limits.practitioners`. */

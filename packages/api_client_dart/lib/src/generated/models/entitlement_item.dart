@@ -6,7 +6,6 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'entitlement_kind.dart';
 import 'entitlement_override.dart';
-import 'entitlement_value.dart';
 
 part 'entitlement_item.g.dart';
 
@@ -23,12 +22,12 @@ class EntitlementItem {
   factory EntitlementItem.fromJson(Map<String, Object?> json) =>
       _$EntitlementItemFromJson(json);
 
-  final EntitlementValue effective;
+  final dynamic effective;
   final String key;
   final EntitlementKind kind;
   @JsonKey(includeIfNull: true)
   final EntitlementOverride? override;
-  final EntitlementValue planValue;
+  final dynamic planValue;
 
   Map<String, Object?> toJson() => _$EntitlementItemToJson(this);
 }

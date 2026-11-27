@@ -33,12 +33,13 @@ function highest(values: readonly EntitlementValue[]): EntitlementValue {
   return values.reduce((a, b) => (Number(b) > Number(a) ? b : a));
 }
 
+/**
+ * Plans and add-ons are checked at start-up, so a key outside the catalogue there is a fault. An
+ * override of a key later removed from the catalogue is ignored instead (it is never looked up):
+ * one stale row must not stop a clinic (review N2).
+ */
 function assertSourcesKnown(catalogue: EntitlementCatalogue, sources: EntitlementSources): void {
-  const keys = [
-    ...Object.keys(sources.planValues),
-    ...sources.addons.map((a) => a.key),
-    ...sources.overrides.map((o) => o.key),
-  ];
+  const keys = [...Object.keys(sources.planValues), ...sources.addons.map((a) => a.key)];
   // kindOf() throws UnknownEntitlementError for a key outside the catalogue.
   for (const key of keys) catalogue.kindOf(key);
 }

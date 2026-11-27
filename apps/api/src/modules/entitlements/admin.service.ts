@@ -113,7 +113,9 @@ export class EntitlementsAdmin {
       data: { key, after: auditValue(input.value), expires: expiresOn },
     } as const;
     return this.#change(principal, id, action, async (tx, setData) => {
-      await clinicType(tx, id);
+      // The clinic row locked: changes of one clinic's overrides and type run one at a time, so
+      // each reads the `before` the previous one left (security review L1).
+      await clinicType(tx, id, true);
       await inTenantContext(tx, id, async (sp) => {
         const existing = await currentOverride(sp, key);
         const active = existing && overrideActive(existing, now) ? existing : undefined;
@@ -160,12 +162,16 @@ export class EntitlementsAdmin {
       data: { key, after: null },
     } as const;
     return this.#change(principal, id, action, async (tx, setData) => {
-      await clinicType(tx, id);
+      await clinicType(tx, id, true);
       await inTenantContext(tx, id, async (sp) => {
         const existing = await currentOverride(sp, key);
         if (!existing) throw new NotFoundException();
         setData({ before: auditValue(existing.value) });
-        await sp.delete(tenantOverride).where(overrideOf(id, key));
+        const removed = await sp
+          .delete(tenantOverride)
+          .where(overrideOf(id, key))
+          .returning({ key: tenantOverride.key });
+        if (removed.length === 0) throw new NotFoundException();
         await sp.insert(tenantOverrideEvent).values({
           tenantId: id,
           key,
@@ -188,7 +194,12 @@ export class EntitlementsAdmin {
     requestId: string,
   ): Promise<OverrideHistory> {
     this.#knownKey(key);
-    const action = { event: 'entitlement.history_viewed', requestId, targetId: id } as const;
+    const action = {
+      event: 'entitlement.history_viewed',
+      requestId,
+      targetId: id,
+      data: { key },
+    } as const;
     return this.#run(principal, action, async (tx) => {
       await clinicType(tx, id);
       const rows = await inTenantContext(tx, id, (sp) =>
@@ -287,7 +298,6 @@ export class EntitlementsAdmin {
     this.entitlements.invalidate(id);
   }
 
-  /** The item as the list shows it, after a change (a view of its own, audited as one). */
   /** A key outside the catalogue answers 404 (contract row `override`). */
   #knownKey(key: string): void {
     if (!this.catalogue.has(key)) throw new NotFoundException();
@@ -301,7 +311,9 @@ export class EntitlementsAdmin {
     fn: (tx: PlatformTx, setData: (data: Record<string, string | null>) => void) => Promise<T>,
   ): Promise<T> {
     const result = await this.#run(principal, action, (tx, audit) =>
-      fn(tx, (data) => audit.setData(data)),
+      fn(tx, (data) => {
+        audit.setData(data);
+      }),
     );
     this.entitlements.invalidate(id);
     return result;
@@ -342,8 +354,9 @@ function overrideView(row: OverrideRow, now: Date, names: ReadonlyMap<string, st
 }
 
 /** The clinic's type (its plan); 404 when there is no such clinic. */
-async function clinicType(tx: PlatformTx, id: string): Promise<TenantType> {
-  const [row] = await tx.select({ type: tenant.type }).from(tenant).where(eq(tenant.id, id));
+async function clinicType(tx: PlatformTx, id: string, lock = false): Promise<TenantType> {
+  const query = tx.select({ type: tenant.type }).from(tenant).where(eq(tenant.id, id));
+  const [row] = lock ? await query.for('update') : await query;
   if (!row) throw new NotFoundException();
   return row.type;
 }

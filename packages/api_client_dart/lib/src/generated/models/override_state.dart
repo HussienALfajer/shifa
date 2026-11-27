@@ -4,8 +4,6 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
-import 'entitlement_value.dart';
-
 part 'override_state.g.dart';
 
 @JsonSerializable()
@@ -17,7 +15,7 @@ class OverrideState {
 
   @JsonKey(includeIfNull: true)
   final String? expiresAt;
-  final EntitlementValue value;
+  final dynamic value;
 
   Map<String, Object?> toJson() => _$OverrideStateToJson(this);
 }

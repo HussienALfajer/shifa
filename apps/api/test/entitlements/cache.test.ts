@@ -1,9 +1,10 @@
 // A-02 criterion 2: entitlements are cached per tenant. A change is in force at once on the
 // instance that made it (it clears its cache) and on every other instance within 60 s (TTL), on
 // a fake clock.
-import type { RequestScope } from '../../src/access/index.ts';
+
 import { FixedClock } from '@shifa/testing';
 import { describe, expect, it } from 'vitest';
+import type { RequestScope } from '../../src/access/index.ts';
 import {
   CachedEntitlements,
   EntitlementCatalogue,

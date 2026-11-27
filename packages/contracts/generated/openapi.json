@@ -529,7 +529,16 @@
       "EntitlementItem": {
         "properties": {
           "effective": {
-            "$ref": "#/components/schemas/EntitlementValue"
+            "anyOf": [
+              {
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           },
           "key": {
             "type": "string"
@@ -548,7 +557,16 @@
             ]
           },
           "planValue": {
-            "$ref": "#/components/schemas/EntitlementValue"
+            "anyOf": [
+              {
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           }
         },
         "required": [
@@ -598,7 +616,16 @@
             ]
           },
           "value": {
-            "$ref": "#/components/schemas/EntitlementValue"
+            "anyOf": [
+              {
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           }
         },
         "required": [
@@ -610,18 +637,6 @@
           "setAt"
         ],
         "type": "object"
-      },
-      "EntitlementValue": {
-        "anyOf": [
-          {
-            "maximum": 100000,
-            "minimum": 0,
-            "type": "integer"
-          },
-          {
-            "type": "boolean"
-          }
-        ]
       },
       "ErrorBody": {
         "properties": {
@@ -1388,7 +1403,16 @@
             ]
           },
           "value": {
-            "$ref": "#/components/schemas/EntitlementValue"
+            "anyOf": [
+              {
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           }
         },
         "required": [
@@ -1735,7 +1759,16 @@
             "type": "string"
           },
           "value": {
-            "$ref": "#/components/schemas/EntitlementValue"
+            "anyOf": [
+              {
+                "maximum": 100000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
           }
         },
         "required": [

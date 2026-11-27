@@ -33,12 +33,12 @@ describe('entitlement catalogue', () => {
 
   it('stops the start when plans or add-ons hold a key it does not list', () => {
     const catalogue = new EntitlementCatalogue(PRODUCTION_ENTITLEMENTS);
-    expect(() =>
-      assertEntitlementKeysKnown(catalogue, ['limits.branches', 'limits.practitioners']),
-    ).not.toThrow();
-    expect(() =>
-      assertEntitlementKeysKnown(catalogue, ['limits.branches', 'features.removed']),
-    ).toThrow(/features\.removed/);
+    expect(() => {
+      assertEntitlementKeysKnown(catalogue, ['limits.branches', 'limits.practitioners']);
+    }).not.toThrow();
+    expect(() => {
+      assertEntitlementKeysKnown(catalogue, ['limits.branches', 'features.removed']);
+    }).toThrow(/features\.removed/);
   });
 
   it('answers a key’s kind and refuses an unknown one', () => {

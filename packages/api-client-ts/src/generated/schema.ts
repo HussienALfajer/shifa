@@ -936,11 +936,11 @@ export interface components {
             ended: number;
         };
         EntitlementItem: {
-            effective: components["schemas"]["EntitlementValue"];
+            effective: number | boolean;
             key: string;
             kind: components["schemas"]["EntitlementKind"];
             override: components["schemas"]["EntitlementOverride"] | null;
-            planValue: components["schemas"]["EntitlementValue"];
+            planValue: number | boolean;
         };
         /** @enum {string} */
         EntitlementKind: "limit" | "feature";
@@ -951,9 +951,8 @@ export interface components {
             /** Format: date-time */
             setAt: string;
             setByName: string | null;
-            value: components["schemas"]["EntitlementValue"];
+            value: number | boolean;
         };
-        EntitlementValue: number | boolean;
         ErrorBody: {
             code: components["schemas"]["ErrorCode"];
             details?: components["schemas"]["ValidationIssue"][];
@@ -1111,7 +1110,7 @@ export interface components {
         };
         OverrideState: {
             expiresAt: string | null;
-            value: components["schemas"]["EntitlementValue"];
+            value: number | boolean;
         };
         OwnerPhoneRequest: {
             phone: string;
@@ -1186,7 +1185,7 @@ export interface components {
         SetOverrideRequest: {
             expiresAt?: string | null;
             reason: string;
-            value: components["schemas"]["EntitlementValue"];
+            value: number | boolean;
         };
         SetPasswordRequest: {
             password: string;
