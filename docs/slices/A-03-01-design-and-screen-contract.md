@@ -133,6 +133,9 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 4. **EditableList** «قائمة قابلة للتحرير» (sheet `A03SheetEditableList`, source `A03EditableList`): a short list edited in place (a choice field's choices): numbered rows, rename in place with its error, up and down, archive (never delete) and restore, how many charts hold each, an add line with its error, the count against the maximum; empty, full, duplicate, read-only, compact, dark, English LTR, narrow. Estimate ~300 lines in A-03-11.
 - Not new components: the merge chooser (RecordHeader cards and one RadioGroup per field), the meters (A-02's subscription card), RecordList gained a type icon and small tool buttons in a row (fields list), drawn on its sheet's source.
 
+### Owner review, merge (2026-11-27)
+- Spec gaps 10 (the older chart proposed as kept, the owner can swap), 11 (the other contact phone becomes the second phone when the kept chart has none), 12 (archived or merged charts refused, 409 `patient_not_active`) and 13 (409 `stale`, nothing merged) accepted as drawn. No improvement or new component on this screen.
+
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
