@@ -706,6 +706,41 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform/clinics/{id}/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every setting of a clinic with its effective value, source and lock */
+        get: operations["platformClinicSettings"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/clinics/{id}/settings/{key}/lock": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set and lock a clinic’s value of one setting («قفل بقيمة») */
+        put: operations["platformLockSetting"];
+        post?: never;
+        /** Unlock a clinic’s setting; the value is inherited again */
+        delete: operations["platformUnlockSetting"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/clinics/{id}/type-preview": {
         parameters: {
             query?: never;
@@ -973,8 +1008,13 @@ export interface components {
             phoneMasked: string;
             status: components["schemas"]["MembershipStatus"];
         };
+        ClinicSettingList: {
+            settings: components["schemas"]["SettingView"][];
+        };
         ClinicSettings: {
             idleMinutes: components["schemas"]["IdleMinutes"];
+            locked: boolean;
+            source: components["schemas"]["SettingSource"];
         };
         /** @enum {string} */
         ClinicStatus: "trial" | "active" | "suspended";
@@ -1040,7 +1080,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -1100,6 +1140,9 @@ export interface components {
             key: string;
             limit: number;
             used: number | null;
+        };
+        LockSettingRequest: {
+            value: number | string | boolean;
         };
         MemberAdded: {
             link: components["schemas"]["MemberLinkIssued"];
@@ -1307,6 +1350,17 @@ export interface components {
             password: string;
             token: components["schemas"]["SetupLinkToken"];
         };
+        /** @enum {string} */
+        SettingSource: "default" | "platform" | "plan" | "specialty_pack" | "organization" | "branch" | "practitioner" | "user";
+        SettingView: {
+            choices: (number | string | boolean)[] | null;
+            key: string;
+            lockable: boolean;
+            locked: boolean;
+            lockedBy: components["schemas"]["SettingSource"] | null;
+            source: components["schemas"]["SettingSource"];
+            value: number | string | boolean;
+        };
         SetupLinkIssued: {
             /** Format: date-time */
             expiresAt: string;
@@ -1387,6 +1441,9 @@ export interface components {
             status?: components["schemas"]["ClinicStatus"];
             subscriptionEnd?: string | null;
             type?: components["schemas"]["ClinicType"];
+        };
+        UpdateClinicSettingsRequest: {
+            idleMinutes: components["schemas"]["IdleMinutes"];
         };
         UpdateMemberRequest: {
             name?: string;
@@ -2658,7 +2715,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["ClinicSettings"];
+                "application/json": components["schemas"]["UpdateClinicSettingsRequest"];
             };
         };
         responses: {
@@ -2691,6 +2748,15 @@ export interface operations {
             };
             /** @description Forbidden */
             403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -3777,6 +3843,195 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupLinkIssued"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformClinicSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicSettingList"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformLockSetting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LockSettingRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingView"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformUnlockSetting: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingView"];
                 };
             };
             /** @description Bad request */

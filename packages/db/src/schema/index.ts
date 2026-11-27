@@ -35,6 +35,15 @@ export {
   tenant,
 } from './platform.ts';
 export {
+  PLATFORM_SETTING_SCOPES,
+  type PlatformSettingScope,
+  platformSettingValue,
+  type StoredSettingValue,
+  settingValue,
+  TENANT_SETTING_SCOPES,
+  type TenantSettingScope,
+} from './settings.ts';
+export {
   branch,
   deploymentRoute,
   MEMBERSHIP_STATUSES,

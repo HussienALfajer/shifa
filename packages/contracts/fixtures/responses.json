@@ -576,7 +576,18 @@
       "name": "clinic settings",
       "schema": "ClinicSettings",
       "body": {
-        "idleMinutes": 30
+        "idleMinutes": 30,
+        "source": "default",
+        "locked": false
+      }
+    },
+    {
+      "name": "clinic settings locked by the super admin",
+      "schema": "ClinicSettings",
+      "body": {
+        "idleMinutes": 60,
+        "source": "organization",
+        "locked": true
       }
     },
     {
@@ -1119,9 +1130,77 @@
           "message": "This feature is not available to this clinic"
         }
       }
+    },
+    {
+      "name": "a clinic's settings (A-02-04)",
+      "schema": "ClinicSettingList",
+      "body": {
+        "settings": [
+          {
+            "key": "session.idle_minutes",
+            "value": 30,
+            "source": "default",
+            "locked": false,
+            "lockedBy": null,
+            "lockable": true,
+            "choices": [15, 30, 60]
+          }
+        ]
+      }
+    },
+    {
+      "name": "a clinic without settings",
+      "schema": "ClinicSettingList",
+      "body": { "settings": [] }
+    },
+    {
+      "name": "a locked setting with a text value",
+      "schema": "SettingView",
+      "body": {
+        "key": "queue.voice",
+        "value": "quiet",
+        "source": "organization",
+        "locked": true,
+        "lockedBy": "organization",
+        "lockable": true,
+        "choices": null
+      }
+    },
+    {
+      "name": "error setting_locked",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "setting_locked",
+          "message": "This setting is locked by the platform"
+        }
+      }
+    },
+    {
+      "name": "error setting_not_lockable",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "setting_not_lockable",
+          "message": "This setting cannot be locked for a clinic"
+        }
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "setting with an unknown source",
+      "schema": "SettingView",
+      "body": {
+        "key": "session.idle_minutes",
+        "value": 30,
+        "source": "clinic",
+        "locked": false,
+        "lockedBy": null,
+        "lockable": true,
+        "choices": null
+      }
+    },
     {
       "name": "flag with an unknown mode",
       "schema": "FlagView",
@@ -1179,7 +1258,9 @@
       "name": "idle minutes outside 15, 30, 60",
       "schema": "ClinicSettings",
       "body": {
-        "idleMinutes": 20
+        "idleMinutes": 20,
+        "source": "default",
+        "locked": false
       }
     },
     {

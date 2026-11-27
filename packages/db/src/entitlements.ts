@@ -1,6 +1,6 @@
 // Entitlement helpers (A-02-02): a clinic's use counts on the platform path and in the clinic's
-// own context (A-02-03), and the keys plans
-// and add-ons hold, for the API's start-up check against its catalogue.
+// own context (A-02-03), and the keys plans and add-ons (and, A-02-04, platform setting values)
+// hold, for the API's start-up checks against its catalogues.
 import { sql } from 'drizzle-orm';
 import { type ShifaDb, withoutContext } from './client.ts';
 import { assertUuid } from './context.ts';
@@ -52,6 +52,17 @@ export async function entitlementKeysInUse(db: ShifaDb): Promise<string[]> {
     tx.execute<{ key: string }>(
       sql`select key from plan_feature union select key from addon order by 1`,
     ),
+  );
+  return rows.map((r) => r.key);
+}
+
+/**
+ * Every key the platform's and plans' setting values hold (A-02-04; global table, read with no
+ * context set), for the API's start-up check against its setting catalogue.
+ */
+export async function settingKeysInUse(db: ShifaDb): Promise<string[]> {
+  const { rows } = await withoutContext(db, (tx) =>
+    tx.execute<{ key: string }>(sql`select distinct key from platform_setting_value order by 1`),
   );
   return rows.map((r) => r.key);
 }

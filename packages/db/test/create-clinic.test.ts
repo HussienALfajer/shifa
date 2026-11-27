@@ -114,7 +114,6 @@ describe('createClinic', () => {
 
   it.each([
     ['an unknown type', { type: 'hospital' }],
-    ['an idle time outside 15/30/60', { idleMinutes: 45 }],
     ['an empty name', { name: '   ' }],
   ])('refuses %s', async (_what, extra) => {
     await expect(
@@ -123,5 +122,16 @@ describe('createClinic', () => {
       ),
     ).rejects.toThrow();
     expect(await platformTenantStatus(fixtureId('clinic bad'))).toEqual([]);
+  });
+
+  // createClinic() no longer takes idle minutes (A-02-04: the settings cascade holds them); the
+  // column keeps its check until A-02-06 drops it.
+  it('refuses an idle time outside 15/30/60 on the tenant row', async () => {
+    await expect(
+      testPlatformDb().withPlatformAdmin({ actorId: ADMIN, event: 'clinic.created' }, (tx) =>
+        tx.execute(sql`insert into tenant (id, name, type, idle_minutes)
+          values (${fixtureId('clinic bad idle')}, 'عيادة تجريبية', 'solo', 45)`),
+      ),
+    ).rejects.toThrow(/tenant_idle_minutes_check/);
   });
 });

@@ -88,7 +88,7 @@ export function createWorld(over: Partial<World> = {}): World {
     invitations: w.myInvitations(),
     members: w.members(),
     branches: w.branches(),
-    settings: { idleMinutes: 15 },
+    settings: { idleMinutes: 15, source: 'organization', locked: false },
     mfa: w.mfaStatus(),
     sessions: w.sessions(),
     codes,

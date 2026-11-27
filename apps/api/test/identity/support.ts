@@ -2,7 +2,15 @@
 // test database, synthetic people with a scrypt password, sign-in and cookie helpers, and the
 // audit rows (null-tenant rows are readable by no application role, so the superuser reads them).
 import { randomUUID } from 'node:crypto';
-import { account, auditEvent, branch, roleAssignment, session, tenant, user } from '@shifa/db';
+import {
+  account,
+  auditEvent,
+  branch,
+  roleAssignment,
+  session,
+  settingValue,
+  user,
+} from '@shifa/db';
 import {
   createTestTenants,
   fixtureId,
@@ -83,12 +91,18 @@ export async function seedPerson(
   return { userId, phone, membershipId, branchId: fixtureId(`branch:${tenantId}`) };
 }
 
-/** Sets the clinic's idle limit (owner setting, A-01a criterion 9). */
+/**
+ * Sets the clinic's idle limit (owner setting, A-01a criterion 9): since A-02-04 the organization's
+ * `session.idle_minutes` in the settings cascade, as the owner's change or the backfill writes it.
+ */
 export async function setIdleMinutes(tenantId: string, minutes: 15 | 30 | 60): Promise<void> {
   await superuserDb(workerDatabaseName())
-    .update(tenant)
-    .set({ idleMinutes: minutes })
-    .where(eq(tenant.id, tenantId));
+    .insert(settingValue)
+    .values({ tenantId, scope: 'organization', key: 'session.idle_minutes', value: minutes })
+    .onConflictDoUpdate({
+      target: [settingValue.tenantId, settingValue.scope, settingValue.scopeId, settingValue.key],
+      set: { value: minutes },
+    });
 }
 
 export interface SignInOptions {

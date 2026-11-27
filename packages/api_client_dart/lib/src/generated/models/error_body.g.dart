@@ -85,6 +85,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.branchNotArchived: 'branch_not_archived',
   ErrorCode.limitReached: 'limit_reached',
   ErrorCode.featureUnavailable: 'feature_unavailable',
+  ErrorCode.settingLocked: 'setting_locked',
+  ErrorCode.settingNotLockable: 'setting_not_lockable',
 };
 
 const _$SessionEndReasonEnumMap = {

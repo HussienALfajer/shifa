@@ -7,6 +7,7 @@ import { ErrorEnvelope } from './errors.ts';
 import { SessionRole } from './identity.ts';
 import { SetupLinkToken } from './onboarding.ts';
 import { MembershipStatus } from './platform.ts';
+import { SettingSource } from './settings.ts';
 
 /** A name as typed: 1 to 200 characters, not only spaces. */
 const Name = z.string().max(200).regex(/\S/);
@@ -163,8 +164,20 @@ export const InvitationRequest = z
 /** Minutes of inactivity before automatic sign-out (OD-77). */
 export const IdleMinutes = z.literal([15, 30, 60]).meta({ id: 'IdleMinutes' });
 
-export const ClinicSettings = z.object({ idleMinutes: IdleMinutes }).meta({ id: 'ClinicSettings' });
+/**
+ * The clinic's settings as the owner sees them (A-02 criterion 10, slice A-02-04): the idle sign-out
+ * resolved through the settings cascade, where it comes from (`default`, `organization`, or
+ * `platform`/`plan`) and whether the super admin locked it (choices disabled, no «حفظ»).
+ */
+export const ClinicSettings = z
+  .object({ idleMinutes: IdleMinutes, source: SettingSource, locked: z.boolean() })
+  .meta({ id: 'ClinicSettings' });
 export type ClinicSettings = z.infer<typeof ClinicSettings>;
+
+export const UpdateClinicSettingsRequest = z
+  .object({ idleMinutes: IdleMinutes })
+  .meta({ id: 'UpdateClinicSettingsRequest' });
+export type UpdateClinicSettingsRequest = z.infer<typeof UpdateClinicSettingsRequest>;
 
 export const teamMembers = defineContract({
   operationId: 'teamMembers',
@@ -321,7 +334,8 @@ export const clinicUpdateSettings = defineContract({
   method: 'PATCH',
   path: '/clinic/settings',
   summary: 'Change the clinic’s automatic sign-out (15, 30 or 60 minutes)',
-  request: { body: ClinicSettings },
-  // 400 `validation_failed`: not 15, 30 or 60; 403: not the clinic's owner (A-01-11).
-  responses: { 200: ClinicSettings, 400: ErrorEnvelope, 403: ErrorEnvelope },
+  request: { body: UpdateClinicSettingsRequest },
+  // 400 `validation_failed`: not 15, 30 or 60; 403: not the clinic's owner (A-01-11); 409
+  // `setting_locked`: the super admin locked it (A-02-04).
+  responses: { 200: ClinicSettings, 400: ErrorEnvelope, 403: ErrorEnvelope, 409: ErrorEnvelope },
 });

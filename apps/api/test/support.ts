@@ -19,6 +19,7 @@ import {
   PRODUCTION_ENTITLEMENTS,
 } from '../src/modules/entitlements/index.ts';
 import { type FlagDefinition, PRODUCTION_FLAGS } from '../src/modules/flags/index.ts';
+import { PRODUCTION_SETTINGS, type SettingDefinition } from '../src/modules/settings/index.ts';
 import type { Clock } from '../src/platform/clock.ts';
 import { createLogger } from '../src/platform/logging.ts';
 import { otlpLogForwarder } from '../src/telemetry/logs.ts';
@@ -154,6 +155,7 @@ export async function buildTestApp({
   permissions,
   entitlements,
   flags,
+  settings,
   forwardLogs = false,
   testRoutes = false,
 }: {
@@ -183,6 +185,8 @@ export async function buildTestApp({
   entitlements?: readonly EntitlementDefinition[];
   /** Added to the production flag catalogue (test flags; access/gated-probe.ts). */
   flags?: readonly FlagDefinition[];
+  /** Added to the production setting catalogue (test keys; test/settings/support.ts). */
+  settings?: readonly SettingDefinition[];
 }): Promise<TestApp> {
   const logs = captureLogs();
   const logger = createLogger({
@@ -202,6 +206,7 @@ export async function buildTestApp({
         ...(permissions ? { permissions: [...PRODUCTION_PERMISSIONS, ...permissions] } : {}),
         ...(entitlements ? { entitlements: [...PRODUCTION_ENTITLEMENTS, ...entitlements] } : {}),
         ...(flags ? { flags: [...PRODUCTION_FLAGS, ...flags] } : {}),
+        ...(settings ? { settings: [...PRODUCTION_SETTINGS, ...settings] } : {}),
         testRoutes,
       }),
     ],

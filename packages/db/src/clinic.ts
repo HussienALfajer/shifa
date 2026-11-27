@@ -45,7 +45,8 @@ export interface NewClinic {
   status?: TenantStatus;
   /** ISO date (YYYY-MM-DD); no automatic effect in A-01. */
   subscriptionEnd?: string | null;
-  idleMinutes?: 15 | 30 | 60;
+  // No idle minutes since A-02-04: a new clinic inherits `session.idle_minutes` from the settings
+  // cascade (default 30); tenant.idle_minutes keeps its column default until A-02-06 drops it.
   /** Defaults to 'primary' (ADR-0004: every tenant on the shared database for now). */
   databaseKey?: string;
   /** The owner (A-01-03): a pending membership, the owner role and the setup link. */
@@ -99,7 +100,6 @@ export async function createClinic(tx: PlatformTx, input: NewClinic): Promise<Cr
     type: input.type,
     status: input.status ?? 'trial',
     subscriptionEnd: input.subscriptionEnd ?? null,
-    idleMinutes: input.idleMinutes ?? 30,
   });
   await inTenantContext(tx, tenantId, async (sp) => {
     await sp.insert(organization).values({ id: organizationId, tenantId, name: input.name });

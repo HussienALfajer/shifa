@@ -1,0 +1,499 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "6521f0ca-3037-43d3-bfcf-3b85e034a3a9",
+  "prevIds": [
+    "4c064498-76de-4e3d-bd27-9286eafe132c"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "platform_setting_value"
+      ],
+      "writes": [
+        "s|tbl|public.platform_setting_value",
+        "n|tbl|public.platform_setting_value",
+        "e|tbl|public.platform_setting_value",
+        "n|rel|public.platform_setting_value",
+        "n|type|public.platform_setting_value",
+        "n|rel|public.platform_setting_value_pkey",
+        "n|rel|public.platform_setting_value_scope_plan_type_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "setting_value"
+      ],
+      "writes": [
+        "s|tbl|public.setting_value",
+        "n|tbl|public.setting_value",
+        "e|tbl|public.setting_value",
+        "n|rel|public.setting_value",
+        "n|type|public.setting_value",
+        "n|rel|public.setting_value_pkey",
+        "n|rel|public.setting_value_tenant_id_scope_scope_id_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "setting_value"
+      ],
+      "writes": [
+        "s|fk|public.setting_value.setting_value_tenant_id_tenant_id_fkey",
+        "n|fk|public.setting_value.setting_value_tenant_id_tenant_id_fkey",
+        "e|fk|public.setting_value.setting_value_tenant_id_tenant_id_fkey",
+        "n|con|public.setting_value.setting_value_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.setting_value",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.setting_value.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "platform_setting_value",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "setting_value",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "scope",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "plan_type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "value",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "locked",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "set_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "scope",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "scope_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "value",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "locked",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "set_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "set_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_scope_plan_type_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "scope",
+          "plan_type",
+          "key"
+        ],
+        "nullsNotDistinct": true,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_tenant_id_scope_scope_id_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "scope",
+          "scope_id",
+          "key"
+        ],
+        "nullsNotDistinct": true,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_key_check",
+        "value": "\"key\" ~ '^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_scope_check",
+        "value": "\"scope\" in ('platform', 'plan')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_plan_check",
+        "value": "(\"scope\" = 'plan') = (\"plan_type\" is not null)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "platform_setting_value",
+        "name": "platform_setting_value_plan_type_check",
+        "value": "\"plan_type\" is null or \"plan_type\" in ('solo', 'multi_doctor', 'multi_branch')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_key_check",
+        "value": "\"key\" ~ '^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_scope_check",
+        "value": "\"scope\" in ('organization', 'branch', 'practitioner', 'user')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "setting_value",
+        "name": "setting_value_scope_id_check",
+        "value": "(\"scope\" = 'organization') = (\"scope_id\" is null)",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

@@ -1,8 +1,8 @@
 // The team bounded context (A-01-04): members, roles per clinic or branch, sensitive toggles,
-// links, and the clinic's own settings. Tenant work through TenantDb (the guard's scope); the
-// person's account (sessions, password, whether a phone has an account) through identity.
+// links. Tenant work through TenantDb (the guard's scope); the person's account (sessions,
+// password, whether a phone has an account) through identity. The clinic's own settings are the
+// settings module's since A-02-04.
 import { type DynamicModule, Module, type ModuleMetadata } from '@nestjs/common';
-import { ClinicSettingsController } from './clinic-settings.controller.ts';
 import { MemberCorrections } from './member-corrections.ts';
 import { TeamController } from './team.controller.ts';
 import { TeamService } from './team.service.ts';
@@ -24,7 +24,7 @@ export class TeamModule {
     return {
       module: TeamModule,
       imports: [identity, entitlements],
-      controllers: [TeamController, TeamPermissionsController, ClinicSettingsController],
+      controllers: [TeamController, TeamPermissionsController],
       providers: [TeamService, MemberCorrections],
     };
   }

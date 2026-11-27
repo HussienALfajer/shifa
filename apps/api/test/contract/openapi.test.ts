@@ -267,6 +267,8 @@ describe('OpenAPI document', () => {
       '/platform/clinics/{id}/owner/end-sessions',
       '/platform/clinics/{id}/owner/reset-mfa',
       '/platform/clinics/{id}/owner/setup-link',
+      '/platform/clinics/{id}/settings',
+      '/platform/clinics/{id}/settings/{key}/lock',
       '/platform/clinics/{id}/type-preview',
       '/platform/flags',
       '/platform/flags/{key}',

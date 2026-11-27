@@ -725,6 +725,8 @@ export type ErrorsKey =
   | 'self_action'
   | 'service_unavailable'
   | 'session_expired'
+  | 'setting_locked'
+  | 'setting_not_lockable'
   | 'too_many_requests'
   | 'unauthorized'
   | 'unprocessable_entity'

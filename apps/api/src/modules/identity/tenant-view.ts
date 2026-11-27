@@ -1,7 +1,8 @@
 // What the session's active clinic says about the person, read per request inside that tenant
 // (shifa_app, its RLS): is the clinic suspended (A-01b 11), is the person still an active member
-// with a role, the clinic's idle minutes, the active branch if it is still one of the clinic's
-// active branches, their roles (none in an archived branch: criterion 4) and toggles.
+// with a role, the clinic's idle minutes (the settings cascade, A-02-04), the active branch if it
+// is still one of the clinic's active branches, their roles (none in an archived branch:
+// criterion 4) and toggles.
 import {
   branch,
   membership,
@@ -12,6 +13,7 @@ import {
 } from '@shifa/db';
 import { and, eq, isNull, or } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
+import { idleMinutesInClinic } from '../settings/index.ts';
 
 /** Idle limit without an active clinic: super admins, and people between clinics (OD-77). */
 export const NO_CLINIC_IDLE_MINUTES = 15;
@@ -44,7 +46,7 @@ export function tenantView(
   if (tenantId === null) return Promise.resolve(NONE);
   return db.withTenant({ tenantId, userId }, async (tx) => {
     const [clinic] = await tx
-      .select({ idleMinutes: tenant.idleMinutes, status: tenant.status })
+      .select({ type: tenant.type, status: tenant.status })
       .from(tenant)
       .where(eq(tenant.id, tenantId));
     if (!clinic) return NONE;
@@ -83,7 +85,7 @@ export function tenantView(
     return {
       active: true,
       suspended: false,
-      idleMinutes: clinic.idleMinutes,
+      idleMinutes: await idleMinutesInClinic(tx, clinic.type),
       branchId: current?.id ?? null,
       roles: roles.map((r) => ({ role: r.role, tenantId, branchId: r.branchId })),
       overrides,

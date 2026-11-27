@@ -3466,6 +3466,14 @@
   "@errorsSessionExpired": {
     "description": "errors.session_expired"
   },
+  "errorsSettingLocked": "هذا الإعداد مقفل من الإدارة. لم يُحفظ شيء.",
+  "@errorsSettingLocked": {
+    "description": "errors.setting_locked"
+  },
+  "errorsSettingNotLockable": "لا يمكن قفل هذا الإعداد لعيادة.",
+  "@errorsSettingNotLockable": {
+    "description": "errors.setting_not_lockable"
+  },
   "errorsTooManyRequests": "طلبات كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.",
   "@errorsTooManyRequests": {
     "description": "errors.too_many_requests"

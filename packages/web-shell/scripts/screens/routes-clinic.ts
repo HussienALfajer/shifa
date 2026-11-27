@@ -248,7 +248,7 @@ export const clinicRoutes: RouteTable = {
     owner(world, () => {
       const minutes = field(body, 'idleMinutes');
       if (minutes !== 15 && minutes !== 30 && minutes !== 60) return fail(400, 'validation_failed');
-      world.settings = { idleMinutes: minutes };
+      world.settings = { idleMinutes: minutes, source: 'organization', locked: false };
       if (world.session) world.session = { ...world.session, idleMinutes: minutes };
       return ok(world.settings);
     }),

@@ -10,6 +10,7 @@ import { membershipCase } from './membership.ts';
 import { organizationCase } from './organization.ts';
 import { permissionOverrideCase } from './permission-override.ts';
 import { roleAssignmentCase } from './role-assignment.ts';
+import { settingValueCase } from './setting-value.ts';
 import { setupLinkCase } from './setup-link.ts';
 
 export const ISOLATION_CASES: readonly IsolationCase[] = [
@@ -25,4 +26,5 @@ export const ISOLATION_CASES: readonly IsolationCase[] = [
   tenantOverrideCase,
   tenantOverrideEventCase,
   featureFlagTenantCase,
+  settingValueCase,
 ];

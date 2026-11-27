@@ -366,14 +366,36 @@
         ],
         "type": "object"
       },
+      "ClinicSettingList": {
+        "properties": {
+          "settings": {
+            "items": {
+              "$ref": "#/components/schemas/SettingView"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "settings"
+        ],
+        "type": "object"
+      },
       "ClinicSettings": {
         "properties": {
           "idleMinutes": {
             "$ref": "#/components/schemas/IdleMinutes"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "source": {
+            "$ref": "#/components/schemas/SettingSource"
           }
         },
         "required": [
-          "idleMinutes"
+          "idleMinutes",
+          "source",
+          "locked"
         ],
         "type": "object"
       },
@@ -763,7 +785,9 @@
           "invitation_other_phone",
           "branch_not_archived",
           "limit_reached",
-          "feature_unavailable"
+          "feature_unavailable",
+          "setting_locked",
+          "setting_not_lockable"
         ],
         "type": "string"
       },
@@ -1023,6 +1047,30 @@
           "key",
           "limit",
           "used"
+        ],
+        "type": "object"
+      },
+      "LockSettingRequest": {
+        "properties": {
+          "value": {
+            "anyOf": [
+              {
+                "maximum": 1000000000,
+                "minimum": -1000000000,
+                "type": "number"
+              },
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "value"
         ],
         "type": "object"
       },
@@ -2027,6 +2075,97 @@
         ],
         "type": "object"
       },
+      "SettingSource": {
+        "enum": [
+          "default",
+          "platform",
+          "plan",
+          "specialty_pack",
+          "organization",
+          "branch",
+          "practitioner",
+          "user"
+        ],
+        "type": "string"
+      },
+      "SettingView": {
+        "properties": {
+          "choices": {
+            "anyOf": [
+              {
+                "items": {
+                  "anyOf": [
+                    {
+                      "maximum": 1000000000,
+                      "minimum": -1000000000,
+                      "type": "number"
+                    },
+                    {
+                      "maxLength": 500,
+                      "type": "string"
+                    },
+                    {
+                      "type": "boolean"
+                    }
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "key": {
+            "type": "string"
+          },
+          "lockable": {
+            "type": "boolean"
+          },
+          "locked": {
+            "type": "boolean"
+          },
+          "lockedBy": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SettingSource"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "source": {
+            "$ref": "#/components/schemas/SettingSource"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "maximum": 1000000000,
+                "minimum": -1000000000,
+                "type": "number"
+              },
+              {
+                "maxLength": 500,
+                "type": "string"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "value",
+          "source",
+          "locked",
+          "lockedBy",
+          "lockable",
+          "choices"
+        ],
+        "type": "object"
+      },
       "SetupLinkIssued": {
         "properties": {
           "expiresAt": {
@@ -2383,6 +2522,17 @@
             "$ref": "#/components/schemas/ClinicType"
           }
         },
+        "type": "object"
+      },
+      "UpdateClinicSettingsRequest": {
+        "properties": {
+          "idleMinutes": {
+            "$ref": "#/components/schemas/IdleMinutes"
+          }
+        },
+        "required": [
+          "idleMinutes"
+        ],
         "type": "object"
       },
       "UpdateMemberRequest": {
@@ -3858,7 +4008,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ClinicSettings"
+                "$ref": "#/components/schemas/UpdateClinicSettingsRequest"
               }
             }
           },
@@ -3904,6 +4054,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "Change the clinic’s automatic sign-out (15, 30 or 60 minutes)",
@@ -5234,6 +5394,257 @@
           }
         },
         "summary": "Issue a new setup link to the owner (ends the owner’s sessions)",
+        "x-platform-admin": true
+      }
+    },
+    "/platform/clinics/{id}/settings": {
+      "get": {
+        "operationId": "platformClinicSettings",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClinicSettingList"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Every setting of a clinic with its effective value, source and lock",
+        "x-platform-admin": true
+      }
+    },
+    "/platform/clinics/{id}/settings/{key}/lock": {
+      "delete": {
+        "operationId": "platformUnlockSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Unlock a clinic’s setting; the value is inherited again",
+        "x-platform-admin": true
+      },
+      "put": {
+        "operationId": "platformLockSetting",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LockSettingRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SettingView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Set and lock a clinic’s value of one setting («قفل بقيمة»)",
         "x-platform-admin": true
       }
     },

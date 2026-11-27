@@ -15,7 +15,7 @@ The super admin manages the platform's cities and areas in Arabic; a branch gets
    - Platform tables `city`, `area` (Arabic name, folded name for search, archived_at; unique folded name per city); `shifa_app` SELECT, `shifa_platform` writes; never deleted (no DELETE grant).
    - `branch.city_id`, `branch.area_id` nullable FKs; a composite FK or trigger keeps the area in the city.
    - Seed migration: Aleppo and its neighbourhoods, Azaz (the owner reviews the list in this PR).
-   - **Contract** step of A-02-04: drop `tenant.idle_minutes` and its column grant (A-02-04 is deployed by then; before real data).
+   - **Contract** step of A-02-04: drop `tenant.idle_minutes` with its check constraint `tenant_idle_minutes_check`, its column grant to shifa_app (`UPDATE (idle_minutes, updated_at)`; keep `updated_at` if still needed) and the policy `tenant_app_settings` (shifa_app's UPDATE of its own tenant row, which exists only for the idle setting); remove `idleMinutes` from the tenant schema and `IDLE_MINUTES` export, and the raw-insert check test in `packages/db/test/create-clinic.test.ts` (`NewClinic.idleMinutes` is already gone since A-02-04). A-02-04 is deployed by then; before real data.
 3. **API**
    - Platform: `GET /platform/cities?search=&archived=`, `POST /platform/cities`, `PATCH /platform/cities/:id` (rename), `POST …/archive|restore`; the same for `/platform/cities/:id/areas`; Arabic folded search (OD-40 folding in `@shifa/contracts` or the i18n folding helper).
    - Clinic: `GET /places/cities` and `/places/cities/:id/areas` (non-archived, for branch forms; `branches.manage`); branch create and edit accept city and area, refuse an archived one unless the branch already holds it, refuse an area of another city.
