@@ -5,6 +5,7 @@
 // one keeps its branch. The draft lives with the caller; `toRoles()` is what the server receives.
 import type { CommonKey } from '@shifa/i18n';
 import { Checkbox, cn, Icon } from '@shifa/ui';
+import { isFull, type LimitUse } from '../capabilities.ts';
 import { useText } from '../text.ts';
 import { type Branch, ROLE_WORD, ROLES, type Role, type RoleScope } from './data.ts';
 
@@ -61,7 +62,13 @@ export function RolesField({
   lockedOwner,
   archivedNames = {},
   problem,
+  doctorLimit,
+  heldDoctor = false,
 }: {
+  /** The doctors' limit (A-02-10): its use beside «طبيب», the role disabled while full. */
+  doctorLimit?: LimitUse | undefined;
+  /** The member already holds the doctor role: it stays theirs at a full limit. */
+  heldDoctor?: boolean;
   draft: RolesDraft;
   onChange: (next: RolesDraft) => void;
   branches: readonly Branch[];
@@ -93,11 +100,15 @@ export function RolesField({
         const owner = role === 'owner';
         const missing =
           problem === 'memberScopeMissing' && d.on && !owner && !d.all && d.branches.length === 0;
+        const counted =
+          role === 'doctor' && doctorLimit?.used !== null && doctorLimit !== undefined;
+        // At a full limit a new doctor is refused; one already held (or just ticked) is kept.
+        const doctorFull = role === 'doctor' && isFull(doctorLimit) && !heldDoctor && !d.on;
         return (
           <div key={role} data-testid={`role-${role}`} className="flex flex-col">
             <Checkbox
               checked={d.on}
-              disabled={owner && lockedOwner}
+              disabled={(owner && lockedOwner) || doctorFull}
               onCheckedChange={(on) => {
                 set(role, on ? { on, all: owner || d.all } : { on });
               }}
@@ -106,7 +117,12 @@ export function RolesField({
                   ? text('memberLastOwner')
                   : owner && d.on
                     ? text('memberOwnerScope')
-                    : undefined
+                    : counted
+                      ? text(doctorFull ? 'limitRoleFull' : 'subUse', {
+                          used: doctorLimit.used ?? 0,
+                          limit: doctorLimit.limit,
+                        })
+                      : undefined
               }
             >
               {text(ROLE_WORD[role])}

@@ -49,6 +49,9 @@ export interface ShellPages {
   team?: ComponentType;
   /** Clinic web only: the owner's branches (A-01-08 checkpoint 4). */
   branches?: ComponentType;
+  /** Clinic web only: the support hand-off (`/support#<token>`) and its ended page (A-02-10). */
+  supportHandoff?: ComponentType;
+  supportEnded?: ComponentType;
   /** Admin web only: the clinics list (its home), «إنشاء عيادة» and a clinic (A-01-10 checkpoint 3). */
   clinics?: ComponentType;
   createClinic?: ComponentType;
@@ -135,6 +138,11 @@ function guard(kind: RouteKind) {
       // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect
       throw redirect({ to: '/sign-in', search: { reason: outcome.reason } });
     }
+    if (outcome.to === '/support/ended') {
+      // The session's answer is not cached: the page reads what the 401 said (support/state.ts).
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect
+      throw redirect({ to: '/support/ended' });
+    }
     // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect
     throw redirect(
       outcome.to === '/sign-in'
@@ -188,6 +196,12 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
     children.push(route('/admin-web', 'admin-web', pages.adminWeb));
   }
   if (app === 'clinic' && pages.choose) children.push(route('/choose', 'choose', pages.choose));
+  if (app === 'clinic' && pages.supportHandoff) {
+    children.push(route('/support', 'open', pages.supportHandoff));
+  }
+  if (app === 'clinic' && pages.supportEnded) {
+    children.push(route('/support/ended', 'open', pages.supportEnded));
+  }
   if (app === 'clinic' && pages.account) {
     children.push(route('/account', 'signed-in', pages.account));
   }
@@ -270,6 +284,11 @@ export function createShellRouter({ app, shell, queryClient, pages, history }: S
     const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
     if (known?.kind !== 'signed-in') return;
     queryClient.clear();
+    // A support grant that ended: the page that says how, never sign-in (A-02-10).
+    if (reason === 'support_ended' && app === 'clinic') {
+      void router.navigate({ to: '/support/ended', ignoreBlocker: true });
+      return;
+    }
     void router.navigate({
       to: '/sign-in',
       search: searchFor(reason ?? otherTab ?? code),

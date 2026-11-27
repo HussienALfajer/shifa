@@ -50,7 +50,7 @@ Names in the earlier plan above that the contract replaces: the routes are the c
 - Components: none new; PageBanner (from A-02-09) and the DataTable wrapping column (from A-02-08) are used.
 
 ## Stopped at
-Planned.
+Checkpoints 1–3 built and green (`pnpm verify` all green); checkpoint 4 (journeys, screenshots, review) next. Cloud session, branch `claude/intelligent-heisenberg-gn2z8h`.
 
 ## Evidence
 - Contract check: —

@@ -24,6 +24,7 @@ import { isOwner, useActiveClinic, useSignedIn } from '../account/data.ts';
 import { LoadFailed } from '../account/load-failed.tsx';
 import { useIsPhone } from '../auth/media.ts';
 import type { TeamSearch } from '../router.tsx';
+import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import {
   type MemberStatus,
@@ -71,6 +72,7 @@ function Team({
   known: boolean;
 }) {
   const text = useText();
+  const readOnly = useReadOnly();
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const phone = useIsPhone();
@@ -108,16 +110,26 @@ function Team({
   const count = (s: MemberStatus) => all.filter((m) => m.status === s).length;
   const rows = all.filter((m) => (filter === 'all' || m.status === filter) && matches(m, typed));
   const alone = data?.every((m) => m.isSelf) === true;
-  const add = (
+  const addButton = (
     <Button
       variant="primary"
       startIcon="plus"
+      disabled={readOnly}
       onClick={() => {
         setTarget({ kind: 'add' });
       }}
     >
       {text('teamAdd')}
     </Button>
+  );
+  // A support session reads the team; every write is drawn disabled (A-02-10).
+  const add = readOnly ? (
+    <span className="flex flex-col items-end gap-1">
+      {addButton}
+      <ReadOnlyNote />
+    </span>
+  ) : (
+    addButton
   );
   const toolbar = (
     <div className="flex flex-1 flex-wrap items-center gap-3">

@@ -29,12 +29,14 @@ import {
 import { useShell } from './providers.tsx';
 import {
   fetchSession,
+  type SessionState,
   type SessionView,
   sessionQueryKey,
   signOut,
   signOutCount,
   useSession,
 } from './session.ts';
+import { rememberSupportEnd } from './support/state.ts';
 import { TAB_CHANNEL } from './tabs.ts';
 
 const ACTIVITY = ['pointerdown', 'keydown', 'wheel', 'touchstart', 'scroll'] as const;
@@ -170,6 +172,20 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
       ended = true;
       const ran = minutes.current;
       const reason = next.cause;
+      // A support session's absolute end is its grant's expiry: the ended page says so (A-02-10).
+      const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
+      const support = known?.kind === 'signed-in' ? known.session.support : null;
+      if (support && reason === 'absolute') {
+        rememberSupportEnd({
+          kind: 'ended',
+          endedBy: 'expiry',
+          endedAt: Date.parse(support.expiresAt),
+          ownerName: null,
+        });
+        queryClient.clear();
+        void navigate({ to: '/support/ended', ignoreBlocker: true });
+        return;
+      }
       void signOut(shell, queryClient, reason).finally(() =>
         navigate({
           to: '/sign-in',

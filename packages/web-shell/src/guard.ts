@@ -35,12 +35,17 @@ export type GuardOutcome =
   | { action: 'stay' }
   | {
       action: 'redirect';
-      to: '/' | '/sign-in' | '/mfa' | '/admin-web' | '/choose';
+      to: '/' | '/sign-in' | '/mfa' | '/admin-web' | '/choose' | '/support/ended';
       reason?: SignInReason;
     }
   | { action: 'sign-out'; reason: 'not_admin' };
 
 const STAY: GuardOutcome = { action: 'stay' };
+
+/** A support session: the super admin reading one clinic as its owner, read-only (A-02-05). */
+export function isSupport(session: SessionView | undefined): boolean {
+  return session?.support !== null && session?.support !== undefined;
+}
 
 /** The MFA step owed: enrolment where required, or the challenge of an enrolled factor. */
 export function owesMfa(session: SessionView): boolean {
@@ -51,17 +56,23 @@ export function decideRoute(app: ShellApp, kind: RouteKind, state: SessionState)
   if (kind === 'open') return STAY;
   if (state.kind === 'signed-out') {
     if (kind === 'signed-out') return STAY;
+    // A support session whose grant ended: its own page, never sign-in (A-02-10).
+    if (app === 'clinic' && state.reason === 'support_ended') {
+      return { action: 'redirect', to: '/support/ended' };
+    }
     // A visitor who simply has no session needs no reason; a lapsed session says why.
     return state.code === 'unauthorized'
       ? { action: 'redirect', to: '/sign-in' }
       : { action: 'redirect', to: '/sign-in', reason: state.reason ?? state.code };
   }
   const { session } = state;
-  if (app === 'admin' && !session.platformAdmin) {
+  // Admin web never serves a support session (it lives on clinic web's host only).
+  if (app === 'admin' && (!session.platformAdmin || isSupport(session))) {
     // On sign-in it stays: if the sign-out failed (5xx), signing out again would loop.
     return kind === 'signed-out' ? STAY : { action: 'sign-out', reason: 'not_admin' };
   }
-  if (app === 'clinic' && session.platformAdmin) {
+  // A support session reads clinic web as the clinic's owner (A-02-05, ADR-0050).
+  if (app === 'clinic' && session.platformAdmin && !isSupport(session)) {
     return kind === 'admin-web' ? STAY : { action: 'redirect', to: '/admin-web' };
   }
   if (kind === 'admin-web') return { action: 'redirect', to: '/' };

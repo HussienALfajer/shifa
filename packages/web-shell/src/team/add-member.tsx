@@ -3,12 +3,14 @@
 // sending; the sensitive toggles start from the chosen roles' default and only a switch that
 // differs is sent. Added: the drawer becomes the member's with the link shown once. 400
 // `body.phone` and 409 `phone_in_team` under the phone; 409 `branch_archived` as a Callout (the
-// branches read again); no connection keeps the input.
+// branches read again); no connection keeps the input. A-02-10: at the doctors' limit the role is
+// disabled with the Callout; 409 `limit_reached` → «لم يُحفظ شيء» naming the limit.
 import type { CommonKey } from '@shifa/i18n';
 import { Button, Callout, DrawerActions, Input } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef, useState } from 'react';
 import { phoneRefused } from '../admin/phone.ts';
+import { capabilitiesKey, limitReachedOf } from '../capabilities.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
@@ -20,6 +22,7 @@ import {
   PHONE_MAX,
   teamKey,
 } from './data.ts';
+import { DoctorsFullCallout, LimitRefused, useDoctorLimit } from './limit-parts.tsx';
 import { ChoicesPending, Panel, type TeamContext } from './panel.tsx';
 import { changedFromDefault, PermissionsField, type SwitchDraft } from './permissions-field.tsx';
 import { draftOf, RolesField, rolesProblem, toRoles } from './roles-field.tsx';
@@ -45,6 +48,8 @@ export function AddMember({
   const [phoneProblem, setPhoneProblem] = useState<PhoneProblem>(null);
   const [rolesMissing, setRolesMissing] = useState<CommonKey | null>(null);
   const [failure, setFailure] = useState<Failure>(null);
+  const [limitRefused, setLimitRefused] = useState<ReturnType<typeof limitReachedOf>>(null);
+  const doctorLimit = useDoctorLimit(team.tenantId);
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
   const catalogue = team.catalogue ?? [];
@@ -58,6 +63,7 @@ export function AddMember({
     setPhoneProblem(missingPhone ? 'missing' : null);
     setRolesMissing(roleProblem);
     setFailure(null);
+    setLimitRefused(null);
     if (missingName || missingPhone || roleProblem !== null) return;
     inFlight.current = true;
     setBusy(true);
@@ -78,7 +84,12 @@ export function AddMember({
         return;
       }
       const { code } = errorFacts(error);
-      if (phoneRefused(error, 'body.phone')) setPhoneProblem('invalid');
+      const reached = limitReachedOf(error);
+      if (reached) {
+        // The limit filled meanwhile: nothing written; the frame's capabilities read again.
+        setLimitRefused(reached);
+        void queryClient.invalidateQueries({ queryKey: capabilitiesKey(team.tenantId) });
+      } else if (phoneRefused(error, 'body.phone')) setPhoneProblem('invalid');
       else if (code === 'phone_in_team') setPhoneProblem('in-team');
       else if (code === 'branch_archived') {
         team.rereadBranches();
@@ -143,6 +154,8 @@ export function AddMember({
           }}
           error={phoneProblem === null ? undefined : text(phoneError[phoneProblem])}
         />
+        <DoctorsFullCallout limit={doctorLimit} />
+        <LimitRefused reached={limitRefused} />
         <RolesField
           draft={roles}
           onChange={(next) => {
@@ -153,6 +166,7 @@ export function AddMember({
           scoped={team.scoped}
           lockedOwner={false}
           problem={rolesMissing}
+          doctorLimit={doctorLimit}
         />
         <PermissionsField
           keys={catalogue.map((k) => k.key)}
