@@ -163,8 +163,15 @@ export {
   Submenu,
   type SubmenuProps,
 } from './menu/menu.tsx';
+export { MultiCombobox, type MultiComboboxProps } from './multi-combobox/multi-combobox.tsx';
 export { NumberInput, type NumberInputProps } from './number-input/number-input.tsx';
 export { OtpInput, type OtpInputProps } from './otp-input/otp-input.tsx';
+export {
+  PageBanner,
+  type PageBannerPager,
+  type PageBannerProps,
+  type PageBannerTone,
+} from './page-banner/page-banner.tsx';
 export {
   type PageItem,
   Pagination,
@@ -242,3 +249,9 @@ export {
   ToolbarSeparator,
 } from './toolbar/toolbar.tsx';
 export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';
+export {
+  UsageChart,
+  type UsageChartDay,
+  type UsageChartLabels,
+  type UsageChartProps,
+} from './usage-chart/usage-chart.tsx';

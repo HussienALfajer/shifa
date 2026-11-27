@@ -472,7 +472,10 @@ type Name =
   | 'Avatar'
   | 'Toolbar'
   | 'Pagination'
-  | 'DataTable';
+  | 'DataTable'
+  | 'UsageChart'
+  | 'MultiCombobox'
+  | 'PageBanner';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;

@@ -19,6 +19,8 @@ export interface DataTableData {
     kind?: 'text' | 'number' | 'latin';
     sortable?: boolean;
     hideable?: boolean;
+    /** Free text shown whole on several lines (a reason, a note). */
+    wrap?: boolean;
   }[];
   rows: Values[];
   selectable?: boolean;
@@ -63,6 +65,7 @@ export function DataTable({
     ...(c.kind === undefined ? {} : { kind: c.kind }),
     ...(c.sortable === undefined ? {} : { sortable: c.sortable }),
     ...(c.hideable === undefined ? {} : { hideable: c.hideable }),
+    ...(c.wrap === undefined ? {} : { wrap: c.wrap }),
   }));
   const empty =
     emptyTitle === undefined

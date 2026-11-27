@@ -42,6 +42,7 @@ function toColumnDefs<Row extends object>(
       width: column.width ?? (index === 0 ? 'lg' : 'md'),
       render: column.cell as ((row: unknown) => ReactNode) | undefined,
       header: column.header,
+      wrap: column.wrap === true,
     };
     return helper.accessor((row: Row) => column.value?.(row), {
       id: column.id,

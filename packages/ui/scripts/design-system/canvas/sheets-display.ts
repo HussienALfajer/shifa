@@ -29,6 +29,36 @@ const LINK_CARD = {
 const MANY_ROWS = Array.from({ length: 4 }, (_, n) =>
   TABLE.rows.map((row) => ({ ...row, file: `${row.file}${String(n)}` })),
 ).flat();
+/** A support access log with a wrapping «السبب» (A-02-01, component change 1). */
+const SUPPORT_LOG = {
+  columns: [
+    { id: 'who', header: 'من', sortable: true },
+    { id: 'reason', header: 'السبب', wrap: true },
+    { id: 'start', header: 'البداية', sortable: true },
+    { id: 'status', header: 'الحالة' },
+  ],
+  rows: [
+    {
+      who: 'موظفة الدعم',
+      reason: 'مشكلة في الفروع لا تظهر للمالك: فرع العزيزية غائب عن قائمة الفروع عنده منذ أمس',
+      start: '26/11/2026 13:12',
+      status: 'مفتوح',
+    },
+    {
+      who: 'موظف الدعم',
+      reason:
+        'المالك لا يرى موعدًا حجزه السكرتير صباح الأحد في فرع الجميلية، بينما يظهر الموعد في شاشة السكرتير ولا يظهر في تقويم الطبيب. نريد أن نرى ما يراه المالك قبل أن نطلب منه تصوير الشاشة.',
+      start: '24/11/2026 09:10',
+      status: 'انتهت المدة',
+    },
+    {
+      who: 'موظفة الدعم',
+      reason: 'مراجعة إعداد الفروع بعد النقل',
+      start: '18/11/2026 16:02',
+      status: 'أنهاه المالك',
+    },
+  ],
+};
 
 export const DISPLAY: SheetSpec[] = [
   {
@@ -264,6 +294,21 @@ export const DISPLAY: SheetSpec[] = [
               emptyActions: [{ label: 'إعادة المحاولة', variant: 'primary' }],
             },
             'error, a way out',
+          ),
+        ],
+      },
+      {
+        label: 'A wrapping column (wrap)',
+        cols: 1,
+        items: [
+          st(
+            {
+              'aria-label': 'سجل دخول الدعم',
+              ...SUPPORT_LOG,
+              selectable: true,
+              defaultSelected: ['1'],
+            },
+            '«السبب» whole on several lines, the row grows, the other cells at its top; one row selected',
           ),
         ],
       },
