@@ -2535,6 +2535,10 @@
       }
     }
   },
+  "commonLimitSomeFull": "وصلت العيادة إلى أحد حدود خطتها، تواصل مع الإدارة.",
+  "@commonLimitSomeFull": {
+    "description": "common.limitSomeFull"
+  },
   "commonLimitsCaption": "يُحتسب الأطباء غير المعطّلين (والمدعوون منهم) والفروع غير المؤرشفة. الحقول المخصّصة تُحتسب من A-03.",
   "@commonLimitsCaption": {
     "description": "common.limitsCaption"

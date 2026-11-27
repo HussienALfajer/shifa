@@ -87,8 +87,11 @@ export function AppFrame({
   // has no clinic of its own in GET /me/clinics, so the plan's count of active branches says it.
   const multiBranch = support ? (branchLimit?.used ?? 0) > 1 : clinic?.solo === false;
   const showNav = !phone || menu;
+  // A support session has no account of its own to manage here: «حسابي» is absent (A-02-10).
   const shown = (place: Place) =>
-    (!OWNER_ONLY.has(place) || owner) && (place !== 'branches' || multiBranch);
+    (!OWNER_ONLY.has(place) || owner) &&
+    (place !== 'branches' || multiBranch) &&
+    (place !== 'account' || !support);
   return (
     <div className="flex min-h-dvh flex-col bg-bg-app font-ui text-text-default">
       {session && support && <SupportSessionBanner session={session} />}

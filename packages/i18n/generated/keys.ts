@@ -488,6 +488,7 @@ export type CommonKey =
   | 'limitReactivateTitle'
   | 'limitRestoreRefused'
   | 'limitRoleFull'
+  | 'limitSomeFull'
   | 'limitsCaption'
   | 'limitsLoading'
   | 'limitsText'

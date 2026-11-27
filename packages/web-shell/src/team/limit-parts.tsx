@@ -15,11 +15,14 @@ export function useDoctorLimit(tenantId: string): LimitUse | undefined {
 export function useLimitSentence(): (l: { key: string; limit: number; used: number }) => string {
   const text = useText();
   return (l) =>
-    l.key === PRACTITIONERS
-      ? text('limitDoctorsFull', { used: l.used, limit: l.limit })
-      : l.key === 'limits.branches'
-        ? text('limitBranchesFull', { used: l.used, limit: l.limit })
-        : text('limitOtherFull', { item: keyWord(text, l.key), used: l.used, limit: l.limit });
+    // A 409 without its `limitReached` (an older server): no numbers to name.
+    l.key === ''
+      ? text('limitSomeFull')
+      : l.key === PRACTITIONERS
+        ? text('limitDoctorsFull', { used: l.used, limit: l.limit })
+        : l.key === 'limits.branches'
+          ? text('limitBranchesFull', { used: l.used, limit: l.limit })
+          : text('limitOtherFull', { item: keyWord(text, l.key), used: l.used, limit: l.limit });
 }
 
 /** Before sending: the doctor role cannot be added while the limit is full. */

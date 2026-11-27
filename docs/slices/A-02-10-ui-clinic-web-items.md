@@ -1,6 +1,6 @@
 # A-02-10 UI code 3: clinic web support frame, banners, subscription, limits and places
 
-Status: Planned · Tier: T1 · Branch: `feat/A-02-10-ui-clinic-web-items`
+Status: In review · Tier: T1 · Branch: `feat/A-02-10-ui-clinic-web-items`
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) clinic web screens; criteria 4–6, 9, 10, 11–13, 15, 16 as seen in the clinic; the three Playwright journeys of the verification contract · Requirements: PLT-14, PLT-18, PLT-20, PLT-24 · Decisions: ADR-0040, ADR-0046, ADR-0047, OD-110, OD-111 · From A-02-01: criteria 25, 26
 
 Last slice of A-02, after A-02-08 and A-02-09 (merged), because its journeys start in admin web. Drawings, contract rows and missing components were approved in [A-02-01](A-02-01-design-and-screen-contract.md) checkpoint 2.
@@ -50,7 +50,7 @@ Names in the earlier plan above that the contract replaces: the routes are the c
 - Components: none new; PageBanner (from A-02-09) and the DataTable wrapping column (from A-02-08) are used.
 
 ## Stopped at
-Checkpoints 1–3 built and green (`pnpm verify` all green); checkpoint 4 (journeys, screenshots, review) next. Cloud session, branch `claude/intelligent-heisenberg-gn2z8h`.
+Built, reviewed and verified; PR open (cloud session, branch `claude/intelligent-heisenberg-gn2z8h`).
 
 ## Evidence
 - **Contract check (checkpoint 1, 2026-11-27):** every row of "Contract: clinic web (checkpoint 2)" matches the built API (`packages/contracts/src/{capabilities,support,announcements,places,branches,team,identity,errors}.ts`, the controllers): routes, fields, statuses and error codes as listed. No API gap; nothing changed in the API or contracts. No design-system release since A-02-01. Notes, not mismatches: a support session is `platformAdmin: true` with `support` set, so clinic web's guard had to let it in (`isSupport()`); `GET /clinic/support-grants` and `GET /clinic/subscription` are refused to a support session (`@NotInSupportSession`), so neither is asked there.
@@ -63,6 +63,8 @@ Checkpoints 1–3 built and green (`pnpm verify` all green); checkpoint 4 (journ
   - The ended page is the signed-out layout with the EmptyState, not the frame: the session is gone, so nothing of the clinic stays on screen. «العودة إلى إدارة شفاء» closes the tab (admin web's tab opened it); where a browser keeps it open, a line says to go back to that tab.
   - Settings: the idle and subscription cards side by side from 1280 px (stacked below); «الاشتراك» KPIs in three columns as drawn; a solo plan's «الفروع» card is absent (the plan allows one branch).
   - The meter is drawn inside the card (no Meter component exists): the drawing's `.meter` tokens (surface-raised track, brand fill, warning-solid when full).
+- **Reviewer** (fresh context, 2026-11-27): three blocking findings, fixed with regression tests in `test/a02c-review.test.tsx` (4): B1 «خروج» and «خروج الآن» in a support session sent `POST /auth/sign-out` (403) and bounced home with the grant open; they now end the grant (`POST /auth/support/end`) and show the ended page, and idle in a support tab does the same; B2 a support session's member drawer never left its skeleton (no `GET /me/clinics` entry): the clinic's facts now come from the session and the plan (`src/clinic-facts.ts`), also for the settings and branches pages' names; B3 capabilities were not read again after a change, so a freed limit stayed «full» on the page: every branch and member change now re-reads them. Non-blocking, fixed: «حسابي» absent in a support session (its writes would all be refused; `/account` goes home); the owner's log card absent on 403; a 409 without `limitReached` says «وصلت العيادة إلى أحد حدود خطتها» (no «0 من 0»); the owner's banner goes when its time runs out on the page; docs and evidence. Deferred to `docs/backlog.md`: N5 (a failed places read), N8 (an in-page journey step).
+- **Security reviewer** (2026-11-27, the hand-off and the read-only frame): the token handling is clean (fragment read once and removed, body only, no cache, storage or log). L1 was B1 above. L3 fixed: at the grant's expiry the tab reads the session once so the server clears the support cookie. M1 (medium) and L2 (low) need the API: the support cookie covers the browser profile and two support tabs share it; the client part of M1 is done (a support tab whose session turns into a member's goes to the ended page, never home); the server-side refusal is in `docs/backlog.md` for the owner to schedule.
 - **Not drawn, decided here:** the subscription warning counts whole days from Damascus' today; a full limit on `limits.custom_fields` reads «وصلت العيادة إلى حد «…» في خطتها»; the support banner's time left counts down on the device's clock from the server's `now` (no request for it).
 
 ## Notes for the next session

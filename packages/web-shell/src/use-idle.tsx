@@ -28,6 +28,7 @@ import {
 } from './idle-timer.ts';
 import { useShell } from './providers.tsx';
 import {
+  cachedSupport,
   fetchSession,
   type SessionState,
   type SessionView,
@@ -183,7 +184,17 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
           ownerName: null,
         });
         queryClient.clear();
+        // One read, so the server clears the support cookie (security review L3); its 401 is
+        // ignored, the cache being empty.
+        void fetchSession(shell).catch(() => undefined);
         void navigate({ to: '/support/ended', ignoreBlocker: true });
+        return;
+      }
+      // Idle in a support tab: its grant is ended, as «خروج» would, and the ended page shown.
+      if (support) {
+        void signOut(shell, queryClient).finally(() =>
+          navigate({ to: '/support/ended', ignoreBlocker: true }),
+        );
         return;
       }
       void signOut(shell, queryClient, reason).finally(() =>
@@ -222,6 +233,12 @@ export function useIdle(shell: ShellClient, session: SessionView | undefined): I
         live.current?.end();
         // The dialog closes at once; the timer is stopped, so nothing reopens it.
         setFacts((f) => ({ ...f, state: { kind: 'active' } }));
+        // A support session ends its grant and shows the ended page (A-02-10).
+        if (cachedSupport(queryClient)) {
+          await signOut(shell, queryClient);
+          await navigate({ to: '/support/ended', ignoreBlocker: true });
+          return;
+        }
         const done = await signOut(shell, queryClient, 'signed_out');
         await navigate({
           to: '/sign-in',

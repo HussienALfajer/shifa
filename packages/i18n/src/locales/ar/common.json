@@ -1115,6 +1115,7 @@
   "limitOthersAllowed": "يمكنك إضافة الأدوار الأخرى.",
   "limitOtherFull": "وصلت العيادة إلى حد «{item}» في خطتها ({used} من {limit})، تواصل مع الإدارة.",
   "limitNotSaved": "لم يُحفظ شيء",
+  "limitSomeFull": "وصلت العيادة إلى أحد حدود خطتها، تواصل مع الإدارة.",
   "limitReactivateTitle": "لا يمكن إعادة التفعيل الآن",
   "limitBranchesFullTitle": "وصلت العيادة إلى حد الفروع في خطتها ({used} من {limit})",
   "limitBranchesFullText": "تواصل مع الإدارة لزيادته. لا يمكن إضافة فرع ولا استعادة فرع مؤرشف حتى ذلك.",

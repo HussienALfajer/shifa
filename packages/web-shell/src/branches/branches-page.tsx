@@ -17,7 +17,7 @@ import { AppFrame } from '../account/app-frame.tsx';
 import { clinicsKey, isOwner, useActiveClinic, useSignedIn } from '../account/data.ts';
 import { LoadFailed } from '../account/load-failed.tsx';
 import { dayDate } from '../auth/dates.ts';
-import { BRANCHES, isFull, limitReachedOf, useLimit } from '../capabilities.ts';
+import { BRANCHES, capabilitiesKey, isFull, limitReachedOf, useLimit } from '../capabilities.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
 import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
@@ -42,6 +42,8 @@ export function useBranchesChanged(tenantId: string, userId: string) {
       queryClient.invalidateQueries({ queryKey: branchesKey(tenantId) }),
       queryClient.invalidateQueries({ queryKey: teamKey(tenantId) }),
       queryClient.invalidateQueries({ queryKey: clinicsKey(userId) }),
+      // The branches' use: a full limit frees up after an archive (A-02-10).
+      queryClient.invalidateQueries({ queryKey: capabilitiesKey(tenantId) }),
     ]);
 }
 
@@ -375,7 +377,11 @@ export function BranchesPage() {
     <Branches
       tenantId={session.tenantId}
       userId={session.userId}
-      {...(clinic ? { clinicName: clinic.name } : {})}
+      {...(clinic
+        ? { clinicName: clinic.name }
+        : session.support
+          ? { clinicName: session.support.clinicName }
+          : {})}
     />
   );
 }

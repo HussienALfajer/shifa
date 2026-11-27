@@ -23,6 +23,7 @@ import { Navigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { SettingsBranchesCard } from '../branches/settings-branches.tsx';
 import { errorFacts } from '../client.ts';
+import { useClinicFacts } from '../clinic-facts.ts';
 import { useShell } from '../providers.tsx';
 import { sessionQueryKey } from '../session.ts';
 import { OwnerSupportLog } from '../support/owner-support.tsx';
@@ -30,7 +31,7 @@ import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import type { Note } from './account-page.tsx';
 import { AppFrame } from './app-frame.tsx';
-import { isOwner, settingsKey, useActiveClinic, useClinicSettings, useSignedIn } from './data.ts';
+import { isOwner, settingsKey, useClinicSettings, useSignedIn } from './data.ts';
 import { LoadFailed } from './load-failed.tsx';
 import { SubscriptionCard } from './subscription-card.tsx';
 
@@ -192,7 +193,7 @@ function IdleCard({ tenantId }: { tenantId: string }) {
 export function SettingsPage() {
   const text = useText();
   const session = useSignedIn();
-  const clinic = useActiveClinic(session);
+  const clinic = useClinicFacts(session);
   if (!session) return null;
   if (!isOwner(session) || session.tenantId === null) return <Navigate to="/account" replace />;
   return (
@@ -200,7 +201,9 @@ export function SettingsPage() {
       current="settings"
       title={text('settingsTitle')}
       description={
-        clinic ? text('settingsText', { clinic: clinic.name }) : text('settingsTextPlain')
+        clinic.name === undefined
+          ? text('settingsTextPlain')
+          : text('settingsText', { clinic: clinic.name })
       }
     >
       <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-2">
@@ -211,7 +214,7 @@ export function SettingsPage() {
       <SettingsBranchesCard
         tenantId={session.tenantId}
         userId={session.userId}
-        solo={clinic?.solo === true}
+        solo={clinic.known && clinic.solo}
       />
     </AppFrame>
   );

@@ -80,6 +80,7 @@ export function AddMember({
       if (data) {
         queryClient.setQueryData(memberKey(team.tenantId, data.member.id), data.member);
         void queryClient.invalidateQueries({ queryKey: teamKey(team.tenantId), exact: true });
+        void queryClient.invalidateQueries({ queryKey: capabilitiesKey(team.tenantId) });
         onAdded(data.member, data.link);
         return;
       }

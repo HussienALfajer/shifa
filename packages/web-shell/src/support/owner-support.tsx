@@ -74,6 +74,8 @@ function OwnerBanner({
 }) {
   const text = useText();
   const left = useTimeLeft(grant.expiresAt, now, receivedAt);
+  // Run out on this page's clock: no longer open, though the next read has not said so yet.
+  if (left.minutes === 0) return null;
   return (
     <PageBanner
       tone="warning"
@@ -165,7 +167,8 @@ export function OwnerSupportLog({ session }: { session: SessionView }) {
   const text = useText();
   const { data, isError, isPending, refetch } = useClinicSupportGrants(session);
   const { data: profile } = useProfile(session.userId);
-  if (isSupport(session)) return null;
+  // Not an owner (403) or a support session: no card (contract row `banner` … `logEmpty`).
+  if (isSupport(session) || data === null) return null;
   return (
     <Card className="gap-4 p-(--shifa-card-padding)">
       <div className="flex flex-col gap-1">
@@ -180,13 +183,13 @@ export function OwnerSupportLog({ session }: { session: SessionView }) {
         <SkeletonGroup label={text('ownerLogLoading')}>
           <SkeletonText lines={3} />
         </SkeletonGroup>
-      ) : data ? (
+      ) : (
         <SupportLog
           grants={data.grants}
           viewer="owner"
           {...(profile ? { selfName: profile.name } : {})}
         />
-      ) : null}
+      )}
     </Card>
   );
 }
