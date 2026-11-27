@@ -6,7 +6,7 @@
 // «استعادة»; the search runs on the client with the Arabic fold. States: none yet, no match, a
 // city without areas, loading, failed.
 import { Button, Card, EmptyState, Input, SkeletonGroup, SkeletonText, Switch } from '@shifa/ui';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { useShell } from '../../providers.tsx';
 import { useText } from '../../text.ts';
 import { type AdminNote, NoteCallout } from '../a02.tsx';
@@ -29,6 +29,7 @@ export function PlacesPage() {
   const [chosen, setChosen] = useState<string | null>(null);
   const [open, setOpen] = useState<Open>(null);
   const [note, setNote] = useState<AdminNote | null>(null);
+  const restoring = useRef(new Set<string>());
   const { data, isPending, isError, refetch } = useCities(archived);
   const done = (next: AdminNote) => {
     setOpen(null);
@@ -43,8 +44,11 @@ export function PlacesPage() {
   };
 
   async function restore(target: Place) {
-    setNote(null);
     const { id, name } = target.place;
+    // One restore per place at a time: a double click would answer 409 and hide «استُعيدت».
+    if (restoring.current.has(id)) return;
+    restoring.current.add(id);
+    setNote(null);
     try {
       const { data: back, response } =
         target.kind === 'city'
@@ -66,12 +70,33 @@ export function PlacesPage() {
       }
     } catch {
       setNote({ tone: 'danger', title: text('unreachableTitle'), text: text('loadFailedText') });
+    } finally {
+      restoring.current.delete(id);
     }
   }
 
   const all = data ?? [];
   const cities = searchPlaces(all, typed);
   const city = cities.find((c) => c.id === chosen) ?? cities[0];
+
+  const toolbar = (
+    <div className="flex flex-wrap items-center gap-3">
+      <Input
+        type="search"
+        aria-label={text('placesSearch')}
+        placeholder={text('placesSearch')}
+        startIcon="magnifying-glass"
+        maxLength={PLACE_NAME_MAX}
+        value={typed}
+        onValueChange={setTyped}
+        className="max-w-(--shifa-width-100) flex-1"
+      />
+      <span className="flex-1" />
+      <Switch checked={archived} onCheckedChange={setArchived}>
+        {text('placesShowArchived')}
+      </Switch>
+    </div>
+  );
 
   let body: ReactNode;
   if (isPending) {
@@ -98,42 +123,31 @@ export function PlacesPage() {
         />
       </Card>
     );
-  } else if (all.length === 0 && !archived) {
+  } else if (all.length === 0) {
+    // The switch stays: with every city archived, «عرض المؤرشفة» is how they are restored.
     body = (
-      <Card className="flex flex-col gap-4 p-4">
-        <EmptyState
-          art="star"
-          title={text('placesEmptyTitle')}
-          description={text('placesEmptyText')}
-          headingLevel={2}
-        />
-        <AddForm
-          label={text('placesNewCity')}
-          submit={text('placesAddCity')}
-          onAdded={done}
-          onStale={goneStale}
-        />
-      </Card>
+      <>
+        {toolbar}
+        <Card className="flex flex-col gap-4 p-4">
+          <EmptyState
+            art="star"
+            title={text('placesEmptyTitle')}
+            description={text('placesEmptyText')}
+            headingLevel={2}
+          />
+          <AddForm
+            label={text('placesNewCity')}
+            submit={text('placesAddCity')}
+            onAdded={done}
+            onStale={goneStale}
+          />
+        </Card>
+      </>
     );
   } else {
     body = (
       <>
-        <div className="flex flex-wrap items-center gap-3">
-          <Input
-            type="search"
-            aria-label={text('placesSearch')}
-            placeholder={text('placesSearch')}
-            startIcon="magnifying-glass"
-            maxLength={PLACE_NAME_MAX}
-            value={typed}
-            onValueChange={setTyped}
-            className="max-w-(--shifa-width-100) flex-1"
-          />
-          <span className="flex-1" />
-          <Switch checked={archived} onCheckedChange={setArchived}>
-            {text('placesShowArchived')}
-          </Switch>
-        </div>
+        {toolbar}
         {city === undefined ? (
           <Card className="p-4">
             <EmptyState

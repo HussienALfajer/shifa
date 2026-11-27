@@ -42,7 +42,18 @@ import {
 } from './data.ts';
 
 type Target = 'all' | 'selected';
-type Problem = 'body' | 'link' | 'start' | 'end' | 'clinics' | 'network' | 'server' | null;
+type Problem =
+  | 'body'
+  | 'link'
+  | 'start'
+  | 'startTime'
+  | 'end'
+  | 'endDate'
+  | 'endTime'
+  | 'clinics'
+  | 'network'
+  | 'server'
+  | null;
 
 export function AnnouncementDialog({
   item,
@@ -86,7 +97,9 @@ export function AnnouncementDialog({
         ? new Date().toISOString()
         : (instantOf(startDate, startTime) ?? '');
     // An end day without a time ends with that day.
-    const endsAt = instantOf(endDate, endDate === null ? null : (endTime ?? '23:59'));
+    // A date and a whole time each (check() refuses a half-typed one, which TimeInput reports
+    // as null like an empty one): nothing falls back to midnight.
+    const endsAt = instantOf(endDate, endTime);
     const all = {
       body: trimmed,
       level,
@@ -115,6 +128,9 @@ export function AnnouncementDialog({
     if (trimmed === '') return 'body';
     if (linked) return 'link';
     if (startTouched && instantOf(startDate, startTime) === null) return 'start';
+    if (startTouched && startTime === null) return 'startTime';
+    if (endDate !== null && endTime === null) return 'endTime';
+    if (endDate === null && endTime !== null) return 'endDate';
     const s = fields();
     const endsAt = 'endsAt' in s ? s.endsAt : null;
     const startsAt = 'startsAt' in s ? s.startsAt : (item?.startsAt ?? '');
@@ -244,15 +260,19 @@ export function AnnouncementDialog({
           >
             <span className="text-caption text-text-muted">{text('annPreview')}</span>
             {showPreview ? (
-              <PageBanner
-                tone={level}
-                title={text(LEVEL_TITLE[level])}
-                aria-label={text(LEVEL_WORD[level])}
-                onDismiss={() => undefined}
-                dismissLabel={text('close')}
-              >
-                {trimmed}
-              </PageBanner>
+              // A picture of the banner, close button included: inert, so its «إغلاق» is not
+              // a second, dead one beside the dialog's.
+              <div inert>
+                <PageBanner
+                  tone={level}
+                  title={text(LEVEL_TITLE[level])}
+                  aria-label={text(LEVEL_WORD[level])}
+                  onDismiss={() => undefined}
+                  dismissLabel={text('close')}
+                >
+                  {trimmed}
+                </PageBanner>
+              </div>
             ) : (
               <span className="text-caption text-text-muted">{text('annPreviewWaiting')}</span>
             )}
@@ -274,7 +294,9 @@ export function AnnouncementDialog({
               onValueChange={(v) => {
                 setStartTime(v);
                 touchStart();
+                if (problem === 'startTime') setProblem(null);
               }}
+              error={problem === 'startTime' ? text('annTimeMissing') : undefined}
             />
             <DatePicker
               label={text('annEndDate')}
@@ -282,17 +304,28 @@ export function AnnouncementDialog({
               value={endDate}
               onValueChange={(v) => {
                 setEndDate(v);
-                if (problem === 'end') setProblem(null);
+                if (problem === 'end' || problem === 'endDate' || problem === 'endTime') {
+                  setProblem(null);
+                }
               }}
-              error={problem === 'end' ? text('annEndBeforeStart') : undefined}
+              error={
+                problem === 'end'
+                  ? text('annEndBeforeStart')
+                  : problem === 'endDate'
+                    ? text('annEndDateMissing')
+                    : undefined
+              }
             />
             <TimeInput
               label={text('annEndTime')}
               value={endTime}
               onValueChange={(v) => {
                 setEndTime(v);
-                if (problem === 'end') setProblem(null);
+                if (problem === 'end' || problem === 'endTime' || problem === 'endDate') {
+                  setProblem(null);
+                }
               }}
+              error={problem === 'endTime' ? text('annTimeMissing') : undefined}
             />
           </div>
           <RadioGroup

@@ -102,10 +102,22 @@ function AnnouncementRow({
       <div className="col-span-2 flex flex-wrap items-center justify-end gap-1">
         {item.status !== 'ended' && (
           <>
-            <Button variant="ghost" size="sm" onClick={onEdit}>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={text('annEditOf', { body: item.body })}
+              onClick={onEdit}
+            >
               {text('annEdit')}
             </Button>
-            <Button variant="ghost" size="sm" onClick={onEnd}>
+            <Button
+              variant="ghost"
+              size="sm"
+              aria-label={text(item.status === 'scheduled' ? 'annCancelOf' : 'annEndOf', {
+                body: item.body,
+              })}
+              onClick={onEnd}
+            >
               {text(item.status === 'scheduled' ? 'annCancel' : 'annEndNow')}
             </Button>
           </>
@@ -169,7 +181,7 @@ type Open = { kind: 'form'; item?: Announcement } | { kind: 'end'; item: Announc
 export function AnnouncementsPage() {
   const text = useText();
   const [status, setStatus] = useState<AnnouncementStatus>('active');
-  const { data, isPending, isError, refetch } = useAnnouncements(status);
+  const { data, isPending, isPlaceholderData, isError, refetch } = useAnnouncements(status);
   const [open, setOpen] = useState<Open>(null);
   const [note, setNote] = useState<AdminNote | null>(null);
   const counts = data?.counts;
@@ -237,7 +249,8 @@ export function AnnouncementsPage() {
             />
           </div>
           <Card className="overflow-hidden">
-            {isPending ? (
+            {/* The previous status's counts stay while another loads; its rows never do. */}
+            {isPending || isPlaceholderData ? (
               <div className="p-4">
                 <SkeletonGroup label={text('loading')}>
                   <SkeletonText lines={4} />

@@ -196,6 +196,10 @@
   "@commonAnnEndDate": {
     "description": "common.annEndDate"
   },
+  "commonAnnEndDateMissing": "اختر يوم الانتهاء، أو امسح ساعته.",
+  "@commonAnnEndDateMissing": {
+    "description": "common.annEndDateMissing"
+  },
   "commonAnnEndNow": "إنهاء الآن",
   "@commonAnnEndNow": {
     "description": "common.annEndNow"
@@ -461,6 +465,10 @@
   "commonAnnText": "نص قصير يظهر شريطًا لكل أعضاء العيادات المستهدفة حتى يغلقه كل منهم. نص عادي، بلا روابط.",
   "@commonAnnText": {
     "description": "common.annText"
+  },
+  "commonAnnTimeMissing": "اكتب الساعة كاملة: الساعات والدقائق.",
+  "@commonAnnTimeMissing": {
+    "description": "common.annTimeMissing"
   },
   "commonAnnTitle": "الإعلانات",
   "@commonAnnTitle": {
@@ -3191,6 +3199,15 @@
   "commonPlacesClinicCount": "{count, plural, zero {لا عيادات} one {عيادة واحدة} two {عيادتان} few {{count} عيادات} many {{count} عيادة} other {{count} عيادة}}",
   "@commonPlacesClinicCount": {
     "description": "common.placesClinicCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesClinicCountIn": "{count, plural, zero {لا عيادات} one {عيادة واحدة} two {عيادتين} few {{count} عيادات} many {{count} عيادة} other {{count} عيادة}}",
+  "@commonPlacesClinicCountIn": {
+    "description": "common.placesClinicCountIn",
     "placeholders": {
       "count": {
         "type": "num"

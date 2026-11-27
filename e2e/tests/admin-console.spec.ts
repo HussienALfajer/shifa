@@ -97,7 +97,7 @@ test('(2) an announcement for selected clinics is created, edited and ended earl
   await expect(row).toContainText('أغلقه 0 من');
   await look(admin, 'a02-announcements-active');
 
-  await row.getByRole('button', { name: 'تعديل' }).click();
+  await row.getByRole('button', { name: `تعديل الإعلان: ${BODY}` }).click();
   const edit = admin.getByRole('dialog', { name: 'تعديل الإعلان' });
   await edit.getByLabel('النص').fill(EDITED);
   await edit.getByRole('button', { name: 'حفظ التعديل' }).click();
@@ -105,7 +105,8 @@ test('(2) an announcement for selected clinics is created, edited and ended earl
   const edited = admin.locator('[data-row]', { hasText: EDITED });
   await expect(edited).toBeVisible();
 
-  await edited.getByRole('button', { name: 'إنهاء الآن' }).click();
+  // Each row's buttons are named with its body («إنهاء الإعلان: …»).
+  await edited.getByRole('button', { name: `إنهاء الإعلان: ${EDITED}` }).click();
   const ask = admin.getByRole('alertdialog', { name: 'إنهاء الإعلان الآن؟' });
   await expect(ask).toBeVisible();
   await ask.getByRole('button', { name: 'إنهاء الآن' }).click();
@@ -142,7 +143,7 @@ test('(3) a city gets two areas; one is archived and shown under «عرض الم
   await admin.getByLabel('منطقة جديدة', { exact: true }).press('Enter');
   await expect(admin.getByText(`«الحي الشمالي» موجودة في ${CITY}.`)).toBeVisible();
   await admin.getByLabel('منطقة جديدة', { exact: true }).fill('');
-  // The Arabic fold: without the hamza, the city is still found.
+  // The search: the start of a word finds the area (the Arabic fold is in the page tests).
   await admin.getByLabel('ابحث عن مدينة أو منطقة').fill('الحي الجن');
   await expect(admin.locator('[data-row]', { hasText: 'الحي الجنوبي' })).toBeVisible();
   await expect(admin.locator('[data-row]', { hasText: 'الحي الشمالي' })).toHaveCount(0);

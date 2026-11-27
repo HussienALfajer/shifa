@@ -3,7 +3,7 @@
 // the line of counts, and the field that adds a city or an area of the chosen city (contract row
 // "Places · add": 409 `place_name_taken` on the field, «“…” موجودة في حلب»).
 import { Badge, Button, Input, Menu, MenuContent, MenuItem, MenuTrigger } from '@shifa/ui';
-import { type ReactNode, useState } from 'react';
+import { type ReactNode, useRef, useState } from 'react';
 import { dayDate } from '../../auth/dates.ts';
 import { errorFacts } from '../../client.ts';
 import { useShell } from '../../providers.tsx';
@@ -51,12 +51,16 @@ export function AddForm({
   const [name, setName] = useState('');
   const [error, setError] = useState<string | undefined>(undefined);
   const [busy, setBusy] = useState(false);
+  // Enter in the field submits even while «إضافة» shows its spinner: one request at a time.
+  const inFlight = useRef(false);
   async function add() {
+    if (inFlight.current) return;
     const next = name.trim();
     if (next === '') {
       setError(text('placesNameMissing'));
       return;
     }
+    inFlight.current = true;
     setBusy(true);
     setError(undefined);
     try {
@@ -84,6 +88,7 @@ export function AddForm({
     } catch {
       setError(text('loadFailedText'));
     } finally {
+      inFlight.current = false;
       setBusy(false);
     }
   }

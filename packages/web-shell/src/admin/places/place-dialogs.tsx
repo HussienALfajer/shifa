@@ -27,7 +27,8 @@ export function useReach(): (place: Place['place']) => { branches: string; clini
   const text = useText();
   return (p) => ({
     branches: text('placesBranchCount', { count: p.branchCount }),
-    clinics: text('placesClinicCount', { count: p.clinicCount }),
+    // After «في»: the genitive dual («في عيادتين»).
+    clinics: text('placesClinicCountIn', { count: p.clinicCount }),
   });
 }
 
