@@ -1,6 +1,6 @@
 # A-03-12 Components: RecordList, RecordHeader, DescriptionList, EditableList and the Drawer «wide»
 
-Status: In review · Tier: T1 · Branch: `feat/A-03-12-components` (built in a cloud session on its assigned branch, `claude/eloquent-archimedes-3djyl2`, `docs/process/cloud-sessions.md` §4)
+Status: Done · Tier: T1 · Branch: `feat/A-03-12-components` (built in a cloud session on its assigned branch, `claude/eloquent-archimedes-3djyl2`, `docs/process/cloud-sessions.md` §4)
 Spec: [A-03](../specs/patients/A-03-patients.md) (the components its screens need) · Decisions: ADR-0039, ADR-0040, ADR-0046, ADR-0047, ADR-0048
 
 Added at the A-03-01 re-plan (owner, 2026-11-27), on the A-02 model (`feat/A-02-components`): the approved components are built ahead of the UI code slices, in one PR. It touches only `packages/ui` and the design system, no schema and no API contract, so it may run in its own worktree beside the API slices, starting once A-03-01 is merged.
@@ -22,7 +22,7 @@ Tests written first: component tests from each sheet's states (keyboard and scre
 Estimated hand-written lines: ~1,370 (RecordList ~450, RecordHeader ~300, DescriptionList ~200, EditableList ~300, Drawer «wide» ~120).
 
 ## Stopped at
-Built, tested and reviewed; PR open. Left for the owner: start the design-system sync, then the "Shifa Components" sheets and marking the five proposal sheets superseded (`docs/process/ui-screenshots.md`, "Syncing the design system").
+Done. Merged as #199 (2026-11-27). After the owner started it the same day: the Shifa Design System synced (version `1795803185-f463`, `lastChange.via` `main@608d7cc`); "Shifa Components" got a sheet and a playground for RecordList, RecordHeader, DescriptionList and EditableList, and the Drawer sheet the wide size (`canvas/sheets-a03.ts`, `data-a03.ts`, `playground-a03.ts`); the five proposal sheets (`A03Sheet…`) were removed from "Shifa Screens · Clinic web" at the owner's request. The four drawn sources (`A03RecordList`, `A03RecordHeader`, `A03DescriptionList`, `A03EditableList`) stay on that canvas because its A-03 screens import them; A-03-09 and A-03-10 build the screens on the real components.
 
 ## Built
 - `src/record-list/` (`record-list.tsx`, `record-list-row.tsx`, `types.ts`), `src/record-header/`, `src/description-list/`, `src/editable-list/` (`words.ts` for Arabic and English), and `Drawer size="wide"` in `src/drawer/drawer.tsx`; exported from `src/index.ts`.
@@ -56,4 +56,4 @@ Written first and locked (`.claude/state/locked-tests.txt` while building): `rec
 - After the fixes: `pnpm verify` and `verify full --part ui` all green again; screenshots unchanged.
 
 ## Notes for the next session
-- Sync: the owner starts it; then `canvas.ts`, `check.ts --measure`, `canvas.ts`, `check.ts` for the five sheets on "Shifa Components", and the proposal sheets on "Shifa Screens · Clinic web" marked superseded.
+- Nothing left: synced, drawn on "Shifa Components", proposal sheets removed (see Stopped at).
