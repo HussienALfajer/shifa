@@ -257,7 +257,7 @@ export function AnnouncementDialog({
               <span className="text-caption text-text-muted">{text('annPreviewWaiting')}</span>
             )}
           </div>
-          <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
+          <div className="grid grid-cols-2 gap-4">
             <DatePicker
               label={text('annStartDate')}
               required

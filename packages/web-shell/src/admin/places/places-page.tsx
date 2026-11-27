@@ -152,11 +152,13 @@ export function PlacesPage() {
                   <PlaceRow
                     key={c.id}
                     target={{ kind: 'city', place: c }}
+                    selected={c.id === city.id}
                     meta={meta(c, liveAreas(all.find((x) => x.id === c.id) ?? c))}
                     head={
                       <Button
-                        variant={c.id === city.id ? 'secondary' : 'ghost'}
+                        variant="ghost"
                         size="sm"
+                        className="-ms-2 font-semibold text-text-default"
                         aria-pressed={c.id === city.id}
                         onClick={() => {
                           setChosen(c.id);

@@ -117,12 +117,15 @@ export function AddForm({
 
 export function PlaceRow({
   target,
+  selected = false,
   meta,
   head,
   onOpen,
   onRestore,
 }: {
   target: Place;
+  /** The chosen city, whose areas are shown: the selection colour, as drawn. */
+  selected?: boolean;
   meta: string;
   /** The city's name as a button that chooses it; an area's name as text. */
   head: ReactNode;
@@ -134,7 +137,7 @@ export function PlaceRow({
   return (
     <div
       data-row
-      className="flex items-center gap-2 border-t border-border-default px-3 py-2 text-data leading-body first:border-t-0"
+      className={`flex items-center gap-2 rounded-control border-t border-border-default px-3 py-2 text-data leading-body first:border-t-0 ${selected ? 'bg-selection-subtle' : ''}`}
     >
       <div className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="flex items-center gap-2">
