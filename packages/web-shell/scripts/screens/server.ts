@@ -2,6 +2,9 @@
 // requests here instead of the network (its `fetch` option, as the page tests do). Routes answer
 // from a world of synthetic data that changes as the person acts in Play; a scenario replaces any
 // route's answer (an error, a lock, a request that never ends, a network that is down).
+import { a02AdminRoutes } from './routes-a02-admin.ts';
+import { a02ClinicRoutes } from './routes-a02-clinic.ts';
+import { a02TabRoutes } from './routes-a02-tabs.ts';
 import { authRoutes } from './routes-auth.ts';
 import { clinicRoutes } from './routes-clinic.ts';
 import { platformRoutes } from './routes-platform.ts';
@@ -16,6 +19,8 @@ export interface Request {
   path: string;
   /** The `:id` of the route, when it has one. */
   id: string | undefined;
+  /** Every `:name` segment of the route (`:id`, `:key`), decoded. */
+  params: Record<string, string>;
   body: unknown;
   /** The query string (`?search=` of admin web's clinics). */
   query: URLSearchParams;
@@ -23,7 +28,10 @@ export interface Request {
 
 export type Route = (request: Request, world: World) => Reply;
 
-/** `METHOD /path` with `:id` for a path segment, e.g. `POST /team/members/:id/deactivate`. */
+/**
+ * `METHOD /path` with `:name` for a path segment, e.g. `POST /team/members/:id/deactivate` or
+ * `PUT /platform/clinics/:id/overrides/:key`.
+ */
 export type RouteTable = Record<string, Route>;
 
 /** A scenario's answer for a route: fixed, computed, or one per call (then the route's own). */
@@ -37,7 +45,14 @@ export const fail = (status: number, code: string, extra: Record<string, unknown
 export const lockFor = (code: string, ms: number): Reply =>
   fail(429, code, { until: new Date(Date.now() + ms).toISOString() });
 
-const ROUTES: RouteTable = { ...authRoutes, ...clinicRoutes, ...platformRoutes };
+const ROUTES: RouteTable = {
+  ...authRoutes,
+  ...clinicRoutes,
+  ...platformRoutes,
+  ...a02TabRoutes,
+  ...a02AdminRoutes,
+  ...a02ClinicRoutes,
+};
 
 function match(table: Record<string, unknown>, method: string, path: string) {
   for (const key of Object.keys(table)) {
@@ -46,15 +61,15 @@ function match(table: Record<string, unknown>, method: string, path: string) {
     const parts = pattern.split('/');
     const given = path.split('/');
     if (parts.length !== given.length) continue;
-    let id: string | undefined;
+    const params: Record<string, string> = {};
     const same = parts.every((part, i) => {
-      if (part === ':id') {
-        id = given[i];
+      if (part.startsWith(':')) {
+        params[part.slice(1)] = decodeURIComponent(given[i] ?? '');
         return true;
       }
       return part === given[i];
     });
-    if (same) return { key, id };
+    if (same) return { key, id: params['id'], params };
   }
   return null;
 }
@@ -123,6 +138,7 @@ export function createServer({ world, answers = {}, latencyMs = 350 }: ServerOpt
       method: input.method,
       path,
       id: own?.id ?? route?.id,
+      params: own?.params ?? route?.params ?? {},
       body,
       query: url.searchParams,
     };

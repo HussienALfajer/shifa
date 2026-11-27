@@ -13,6 +13,7 @@ import {
   OWNER_NAME,
   RECEPTION,
 } from '../world.ts';
+import { teamLimits } from './a02-limits.ts';
 import { teamActions, teamAdds, teamReads, teamSaves } from './team-more.ts';
 import { add, addFilled, fixPhone, issueLink, open, team } from './team-steps.ts';
 
@@ -20,7 +21,7 @@ export const teamSheet: Sheet = {
   id: 'Team',
   title: 'الفريق',
   route: '/team',
-  note: 'The owner’s team: all members with role, branch, status and last activity, filtered by status or searched, or one branch’s team; loading, failed, only the owner; the drawer of each kind of member (active, pending, expired link, deactivated, the owner), its account actions and their questions, a new link with copy and WhatsApp and the guard before leaving it unsent; the phone fix; adding a member with every refusal.',
+  note: 'The owner’s team: all members with role, branch, status and last activity, filtered by status or searched, or one branch’s team; loading, failed, only the owner; the drawer of each kind of member (active, pending, expired link, deactivated, the owner), its account actions and their questions, a new link with copy and WhatsApp and the guard before leaving it unsent; the phone fix; adding a member with every refusal. A-02-10: at a full doctors’ limit the doctor role is disabled with its Callout and a deactivated doctor is not reactivated; an add or a reactivation refused with `limit_reached` after the limit filled meanwhile, nothing saved.',
   code: [
     'team/team-page.tsx',
     'team/team-rows.tsx',
@@ -33,6 +34,8 @@ export const teamSheet: Sheet = {
     'team/member-phone-dialog.tsx',
     'team/panel.tsx',
     'admin/link-shown.tsx',
+    'team/limit-parts.tsx',
+    'capabilities.ts',
   ],
   scenarios: [
     team({ id: 'List', title: 'كل الأعضاء' }),
@@ -182,5 +185,6 @@ export const teamSheet: Sheet = {
     ...teamActions,
     ...teamSaves,
     ...teamAdds,
+    ...teamLimits,
   ],
 };

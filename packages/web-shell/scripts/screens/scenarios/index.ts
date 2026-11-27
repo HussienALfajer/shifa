@@ -3,6 +3,7 @@
 // holds both apps; a sheet's id is unique across them and names the app it runs.
 import type { Sheet } from '../scenario.ts';
 import type { ScreensApp } from '../state.ts';
+import { A02_CLINIC_SHEETS } from './a02.ts';
 import { accountSheet, settingsSheet } from './account.ts';
 import { ADMIN_SHEETS } from './admin/index.ts';
 import { branchesSheet } from './branches.ts';
@@ -27,6 +28,7 @@ export const SHEETS: Sheet[] = [
   branchesSheet,
   accountSheet,
   settingsSheet,
+  ...A02_CLINIC_SHEETS,
   otherPages,
 ];
 
