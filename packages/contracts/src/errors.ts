@@ -70,6 +70,9 @@ export const ErrorCode = z
     // limits, gates (A-02-03)
     'limit_reached',
     'feature_unavailable',
+    // settings cascade (A-02-04)
+    'setting_locked',
+    'setting_not_lockable',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -205,6 +208,8 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   branch_not_archived: 'This branch is not archived',
   limit_reached: 'The clinic has reached a limit of its plan',
   feature_unavailable: 'This feature is not available to this clinic',
+  setting_locked: 'This setting is locked by the platform',
+  setting_not_lockable: 'This setting cannot be locked for a clinic',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

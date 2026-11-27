@@ -92,6 +92,8 @@ export interface SampleContext {
   enrolledMemberId(): Promise<string>;
   /** A new clinic with an override of `limits.branches` (A-02-02 removal). */
   overriddenClinicId(): Promise<string>;
+  /** A new clinic whose `session.idle_minutes` is locked (A-02-04 unlock). */
+  lockedClinicId(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -164,6 +166,16 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   }),
   'GET /platform/clinics/:id/type-preview': (ctx) => ({
     url: `/platform/clinics/${ctx.clinicId}/type-preview?type=multi_branch`,
+  }),
+  'GET /platform/clinics/:id/settings': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/settings`,
+  }),
+  'PUT /platform/clinics/:id/settings/:key/lock': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/settings/session.idle_minutes/lock`,
+    body: { value: 30 },
+  }),
+  'DELETE /platform/clinics/:id/settings/:key/lock': async (ctx) => ({
+    url: `/platform/clinics/${await ctx.lockedClinicId()}/settings/session.idle_minutes/lock`,
   }),
   'PUT /platform/flags/:key': () => ({
     url: '/platform/flags/test.flag_on',
@@ -318,6 +330,10 @@ export const EXPECTED_MATRIX: Matrix = {
   'DELETE /platform/clinics/:id/overrides/:key': platformAdmin,
   'GET /platform/clinics/:id/overrides/:key/history': platformAdmin,
   'GET /platform/clinics/:id/type-preview': platformAdmin,
+  // A-02-04: a clinic's settings, locked with a value and unlocked
+  'GET /platform/clinics/:id/settings': platformAdmin,
+  'PUT /platform/clinics/:id/settings/:key/lock': platformAdmin,
+  'DELETE /platform/clinics/:id/settings/:key/lock': platformAdmin,
   // A-02-03: feature flags (super admin); what the clinic may use (every member) and its
   // subscription card (clinic.settings.manage, owner only)
   'GET /platform/flags': platformAdmin,

@@ -21,10 +21,10 @@ import { buildTestApp, type TestApp } from '../support.ts';
 
 export const CLINIC_WEB_URL = 'https://clinic.shifa.invalid';
 
-/** Extra test controllers and catalogue keys (A-02-03: gated probes, test flags). */
+/** Extra test controllers and catalogue keys (A-02-03: gated probes, test flags; A-02-04: settings). */
 export type PlatformAppOptions = Pick<
   Parameters<typeof buildTestApp>[0],
-  'controllers' | 'entitlements' | 'flags'
+  'controllers' | 'entitlements' | 'flags' | 'settings'
 >;
 
 export async function platformApp(

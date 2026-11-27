@@ -25,6 +25,7 @@ export {
 export {
   clinicUsageCounts,
   entitlementKeysInUse,
+  settingKeysInUse,
   tenantUsageCounts,
   type UsageCounts,
 } from './entitlements.ts';

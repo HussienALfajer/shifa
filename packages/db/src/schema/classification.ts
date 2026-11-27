@@ -81,6 +81,30 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'restrictive: shifa_platform appends a key’s history only in the actions that change it (override set or removed, type changed; A-02 criterion 20)',
     },
   },
+  // A-02-04: the settings cascade (criteria 8–10). shifa_app writes its own unlocked values only
+  // (restrictive policies for shifa_app need no reason here).
+  platform_setting_value: {
+    kind: 'global',
+    reason:
+      'a setting’s value for every clinic or for one plan (A-02 criterion 8, PLT-22); keys and values only, no clinic data; written by migrations alone',
+  },
+  setting_value: {
+    kind: 'tenant',
+    roleAccess: {
+      setting_value_platform_read_only_in_actions:
+        'restrictive: shifa_platform reads a clinic’s setting values only inside that clinic in a setting action (list, lock, unlock; A-02 criterion 9)',
+      setting_value_platform_lock_only:
+        'restrictive: shifa_platform writes a clinic’s value only with its lock, at the organization, in a setting.locked action (A-02 criterion 9)',
+      setting_value_platform_relock_only:
+        'restrictive: shifa_platform changes a clinic’s organization value only into a locked one, in a setting.locked action (A-02 criterion 9)',
+      setting_value_platform_unlock_only:
+        'restrictive: shifa_platform removes only a locked organization value, in a setting.unlocked action (A-02 criterion 9)',
+      setting_value_auth_idle_read:
+        'the auth path reads the idle sign-out of the clinics the signed-in person belongs to, for each session’s idle limit (A-02 criterion 10, A-01a 9)',
+      setting_value_auth_only_idle:
+        'restrictive: the auth path reads the organization’s session.idle_minutes and no other setting',
+    },
+  },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

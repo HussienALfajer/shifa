@@ -12,6 +12,7 @@ import {
   type IdentitySecrets,
 } from './modules/identity/index.ts';
 import { PlatformModule } from './modules/platform/index.ts';
+import { type SettingDefinition, SettingsModule } from './modules/settings/index.ts';
 import { TeamModule } from './modules/team/index.ts';
 import type { Clock } from './platform/clock.ts';
 import { ContractModule } from './platform/contract/index.ts';
@@ -32,6 +33,7 @@ export class AppModule {
     permissions,
     entitlements: entitlementKeys,
     flags: flagKeys,
+    settings: settingKeys,
     testRoutes = false,
   }: {
     db: ShifaDb;
@@ -50,6 +52,8 @@ export class AppModule {
     entitlements?: readonly EntitlementDefinition[] | undefined;
     /** The flag catalogue; production's by default (tests add their own flags). */
     flags?: readonly FlagDefinition[] | undefined;
+    /** The setting catalogue; production's by default (tests add their own keys). */
+    settings?: readonly SettingDefinition[] | undefined;
     testRoutes?: boolean;
   }): DynamicModule {
     const identity = IdentityModule.register({
@@ -83,6 +87,10 @@ export class AppModule {
         flags,
         CapabilitiesModule.register({ entitlements, flags }),
         TeamModule.register({ identity, entitlements }),
+        SettingsModule.register({
+          platformDb,
+          ...(settingKeys ? { settings: settingKeys } : {}),
+        }),
         BranchesModule.register({ identity, entitlements }),
         ContractModule,
         HealthModule,

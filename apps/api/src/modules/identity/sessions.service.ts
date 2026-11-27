@@ -11,7 +11,6 @@ import {
   type ShifaDb,
   session,
   type Tx,
-  tenant,
   twoFactor,
 } from '@shifa/db';
 import { and, eq, gt, isNull, lt, ne, or } from 'drizzle-orm';
@@ -24,6 +23,7 @@ import {
 } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
+import { idleMinutesOfOwnClinics } from '../settings/index.ts';
 import { activeAtSignIn } from './clinic-choices.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
 import { SESSION_ABSOLUTE_MS } from './session-cookie.ts';
@@ -169,15 +169,15 @@ export class SessionsService {
   /** The person's sessions that have not run out, idle or absolute (criterion 10). */
   async list(principal: Principal): Promise<SessionList> {
     const now = this.clock.now();
-    // The person's own clinics (withUser) give each session's idle limit (review N2).
-    const { rows, clinics } = await this.authDb.withUser(principal.userId, async (tx) => ({
+    // The person's own clinics (withUser) give each session's idle limit (review N2), through the
+    // settings cascade (A-02-04).
+    const { rows, idle } = await this.authDb.withUser(principal.userId, async (tx) => ({
       rows: await tx
         .select()
         .from(session)
         .where(and(eq(session.userId, principal.userId), gt(session.expiresAt, now))),
-      clinics: await tx.select({ id: tenant.id, idleMinutes: tenant.idleMinutes }).from(tenant),
+      idle: await idleMinutesOfOwnClinics(tx),
     }));
-    const idle = new Map(clinics.map((c) => [c.id, c.idleMinutes]));
     const idleMinutesOf = (row: SessionRow) =>
       (row.activeTenantId ? idle.get(row.activeTenantId) : undefined) ?? NO_CLINIC_IDLE_MINUTES;
     return {

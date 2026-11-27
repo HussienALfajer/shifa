@@ -24,6 +24,10 @@ export const PLATFORM_EVENTS = [
   // A-02-03: feature flags (criterion 18)
   'flag.listed',
   'flag.changed',
+  // A-02-04: a clinic's settings, locked and unlocked by the super admin (criteria 9, 18)
+  'setting.viewed',
+  'setting.locked',
+  'setting.unlocked',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 

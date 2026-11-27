@@ -44,6 +44,7 @@ import {
 import {
   clinicWithAccountOwner,
   clinicWithLink,
+  clinicWithLock,
   clinicWithOverride,
   nextPhone,
   openLimitsAndTestFeature,
@@ -239,6 +240,7 @@ async function observe(app: TestApp): Promise<Observed> {
         password: () => knownPassword(userId),
         enrolledMemberId: () => enrolledMemberOfTenantA(),
         overriddenClinicId: () => clinicWithOverride(),
+        lockedClinicId: () => clinicWithLock(),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

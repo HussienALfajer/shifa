@@ -1,5 +1,12 @@
 // Process entry point (bootstrap only): config, logger, database, app, signals.
-import { createAuthDb, createDb, createPlatformDb, entitlementKeysInUse, user } from '@shifa/db';
+import {
+  createAuthDb,
+  createDb,
+  createPlatformDb,
+  entitlementKeysInUse,
+  settingKeysInUse,
+  user,
+} from '@shifa/db';
 import { createApp } from './app.ts';
 import { ConfigError, loadConfig, loadIdentityConfig } from './config/env.ts';
 import {
@@ -7,6 +14,11 @@ import {
   EntitlementCatalogue,
   PRODUCTION_ENTITLEMENTS,
 } from './modules/entitlements/index.ts';
+import {
+  assertSettingKeysKnown,
+  PRODUCTION_SETTINGS,
+  SettingCatalogue,
+} from './modules/settings/index.ts';
 import { describeError, errorClass } from './platform/errors.ts';
 import { createLogger } from './platform/logging.ts';
 import { flushErrors, reportError } from './telemetry/errors.ts';
@@ -75,6 +87,8 @@ async function main(): Promise<void> {
       new EntitlementCatalogue(PRODUCTION_ENTITLEMENTS),
       await entitlementKeysInUse(db),
     );
+    // A-02 criterion 8: a platform or plan setting value for a key the code does not declare.
+    assertSettingKeysKnown(new SettingCatalogue(PRODUCTION_SETTINGS), await settingKeysInUse(db));
   } catch (err) {
     logger.fatal({ err: describeError(err) }, 'database check failed at startup');
     await db.close().catch(() => undefined);

@@ -42,6 +42,9 @@ final _decoders = <String, Object Function(_Json)>{
   'Subscription': (json) => Subscription.fromJson(json).toJson(),
   'FlagList': (json) => FlagList.fromJson(json).toJson(),
   'FlagView': (json) => FlagView.fromJson(json).toJson(),
+  // A-02-04
+  'ClinicSettingList': (json) => ClinicSettingList.fromJson(json).toJson(),
+  'SettingView': (json) => SettingView.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

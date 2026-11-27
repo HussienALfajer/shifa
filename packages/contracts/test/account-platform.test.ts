@@ -122,9 +122,9 @@ describe('declared statuses (A-01-11 1f, 1g)', () => {
     expect(statuses(platformOwnerEndSessions)).toEqual(['204', '401', '404', '409']);
   });
 
-  it('400 on clinic creation and edit; 400 and 403 on the clinic settings', () => {
+  it('400 on clinic creation and edit; 400, 403 and 409 (A-02-04 lock) on the clinic settings', () => {
     expect(statuses(platformCreateClinic)).toEqual(['201', '400', '401', '409']);
     expect(statuses(platformUpdateClinic)).toEqual(['200', '400', '401', '404']);
-    expect(statuses(clinicUpdateSettings)).toEqual(['200', '400', '401', '403']);
+    expect(statuses(clinicUpdateSettings)).toEqual(['200', '400', '401', '403', '409']);
   });
 });

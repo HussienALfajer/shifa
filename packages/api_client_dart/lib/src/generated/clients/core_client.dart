@@ -16,6 +16,7 @@ import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
 import '../models/clinic_entitlements.dart';
 import '../models/clinic_list.dart';
+import '../models/clinic_setting_list.dart';
 import '../models/clinic_settings.dart';
 import '../models/clinic_type.dart';
 import '../models/create_branch_request.dart';
@@ -27,6 +28,7 @@ import '../models/flag_view.dart';
 import '../models/health_status.dart';
 import '../models/invitation_request.dart';
 import '../models/invitation_view.dart';
+import '../models/lock_setting_request.dart';
 import '../models/member_added.dart';
 import '../models/member_detail.dart';
 import '../models/member_link_issued.dart';
@@ -47,6 +49,7 @@ import '../models/session_view.dart';
 import '../models/set_flag_request.dart';
 import '../models/set_override_request.dart';
 import '../models/set_password_request.dart';
+import '../models/setting_view.dart';
 import '../models/setup_link_issued.dart';
 import '../models/setup_link_request.dart';
 import '../models/setup_link_view.dart';
@@ -61,6 +64,7 @@ import '../models/totp_reenrol_start.dart';
 import '../models/type_preview.dart';
 import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
+import '../models/update_clinic_settings_request.dart';
 import '../models/update_member_request.dart';
 
 part 'core_client.g.dart';
@@ -187,7 +191,7 @@ abstract class CoreClient {
   /// Change the clinic’s automatic sign-out (15, 30 or 60 minutes)
   @PATCH('/clinic/settings')
   Future<ClinicSettings> clinicUpdateSettings({
-    @Body() required ClinicSettings body,
+    @Body() required UpdateClinicSettingsRequest body,
   });
 
   /// The clinic’s plan, status, end date, limits with use and enabled features (owner)
@@ -296,6 +300,27 @@ abstract class CoreClient {
   @POST('/platform/clinics/{id}/owner/setup-link')
   Future<SetupLinkIssued> platformOwnerSetupLink({
     @Path('id') required String id,
+  });
+
+  /// Every setting of a clinic with its effective value, source and lock
+  @GET('/platform/clinics/{id}/settings')
+  Future<ClinicSettingList> platformClinicSettings({
+    @Path('id') required String id,
+  });
+
+  /// Unlock a clinic’s setting; the value is inherited again
+  @DELETE('/platform/clinics/{id}/settings/{key}/lock')
+  Future<SettingView> platformUnlockSetting({
+    @Path('id') required String id,
+    @Path('key') required String key,
+  });
+
+  /// Set and lock a clinic’s value of one setting («قفل بقيمة»)
+  @PUT('/platform/clinics/{id}/settings/{key}/lock')
+  Future<SettingView> platformLockSetting({
+    @Path('id') required String id,
+    @Path('key') required String key,
+    @Body() required LockSettingRequest body,
   });
 
   /// The limits a clinic would have under another type, against its current use

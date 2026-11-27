@@ -43,6 +43,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-02-03: flags (global) and the clinic's own selections
     feature_flag: ['SELECT'],
     feature_flag_tenant: ['SELECT'],
+    // A-02-04: settings; the clinic's own values, UPDATE by column only (never `locked`, below)
+    platform_setting_value: ['SELECT'],
+    setting_value: ['SELECT', 'INSERT', 'DELETE'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -57,6 +60,8 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     setup_link: ['SELECT'],
     audit_event: ['INSERT'],
     platform_admin: ['SELECT'],
+    // A-02-04: platform values, and each clinic's idle sign-out (column SELECT below)
+    platform_setting_value: ['SELECT'],
   },
   shifa_platform: {
     tenant: ['SELECT', 'INSERT', 'UPDATE'],
@@ -79,6 +84,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-02-03: the super admin sets flags and their selected clinics (flag actions, policies)
     feature_flag: ['SELECT', 'INSERT', 'UPDATE'],
     feature_flag_tenant: ['SELECT', 'INSERT', 'DELETE'],
+    // A-02-04: a clinic's values, locked or unlocked, in setting actions (policies)
+    platform_setting_value: ['SELECT'],
+    setting_value: DML,
   },
 };
 
@@ -112,6 +120,14 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
   ],
   ['shifa_app', 'setup_link', 'UPDATE', ['replaced_at']],
   ['shifa_app', 'tenant', 'UPDATE', ['idle_minutes', 'updated_at']],
+  // A-02-04: a clinic changes its own unlocked value, never the lock (owner-approved column grant)
+  ['shifa_app', 'setting_value', 'UPDATE', ['value', 'set_by', 'set_at']],
+  [
+    'shifa_auth',
+    'setting_value',
+    'SELECT',
+    ['tenant_id', 'scope', 'scope_id', 'key', 'value', 'locked'],
+  ],
   [
     'shifa_auth',
     'role_assignment',

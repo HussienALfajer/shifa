@@ -1,7 +1,7 @@
 // Fixtures of the route matrix (route-matrix.test.ts): fresh phones, clinics with a pending or a
 // set-up owner, and the calling person's TOTP put in a known state, so each sample request shows
 // access only.
-import { createClinic, membership, tenantOverride, twoFactor } from '@shifa/db';
+import { createClinic, membership, settingValue, tenantOverride, twoFactor } from '@shifa/db';
 import {
   fixtureId,
   superuserDb,
@@ -65,6 +65,19 @@ export async function clinicWithOverride(): Promise<string> {
       reason: 'سبب تجريبي للمصفوفة',
       setBy: fixtureId('matrix super admin'),
     });
+  return clinicId;
+}
+
+/** A new clinic whose idle sign-out the super admin locked (A-02-04 unlock). */
+export async function clinicWithLock(): Promise<string> {
+  const { clinicId } = await clinicWithLink();
+  await superuserDb(workerDatabaseName()).insert(settingValue).values({
+    tenantId: clinicId,
+    scope: 'organization',
+    key: 'session.idle_minutes',
+    value: 60,
+    locked: true,
+  });
   return clinicId;
 }
 

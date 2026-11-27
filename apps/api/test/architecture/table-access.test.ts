@@ -40,6 +40,8 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   // A-02-03
   flags: ['featureFlag', 'featureFlagTenant'],
   capabilities: [],
+  // A-02-04: the settings cascade, and the owner's change of the idle sign-out (audited)
+  settings: ['settingValue', 'platformSettingValue', 'auditEvent'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -72,7 +74,9 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   },
   team: {
     branch: 'read: a role assignment names an active branch of the clinic',
-    tenant: 'the clinic’s own settings row (idle minutes, A-01a 9)',
+  },
+  settings: {
+    tenant: 'read: a clinic’s type is its plan, whose setting values apply (A-02 criterion 8)',
   },
 };
 
@@ -81,9 +85,6 @@ const WRITES: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   identity: {
     membership: 'accepting a link or an invitation binds it; a request stamps last_active_at',
     setupLink: 'using a link marks it used, on the auth path',
-  },
-  team: {
-    tenant: 'the clinic’s idle setting (A-01a 9; only idle_minutes is granted)',
   },
 };
 
@@ -271,11 +272,10 @@ describe('module table access', () => {
       writeFileSync(
         join(root, 'team', 'w.ts'),
         [
-          "import { branch as b, membership, tenant } from '@shifa/db';",
+          "import { branch as b, membership } from '@shifa/db';",
           'export const w = (tx: any) => [',
           "  tx.update(b).set({ name: 'x' }),",
           '  tx.insert(membership).values({}),',
-          '  tx.update(tenant).set({ idleMinutes: 15 }),',
           '  tx.select().from(b),',
           '];',
           '',
@@ -285,8 +285,7 @@ describe('module table access', () => {
         join(root, 'platform', 'p.ts'),
         "import { membership } from '@shifa/db';\nexport const p = (tx: any) => tx.delete(membership);\n",
       );
-      // team owns membership and may write tenant (WRITES); branch and platform's membership
-      // are read-only exceptions.
+      // team owns membership; branch and platform's membership are read-only exceptions.
       expect(tableViolations(root)).toEqual([
         'platform/p.ts writes membership',
         'team/w.ts writes branch',

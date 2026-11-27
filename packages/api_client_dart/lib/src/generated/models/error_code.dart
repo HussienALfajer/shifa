@@ -118,7 +118,11 @@ enum ErrorCode {
   @JsonValue('limit_reached')
   limitReached('limit_reached'),
   @JsonValue('feature_unavailable')
-  featureUnavailable('feature_unavailable');
+  featureUnavailable('feature_unavailable'),
+  @JsonValue('setting_locked')
+  settingLocked('setting_locked'),
+  @JsonValue('setting_not_lockable')
+  settingNotLockable('setting_not_lockable');
 
   const ErrorCode(this.json);
 
