@@ -41,20 +41,27 @@ describe('the A-01 catalogue and grants', () => {
       ['branches.manage', false],
       ['clinic.settings.manage', false],
       ['clinical.notes.view', true],
+      // A-02-03
+      ['clinic.capabilities.view', false],
     ]);
   });
 
   it('grants the owner the management keys; notes to doctor and assistant only', () => {
     expect([...PRODUCTION_GRANTS.owner].sort()).toEqual([
       'branches.manage',
+      'clinic.capabilities.view',
       'clinic.settings.manage',
       'members.manage',
       'members.view',
     ]);
-    expect(PRODUCTION_GRANTS.doctor).toEqual(['clinical.notes.view']);
-    expect(PRODUCTION_GRANTS.assistant).toEqual(['clinical.notes.view']);
-    expect(PRODUCTION_GRANTS.receptionist).toEqual([]);
-    expect(PRODUCTION_GRANTS.accountant).toEqual([]);
+    expect(PRODUCTION_GRANTS.doctor).toEqual(['clinical.notes.view', 'clinic.capabilities.view']);
+    expect(PRODUCTION_GRANTS.assistant).toEqual([
+      'clinical.notes.view',
+      'clinic.capabilities.view',
+    ]);
+    // A-02-03: every clinic role reads what its clinic may use; a super admin never does.
+    expect(PRODUCTION_GRANTS.receptionist).toEqual(['clinic.capabilities.view']);
+    expect(PRODUCTION_GRANTS.accountant).toEqual(['clinic.capabilities.view']);
     expect(PRODUCTION_GRANTS.platform_admin).toEqual([]);
   });
 

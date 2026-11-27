@@ -83,7 +83,8 @@ beforeAll(async () => {
   };
 
   const admin = await signedInAdmin(current, clock, ADMIN);
-  const created = await createClinicViaApi(current, admin.cookie, OWNER);
+  // Multi-branch: the test adds a branch beside the main one (branch limit, A-02-03).
+  const created = await createClinicViaApi(current, admin.cookie, OWNER, { type: 'multi_branch' });
   secrets.push(tokenOf(created.linkUrl));
   const owner = (await setUpOwner(current, clock, created.linkUrl)).cookie;
 

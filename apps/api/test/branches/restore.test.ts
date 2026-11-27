@@ -29,7 +29,7 @@ interface BranchBody {
 }
 
 beforeAll(async () => {
-  world = await teamWorld(clock, 2026_12_12);
+  world = await teamWorld(clock, 2026_12_12, { clinicType: 'multi_branch' });
   clinic = await world.clinic();
   other = await world.clinic();
 });

@@ -49,11 +49,19 @@ export interface TeamWorld {
   clinic(): Promise<Clinic>;
 }
 
+export interface TeamWorldOptions extends PlatformAppOptions {
+  /**
+   * The type (plan) of every clinic the world creates. Tests that add several branches take
+   * `multi_branch`: since A-02-03 a multi-doctor clinic holds one branch (OD-110).
+   */
+  clinicType?: 'solo' | 'multi_doctor' | 'multi_branch';
+}
+
 /** Empties the database, starts the app and signs in a super admin. */
 export async function teamWorld(
   clock: FixedClock,
   seed: number,
-  options: PlatformAppOptions = {},
+  { clinicType = 'multi_doctor', ...options }: TeamWorldOptions = {},
 ): Promise<TeamWorld> {
   await resetDatabase();
   const app = await platformApp(clock, options);
@@ -73,7 +81,9 @@ export async function teamWorld(
     phone,
     clinic: async () => {
       const ownerPhone = phone();
-      const created = await createClinicViaApi(app, admin.cookie, ownerPhone);
+      const created = await createClinicViaApi(app, admin.cookie, ownerPhone, {
+        type: clinicType,
+      });
       const owner = await setUpOwner(app, clock, created.linkUrl);
       return {
         clinicId: created.clinicId,

@@ -15,6 +15,8 @@ export const PRODUCTION_PERMISSIONS = [
   { key: 'branches.manage', sensitive: false },
   { key: 'clinic.settings.manage', sensitive: false },
   { key: 'clinical.notes.view', sensitive: true },
+  // A-02-03: what the active clinic may use (GET /clinic/capabilities), every member
+  { key: 'clinic.capabilities.view', sensitive: false },
 ] as const satisfies readonly PermissionDefinition[];
 
 export type PermissionKey = (typeof PRODUCTION_PERMISSIONS)[number]['key'];

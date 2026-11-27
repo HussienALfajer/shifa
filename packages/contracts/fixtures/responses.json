@@ -1002,14 +1002,16 @@
               "setByName": "مشرف تجريبي",
               "setAt": "2026-11-27T09:00:00.000Z"
             },
-            "effective": 10
+            "effective": 10,
+            "used": 7
           },
           {
             "key": "limits.branches",
             "kind": "limit",
             "planValue": 1,
             "override": null,
-            "effective": 1
+            "effective": 1,
+            "used": null
           }
         ]
       }
@@ -1045,9 +1047,95 @@
         "type": "solo",
         "limits": [{ "key": "limits.branches", "current": 5, "next": 1, "used": 3, "over": true }]
       }
+    },
+    {
+      "name": "capabilities with a full limit, an uncounted one and flags",
+      "schema": "Capabilities",
+      "body": {
+        "entitlements": {},
+        "limits": [
+          { "key": "limits.practitioners", "limit": 10, "used": 10 },
+          { "key": "limits.custom_fields", "limit": 20, "used": null }
+        ],
+        "flags": { "queue.new_board": true }
+      }
+    },
+    {
+      "name": "subscription card",
+      "schema": "Subscription",
+      "body": {
+        "plan": "multi_branch",
+        "status": "active",
+        "subscriptionEnd": "2027-06-30",
+        "limits": [{ "key": "limits.branches", "limit": 5, "used": 3 }],
+        "features": []
+      }
+    },
+    {
+      "name": "flags list, one on for selected clinics and one never changed",
+      "schema": "FlagList",
+      "body": {
+        "flags": [
+          {
+            "key": "queue.new_board",
+            "description": "the new waiting-room board",
+            "defaultValue": false,
+            "mode": "selected",
+            "clinics": [{ "id": "2d8f4c6a-8e3f-4f9c-9d2a-4b6e7c8d9fa0", "name": "عيادة تجريبية" }],
+            "reason": "سبب تجريبي للعلم",
+            "updatedByName": "مشرف تجريبي",
+            "updatedAt": "2026-11-27T09:00:00.000Z"
+          },
+          {
+            "key": "queue.sound",
+            "description": "a sound on each call",
+            "defaultValue": true,
+            "mode": "on",
+            "clinics": [],
+            "reason": null,
+            "updatedByName": null,
+            "updatedAt": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "error limit_reached with the limit",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "limit_reached",
+          "message": "The clinic has reached a limit of its plan",
+          "limitReached": { "key": "limits.practitioners", "limit": 10, "used": 10 }
+        }
+      }
+    },
+    {
+      "name": "error feature_unavailable",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "feature_unavailable",
+          "message": "This feature is not available to this clinic"
+        }
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "flag with an unknown mode",
+      "schema": "FlagView",
+      "body": {
+        "key": "queue.sound",
+        "description": "a sound on each call",
+        "defaultValue": true,
+        "mode": "half",
+        "clinics": [],
+        "reason": null,
+        "updatedByName": null,
+        "updatedAt": null
+      }
+    },
     {
       "name": "entitlement item with an unknown kind",
       "schema": "EntitlementItem",

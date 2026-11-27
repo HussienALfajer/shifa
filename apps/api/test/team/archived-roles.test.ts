@@ -30,7 +30,7 @@ interface DetailRole {
 }
 
 beforeAll(async () => {
-  world = await teamWorld(clock, 2026_12_19);
+  world = await teamWorld(clock, 2026_12_19, { clinicType: 'multi_branch' });
   clinic = await world.clinic();
   other = await world.clinic();
 });

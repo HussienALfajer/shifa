@@ -4,9 +4,11 @@
 // check and every test app refuse to start otherwise.
 import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
 import { PATH_METADATA } from '@nestjs/common/constants';
-import { DiscoveryService, MetadataScanner, Reflector } from '@nestjs/core';
+import { DiscoveryService, MetadataScanner, ModuleRef, Reflector } from '@nestjs/core';
 import {
   BEFORE_MFA_METADATA,
+  ENTITLEMENT_GATE_METADATA,
+  FLAG_GATE_METADATA,
   PERMISSION_METADATA,
   PLATFORM_ADMIN_METADATA,
   PUBLIC_METADATA,
@@ -18,6 +20,7 @@ import {
   type PermissionCatalogue,
   UnknownPermissionError,
 } from './permissions.ts';
+import { findGates, type GatePort } from './gates.ts';
 import type { RoleGrants } from './roles.ts';
 
 /** Injection token of the role grants (production: PRODUCTION_GRANTS). */
@@ -34,17 +37,26 @@ export interface AccessAnnotations {
   signedIn: boolean;
   platformAdmin: boolean;
   beforeMfa: boolean;
+  /** @RequireEntitlement(key) (A-02-03). */
+  entitlementGate: string | undefined;
+  /** @RequireFlag(key) (A-02-03). */
+  flagGate: string | undefined;
 }
 
 export function readAccess(reflector: Reflector, handler: object): AccessAnnotations {
   const flag = (key: string) => reflector.get<unknown>(key, handler as never) === true;
-  const permission = reflector.get<unknown>(PERMISSION_METADATA, handler as never);
+  const text = (key: string) => {
+    const value = reflector.get<unknown>(key, handler as never);
+    return typeof value === 'string' ? value : undefined;
+  };
   return {
     isPublic: flag(PUBLIC_METADATA),
-    permission: typeof permission === 'string' ? permission : undefined,
+    permission: text(PERMISSION_METADATA),
     signedIn: flag(SIGNED_IN_METADATA),
     platformAdmin: flag(PLATFORM_ADMIN_METADATA),
     beforeMfa: flag(BEFORE_MFA_METADATA),
+    entitlementGate: text(ENTITLEMENT_GATE_METADATA),
+    flagGate: text(FLAG_GATE_METADATA),
   };
 }
 
@@ -62,9 +74,17 @@ export class AccessCheck implements OnApplicationBootstrap {
     @Inject(Reflector) private readonly reflector: Reflector,
     @Inject(PERMISSION_CATALOGUE) private readonly catalogue: PermissionCatalogue,
     @Inject(ROLE_GRANTS) private readonly grants: RoleGrants,
+    @Inject(ModuleRef) private readonly moduleRef: ModuleRef,
   ) {}
 
   onApplicationBootstrap(): void {
+    const gates = this.gateProblems(findGates(this.moduleRef));
+    if (gates.length > 0) {
+      throw new AccessAnnotationError(
+        '@RequireEntitlement(key) and @RequireFlag(key) need @RequirePermission(key) and a key ' +
+          `from the entitlement (a feature) or flag catalogue:\n${gates.join('\n')}`,
+      );
+    }
     // Grants naming a key outside the catalogue stop the start (A-01b criterion 7).
     assertGrantsKnown(this.catalogue, this.grants);
     const unknown = this.unknownKeys();
@@ -89,6 +109,24 @@ export class AccessCheck implements OnApplicationBootstrap {
       .filter(({ access }) => !this.catalogue.has(access.permission ?? ''))
       .map(({ label, access }) => `  ${label}: ${access.permission ?? ''}`)
       .sort();
+  }
+
+  /** One line per gate on a route without a permission check, or naming an unknown key. */
+  gateProblems(gates: GatePort): string[] {
+    const problems: string[] = [];
+    for (const { label, access } of this.#handlers()) {
+      const { entitlementGate: feature, flagGate: flag } = access;
+      if ((feature !== undefined || flag !== undefined) && access.permission === undefined) {
+        problems.push(`  ${label}: a gate without @RequirePermission`);
+      }
+      if (feature !== undefined && !gates.knowsFeature(feature)) {
+        problems.push(`  ${label}: unknown feature ${feature}`);
+      }
+      if (flag !== undefined && !gates.knowsFlag(flag)) {
+        problems.push(`  ${label}: unknown flag ${flag}`);
+      }
+    }
+    return problems.sort();
   }
 
   #handlers(): { label: string; access: AccessAnnotations }[] {

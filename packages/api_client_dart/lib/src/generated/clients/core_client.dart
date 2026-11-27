@@ -10,6 +10,7 @@ import '../models/add_member_request.dart';
 import '../models/archive_branch_preview.dart';
 import '../models/branch.dart';
 import '../models/branch_list.dart';
+import '../models/capabilities.dart';
 import '../models/change_password_request.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
@@ -21,6 +22,8 @@ import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/entitlement_item.dart';
+import '../models/flag_list.dart';
+import '../models/flag_view.dart';
 import '../models/health_status.dart';
 import '../models/invitation_request.dart';
 import '../models/invitation_view.dart';
@@ -41,12 +44,14 @@ import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
 import '../models/session_list.dart';
 import '../models/session_view.dart';
+import '../models/set_flag_request.dart';
 import '../models/set_override_request.dart';
 import '../models/set_password_request.dart';
 import '../models/setup_link_issued.dart';
 import '../models/setup_link_request.dart';
 import '../models/setup_link_view.dart';
 import '../models/sign_in_request.dart';
+import '../models/subscription.dart';
 import '../models/switch_request.dart';
 import '../models/totp_challenge.dart';
 import '../models/totp_enrol_confirm.dart';
@@ -171,6 +176,10 @@ abstract class CoreClient {
   @POST('/branches/{id}/restore')
   Future<Branch> branchesRestore({@Path('id') required String id});
 
+  /// What the active clinic may use: features, limits with use, evaluated flags
+  @GET('/clinic/capabilities')
+  Future<Capabilities> clinicCapabilities();
+
   /// The clinic’s settings (automatic sign-out)
   @GET('/clinic/settings')
   Future<ClinicSettings> clinicSettings();
@@ -180,6 +189,10 @@ abstract class CoreClient {
   Future<ClinicSettings> clinicUpdateSettings({
     @Body() required ClinicSettings body,
   });
+
+  /// The clinic’s plan, status, end date, limits with use and enabled features (owner)
+  @GET('/clinic/subscription')
+  Future<Subscription> clinicSubscription();
 
   /// Liveness probe
   @GET('/health/live')
@@ -290,6 +303,17 @@ abstract class CoreClient {
   Future<TypePreview> platformTypePreview({
     @Path('id') required String id,
     @Query('type') required ClinicType type,
+  });
+
+  /// Every flag declared in code, with its mode, clinics, reason and last change
+  @GET('/platform/flags')
+  Future<FlagList> platformFlags();
+
+  /// Set a flag off for all, on for all or on for selected clinics
+  @PUT('/platform/flags/{key}')
+  Future<FlagView> platformSetFlag({
+    @Path('key') required String key,
+    @Body() required SetFlagRequest body,
   });
 
   /// The clinic’s members with roles, scope and status

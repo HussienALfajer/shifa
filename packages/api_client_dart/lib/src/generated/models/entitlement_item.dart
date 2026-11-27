@@ -17,6 +17,7 @@ class EntitlementItem {
     required this.kind,
     required this.override,
     required this.planValue,
+    required this.used,
   });
 
   factory EntitlementItem.fromJson(Map<String, Object?> json) =>
@@ -28,6 +29,8 @@ class EntitlementItem {
   @JsonKey(includeIfNull: true)
   final EntitlementOverride? override;
   final dynamic planValue;
+  @JsonKey(includeIfNull: true)
+  final int? used;
 
   Map<String, Object?> toJson() => _$EntitlementItemToJson(this);
 }

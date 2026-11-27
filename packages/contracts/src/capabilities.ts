@@ -20,13 +20,17 @@ export const LimitUse = z
   .meta({ id: 'LimitUse' });
 export type LimitUse = z.infer<typeof LimitUse>;
 
+/** Each feature entitlement key, on or off (A-02 registers none). */
+export const FeatureValues = z.record(z.string(), z.boolean()).meta({ id: 'FeatureValues' });
+
+/** Each flag declared in code, evaluated for the clinic. */
+export const FlagValues = z.record(z.string(), z.boolean()).meta({ id: 'FlagValues' });
+
 export const Capabilities = z
   .object({
-    /** Each feature entitlement on or off (A-02 registers none). */
-    entitlements: z.record(z.string(), z.boolean()),
+    entitlements: FeatureValues,
     limits: z.array(LimitUse),
-    /** Each flag declared in code, evaluated for this clinic. */
-    flags: z.record(z.string(), z.boolean()),
+    flags: FlagValues,
   })
   .meta({ id: 'Capabilities' });
 export type Capabilities = z.infer<typeof Capabilities>;

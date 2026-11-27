@@ -7,6 +7,7 @@ import {
   type ErrorCode,
   type ErrorEnvelope,
   envelopeFor,
+  type LimitReached,
   type SessionEndReason,
   VALIDATION_FAILED_MESSAGE,
 } from '@shifa/contracts';
@@ -29,6 +30,8 @@ export class ApiError extends HttpException {
     readonly until?: Date,
     /** Why the session ended: only with `session_expired` (A-01a criterion 9). */
     readonly reason?: SessionEndReason,
+    /** The limit that refused an add: only with `limit_reached` (A-02 criterion 4). */
+    readonly limitReached?: LimitReached,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -43,6 +46,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         message: CODE_MESSAGES[exception.code] ?? envelopeFor(status).error.message,
         ...(exception.until ? { until: exception.until.toISOString() } : {}),
         ...(exception.reason ? { reason: exception.reason } : {}),
+        ...(exception.limitReached ? { limitReached: { ...exception.limitReached } } : {}),
       },
     };
   }

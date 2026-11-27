@@ -15,6 +15,7 @@ import {
   PRODUCTION_ENTITLEMENTS,
 } from './catalogue.ts';
 import { EntitlementsController } from './entitlements.controller.ts';
+import { ClinicLimits } from './limits.ts';
 import { loadSources } from './sources.ts';
 import { ENTITLEMENTS_PLATFORM_DB } from './tokens.ts';
 
@@ -56,8 +57,9 @@ export class EntitlementsModule {
             ),
         },
         EntitlementsAdmin,
+        ClinicLimits,
       ],
-      exports: [ENTITLEMENTS, ENTITLEMENT_CATALOGUE, EntitlementsAdmin],
+      exports: [ENTITLEMENTS, ENTITLEMENT_CATALOGUE, EntitlementsAdmin, ClinicLimits],
     };
   }
 }

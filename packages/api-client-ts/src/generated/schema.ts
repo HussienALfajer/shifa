@@ -362,6 +362,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/clinic/capabilities": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** What the active clinic may use: features, limits with use, evaluated flags */
+        get: operations["clinicCapabilities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/clinic/settings": {
         parameters: {
             query?: never;
@@ -378,6 +395,23 @@ export interface paths {
         head?: never;
         /** Change the clinic’s automatic sign-out (15, 30 or 60 minutes) */
         patch: operations["clinicUpdateSettings"];
+        trace?: never;
+    };
+    "/clinic/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The clinic’s plan, status, end date, limits with use and enabled features (owner) */
+        get: operations["clinicSubscription"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/health/live": {
@@ -689,6 +723,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform/flags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every flag declared in code, with its mode, clinics, reason and last change */
+        get: operations["platformFlags"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/flags/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set a flag off for all, on for all or on for selected clinics */
+        put: operations["platformSetFlag"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/team/members": {
         parameters: {
             query?: never;
@@ -864,6 +932,11 @@ export interface components {
             active: components["schemas"]["Branch"][];
             archived: components["schemas"]["Branch"][];
         };
+        Capabilities: {
+            entitlements: components["schemas"]["FeatureValues"];
+            flags: components["schemas"]["FlagValues"];
+            limits: components["schemas"]["LimitUse"][];
+        };
         ChangePasswordRequest: {
             currentPassword: string;
             newPassword: string;
@@ -941,6 +1014,7 @@ export interface components {
             kind: components["schemas"]["EntitlementKind"];
             override: components["schemas"]["EntitlementOverride"] | null;
             planValue: number | boolean;
+            used: number | null;
         };
         /** @enum {string} */
         EntitlementKind: "limit" | "feature";
@@ -956,6 +1030,7 @@ export interface components {
         ErrorBody: {
             code: components["schemas"]["ErrorCode"];
             details?: components["schemas"]["ValidationIssue"][];
+            limitReached?: components["schemas"]["LimitReached"];
             message: string;
             reason?: components["schemas"]["SessionEndReason"];
             /** Format: date-time */
@@ -965,9 +1040,35 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
+        };
+        FeatureValues: {
+            [key: string]: boolean;
+        };
+        FlagClinic: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        FlagList: {
+            flags: components["schemas"]["FlagView"][];
+        };
+        /** @enum {string} */
+        FlagMode: "off" | "on" | "selected";
+        FlagValues: {
+            [key: string]: boolean;
+        };
+        FlagView: {
+            clinics: components["schemas"]["FlagClinic"][];
+            defaultValue: boolean;
+            description: string;
+            key: string;
+            mode: components["schemas"]["FlagMode"];
+            reason: string | null;
+            updatedAt: string | null;
+            updatedByName: string | null;
         };
         HealthStatus: {
             /** @constant */
@@ -989,6 +1090,16 @@ export interface components {
             personName: string;
             phoneMasked: string;
             roles: components["schemas"]["InvitationRole"][];
+        };
+        LimitReached: {
+            key: string;
+            limit: number;
+            used: number;
+        };
+        LimitUse: {
+            key: string;
+            limit: number;
+            used: number | null;
         };
         MemberAdded: {
             link: components["schemas"]["MemberLinkIssued"];
@@ -1182,6 +1293,11 @@ export interface components {
             /** Format: uuid */
             userId: string;
         };
+        SetFlagRequest: {
+            clinicIds?: string[];
+            mode: components["schemas"]["FlagMode"];
+            reason: string;
+        };
         SetOverrideRequest: {
             expiresAt?: string | null;
             reason: string;
@@ -1218,6 +1334,13 @@ export interface components {
         SignInRequest: {
             password: string;
             phone: string;
+        };
+        Subscription: {
+            features: string[];
+            limits: components["schemas"]["LimitUse"][];
+            plan: components["schemas"]["ClinicType"];
+            status: components["schemas"]["ClinicStatus"];
+            subscriptionEnd: string | null;
         };
         SwitchRequest: {
             branchId?: string | null;
@@ -2441,6 +2564,44 @@ export interface operations {
             };
         };
     };
+    clinicCapabilities: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Capabilities"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     clinicSettings: {
         parameters: {
             query?: never;
@@ -2508,6 +2669,44 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    clinicSubscription: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Subscription"];
                 };
             };
             /** @description Unauthorized */
@@ -3629,6 +3828,106 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TypePreview"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformFlags: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagList"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformSetFlag: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetFlagRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FlagView"];
                 };
             };
             /** @description Bad request */

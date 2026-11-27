@@ -19,6 +19,7 @@ import {
   get,
   patch,
   post,
+  type RoleScope,
   type TeamWorld,
   teamWorld,
 } from '../team/support.ts';
@@ -60,7 +61,7 @@ function expectLimit(res: LightMyRequestResponse, key: string, limit: number, us
   expect(body.error.limitReached).toEqual({ key, limit, used });
 }
 
-const add = (roles = DOCTOR) =>
+const add = (roles: RoleScope[] = DOCTOR) =>
   addMember(world.app, clinic.owner.cookie, { phone: world.phone(), roles });
 
 async function memberIds(): Promise<string[]> {

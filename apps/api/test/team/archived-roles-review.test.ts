@@ -21,7 +21,7 @@ let world: TeamWorld;
 let clinic: Clinic;
 
 beforeAll(async () => {
-  world = await teamWorld(clock, 2026_12_26);
+  world = await teamWorld(clock, 2026_12_26, { clinicType: 'multi_branch' });
   clinic = await world.clinic();
 });
 

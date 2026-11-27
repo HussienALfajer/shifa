@@ -8,6 +8,7 @@ import {
   type OpenApiDocument,
   serializeDocument,
 } from '../../src/platform/contract/openapi.ts';
+import { GatedProbeController, TEST_ENTITLEMENTS, TEST_FLAGS } from '../access/gated-probe.ts';
 import { ProbeController, TEST_PERMISSIONS } from '../access/probe.ts';
 import { EXPECTED_MATRIX, TEST_ONLY_ROUTES } from '../architecture/route-matrix.expected.ts';
 import { buildTestApp, offlineDb, type TestApp } from '../support.ts';
@@ -62,8 +63,10 @@ let doc: OpenApiDocument;
 beforeAll(async () => {
   probes = await buildTestApp({
     db: offlineDb(),
-    controllers: [ProbeController, ContractProbeController],
+    controllers: [ProbeController, ContractProbeController, GatedProbeController],
     permissions: TEST_PERMISSIONS,
+    entitlements: TEST_ENTITLEMENTS,
+    flags: TEST_FLAGS,
   });
   production = await buildTestApp({ db: offlineDb() });
   doc = buildOpenApiDocument(probes.app);
@@ -244,7 +247,9 @@ describe('OpenAPI document', () => {
       '/branches/{id}/archive',
       '/branches/{id}/archive-preview',
       '/branches/{id}/restore',
+      '/clinic/capabilities',
       '/clinic/settings',
+      '/clinic/subscription',
       '/health/live',
       '/health/ready',
       '/invitations/accept',
@@ -263,6 +268,8 @@ describe('OpenAPI document', () => {
       '/platform/clinics/{id}/owner/reset-mfa',
       '/platform/clinics/{id}/owner/setup-link',
       '/platform/clinics/{id}/type-preview',
+      '/platform/flags',
+      '/platform/flags/{key}',
       '/team/members',
       '/team/members/{id}',
       '/team/members/{id}/deactivate',

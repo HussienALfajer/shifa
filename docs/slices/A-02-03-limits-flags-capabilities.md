@@ -34,7 +34,23 @@ Names in the earlier plan above that the contract replaces: flag `reason` 10–5
 - Spec additions: criteria 4 and 5 (a full limit shown before sending; what the plan does not allow is absent, never disabled), criterion 7 (who changed a flag last).
 
 ## Stopped at
-Planned.
+Built: contracts, database (two migrations), API (`modules/flags`, `modules/capabilities`, `ClinicLimits` in `modules/entitlements`, the gates in `src/access/`, the folded clinic search). In review.
+
+## As built (changes from the plan, reported to the owner)
+- **Branch:** `claude/zen-heisenberg-xkeqjf` (cloud session; planned as `feat/A-02-03-limits-flags-capabilities`).
+- **`GET /clinic/capabilities` access:** a new non-sensitive permission `clinic.capabilities.view`, granted to every clinic role (owner, doctor, receptionist, assistant, accountant), never to a super admin, instead of `@SignedIn`: `@SignedIn` routes get no checked scope and never read tenant data (`.claude/rules/api.md`). Matrix row `clinicMember`.
+- **`limit_reached` body:** the limit is in `error.limitReached` (`key`, `limit`, `used`; schema `LimitReached`), not `details`, which stays the list of field issues of `validation_failed` (one shape per field, for both clients). Contract row `add409` updated; no drawing change (the Callout names the limit either way).
+- **Gate answer:** a gated route whose feature or flag is off answers 403 `feature_unavailable` (new code). Gates sit on `@RequirePermission` routes only (the start-up check refuses one elsewhere, and a key outside the catalogues). The guard finds the `GatePort` (`modules/capabilities/gates.ts`) through `ModuleRef`, so `src/access/` imports no module; without a provider every gated route stops the start.
+- **Flag client:** `getBooleanValue(key, defaultValue, scope)`: the evaluation context is the scope the guard checked (the provider reads through `TenantDb`), not a bare tenant id. As in OpenFeature, `defaultValue` answers only a failed read (gates pass `false`); a key outside the catalogue throws. `PRODUCTION_FLAGS` is empty: no flag is declared yet (the flags screen shows its `none` state).
+- **Selection kept:** `PUT /platform/flags/:key` without `clinicIds` keeps the stored selection; with `clinicIds` it replaces it; the list and the answer return the kept selection while the flag is on or off for all (ignored then). Audit `flag.changed` data: `key`, `before`, `after` (modes) and `clinics` (count); `flag.listed` for the list. No reason text in audit data.
+- **`feature_flag_tenant`** has a uuid `id` with `(tenant_id, flag_key)` unique (`test/schema-keys.test.ts`), and a foreign key to `feature_flag.key`. shifa_platform reads every clinic's selections in flag actions only (tenant ids; clinic names from `tenant`, which it reads anyway).
+- **Limits read fresh:** the check resolves the limit from the rows in the write transaction, not the 60 s cache, so a lowered limit is never passed by a stale entry. Lock order: owners → `shifa.limits:` → phone → rows; branch restore takes the limits lock before the branch's row lock.
+- **Counts:** `clinicUsageCounts(tx)` (shifa_app, the clinic's context) beside `tenant_usage_counts()` in `packages/db/src/entitlements.ts`; `entitlements/usage-counts.ts` maps both to keys. The platform function now also answers in `entitlement.viewed`, `entitlement.override_set` and `entitlement.override_removed` (for `used` on «الاشتراك والحدود»); `used` is null for `limits.custom_fields`.
+- **One fold:** `foldArabic` and `matchesWordStart` moved from `@shifa/ui` to `@shifa/contracts/fold-arabic` (no imports); `@shifa/ui` re-exports them (no behaviour or look change) and gained `@shifa/contracts` as a dependency. The clinic search filters the listed clinics with `matchesWordStart` (the list already reads every clinic).
+- **Test worlds:** `teamWorld()` takes `clinicType`; the branch tests and the archived-roles tests use `multi_branch` (a multi-doctor clinic now holds one branch). The route matrix gives TENANT_A overrides (`test.feature` on, both limits 100,000).
+- **Dart client budget** raised to 280 files and 10,500 lines (188 and 6,991 now).
+- **Locked test:** one typing fix with the owner's approval (2026-11-27): `add`'s parameter in `test/limits/limits.test.ts` typed `RoleScope[]`; no assertion changed.
+- **Migrations:** `20261127010323_a02_feature_flags` (expand: two tables) and `20261127010325_a02_flag_policies` (expand: RLS, grants, policies, `tenant_usage_counts` widened). Rollback notes in the SQL header.
 
 ## Evidence
 - `verify` (full): —

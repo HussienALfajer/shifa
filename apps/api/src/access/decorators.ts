@@ -36,6 +36,23 @@ export const PlatformAdmin = (): MethodDecorator => SetMetadata(PLATFORM_ADMIN_M
  */
 export const BeforeMfa = (): MethodDecorator => SetMetadata(BEFORE_MFA_METADATA, true);
 
+export const ENTITLEMENT_GATE_METADATA = 'shifa:access:entitlement-gate';
+export const FLAG_GATE_METADATA = 'shifa:access:flag-gate';
+
+/**
+ * With @RequirePermission only (A-02-03): after the permission, the clinic must have the feature
+ * entitlement `key` on, else 403 `feature_unavailable`. A key outside the entitlement catalogue
+ * stops the start.
+ */
+export const RequireEntitlement = (key: string): MethodDecorator =>
+  SetMetadata(ENTITLEMENT_GATE_METADATA, key);
+
+/**
+ * With @RequirePermission only (A-02-03): after the permission, the flag `key` must be on for the
+ * clinic, else 403 `feature_unavailable`. A key outside the flag catalogue stops the start.
+ */
+export const RequireFlag = (key: string): MethodDecorator => SetMetadata(FLAG_GATE_METADATA, key);
+
 /** The principal the guard authenticated for this request (set before the handler runs). */
 const principals = new WeakMap<object, Principal>();
 
