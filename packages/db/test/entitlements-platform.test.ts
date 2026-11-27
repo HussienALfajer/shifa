@@ -1,8 +1,8 @@
 // Security review of A-02-02 (L3–L5): outside an entitlement action shifa_platform reads no
 // add-on, override or history row even inside the clinic's context; tenant_usage_counts() runs
 // only in a type preview or change, an entitlement view or an override change (A-02-03, `used`)
-// and leaves the caller's tenant setting as it was; the only
-// SECURITY DEFINER function in `public` is that one, executable by shifa_platform alone.
+// and leaves the caller's tenant setting as it was. Which SECURITY DEFINER functions exist and who
+// runs them: test/privileges.test.ts (ADR-0051).
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { inTenantContext, type PlatformEvent, tenantUsageCounts } from '../src/index.ts';
@@ -10,7 +10,6 @@ import { tenantAddon, tenantOverride, tenantOverrideEvent } from '../src/schema/
 import {
   createTestTenants,
   fixtureId,
-  ownerDb,
   superuserDb,
   testPlatformDb,
   workerDatabaseName,
@@ -84,17 +83,5 @@ describe('tenant_usage_counts()', () => {
     );
     expect(after).toBe('');
   });
-
-  it('is the only SECURITY DEFINER function in public, for shifa_platform alone', async () => {
-    const { rows } = await ownerDb().execute<{ fn: string; roles: string[] }>(sql`
-      select p.oid::regprocedure::text as fn,
-             array(select r.rolname::text from pg_roles r
-                    where r.rolname in ('shifa_app', 'shifa_auth', 'shifa_platform')
-                      and has_function_privilege(r.oid, p.oid, 'EXECUTE')
-                    order by 1) as roles
-        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
-       where n.nspname = 'public' and p.prosecdef
-       order by 1`);
-    expect(rows).toEqual([{ fn: 'tenant_usage_counts(uuid)', roles: ['shifa_platform'] }]);
-  });
+  // Which SECURITY DEFINER functions exist and who runs them: test/privileges.test.ts (ADR-0051).
 });

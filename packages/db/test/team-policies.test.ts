@@ -1,12 +1,12 @@
 // A-01-04 database rules: an invitation binds its membership only to the signed-in person whose
 // phone it was sent to, and only once its link is used (withUserLink); shifa_app can no longer
-// bind a membership to an account itself (A-01-01 review L4, A-01-03 M2); a clinic changes its
-// own idle setting and nothing else on `tenant`; the auth path reads a person's own role
+// bind a membership to an account itself (A-01-01 review L4, A-01-03 M2); a clinic writes
+// nothing on `tenant` (A-02-06: its idle setting is in the cascade); the auth path reads a person's own role
 // assignments across clinics (MFA gate before a clinic is chosen) and nobody else's.
 
-import { eq, sql } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
-import { roleAssignment, tenant } from '../src/schema/index.ts';
+import { roleAssignment } from '../src/schema/index.ts';
 import {
   createTestTenants,
   fixtureId,
@@ -121,42 +121,18 @@ describe('shifa_app and the account binding', () => {
   });
 });
 
-describe('the clinic’s idle setting', () => {
-  it('shifa_app updates idle_minutes of its own tenant only', async () => {
-    const own = await testDb().withTenant({ tenantId: TENANT_A, userId: SEEDER }, (tx) =>
-      tx
-        .update(tenant)
-        .set({ idleMinutes: 15 })
-        .where(eq(tenant.id, TENANT_A))
-        .returning({ id: tenant.id }),
-    );
-    expect(own).toHaveLength(1);
-    const other = await testDb().withTenant({ tenantId: TENANT_A, userId: SEEDER }, (tx) =>
-      tx.execute(sql`update tenant set idle_minutes = 15 where id = ${TENANT_B}`),
-    );
-    expect(other.rowCount).toBe(0);
-    const status = await sqlState(() =>
-      testDb().withTenant({ tenantId: TENANT_A, userId: SEEDER }, (tx) =>
-        tx.execute(sql`update tenant set status = 'active' where id = ${TENANT_A}`),
-      ),
-    );
-    expect(status).toBe('42501');
-  });
-});
-
-describe('own role assignments on the auth path', () => {
-  it('a person reads their own roles in every clinic, nobody else’s', async () => {
-    const own = await testAuthDb().withUser(INVITED, (tx) =>
-      tx.execute<{ role: string }>(sql`select role from role_assignment`),
-    );
-    expect(own.rows).toEqual([{ role: 'doctor' }]);
-    const stranger = await testAuthDb().withUser(STRANGER, (tx) =>
-      tx.execute(sql`select role from role_assignment`),
-    );
-    expect(stranger.rows).toEqual([]);
-    const anonymous = await testAuthDb().withAuth((tx) =>
-      tx.execute(sql`select role from role_assignment`),
-    );
-    expect(anonymous.rows).toEqual([]);
+// A-02-06: the idle setting lives in the cascade (A-02-04); its column, its column grant and the
+// policy tenant_app_settings are gone, so the clinic writes nothing on its tenant row.
+describe('the clinic’s tenant row', () => {
+  it('shifa_app cannot update it at all', async () => {
+    for (const statement of [
+      sql`update tenant set updated_at = now() where id = ${TENANT_A}`,
+      sql`update tenant set status = 'active' where id = ${TENANT_A}`,
+    ]) {
+      const state = await sqlState(() =>
+        testDb().withTenant({ tenantId: TENANT_A, userId: SEEDER }, (tx) => tx.execute(statement)),
+      );
+      expect(state).toBe('42501');
+    }
   });
 });

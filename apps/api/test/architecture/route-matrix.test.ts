@@ -49,6 +49,7 @@ import {
   nextPhone,
   openLimitsAndTestFeature,
   openSupportGrant,
+  placeOf,
   supportHandoffToken,
   totpState,
 } from './route-matrix.fixtures.ts';
@@ -246,6 +247,7 @@ async function observe(app: TestApp): Promise<Observed> {
         supportGrantId: async () => (await openSupportGrant(userId)).grantId,
         clinicGrantId: async () => (await openSupportGrant(undefined, TENANT_A)).grantId,
         handoffToken: () => supportHandoffToken(),
+        placeId: (kind, state) => placeOf(kind, state),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

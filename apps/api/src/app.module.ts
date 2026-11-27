@@ -12,6 +12,7 @@ import {
   IdentityModule,
   type IdentitySecrets,
 } from './modules/identity/index.ts';
+import { PlacesModule } from './modules/places/index.ts';
 import { PlatformModule } from './modules/platform/index.ts';
 import { type SettingDefinition, SettingsModule } from './modules/settings/index.ts';
 import { SupportModule } from './modules/support/index.ts';
@@ -94,6 +95,7 @@ export class AppModule {
           ...(settingKeys ? { settings: settingKeys } : {}),
         }),
         BranchesModule.register({ identity, entitlements }),
+        PlacesModule.register({ platformDb, identity }),
         SupportModule.register({
           platformDb,
           identity,

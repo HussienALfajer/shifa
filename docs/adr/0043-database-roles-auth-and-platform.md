@@ -1,6 +1,6 @@
 # ADR-0043: Two more database roles, `shifa_auth` for identity and `shifa_platform` for super-admin work
 
-Status: Accepted (owner, 2026-11-23, OD-82) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0005](0005-drizzle-withtenant.md) (the platform path gets its own role and audit)
+Status: Accepted (owner, 2026-11-23, OD-82; amended by ADR-0050 and ADR-0051) · Date: 2026-11-23 · Deciders: product owner (with Claude) · Amends: [ADR-0005](0005-drizzle-withtenant.md) (the platform path gets its own role and audit)
 
 ## Context
 Until A-01 the application had one login role, `shifa_app`, under FORCE RLS with tenant policies on `current_tenant_id()` ([ADR-0004](0004-postgresql-pooled-tenancy-rls.md)). Its `withPlatformAdmin(reason, …)` was a placeholder: the same role with no tenant context, so it could see nothing, and no audit row.

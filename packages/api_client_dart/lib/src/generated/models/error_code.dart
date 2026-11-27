@@ -128,7 +128,13 @@ enum ErrorCode {
   @JsonValue('support_ended')
   supportEnded('support_ended'),
   @JsonValue('support_read_only')
-  supportReadOnly('support_read_only');
+  supportReadOnly('support_read_only'),
+  @JsonValue('place_name_taken')
+  placeNameTaken('place_name_taken'),
+  @JsonValue('place_archived')
+  placeArchived('place_archived'),
+  @JsonValue('place_not_archived')
+  placeNotArchived('place_not_archived');
 
   const ErrorCode(this.json);
 

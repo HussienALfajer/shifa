@@ -8,6 +8,7 @@ import {
   type ErrorEnvelope,
   envelopeFor,
   type LimitReached,
+  type PlaceKind,
   type SessionEndReason,
   type SupportEnded,
   VALIDATION_FAILED_MESSAGE,
@@ -37,6 +38,8 @@ export class ApiError extends HttpException {
     readonly supportEnded?: SupportEnded,
     /** A Set-Cookie line sent with the answer (A-02-05: the support cookie cleared). */
     readonly setCookie?: string,
+    /** Which place was archived: only with `place_archived` on a branch save (A-02-06). */
+    readonly place?: PlaceKind,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -53,6 +56,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         ...(exception.reason ? { reason: exception.reason } : {}),
         ...(exception.limitReached ? { limitReached: { ...exception.limitReached } } : {}),
         ...(exception.supportEnded ? { supportEnded: { ...exception.supportEnded } } : {}),
+        ...(exception.place ? { place: exception.place } : {}),
       },
     };
   }

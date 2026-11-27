@@ -136,6 +136,9 @@ export function branches(): Branch[] {
       phone: phone(),
       archivedAt: null,
       memberCount: 3,
+      // A-02-06: the place is shown on the card from A-02-10; none chosen in this world yet.
+      city: null,
+      area: null,
     },
     {
       ...B_SECOND,
@@ -143,14 +146,26 @@ export function branches(): Branch[] {
       phone: null,
       archivedAt: null,
       memberCount: 2,
+      city: null,
+      area: null,
     },
-    { ...B_THIRD, address: null, phone: null, archivedAt: null, memberCount: 1 },
+    {
+      ...B_THIRD,
+      address: null,
+      phone: null,
+      archivedAt: null,
+      memberCount: 1,
+      city: null,
+      area: null,
+    },
     {
       ...B_OLD,
       address: 'حلب، السليمانية',
       phone: null,
       archivedAt: ago(minutes(60 * 24 * 60)),
       memberCount: 0,
+      city: null,
+      area: null,
     },
   ];
 }

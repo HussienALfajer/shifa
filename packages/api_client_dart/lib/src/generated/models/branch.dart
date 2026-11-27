@@ -4,6 +4,8 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'branch_place.dart';
+
 part 'branch.g.dart';
 
 @JsonSerializable()
@@ -11,6 +13,8 @@ class Branch {
   const Branch({
     required this.address,
     required this.archivedAt,
+    required this.area,
+    required this.city,
     required this.id,
     required this.memberCount,
     required this.name,
@@ -23,6 +27,10 @@ class Branch {
   final String? address;
   @JsonKey(includeIfNull: true)
   final DateTime? archivedAt;
+  @JsonKey(includeIfNull: true)
+  final BranchPlace? area;
+  @JsonKey(includeIfNull: true)
+  final BranchPlace? city;
   final String id;
   final int memberCount;
   final String name;

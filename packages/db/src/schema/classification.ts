@@ -48,6 +48,26 @@ const PLAN_TABLE =
 const ENTITLEMENT_READ =
   'restrictive: shifa_platform reads a clinic’s add-ons, overrides and their history only inside that clinic in an entitlement action (view, history, set, remove, type preview and change; A-02 criteria 1–3, 20)';
 
+const PLACE_TABLE =
+  'a platform list of cities and their areas with Arabic names (A-02 criterion 15, PLT-15); place names only, no clinic data; never deleted';
+const placeAccess = (table: 'city' | 'area'): RoleAccess => ({
+  [`${table}_platform_create`]: `shifa_platform adds a ${table}, created now and not archived, only in a ${table}.created action (A-02 criterion 15)`,
+  [`${table}_platform_change`]: `shifa_platform renames, archives or restores a ${table} only in that action, times bounded by now(); a trigger keeps each action to its column (A-02 criterion 15)`,
+});
+
+/**
+ * SECURITY DEFINER functions in `public` (ADR-0051, amending ADR-0043): each reads clinic rows as
+ * the owner for shifa_platform and returns integers only, never a row, id or name. Pinned in
+ * test/privileges.test.ts: exactly these, a fixed search_path, integer results, EXECUTE for
+ * shifa_platform alone. Signature → why the platform needs the count.
+ */
+export const COUNT_FUNCTIONS: Readonly<Record<string, string>> = {
+  'tenant_usage_counts(uuid)':
+    'a clinic’s doctors and active branches beside its limits and in a type preview (A-02 criteria 2, 3; A-02-02)',
+  'place_counts(text,uuid[],uuid[])':
+    'branches, clinics and doctors on each city and area across clinics, by the place’s position in the array (A-02 criterion 24; A-02-06)',
+};
+
 export const TABLE_CLASSIFICATION: TableClassification = {
   plan: { kind: 'global', reason: PLAN_TABLE },
   plan_feature: { kind: 'global', reason: PLAN_TABLE },
@@ -130,6 +150,9 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'restrictive: even with a tenant set, shifa_auth changes only an open grant: clears its hand-off or closes it as expired (never re-opens an ended one)',
     },
   },
+  // A-02-06: cities and areas (criterion 15, OD-113); a branch holds one of each (optional)
+  city: { kind: 'global', reason: PLACE_TABLE, roleAccess: placeAccess('city') },
+  area: { kind: 'global', reason: PLACE_TABLE, roleAccess: placeAccess('area') },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

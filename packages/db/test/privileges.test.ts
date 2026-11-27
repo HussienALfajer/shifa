@@ -4,6 +4,7 @@
 // what keeps them off clinic data: any drift (a new default privilege, a stray GRANT) fails here.
 import { sql } from 'drizzle-orm';
 import { describe, expect, it } from 'vitest';
+import { COUNT_FUNCTIONS } from '../src/schema/classification.ts';
 import { ownerDb } from '../test-harness/index.ts';
 
 type Priv = 'SELECT' | 'INSERT' | 'UPDATE' | 'DELETE' | 'TRUNCATE' | 'REFERENCES' | 'TRIGGER';
@@ -48,6 +49,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     setting_value: ['SELECT', 'INSERT', 'DELETE'],
     // A-02-05: the clinic's support grants; an owner ends one by column UPDATE (below)
     support_access_grant: ['SELECT'],
+    // A-02-06: cities and areas (platform lists); a branch holds one of each
+    city: ['SELECT'],
+    area: ['SELECT'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -95,6 +99,10 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     setting_value: ['SELECT', 'INSERT', 'DELETE'],
     // A-02-05: opens grants in support actions (policies); SELECT and UPDATE by column (below)
     support_access_grant: ['INSERT'],
+    // A-02-06: adds cities and areas (place actions, policies); UPDATE by column only (below);
+    // never DELETE
+    city: ['SELECT', 'INSERT'],
+    area: ['SELECT', 'INSERT'],
   },
 };
 
@@ -142,7 +150,8 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
     ['display_name', 'status', 'last_active_at', 'updated_at', 'phone_e164'],
   ],
   ['shifa_app', 'setup_link', 'UPDATE', ['replaced_at']],
-  ['shifa_app', 'tenant', 'UPDATE', ['idle_minutes', 'updated_at']],
+  // A-02-06: the idle column and its grant are gone; the clinic writes nothing on its tenant row
+  ['shifa_app', 'tenant', 'UPDATE', []],
   // A-02-04: a clinic changes its own unlocked value, never the lock (owner-approved column grant)
   ['shifa_app', 'setting_value', 'UPDATE', ['value', 'set_by', 'set_at']],
   [
@@ -214,6 +223,12 @@ const COLUMNS: readonly [role: string, table: string, priv: Priv, columns: reado
     'UPDATE',
     ['ended_at', 'end_reason', 'handoff_token_hash', 'handoff_expires_at'],
   ],
+  // A-02-06: a rename, an archive or a restore (policies and the guard trigger keep each to its
+  // column); no place is ever deleted
+  ['shifa_platform', 'city', 'UPDATE', ['name', 'name_key', 'archived_at', 'updated_at']],
+  ['shifa_platform', 'area', 'UPDATE', ['name', 'name_key', 'archived_at', 'updated_at']],
+  ['shifa_app', 'city', 'UPDATE', []],
+  ['shifa_app', 'area', 'UPDATE', []],
 ];
 
 /** Secret columns no role but shifa_auth may read. */
@@ -327,6 +342,42 @@ describe('application role privileges', () => {
                          acldefault('f', p.proowner))) x
                         where p.oid = ${`public.${fn}`}::regprocedure and x.grantee = 0) as ok`);
       expect(pub[0]?.ok, `${fn} granted to PUBLIC`).toBe(false);
+    }
+  });
+
+  // ADR-0051 (A-02-06; moved here from entitlements-platform.test.ts with the second function):
+  // the only SECURITY DEFINER functions are the integers-only counts the classification lists.
+  it('SECURITY DEFINER functions are the listed counts: integers only, shifa_platform alone', async () => {
+    const { rows } = await ownerDb().execute<{
+      fn: string;
+      roles: string[];
+      config: string[] | null;
+      results: string[];
+    }>(sql`
+      select regexp_replace(p.oid::regprocedure::text, '^public[.]|[[:space:]]', '', 'g') as fn,
+             array(select r.rolname::text from pg_roles r
+                    where r.rolname in ('shifa_app', 'shifa_auth', 'shifa_platform')
+                      and has_function_privilege(r.oid, p.oid, 'EXECUTE')
+                    order by 1) as roles,
+             p.proconfig as config,
+             array(select format_type(t.oid, null)
+                     from unnest(p.proallargtypes, p.proargmodes) as a(oid, mode)
+                     join pg_type t on t.oid = a.oid
+                    where a.mode in ('o', 't', 'b')) as results
+        from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+       where n.nspname = 'public' and p.prosecdef
+       order by 1`);
+    expect(rows.map((r) => r.fn).sort()).toEqual(Object.keys(COUNT_FUNCTIONS).sort());
+    for (const row of rows) {
+      expect(row.roles, row.fn).toEqual(['shifa_platform']);
+      expect(row.config, row.fn).toEqual(['search_path=pg_catalog, public']);
+      expect(row.results.length, row.fn).toBeGreaterThan(0);
+      expect(new Set(row.results), row.fn).toEqual(new Set(['integer']));
+      const { rows: pub } = await ownerDb().execute<{ ok: boolean }>(sql`
+        select exists (select 1 from pg_proc p, aclexplode(coalesce(p.proacl,
+                         acldefault('f', p.proowner))) x
+                        where p.oid = ${`public.${row.fn}`}::regprocedure and x.grantee = 0) as ok`);
+      expect(pub[0]?.ok, `${row.fn} granted to PUBLIC`).toBe(false);
     }
   });
 });

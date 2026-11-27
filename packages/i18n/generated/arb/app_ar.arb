@@ -3450,6 +3450,18 @@
   "@errorsPhoneLocked": {
     "description": "errors.phone_locked"
   },
+  "errorsPlaceArchived": "هذا المكان مؤرشف ولا يمكن اختياره.",
+  "@errorsPlaceArchived": {
+    "description": "errors.place_archived"
+  },
+  "errorsPlaceNameTaken": "هذا الاسم موجود من قبل هنا.",
+  "@errorsPlaceNameTaken": {
+    "description": "errors.place_name_taken"
+  },
+  "errorsPlaceNotArchived": "هذا المكان غير مؤرشف.",
+  "@errorsPlaceNotArchived": {
+    "description": "errors.place_not_archived"
+  },
   "errorsRequestTimeout": "استغرق الطلب وقتًا طويلًا. حاول مرة أخرى.",
   "@errorsRequestTimeout": {
     "description": "errors.request_timeout"

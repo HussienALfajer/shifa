@@ -1,0 +1,770 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "e198eeab-c169-4f23-9d3e-c8502a1fa830",
+  "prevIds": [
+    "c6288caf-31df-49e5-abce-dff62fb8eaab"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "area"
+      ],
+      "writes": [
+        "s|tbl|public.area",
+        "n|tbl|public.area",
+        "e|tbl|public.area",
+        "n|rel|public.area",
+        "n|type|public.area",
+        "n|rel|public.area_pkey",
+        "n|rel|public.area_city_id_name_key_key",
+        "n|rel|public.area_id_city_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "city"
+      ],
+      "writes": [
+        "s|tbl|public.city",
+        "n|tbl|public.city",
+        "e|tbl|public.city",
+        "n|rel|public.city",
+        "n|type|public.city",
+        "n|rel|public.city_pkey",
+        "n|rel|public.city_name_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "tenant"
+      ],
+      "writes": [
+        "s|ck|public.tenant.tenant_idle_minutes_check",
+        "n|ck|public.tenant.tenant_idle_minutes_check",
+        "e|ck|public.tenant.tenant_idle_minutes_check",
+        "n|con|public.tenant.tenant_idle_minutes_check"
+      ],
+      "reads": [
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "e|col|public.tenant.idle_minutes"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "branch",
+        "city_id"
+      ],
+      "writes": [
+        "s|col|public.branch.city_id",
+        "n|col|public.branch.city_id",
+        "e|col|public.branch.city_id"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "add_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "branch",
+        "area_id"
+      ],
+      "writes": [
+        "s|col|public.branch.area_id",
+        "n|col|public.branch.area_id",
+        "e|col|public.branch.area_id"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "drop_column",
+      "statementTarget": [
+        "column",
+        "public",
+        "tenant",
+        "idle_minutes"
+      ],
+      "writes": [
+        "s|col|public.tenant.idle_minutes",
+        "n|col|public.tenant.idle_minutes",
+        "e|col|public.tenant.idle_minutes"
+      ],
+      "reads": [
+        "n|tbl|public.tenant",
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "branch",
+        "branch_tenant_id_city_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.branch_tenant_id_city_id_idx",
+        "n|idx|public.branch_tenant_id_city_id_idx",
+        "e|idx|public.branch_tenant_id_city_id_idx",
+        "n|rel|public.branch_tenant_id_city_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|col|public.branch.tenant_id",
+        "n|col|public.branch.city_id"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "branch",
+        "branch_tenant_id_area_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.branch_tenant_id_area_id_idx",
+        "n|idx|public.branch_tenant_id_area_id_idx",
+        "e|idx|public.branch_tenant_id_area_id_idx",
+        "n|rel|public.branch_tenant_id_area_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|col|public.branch.tenant_id",
+        "n|col|public.branch.area_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "area"
+      ],
+      "writes": [
+        "s|fk|public.area.area_city_id_city_id_fkey",
+        "n|fk|public.area.area_city_id_city_id_fkey",
+        "e|fk|public.area.area_city_id_city_id_fkey",
+        "n|con|public.area.area_city_id_city_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.area",
+        "n|sch|public",
+        "n|tbl|public.city",
+        "n|sch|public",
+        "n|col|public.area.city_id",
+        "n|col|public.city.id",
+        "e|uniqueness|public.city.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "branch"
+      ],
+      "writes": [
+        "s|fk|public.branch.branch_city_id_city_id_fkey",
+        "n|fk|public.branch.branch_city_id_city_id_fkey",
+        "e|fk|public.branch.branch_city_id_city_id_fkey",
+        "n|con|public.branch.branch_city_id_city_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|tbl|public.city",
+        "n|sch|public",
+        "n|col|public.branch.city_id",
+        "n|col|public.city.id",
+        "e|uniqueness|public.city.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "branch"
+      ],
+      "writes": [
+        "s|fk|public.branch.branch_area_fk",
+        "n|fk|public.branch.branch_area_fk",
+        "e|fk|public.branch.branch_area_fk",
+        "n|con|public.branch.branch_area_fk"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|tbl|public.area",
+        "n|sch|public",
+        "n|col|public.branch.area_id",
+        "n|col|public.branch.city_id",
+        "n|col|public.area.id",
+        "n|col|public.area.city_id",
+        "e|uniqueness|public.area.city_id.id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "branch"
+      ],
+      "writes": [
+        "s|ck|public.branch.branch_area_needs_city",
+        "n|ck|public.branch.branch_area_needs_city",
+        "e|ck|public.branch.branch_area_needs_city",
+        "n|con|public.branch.branch_area_needs_city"
+      ],
+      "reads": [
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|col|public.branch.area_id",
+        "n|col|public.branch.city_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "area",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "city",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "city_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "name_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "city_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "area_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "name_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "branch_tenant_id_city_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "city_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "branch_tenant_id_area_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "area_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_city_id_city_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "city_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "city",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "branch_city_id_city_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "city_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "city",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "branch_area_fk",
+        "nameExplicit": true,
+        "columns": [
+          "area_id",
+          "city_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "area",
+        "columnsTo": [
+          "id",
+          "city_id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "city_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_city_id_name_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "city_id",
+          "name_key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_id_city_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "id",
+          "city_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "city_name_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "name_key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_name_check",
+        "value": "char_length(btrim(\"name\")) between 1 and 100",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "area",
+        "name": "area_name_key_check",
+        "value": "char_length(\"name_key\") between 1 and 100",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "branch",
+        "name": "branch_area_needs_city",
+        "value": "\"area_id\" is null or \"city_id\" is not null",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "city_name_check",
+        "value": "char_length(btrim(\"name\")) between 1 and 100",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "city",
+        "name": "city_name_key_check",
+        "value": "char_length(\"name_key\") between 1 and 100",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "drop",
+      "key": "columns\u0000[\"public\",\"tenant\",\"idle_minutes\"]"
+    },
+    {
+      "op": "drop",
+      "key": "checks\u0000[\"public\",\"tenant\",\"tenant_idle_minutes_check\"]"
+    }
+  ]
+}

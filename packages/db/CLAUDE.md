@@ -12,6 +12,7 @@ const rows = await db.withTenant({ tenantId, branchId, userId }, (tx) => tx.sele
 - Three roles, three pools, each refusing any other role, superuser, BYPASSRLS, owner or role member: `createDb()` (`withTenant()`, `ping()`), `createAuthDb()` (`withAuth()`, `withUser(id)`, `withSetupLink(hashHex)`, `withUserLink(id, hashHex)`: invitations), `createPlatformDb()` (`withPlatformAdmin({ actorId, event, data?, … }, (tx, audit) => …)`: one null-tenant audit row per call, `data` allowlisted to short enum words). Platform helpers take that `tx`: `createClinic()` (with its owner: pending membership, owner role, setup link), `issueOwnerLink()` (replaces the owner's unused links), `registerPlatformAdmin()` (seed only).
 - Every wrapper sets or clears every `app.*` setting with `set_config(..., true)` (`src/context.ts`): never `SET`, no session state behind PgBouncer.
 - A throw in the callback rolls back; never swallow database errors in it. `tx` dies when the callback ends. Raw SQL only as a `sql` template, one statement per `execute`.
+- Counts across clinics for the platform: integers-only SECURITY DEFINER functions (ADR-0051: `tenantUsageCounts()`, `placeCounts()`), listed in `COUNT_FUNCTIONS` of the classification and pinned in `test/privileges.test.ts`; never a SELECT grant on clinic rows.
 - Log a database error's `code` and constraint only: messages and `detail` can echo values.
 - App code never connects as `shifa_owner`; migrations run as the owner through `migrate(ownerUrl)`.
 

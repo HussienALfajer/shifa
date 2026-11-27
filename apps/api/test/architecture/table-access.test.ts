@@ -44,6 +44,8 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   settings: ['settingValue', 'platformSettingValue', 'auditEvent'],
   // A-02-05: support grants (open, hand off, end, the owner's end, every request audited)
   support: ['supportAccessGrant', 'auditEvent'],
+  // A-02-06: cities and areas (the super admin's, audited by withPlatformAdmin())
+  places: ['city', 'area'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -85,6 +87,10 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   },
   settings: {
     tenant: 'read: a clinic’s type is its plan, whose setting values apply (A-02 criterion 8)',
+  },
+  places: {
+    branch:
+      'read: the archived places a branch of the clinic still holds stay offered to it (A-02 criterion 15)',
   },
 };
 

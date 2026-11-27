@@ -31,6 +31,7 @@ export {
   type UsageCounts,
 } from './entitlements.ts';
 export { MIGRATIONS_DIR, migrate, ROLES_SQL } from './migrate.ts';
+export { NO_PLACE_COUNTS, type PlaceCounts, placeCounts } from './places.ts';
 export {
   type AuditTarget,
   createPlatformDb,
@@ -38,6 +39,7 @@ export {
   type PlatformDb,
   type PlatformTx,
 } from './platform.ts';
+export { COUNT_FUNCTIONS } from './schema/classification.ts';
 export * from './schema/index.ts';
 export { type TenantContext, TenantContextError } from './tenant.ts';
 export type { Tx } from './transaction.ts';

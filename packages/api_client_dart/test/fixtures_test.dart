@@ -48,6 +48,10 @@ final _decoders = <String, Object Function(_Json)>{
   'PlatformSupportGrants': (json) =>
       PlatformSupportGrants.fromJson(json).toJson(),
   'ClinicSupportGrants': (json) => ClinicSupportGrants.fromJson(json).toJson(),
+  // A-02-06
+  'CityList': (json) => CityList.fromJson(json).toJson(),
+  'City': (json) => City.fromJson(json).toJson(),
+  'ClinicPlaces': (json) => ClinicPlaces.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {
@@ -119,7 +123,8 @@ void main() {
           .map((f) => ((f['body'] as _Json)['error'] as _Json)['code'])
           .toSet();
       expect(ErrorCode.values, hasLength(codes.length));
-      expect(ValidationIssueCode.values, hasLength(11));
+      // Zod's eleven issue codes and the API's own area_not_in_city (A-02-06).
+      expect(ValidationIssueCode.values, hasLength(12));
     });
 
     test('required fields are non-null and optional fields stay nullable', () {

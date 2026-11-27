@@ -11,6 +11,7 @@ export * from './identity.ts';
 export { anonymousSchemas, schemaId, unnamedSchemaExports } from './lint.ts';
 export * from './onboarding.ts';
 export * from './phone.ts';
+export * from './places.ts';
 export * from './platform.ts';
 export * from './settings.ts';
 export * from './support.ts';

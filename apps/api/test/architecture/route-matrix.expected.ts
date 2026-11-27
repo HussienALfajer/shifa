@@ -100,6 +100,8 @@ export interface SampleContext {
   clinicGrantId(): Promise<string>;
   /** A fresh, valid support hand-off token (the exchange). */
   handoffToken(): Promise<string>;
+  /** A fresh city or area, live or archived, with a unique name (A-02-06). */
+  placeId(kind: 'city' | 'area', state?: 'live' | 'archived'): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -201,6 +203,34 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
     url: `/clinic/support-grants/${await ctx.clinicGrantId()}/end`,
   }),
   'POST /auth/support/session': async (ctx) => ({ body: { token: await ctx.handoffToken() } }),
+  // A-02-06: cities and areas (a fresh place per call: archives and restores change it)
+  'POST /platform/cities': () => ({
+    body: { name: `مدينة ${String(Math.random()).slice(2, 10)}` },
+  }),
+  'PATCH /platform/cities/:id': async (ctx) => ({
+    url: `/platform/cities/${await ctx.placeId('city')}`,
+    body: { name: `مدينة ${String(Math.random()).slice(2, 10)}` },
+  }),
+  'POST /platform/cities/:id/archive': async (ctx) => ({
+    url: `/platform/cities/${await ctx.placeId('city')}/archive`,
+  }),
+  'POST /platform/cities/:id/restore': async (ctx) => ({
+    url: `/platform/cities/${await ctx.placeId('city', 'archived')}/restore`,
+  }),
+  'POST /platform/cities/:id/areas': async (ctx) => ({
+    url: `/platform/cities/${await ctx.placeId('city')}/areas`,
+    body: { name: 'منطقة المصفوفة' },
+  }),
+  'PATCH /platform/areas/:id': async (ctx) => ({
+    url: `/platform/areas/${await ctx.placeId('area')}`,
+    body: { name: `منطقة ${String(Math.random()).slice(2, 10)}` },
+  }),
+  'POST /platform/areas/:id/archive': async (ctx) => ({
+    url: `/platform/areas/${await ctx.placeId('area')}/archive`,
+  }),
+  'POST /platform/areas/:id/restore': async (ctx) => ({
+    url: `/platform/areas/${await ctx.placeId('area', 'archived')}/restore`,
+  }),
   'PUT /platform/flags/:key': () => ({
     url: '/platform/flags/test.flag_on',
     body: { mode: 'on', reason: 'سبب تجريبي للمصفوفة' },
@@ -375,6 +405,18 @@ export const EXPECTED_MATRIX: Matrix = {
   'GET /platform/flags': platformAdmin,
   'PUT /platform/flags/:key': platformAdmin,
   'GET /clinic/capabilities': clinicMember,
+  // A-02-06: cities and areas (super admin, never deleted); the branch dialog's list
+  // (branches.manage, owner only)
+  'GET /platform/cities': platformAdmin,
+  'POST /platform/cities': platformAdmin,
+  'PATCH /platform/cities/:id': platformAdmin,
+  'POST /platform/cities/:id/archive': platformAdmin,
+  'POST /platform/cities/:id/restore': platformAdmin,
+  'POST /platform/cities/:id/areas': platformAdmin,
+  'PATCH /platform/areas/:id': platformAdmin,
+  'POST /platform/areas/:id/archive': platformAdmin,
+  'POST /platform/areas/:id/restore': platformAdmin,
+  'GET /clinic/places': ownerOnly,
   'GET /clinic/subscription': ownerOnly,
   // team (A-01-04): members.view / members.manage, owner only
   'GET /team/members': ownerOnly,

@@ -27,4 +27,5 @@ const _$ValidationIssueCodeEnumMap = {
   ValidationIssueCode.invalidElement: 'invalid_element',
   ValidationIssueCode.invalidValue: 'invalid_value',
   ValidationIssueCode.custom: 'custom',
+  ValidationIssueCode.areaNotInCity: 'area_not_in_city',
 };

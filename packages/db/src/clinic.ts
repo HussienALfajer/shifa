@@ -46,7 +46,7 @@ export interface NewClinic {
   /** ISO date (YYYY-MM-DD); no automatic effect in A-01. */
   subscriptionEnd?: string | null;
   // No idle minutes since A-02-04: a new clinic inherits `session.idle_minutes` from the settings
-  // cascade (default 30); tenant.idle_minutes keeps its column default until A-02-06 drops it.
+  // cascade (default 30); the column tenant.idle_minutes was dropped in A-02-06.
   /** Defaults to 'primary' (ADR-0004: every tenant on the shared database for now). */
   databaseKey?: string;
   /** The owner (A-01-03): a pending membership, the owner role and the setup link. */
