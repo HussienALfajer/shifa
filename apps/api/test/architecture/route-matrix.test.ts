@@ -43,6 +43,7 @@ import {
 } from './route-matrix.expected.ts';
 import {
   announcementOf,
+  chartOf,
   clinicWithAccountOwner,
   clinicWithLink,
   clinicWithLock,
@@ -250,6 +251,7 @@ async function observe(app: TestApp): Promise<Observed> {
         handoffToken: () => supportHandoffToken(),
         placeId: (kind, state) => placeOf(kind, state),
         announcementId: () => announcementOf(),
+        chart: (state) => chartOf(TENANT_A, state),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

@@ -8,6 +8,7 @@ import {
   city,
   createClinic,
   membership,
+  patient,
   platformAdmin,
   settingValue,
   supportAccessGrant,
@@ -31,7 +32,7 @@ import { totpAt } from '../identity/totp.ts';
 import { TEST_SECRETS } from '../support.ts';
 
 /** Fresh phones for clinic owners and links (a used link's phone has an account). */
-const spare = syntheticPhones(2026_11_28, 400);
+const spare = syntheticPhones(2026_11_28, 600);
 let spareIndex = 0;
 export const nextPhone = () => {
   const phone = spare[spareIndex];
@@ -111,6 +112,44 @@ export async function announcementOf(): Promise<string> {
     .returning({ id: announcement.id });
   if (!row) throw new Error('announcement not written');
   return row.id;
+}
+
+let fixtureCharts = 0;
+
+/**
+ * A fresh chart of `tenantId` written as the superuser (A-03-02), archived for a restore; file
+ * numbers from 100000 so they never meet the ones the registration sample takes.
+ */
+export async function chartOf(
+  tenantId: string,
+  state: 'active' | 'archived' = 'active',
+): Promise<{ id: string; updatedAt: string }> {
+  fixtureCharts += 1;
+  const at = new Date();
+  const actor = fixtureId('matrix registrar');
+  const [row] = await superuserDb(workerDatabaseName())
+    .insert(patient)
+    .values({
+      tenantId,
+      id: randomUUID(),
+      fileNumber: 100_000 + fixtureCharts,
+      givenName: 'مريض',
+      familyName: 'المصفوفة',
+      contactPhone: nextPhone(),
+      sex: 'male',
+      birthDate: '1990-01-01',
+      state,
+      archivedAt: state === 'archived' ? at : null,
+      archivedBy: state === 'archived' ? actor : null,
+      createHash: '0'.repeat(64),
+      createdBy: actor,
+      updatedBy: actor,
+      createdAt: at,
+      updatedAt: at,
+    })
+    .returning({ id: patient.id, updatedAt: patient.updatedAt });
+  if (!row) throw new Error('chart not written');
+  return { id: row.id, updatedAt: row.updatedAt.toISOString() };
 }
 
 /**

@@ -17,8 +17,10 @@ export default [
   // lines; raised to about 1.5 × that. A-01-04 and A-01-05 (team, branches, clinic switcher)
   // took it to 122 files and 4,568 lines; raised to about 1.5 × that. A-02-03 (capabilities,
   // subscription, flags: 15 named schemas, 4 routes) took it to 188 files and 6,991 lines;
-  // raised to about 1.5 × that, for the rest of A-02's routes.
-  apiClientDartCheck({ budget: { files: 280, lines: 10500 } }),
+  // raised to about 1.5 × that, for the rest of A-02's routes. A-03-02 (charts: 10 named schemas,
+  // 6 routes) took it to 285 files and 11,072 lines; raised to about 1.5 × that, for the rest of
+  // A-03's routes (search, duplicates, family, custom fields, read log, merge).
+  apiClientDartCheck({ budget: { files: 430, lines: 16600 } }),
   i18nCheck(),
   tokensCheck(),
 ];

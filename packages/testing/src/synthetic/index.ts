@@ -1,3 +1,10 @@
+export {
+  generatePatientCharts,
+  monthsBefore,
+  type PatientChartOptions,
+  type SyntheticChartAge,
+  type SyntheticPatientChart,
+} from './charts.ts';
 export * from './dataset/index.ts';
 export { DuplicateIdError, IdRegistry, nextId } from './ids.ts';
 export {

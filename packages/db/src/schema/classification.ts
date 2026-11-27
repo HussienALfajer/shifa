@@ -201,6 +201,10 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'restrictive: even with a tenant set, shifa_platform reads counters only in clinic.listed and clinic.usage_viewed, and writes none',
     },
   },
+  // A-03-02: a clinic's charts (spec A-03 criteria 1–3, 13) and its file-number counter. Personal
+  // data on `patient`; shifa_app holds no DELETE on either (charts are never deleted).
+  patient: { kind: 'tenant' },
+  patient_file_counter: { kind: 'tenant' },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

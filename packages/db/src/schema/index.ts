@@ -33,6 +33,12 @@ export {
   user,
   verification,
 } from './identity.ts';
+export {
+  PATIENT_SEXES,
+  PATIENT_STATES,
+  patient,
+  patientFileCounter,
+} from './patients.ts';
 export { area, city } from './places.ts';
 export {
   TENANT_STATUSES,

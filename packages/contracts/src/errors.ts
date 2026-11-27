@@ -84,6 +84,13 @@ export const ErrorCode = z
     // announcements (A-02-07)
     'announcement_link',
     'announcement_ended',
+    // patients (A-03-02)
+    'previous_file_number_taken',
+    'patient_id_taken',
+    'patient_archived',
+    'patient_not_archived',
+    'patient_merged',
+    'stale',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -159,6 +166,16 @@ export type LimitReached = z.infer<typeof LimitReached>;
 export const PlaceKind = z.enum(['city', 'area']).meta({ id: 'PlaceKind' });
 export type PlaceKind = z.infer<typeof PlaceKind>;
 
+/** Who saved a record last and when: with 409 `stale` (A-03 criterion 28). */
+export const StaleChange = z
+  .object({
+    updatedAt: z.iso.datetime(),
+    /** The member's name as the clinic typed it; null when not a member (support, removed). */
+    updatedByName: z.string().nullable(),
+  })
+  .meta({ id: 'StaleChange' });
+export type StaleChange = z.infer<typeof StaleChange>;
+
 export const ErrorBody = z
   .object({
     code: ErrorCode,
@@ -176,6 +193,8 @@ export const ErrorBody = z
     supportEnded: SupportEnded.optional(),
     /** Which place of a branch was archived: only with `place_archived` on a branch save. */
     place: PlaceKind.optional(),
+    /** Who saved since the form was filled, and when: only with `stale` (A-03-02). */
+    stale: StaleChange.optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -255,6 +274,12 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   place_not_archived: 'This place is not archived',
   announcement_link: 'An announcement is plain text, without a link',
   announcement_ended: 'This announcement has ended',
+  previous_file_number_taken: 'Another chart of this clinic has this previous file number',
+  patient_id_taken: 'This chart id holds another chart',
+  patient_archived: 'This chart is archived',
+  patient_not_archived: 'This chart is not archived',
+  patient_merged: 'This chart was merged into another',
+  stale: 'Someone else saved this record since you opened it',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

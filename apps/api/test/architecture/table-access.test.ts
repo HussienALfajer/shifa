@@ -50,6 +50,8 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   // and dismissals) and the daily usage counters
   announcements: ['announcement', 'announcementTarget', 'announcementDismissal'],
   usage: ['usageDaily'],
+  // A-03-02: a clinic's charts and its file-number counter (audited per chart event)
+  patients: ['patient', 'patientFileCounter', 'auditEvent'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -99,6 +101,12 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     tenant: 'read: the usage view answers 404 for a clinic that does not exist',
     membership:
       'a sign-in stamps the member’s last_sign_in_on, so each member counts once a day (A-02 criterion 17)',
+  },
+  patients: {
+    branch:
+      'read: a chart keeps the branch it was registered in, named on its summary (A-03 criteria 1, 32)',
+    membership:
+      'read: the summary names who registered, last saved and archived the chart (A-03 criterion 32)',
   },
   places: {
     branch:
