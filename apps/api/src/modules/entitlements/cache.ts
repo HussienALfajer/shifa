@@ -38,6 +38,11 @@ export class TenantCache<T> {
   invalidate(tenantId: string): void {
     this.#entries.delete(tenantId);
   }
+
+  /** Every tenant's entry (a change that touches many clinics at once: a flag). */
+  clear(): void {
+    this.#entries.clear();
+  }
 }
 
 /** What other code asks about a clinic's entitlements (A-02-03 gates routes with it). */

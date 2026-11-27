@@ -2,7 +2,8 @@
 // checked (TenantDb) and writes its audit row in the same transaction. Archiving locks the
 // clinic's active branches, so two archives at once cannot leave none; members left without an
 // active branch in their roles hold nothing here any more, and their sessions in this clinic end
-// through identity (as deactivation does).
+// through identity (as deactivation does). Creating or restoring a branch stays within the
+// clinic's branch limit (A-02 criterion 4, 409 `limit_reached`).
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type ArchiveBranchPreview,
@@ -24,6 +25,7 @@ import { and, asc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { ClinicLimits } from '../entitlements/index.ts';
 import { MemberAccounts } from '../identity/index.ts';
 
 type BranchRow = typeof branch.$inferSelect;
@@ -35,6 +37,7 @@ export class BranchesService {
   constructor(
     @Inject(TenantDb) private readonly tenants: TenantDb,
     @Inject(MemberAccounts) private readonly accounts: MemberAccounts,
+    @Inject(ClinicLimits) private readonly limits: ClinicLimits,
   ) {}
 
   list(scope: RequestScope): Promise<BranchList> {
@@ -52,6 +55,9 @@ export class BranchesService {
   create(scope: RequestScope, input: CreateBranchRequest, requestId: string): Promise<Branch> {
     const phone = phoneOf(input.phone);
     return this.tenants.run(scope, async (tx) => {
+      // A-02 criterion 4: within the branch limit, under the clinic's limits lock.
+      await this.limits.lock(tx);
+      await this.limits.assertRoom(tx, scope.tenantId, 'limits.branches');
       const [row] = await tx
         .insert(branch)
         .values({
@@ -119,8 +125,11 @@ export class BranchesService {
    */
   restore(scope: RequestScope, id: string, requestId: string): Promise<Branch> {
     return this.tenants.run(scope, async (tx) => {
+      // The limits lock before the branch's row lock (the order every add of the clinic takes).
+      await this.limits.lock(tx);
       const current = await find(tx, id, { lock: true });
       if (!current.archivedAt) throw new ApiError(409, 'branch_not_archived');
+      await this.limits.assertRoom(tx, scope.tenantId, 'limits.branches');
       const [row] = await tx
         .update(branch)
         .set({ archivedAt: null, updatedAt: new Date() })

@@ -6,9 +6,12 @@ export {
   CurrentPrincipal,
   PlatformAdmin,
   Public,
+  RequireEntitlement,
+  RequireFlag,
   RequirePermission,
   SignedIn,
 } from './decorators.ts';
+export { GATE_PORT, type GatePort } from './gates.ts';
 export type { PermissionKey } from './permissions.ts';
 export {
   PERMISSION_CATALOGUE,

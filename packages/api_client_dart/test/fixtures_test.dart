@@ -37,6 +37,11 @@ final _decoders = <String, Object Function(_Json)>{
   'EntitlementItem': (json) => EntitlementItem.fromJson(json).toJson(),
   'OverrideHistory': (json) => OverrideHistory.fromJson(json).toJson(),
   'TypePreview': (json) => TypePreview.fromJson(json).toJson(),
+  // A-02-03
+  'Capabilities': (json) => Capabilities.fromJson(json).toJson(),
+  'Subscription': (json) => Subscription.fromJson(json).toJson(),
+  'FlagList': (json) => FlagList.fromJson(json).toJson(),
+  'FlagView': (json) => FlagView.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

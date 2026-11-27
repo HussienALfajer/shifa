@@ -15,6 +15,7 @@ export {
   tenantOverride,
   tenantOverrideEvent,
 } from './entitlements.ts';
+export { FLAG_MODES, type FlagMode, featureFlag, featureFlagTenant } from './flags.ts';
 export {
   AUTH_THROTTLE_KINDS,
   account,

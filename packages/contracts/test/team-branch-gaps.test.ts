@@ -162,7 +162,8 @@ describe('declared statuses (A-01-12 1i)', () => {
   it('400 on add, update, branch create and branch update', () => {
     expect(statuses(teamAddMember)).toEqual(['201', '400', '401', '409']);
     expect(statuses(teamUpdateMember)).toEqual(['200', '400', '401', '404', '409']);
-    expect(statuses(branchesCreate)).toEqual(['201', '400', '401']);
+    // A-02-03: 409 `limit_reached` beyond the branch limit.
+    expect(statuses(branchesCreate)).toEqual(['201', '400', '401', '409']);
     expect(statuses(branchesUpdate)).toEqual(['200', '400', '401', '404', '409']);
   });
 

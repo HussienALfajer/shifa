@@ -14,6 +14,11 @@ import { type PermissionDefinition, PRODUCTION_PERMISSIONS } from '../src/access
 import { PRODUCTION_GRANTS, ROLES, type RoleGrants } from '../src/access/roles.ts';
 import { AppModule } from '../src/app.module.ts';
 import { configureApp, createAdapter } from '../src/app.ts';
+import {
+  type EntitlementDefinition,
+  PRODUCTION_ENTITLEMENTS,
+} from '../src/modules/entitlements/index.ts';
+import { type FlagDefinition, PRODUCTION_FLAGS } from '../src/modules/flags/index.ts';
 import type { Clock } from '../src/platform/clock.ts';
 import { createLogger } from '../src/platform/logging.ts';
 import { otlpLogForwarder } from '../src/telemetry/logs.ts';
@@ -147,6 +152,8 @@ export async function buildTestApp({
   auth,
   grants,
   permissions,
+  entitlements,
+  flags,
   forwardLogs = false,
   testRoutes = false,
 }: {
@@ -172,6 +179,10 @@ export async function buildTestApp({
   grants?: RoleGrants;
   /** Added to the production permission catalogue (test keys; probe.ts TEST_PERMISSIONS). */
   permissions?: readonly PermissionDefinition[];
+  /** Added to the production entitlement catalogue (test keys; access/gated-probe.ts). */
+  entitlements?: readonly EntitlementDefinition[];
+  /** Added to the production flag catalogue (test flags; access/gated-probe.ts). */
+  flags?: readonly FlagDefinition[];
 }): Promise<TestApp> {
   const logs = captureLogs();
   const logger = createLogger({
@@ -189,6 +200,8 @@ export async function buildTestApp({
         clinicWebUrl,
         ...(clock ? { clock } : {}),
         ...(permissions ? { permissions: [...PRODUCTION_PERMISSIONS, ...permissions] } : {}),
+        ...(entitlements ? { entitlements: [...PRODUCTION_ENTITLEMENTS, ...entitlements] } : {}),
+        ...(flags ? { flags: [...PRODUCTION_FLAGS, ...flags] } : {}),
         testRoutes,
       }),
     ],

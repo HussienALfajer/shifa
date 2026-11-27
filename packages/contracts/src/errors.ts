@@ -67,6 +67,9 @@ export const ErrorCode = z
     'self_action',
     'invitation_other_phone',
     'branch_not_archived',
+    // limits, gates (A-02-03)
+    'limit_reached',
+    'feature_unavailable',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -109,6 +112,17 @@ export const SessionEndReason = z
   .meta({ id: 'SessionEndReason' });
 export type SessionEndReason = z.infer<typeof SessionEndReason>;
 
+/** Which limit refused an add, its value and the use it was compared with (A-02 criterion 4). */
+export const LimitReached = z
+  .object({
+    /** The limit's catalogue key, e.g. `limits.practitioners`. */
+    key: z.string(),
+    limit: z.number().int(),
+    used: z.number().int(),
+  })
+  .meta({ id: 'LimitReached' });
+export type LimitReached = z.infer<typeof LimitReached>;
+
 export const ErrorBody = z
   .object({
     code: ErrorCode,
@@ -120,6 +134,8 @@ export const ErrorBody = z
     until: z.iso.datetime().optional(),
     /** Why the session ended: only with `session_expired` (A-01a criterion 9). */
     reason: SessionEndReason.optional(),
+    /** The limit that refused the add: only with `limit_reached` (A-02 criterion 4). */
+    limitReached: LimitReached.optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -187,6 +203,8 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   self_action: 'Not allowed on your own membership',
   invitation_other_phone: 'This invitation was sent to another phone number',
   branch_not_archived: 'This branch is not archived',
+  limit_reached: 'The clinic has reached a limit of its plan',
+  feature_unavailable: 'This feature is not available to this clinic',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

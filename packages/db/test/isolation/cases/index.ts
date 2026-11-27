@@ -5,6 +5,7 @@ import { auditEventCase } from './audit-event.ts';
 import { branchCase } from './branch.ts';
 import { deploymentRouteCase } from './deployment-route.ts';
 import { tenantAddonCase, tenantOverrideCase, tenantOverrideEventCase } from './entitlements.ts';
+import { featureFlagTenantCase } from './feature-flags.ts';
 import { membershipCase } from './membership.ts';
 import { organizationCase } from './organization.ts';
 import { permissionOverrideCase } from './permission-override.ts';
@@ -23,4 +24,5 @@ export const ISOLATION_CASES: readonly IsolationCase[] = [
   tenantAddonCase,
   tenantOverrideCase,
   tenantOverrideEventCase,
+  featureFlagTenantCase,
 ];

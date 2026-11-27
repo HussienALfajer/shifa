@@ -61,14 +61,24 @@ describe('a clinic’s entitlements (criterion 1, row `sub`)', () => {
           planValue: 10,
           override: null,
           effective: 10,
+          // A-02-03: use beside each limit; custom fields are not counted until A-03.
+          used: 0,
         },
-        { key: 'limits.branches', kind: 'limit', planValue: 1, override: null, effective: 1 },
+        {
+          key: 'limits.branches',
+          kind: 'limit',
+          planValue: 1,
+          override: null,
+          effective: 1,
+          used: 1,
+        },
         {
           key: 'limits.custom_fields',
           kind: 'limit',
           planValue: 20,
           override: null,
           effective: 20,
+          used: null,
         },
       ],
     });

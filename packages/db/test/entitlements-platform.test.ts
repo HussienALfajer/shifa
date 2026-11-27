@@ -1,6 +1,7 @@
 // Security review of A-02-02 (L3–L5): outside an entitlement action shifa_platform reads no
 // add-on, override or history row even inside the clinic's context; tenant_usage_counts() runs
-// only in a type preview or change and leaves the caller's tenant setting as it was; the only
+// only in a type preview or change, an entitlement view or an override change (A-02-03, `used`)
+// and leaves the caller's tenant setting as it was; the only
 // SECURITY DEFINER function in `public` is that one, executable by shifa_platform alone.
 import { sql } from 'drizzle-orm';
 import { beforeEach, describe, expect, it } from 'vitest';
@@ -56,8 +57,8 @@ describe('shifa_platform reads entitlement rows only in entitlement actions', ()
 });
 
 describe('tenant_usage_counts()', () => {
-  it('refuses every action but a type preview or change', async () => {
-    for (const event of ['clinic.viewed', 'owner.phone_changed', 'entitlement.viewed'] as const) {
+  it('refuses every action but a type preview or change and an entitlement view or change', async () => {
+    for (const event of ['clinic.viewed', 'owner.phone_changed', 'flag.changed'] as const) {
       let refused: string | undefined;
       try {
         await testPlatformDb().withPlatformAdmin({ actorId: ADMIN, event }, (tx) =>

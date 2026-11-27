@@ -1,5 +1,6 @@
 // The clinic's team (A-01b criteria 2–7, 12; OD-76, OD-78, OD-86). Every call runs in the scope
-// the guard checked (TenantDb) and writes its audit rows in the same transaction. Work on the
+// the guard checked (TenantDb) and writes its audit rows in the same transaction. A doctor role
+// added (new member, edit, reactivation) stays within the doctor limit (A-02 criterion 4). Work on the
 // person (sessions, password) runs on the auth path inside that transaction: a failure there
 // rolls back the change and its row here; the auth step commits with its own audit row.
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
@@ -26,6 +27,7 @@ import {
 } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { ClinicLimits } from '../entitlements/index.ts';
 import { MemberAccounts, type NewMemberLink } from '../identity/index.ts';
 import { rename } from './member-corrections.ts';
 import { findMember, holdsOwnerRole, listMembers, memberDetail } from './members.read.ts';
@@ -62,6 +64,7 @@ export class TeamService {
     @Inject(TenantDb) private readonly tenants: TenantDb,
     @Inject(MemberAccounts) private readonly accounts: MemberAccounts,
     @Inject(PERMISSION_CATALOGUE) private readonly catalogue: PermissionCatalogue,
+    @Inject(ClinicLimits) private readonly limits: ClinicLimits,
   ) {}
 
   list(scope: RequestScope): Promise<MemberList> {
@@ -95,6 +98,9 @@ export class TeamService {
     const purpose = (await this.accounts.hasAccount(phone.e164)) ? 'invitation' : 'member_setup';
     const link = this.accounts.newLink();
     return this.tenants.run(scope, async (tx) => {
+      // A-02 criterion 4: a new doctor within the doctor limit, under the clinic's limits lock.
+      const doctor = input.roles.some((r) => r.role === 'doctor');
+      if (doctor) await this.limits.lock(tx);
       const { roles } = await validRoles(tx, input.roles);
       // Two adds of one phone at once: the second waits, then sees the first (409, never 500).
       await lockMemberPhone(tx, phone.e164);
@@ -103,6 +109,8 @@ export class TeamService {
         .from(membership)
         .where(eq(membership.phoneE164, phone.e164));
       if (taken) throw new ApiError(409, 'phone_in_team');
+      // A phone already here is named first; then the limit (review N2).
+      if (doctor) await this.limits.assertRoom(tx, scope.tenantId, 'limits.practitioners');
       const [row] = await tx
         .insert(membership)
         .values({
@@ -138,12 +146,19 @@ export class TeamService {
     return this.tenants.run(scope, async (tx) => {
       // The owners' lock before any row lock, as deactivate takes them (security review N3).
       if (input.roles) await lockOwners(tx);
+      const gainsDoctor = input.roles?.some((r) => r.role === 'doctor') === true;
+      if (gainsDoctor) await this.limits.lock(tx);
       let row = await this.#member(tx, id);
       if (input.permissions) this.#checkSwitches(input.permissions.map((p) => p.key));
       if (input.name !== undefined) row = await rename(tx, scope, row, input.name, requestId);
       if (input.roles) {
         const held = await heldRoles(tx, row.id);
         const { roles, live } = await validRoles(tx, input.roles, { allowEmpty: true, held });
+        // A doctor role added to a counted member (not deactivated, not a doctor yet).
+        const counted = row.status !== 'deactivated' && !held.some((r) => r.role === 'doctor');
+        if (gainsDoctor && counted) {
+          await this.limits.assertRoom(tx, scope.tenantId, 'limits.practitioners');
+        }
         const stillOwner = roles.some((r) => r.role === 'owner');
         if (!stillOwner && (await isLastOwner(tx, row))) throw lastOwner();
         // OD-97: only the owner themselves (or the super admin) removes an owner's role, so a
@@ -204,8 +219,13 @@ export class TeamService {
 
   reactivate(scope: RequestScope, id: string, requestId: string): Promise<MemberDetail> {
     return this.tenants.run(scope, async (tx) => {
+      await this.limits.lock(tx);
       const row = await this.#member(tx, id);
       if (row.status !== 'deactivated') throw new ApiError(409, 'member_not_deactivated');
+      // A reactivated doctor counts again (A-02 criterion 4).
+      if ((await heldRoles(tx, row.id)).some((r) => r.role === 'doctor')) {
+        await this.limits.assertRoom(tx, scope.tenantId, 'limits.practitioners');
+      }
       const changed = await setStatus(tx, row.id, row.userId ? 'active' : 'pending');
       await audit(tx, scope, 'member.reactivated', row.id, requestId);
       return this.#detail(tx, scope, changed);

@@ -17,6 +17,7 @@ EntitlementItem _$EntitlementItemFromJson(Map<String, dynamic> json) =>
               json['override'] as Map<String, dynamic>,
             ),
       planValue: json['planValue'],
+      used: (json['used'] as num?)?.toInt(),
     );
 
 Map<String, dynamic> _$EntitlementItemToJson(EntitlementItem instance) =>
@@ -26,6 +27,7 @@ Map<String, dynamic> _$EntitlementItemToJson(EntitlementItem instance) =>
       'kind': instance.kind,
       'override': instance.override,
       'planValue': ?instance.planValue,
+      'used': instance.used,
     };
 
 const _$EntitlementKindEnumMap = {

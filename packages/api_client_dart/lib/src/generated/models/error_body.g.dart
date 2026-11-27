@@ -12,6 +12,9 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
   details: (json['details'] as List<dynamic>?)
       ?.map((e) => ValidationIssue.fromJson(e as Map<String, dynamic>))
       .toList(),
+  limitReached: json['limitReached'] == null
+      ? null
+      : LimitReached.fromJson(json['limitReached'] as Map<String, dynamic>),
   reason: $enumDecodeNullable(_$SessionEndReasonEnumMap, json['reason']),
   until: json['until'] == null ? null : DateTime.parse(json['until'] as String),
 );
@@ -19,6 +22,7 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
 Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'code': instance.code,
   'details': ?instance.details,
+  'limitReached': ?instance.limitReached,
   'message': instance.message,
   'reason': ?instance.reason,
   'until': ?instance.until?.toIso8601String(),
@@ -79,6 +83,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.selfAction: 'self_action',
   ErrorCode.invitationOtherPhone: 'invitation_other_phone',
   ErrorCode.branchNotArchived: 'branch_not_archived',
+  ErrorCode.limitReached: 'limit_reached',
+  ErrorCode.featureUnavailable: 'feature_unavailable',
 };
 
 const _$SessionEndReasonEnumMap = {

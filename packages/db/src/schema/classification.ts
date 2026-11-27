@@ -81,6 +81,34 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'restrictive: shifa_platform appends a key’s history only in the actions that change it (override set or removed, type changed; A-02 criterion 20)',
     },
   },
+  // A-02-03: feature flags (criterion 7, OD-114)
+  feature_flag: {
+    kind: 'global',
+    reason:
+      'the super admin’s mode per engineering flag (off, on, selected) with reason and author; no clinic data',
+    roleAccess: {
+      feature_flag_platform_set:
+        'shifa_platform records a flag’s first change only in a flag.changed action (A-02 criterion 7)',
+      feature_flag_platform_change:
+        'shifa_platform changes a flag’s mode and reason only in a flag.changed action (A-02 criterion 7)',
+    },
+  },
+  feature_flag_tenant: {
+    kind: 'tenant',
+    access: 'read-only',
+    roleAccess: {
+      feature_flag_tenant_platform_read:
+        'the flags list shows the clinics each flag is on for, across clinics (tenant ids only), in flag.listed and flag.changed (A-02 criterion 7)',
+      feature_flag_tenant_platform_select_clinics:
+        'shifa_platform adds a clinic to a flag’s selection only in a flag.changed action',
+      feature_flag_tenant_platform_unselect:
+        'shifa_platform removes a clinic from a flag’s selection only in a flag.changed action',
+      feature_flag_tenant_platform_only_in_flag_actions:
+        'restrictive: even with a tenant set, shifa_platform reaches selections only in a flag action and writes them only in flag.changed',
+      feature_flag_tenant_platform_delete_only_in_change:
+        'restrictive: even with a tenant set, shifa_platform deletes a selection only in flag.changed (a DELETE has no WITH CHECK)',
+    },
+  },
   tenant: {
     kind: 'global',
     reason:

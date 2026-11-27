@@ -168,6 +168,28 @@
         ],
         "type": "object"
       },
+      "Capabilities": {
+        "properties": {
+          "entitlements": {
+            "$ref": "#/components/schemas/FeatureValues"
+          },
+          "flags": {
+            "$ref": "#/components/schemas/FlagValues"
+          },
+          "limits": {
+            "items": {
+              "$ref": "#/components/schemas/LimitUse"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "entitlements",
+          "limits",
+          "flags"
+        ],
+        "type": "object"
+      },
       "ChangePasswordRequest": {
         "properties": {
           "currentPassword": {
@@ -567,6 +589,18 @@
                 "type": "boolean"
               }
             ]
+          },
+          "used": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": [
@@ -574,7 +608,8 @@
           "kind",
           "planValue",
           "override",
-          "effective"
+          "effective",
+          "used"
         ],
         "type": "object"
       },
@@ -648,6 +683,9 @@
               "$ref": "#/components/schemas/ValidationIssue"
             },
             "type": "array"
+          },
+          "limitReached": {
+            "$ref": "#/components/schemas/LimitReached"
           },
           "message": {
             "type": "string"
@@ -723,7 +761,9 @@
           "member_account_exists",
           "self_action",
           "invitation_other_phone",
-          "branch_not_archived"
+          "branch_not_archived",
+          "limit_reached",
+          "feature_unavailable"
         ],
         "type": "string"
       },
@@ -735,6 +775,120 @@
         },
         "required": [
           "error"
+        ],
+        "type": "object"
+      },
+      "FeatureValues": {
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "propertyNames": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "FlagClinic": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
+        ],
+        "type": "object"
+      },
+      "FlagList": {
+        "properties": {
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/FlagView"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "flags"
+        ],
+        "type": "object"
+      },
+      "FlagMode": {
+        "enum": [
+          "off",
+          "on",
+          "selected"
+        ],
+        "type": "string"
+      },
+      "FlagValues": {
+        "additionalProperties": {
+          "type": "boolean"
+        },
+        "propertyNames": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "FlagView": {
+        "properties": {
+          "clinics": {
+            "items": {
+              "$ref": "#/components/schemas/FlagClinic"
+            },
+            "type": "array"
+          },
+          "defaultValue": {
+            "type": "boolean"
+          },
+          "description": {
+            "type": "string"
+          },
+          "key": {
+            "type": "string"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/FlagMode"
+          },
+          "reason": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updatedByName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "description",
+          "defaultValue",
+          "mode",
+          "clinics",
+          "reason",
+          "updatedByName",
+          "updatedAt"
         ],
         "type": "object"
       },
@@ -816,6 +970,59 @@
           "roles",
           "expiresAt",
           "phoneMasked"
+        ],
+        "type": "object"
+      },
+      "LimitReached": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "used": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "key",
+          "limit",
+          "used"
+        ],
+        "type": "object"
+      },
+      "LimitUse": {
+        "properties": {
+          "key": {
+            "type": "string"
+          },
+          "limit": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "used": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "limit",
+          "used"
         ],
         "type": "object"
       },
@@ -1740,6 +1947,32 @@
         ],
         "type": "object"
       },
+      "SetFlagRequest": {
+        "properties": {
+          "clinicIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 500,
+            "type": "array"
+          },
+          "mode": {
+            "$ref": "#/components/schemas/FlagMode"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 10,
+            "type": "string"
+          }
+        },
+        "required": [
+          "mode",
+          "reason"
+        ],
+        "type": "object"
+      },
       "SetOverrideRequest": {
         "properties": {
           "expiresAt": {
@@ -1906,6 +2139,47 @@
         "required": [
           "phone",
           "password"
+        ],
+        "type": "object"
+      },
+      "Subscription": {
+        "properties": {
+          "features": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "limits": {
+            "items": {
+              "$ref": "#/components/schemas/LimitUse"
+            },
+            "type": "array"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/ClinicType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/ClinicStatus"
+          },
+          "subscriptionEnd": {
+            "anyOf": [
+              {
+                "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "plan",
+          "status",
+          "subscriptionEnd",
+          "limits",
+          "features"
         ],
         "type": "object"
       },
@@ -3161,6 +3435,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "Add a branch",
@@ -3491,6 +3775,45 @@
         "x-permission": "branches.manage"
       }
     },
+    "/clinic/capabilities": {
+      "get": {
+        "operationId": "clinicCapabilities",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Capabilities"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "What the active clinic may use: features, limits with use, evaluated flags",
+        "x-permission": "clinic.capabilities.view"
+      }
+    },
     "/clinic/settings": {
       "get": {
         "operationId": "clinicSettings",
@@ -3584,6 +3907,45 @@
           }
         },
         "summary": "Change the clinic’s automatic sign-out (15, 30 or 60 minutes)",
+        "x-permission": "clinic.settings.manage"
+      }
+    },
+    "/clinic/subscription": {
+      "get": {
+        "operationId": "clinicSubscription",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Subscription"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The clinic’s plan, status, end date, limits with use and enabled features (owner)",
         "x-permission": "clinic.settings.manage"
       }
     },
@@ -4951,6 +5313,126 @@
           }
         },
         "summary": "The limits a clinic would have under another type, against its current use",
+        "x-platform-admin": true
+      }
+    },
+    "/platform/flags": {
+      "get": {
+        "operationId": "platformFlags",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagList"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "Every flag declared in code, with its mode, clinics, reason and last change",
+        "x-platform-admin": true
+      }
+    },
+    "/platform/flags/{key}": {
+      "put": {
+        "operationId": "platformSetFlag",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "maxLength": 36,
+              "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SetFlagRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FlagView"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Set a flag off for all, on for all or on for selected clinics",
         "x-platform-admin": true
       }
     },

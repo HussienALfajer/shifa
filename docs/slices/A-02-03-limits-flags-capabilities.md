@@ -1,6 +1,6 @@
 # A-02-03 Limits enforced, feature flags and capabilities
 
-Status: Planned · Tier: T0 · Branch: `feat/A-02-03-limits-flags-capabilities`
+Status: Built, in review · Tier: T0 · Branch: `claude/zen-heisenberg-xkeqjf` (cloud session; planned as `feat/A-02-03-limits-flags-capabilities`)
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114 · From A-02-01: criteria 4, 5, 7 (amended)
 
 After [A-02-02](A-02-02-entitlements-and-overrides.md) (merged).
@@ -34,12 +34,32 @@ Names in the earlier plan above that the contract replaces: flag `reason` 10–5
 - Spec additions: criteria 4 and 5 (a full limit shown before sending; what the plan does not allow is absent, never disabled), criterion 7 (who changed a flag last).
 
 ## Stopped at
-Planned.
+Built: contracts, database (two migrations), API (`modules/flags`, `modules/capabilities`, `ClinicLimits` in `modules/entitlements`, the gates in `src/access/`, the folded clinic search). In review.
+
+## As built (changes from the plan, reported to the owner)
+- **Branch:** `claude/zen-heisenberg-xkeqjf` (cloud session; planned as `feat/A-02-03-limits-flags-capabilities`).
+- **`GET /clinic/capabilities` access:** a new non-sensitive permission `clinic.capabilities.view`, granted to every clinic role (owner, doctor, receptionist, assistant, accountant), never to a super admin, instead of `@SignedIn`: `@SignedIn` routes get no checked scope and never read tenant data (`.claude/rules/api.md`). Matrix row `clinicMember`.
+- **`limit_reached` body:** the limit is in `error.limitReached` (`key`, `limit`, `used`; schema `LimitReached`), not `details`, which stays the list of field issues of `validation_failed` (one shape per field, for both clients). Contract row `add409` updated; no drawing change (the Callout names the limit either way).
+- **Gate answer:** a gated route whose feature or flag is off answers 403 `feature_unavailable` (new code). Gates sit on `@RequirePermission` routes only (the start-up check refuses one elsewhere, and a key outside the catalogues). The guard finds the `GatePort` (`modules/capabilities/gates.ts`) through `ModuleRef`, so `src/access/` imports no module; without a provider every gated route stops the start.
+- **Flag client:** `getBooleanValue(key, defaultValue, scope)`: the evaluation context is the scope the guard checked (the provider reads through `TenantDb`), not a bare tenant id. As in OpenFeature, `defaultValue` answers only a failed read (gates pass `false`); a key outside the catalogue throws. `PRODUCTION_FLAGS` is empty: no flag is declared yet (the flags screen shows its `none` state).
+- **Selection kept:** `PUT /platform/flags/:key` without `clinicIds` keeps the stored selection; with `clinicIds` it replaces it; the list and the answer return the kept selection while the flag is on or off for all (ignored then). Audit `flag.changed` data: `key`, `before`, `after` (modes) and `clinics` (count); `flag.listed` for the list. No reason text in audit data.
+- **`feature_flag_tenant`** has a uuid `id` with `(tenant_id, flag_key)` unique (`test/schema-keys.test.ts`), and a foreign key to `feature_flag.key`. shifa_platform reads every clinic's selections in flag actions only (tenant ids; clinic names from `tenant`, which it reads anyway).
+- **Limits read fresh:** the check resolves the limit from the rows in the write transaction, not the 60 s cache, so a lowered limit is never passed by a stale entry. Lock order: owners → `shifa.limits:` → phone → rows; branch restore takes the limits lock before the branch's row lock.
+- **Counts:** `clinicUsageCounts(tx)` (shifa_app, the clinic's context) beside `tenant_usage_counts()` in `packages/db/src/entitlements.ts`; `entitlements/usage-counts.ts` maps both to keys. The platform function now also answers in `entitlement.viewed`, `entitlement.override_set` and `entitlement.override_removed` (for `used` on «الاشتراك والحدود»); `used` is null for `limits.custom_fields`.
+- **One fold:** `foldArabic` and `matchesWordStart` moved from `@shifa/ui` to `@shifa/contracts/fold-arabic` (no imports); `@shifa/ui` re-exports them (no behaviour or look change) and gained `@shifa/contracts` as a dependency. The clinic search filters the listed clinics with `matchesWordStart` (the list already reads every clinic).
+- **Test worlds:** `teamWorld()` takes `clinicType`; the branch tests and the archived-roles tests use `multi_branch` (a multi-doctor clinic now holds one branch). The route matrix gives TENANT_A overrides (`test.feature` on, both limits 100,000).
+- **Dart client budget** raised to 280 files and 10,500 lines (188 and 6,991 now).
+- **Locked tests:** two fixes with the owner's approval (2026-11-27), no assertion changed: `add`'s parameter in `test/limits/limits.test.ts` typed `RoleScope[]` (tsc); the repeated flag in `test/flags/evaluate.test.ts` written as a literal instead of `FLAGS[0] as FlagDefinition` (lint).
+- **Migrations:** `20261127010323_a02_feature_flags` (expand: two tables) and `20261127010325_a02_flag_policies` (expand: RLS, grants, policies, `tenant_usage_counts` widened). Rollback notes in the SQL header.
 
 ## Evidence
-- `verify` (full): —
-- Isolation suite: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- `pnpm verify` (2026-11-27, final tree): `all green`: format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test (400 s), e2e. Docker ran in the cloud session.
+- `pnpm verify:full` (2026-11-27, run because the drift budget changed): `all green`: format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test (472 s), build, boot, ui-browser, ui-storybook, ui-storybook-build, ui-screenshots (no change from the fold's move to `@shifa/contracts`), e2e.
+- `packages/db`: 387 tests on the first full run (52 files), including isolation (new case `feature_flag_tenant`, direct and pooled), privileges, rls-presence and schema-keys; after the review fixes `flags`, `flags-review`, `isolation` and `architecture` passed (110 tests).
+- `apps/api` db project: 399 tests (60 files) after the build, including the route matrix (new rows `clinicMember`, the subscription, the flag routes and the gated probes off and on); unit project 271. Slice tests: `limits` (every path at the limit with key, limit and used, nothing written; lowered limit; concurrent adds and creates), `limit-races` (edit, reactivation and restore against an add), `flags/evaluate`, `flags/cache` (two instances on a fake clock), `flags/catalogue`, `flags/platform-flags` (list, change, validation, 404, audit without reason), `capabilities` (contract tests, owner-only card, gates off and on), `access/gates` (start-up refusals), `platform/clinic-search`.
+- Clients: OpenAPI, TS and Dart regenerated; `api-client-ts` 109 tests and the Dart client's 106 pass with fixtures for `Capabilities`, `Subscription`, `FlagList`, `FlagView`, `limit_reached` and `feature_unavailable`.
+- Contract rows proven: `A02cLimits`, `addAtLimit` (capabilities), `settings`/`subFull` (subscription), `add409`, `branchesFull`, `restoreRefused` (limits), flags `list`, `change`, `pickerError`, `reasonMissing`, the clinic-picker search fix, `used` on `sub`.
+- Reviewer: one blocking finding, B1 (POST /branches did not declare its 409), fixed. Security review: one blocking finding, B1 (a flag.listed action with a tenant set could delete that clinic's selections), fixed with a restrictive DELETE policy and `packages/db/test/flags-review.test.ts`; the same as review N3. Also fixed: review N1 (contract comments), N2 (`phone_in_team` before `limit_reached`), N4 (race tests across paths); security N1 (flag keys at most 36 characters, the audit limit) and the explicit tenant filter in the flag loader. Deferred to `docs/backlog.md`: security N2 (column grants on `feature_flag`), N3 (flag selection history), review N5 (second instance on the real database), N6 (subscription card in support sessions), gates in the OpenAPI note.
 
 ## Notes for the next session
 - A-02-05 (support) must see `limit_reached` routes as write routes; nothing special needed if writes are recognised by method.

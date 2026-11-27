@@ -114,7 +114,11 @@ enum ErrorCode {
   @JsonValue('invitation_other_phone')
   invitationOtherPhone('invitation_other_phone'),
   @JsonValue('branch_not_archived')
-  branchNotArchived('branch_not_archived');
+  branchNotArchived('branch_not_archived'),
+  @JsonValue('limit_reached')
+  limitReached('limit_reached'),
+  @JsonValue('feature_unavailable')
+  featureUnavailable('feature_unavailable');
 
   const ErrorCode(this.json);
 

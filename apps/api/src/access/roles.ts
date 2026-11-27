@@ -17,11 +17,17 @@ export type RoleGrants = Readonly<Record<Role, readonly PermissionKey[]>>;
 
 /** What each role may do in its tenant (or branch) by default. */
 export const PRODUCTION_GRANTS: RoleGrants = Object.freeze({
-  owner: ['members.view', 'members.manage', 'branches.manage', 'clinic.settings.manage'],
-  doctor: ['clinical.notes.view'],
-  receptionist: [],
-  assistant: ['clinical.notes.view'],
-  accountant: [],
+  owner: [
+    'members.view',
+    'members.manage',
+    'branches.manage',
+    'clinic.settings.manage',
+    'clinic.capabilities.view',
+  ],
+  doctor: ['clinical.notes.view', 'clinic.capabilities.view'],
+  receptionist: ['clinic.capabilities.view'],
+  assistant: ['clinical.notes.view', 'clinic.capabilities.view'],
+  accountant: ['clinic.capabilities.view'],
   // Platform work goes through withPlatformAdmin() on the shifa_platform pool (ADR-0043),
   // never through tenant grants.
   platform_admin: [],

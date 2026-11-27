@@ -6,15 +6,20 @@ import { BranchesService } from './branches.service.ts';
 
 @Module({})
 export class BranchesModule {
-  /** `identity`: the registered IdentityModule (MemberAccounts). */
+  /**
+   * `identity`: the registered IdentityModule (MemberAccounts); `entitlements`: the registered
+   * EntitlementsModule (the branch limit, A-02-03).
+   */
   static register({
     identity,
+    entitlements,
   }: {
     identity: NonNullable<ModuleMetadata['imports']>[number];
+    entitlements: NonNullable<ModuleMetadata['imports']>[number];
   }): DynamicModule {
     return {
       module: BranchesModule,
-      imports: [identity],
+      imports: [identity, entitlements],
       controllers: [BranchesController],
       providers: [BranchesService],
     };

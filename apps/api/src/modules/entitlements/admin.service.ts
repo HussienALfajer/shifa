@@ -68,6 +68,8 @@ export class EntitlementsAdmin {
       overrides: await overrideRows(sp),
     }));
     const names = await this.owners.displayNames(overrides.map((o) => o.setBy));
+    // Integers only (A-02-03: `used` beside each limit; null for a key not counted yet).
+    const used = await usageOf(tx, id);
     return {
       plan: type,
       items: this.catalogue.definitions().map((d) => {
@@ -78,6 +80,7 @@ export class EntitlementsAdmin {
           planValue: sources.planValues[d.key] ?? deny(d.kind),
           override: override ? overrideView(override, now, names) : null,
           effective: resolveKey(this.catalogue, d.key, sources, now),
+          used: d.kind === 'limit' ? (used[d.key] ?? null) : null,
         };
       }),
     };

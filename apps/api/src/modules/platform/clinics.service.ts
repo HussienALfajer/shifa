@@ -15,6 +15,7 @@ import {
   type ClinicList,
   type CreateClinicRequest,
   maskPhone,
+  matchesWordStart,
   normalisePhone,
   type OwnerPhoneRequest,
   type SetupLinkIssued,
@@ -33,7 +34,7 @@ import {
   type TenantType,
   tenant,
 } from '@shifa/db';
-import { and, desc, eq, ilike, ne } from 'drizzle-orm';
+import { and, desc, eq, ne } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
@@ -49,11 +50,6 @@ const OWNER_EVENTS = {
   'end-sessions': 'owner.sessions_ended',
 } as const;
 
-/** LIKE wildcards in a search are matched literally. */
-function likePattern(search: string): string {
-  return `%${search.replace(/[\\%_]/g, (c) => `\\${c}`)}%`;
-}
-
 @Injectable()
 export class ClinicsService {
   constructor(
@@ -64,7 +60,7 @@ export class ClinicsService {
 
   list(principal: Principal, search: string | undefined, requestId: string): Promise<ClinicList> {
     return this.#run(principal, { event: 'clinic.listed', requestId }, async (tx) => {
-      const rows = await tx
+      const all = await tx
         .select({
           id: tenant.id,
           name: tenant.name,
@@ -74,13 +70,15 @@ export class ClinicsService {
           createdAt: tenant.createdAt,
         })
         .from(tenant)
-        .where(search ? ilike(tenant.name, likePattern(search)) : undefined)
         .orderBy(desc(tenant.createdAt));
+      // A folded name at the start of a word, with Combobox's own rule (A-02-03 contract fix):
+      // «احمد» finds «أحمد», «الطبيه» finds «الطبية», a match inside a word does not count.
+      const found = search ? all.filter((r) => matchesWordStart(r.name, search)) : all;
       // shifa_platform sees owner memberships only; a clinic can hold several (co-owners the
       // owner invited): one card per clinic, the same one the detail shows.
       const owners = await ownerRows(tx);
       return {
-        clinics: rows.map((r) => {
+        clinics: found.map((r) => {
           const owner = ownerOf(owners.filter((o) => o.tenantId === r.id));
           return {
             ...r,

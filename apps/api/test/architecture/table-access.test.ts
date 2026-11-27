@@ -37,6 +37,9 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   ],
   branches: ['branch', 'auditEvent'],
   team: ['membership', 'roleAssignment', 'permissionOverride', 'setupLink', 'auditEvent'],
+  // A-02-03
+  flags: ['featureFlag', 'featureFlagTenant'],
+  capabilities: [],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -56,6 +59,12 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   },
   entitlements: {
     tenant: 'a clinic’s type is its plan (A-02 criterion 1); read only',
+  },
+  flags: {
+    tenant: 'read: the flags list names the selected clinics; a selection must name a clinic',
+  },
+  capabilities: {
+    tenant: 'read: the subscription card shows the clinic’s plan, status and end date (A-02 6)',
   },
   branches: {
     membership: 'read: the members whose sessions end when a branch is archived (A-01b 4, 9)',

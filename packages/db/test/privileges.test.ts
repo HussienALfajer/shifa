@@ -40,6 +40,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     tenant_addon: ['SELECT'],
     tenant_override: ['SELECT'],
     tenant_override_event: ['SELECT'],
+    // A-02-03: flags (global) and the clinic's own selections
+    feature_flag: ['SELECT'],
+    feature_flag_tenant: ['SELECT'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {
@@ -73,6 +76,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     tenant_addon: ['SELECT'],
     tenant_override: DML,
     tenant_override_event: ['SELECT', 'INSERT'],
+    // A-02-03: the super admin sets flags and their selected clinics (flag actions, policies)
+    feature_flag: ['SELECT', 'INSERT', 'UPDATE'],
+    feature_flag_tenant: ['SELECT', 'INSERT', 'DELETE'],
   },
 };
 

@@ -10,15 +10,20 @@ import { TeamPermissionsController } from './team-permissions.controller.ts';
 
 @Module({})
 export class TeamModule {
-  /** `identity`: the registered IdentityModule (MemberAccounts). */
+  /**
+   * `identity`: the registered IdentityModule (MemberAccounts); `entitlements`: the registered
+   * EntitlementsModule (the doctor limit, A-02-03).
+   */
   static register({
     identity,
+    entitlements,
   }: {
     identity: NonNullable<ModuleMetadata['imports']>[number];
+    entitlements: NonNullable<ModuleMetadata['imports']>[number];
   }): DynamicModule {
     return {
       module: TeamModule,
-      imports: [identity],
+      imports: [identity, entitlements],
       controllers: [TeamController, TeamPermissionsController, ClinicSettingsController],
       providers: [TeamService, MemberCorrections],
     };

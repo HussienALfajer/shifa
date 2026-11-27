@@ -2,7 +2,9 @@ import { type DynamicModule, Module } from '@nestjs/common';
 import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import { AccessModule, type PermissionDefinition } from './access/index.ts';
 import { BranchesModule } from './modules/branches/index.ts';
-import { EntitlementsModule } from './modules/entitlements/index.ts';
+import { CapabilitiesModule } from './modules/capabilities/index.ts';
+import { type EntitlementDefinition, EntitlementsModule } from './modules/entitlements/index.ts';
+import { type FlagDefinition, FlagsModule } from './modules/flags/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
   BetterAuthAdapter,
@@ -28,6 +30,8 @@ export class AppModule {
     clock,
     clinicWebUrl,
     permissions,
+    entitlements: entitlementKeys,
+    flags: flagKeys,
     testRoutes = false,
   }: {
     db: ShifaDb;
@@ -42,6 +46,10 @@ export class AppModule {
     clinicWebUrl?: string | undefined;
     /** The permission catalogue; production's by default (tests add their own keys). */
     permissions?: readonly PermissionDefinition[] | undefined;
+    /** The entitlement catalogue; production's by default (tests add their own keys). */
+    entitlements?: readonly EntitlementDefinition[] | undefined;
+    /** The flag catalogue; production's by default (tests add their own flags). */
+    flags?: readonly FlagDefinition[] | undefined;
     testRoutes?: boolean;
   }): DynamicModule {
     const identity = IdentityModule.register({
@@ -50,7 +58,16 @@ export class AppModule {
       ...(clock ? { clock } : {}),
       ...(clinicWebUrl ? { clinicWebUrl } : {}),
     });
-    const entitlements = EntitlementsModule.register({ platformDb, identity });
+    const entitlements = EntitlementsModule.register({
+      platformDb,
+      identity,
+      ...(entitlementKeys ? { entitlements: entitlementKeys } : {}),
+    });
+    const flags = FlagsModule.register({
+      platformDb,
+      identity,
+      ...(flagKeys ? { flags: flagKeys } : {}),
+    });
     return {
       module: AppModule,
       imports: [
@@ -63,8 +80,10 @@ export class AppModule {
           authPort: BetterAuthAdapter,
           ...(permissions ? { permissions } : {}),
         }),
-        TeamModule.register({ identity }),
-        BranchesModule.register({ identity }),
+        flags,
+        CapabilitiesModule.register({ entitlements, flags }),
+        TeamModule.register({ identity, entitlements }),
+        BranchesModule.register({ identity, entitlements }),
         ContractModule,
         HealthModule,
         ...(testRoutes ? [TestSupportModule] : []),

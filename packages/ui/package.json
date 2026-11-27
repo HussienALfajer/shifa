@@ -24,6 +24,7 @@
   },
   "dependencies": {
     "@hookform/resolvers": "7.0.7",
+    "@shifa/contracts": "workspace:*",
     "@shifa/tokens": "workspace:*",
     "@tanstack/react-table": "9.3.1",
     "@tanstack/react-virtual": "3.14.26",
