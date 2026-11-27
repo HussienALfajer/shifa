@@ -118,6 +118,16 @@ describe('add (row `add`, criterion 15)', () => {
     expect(errorCode(dupCity)).toBe('place_name_taken');
     // The same area name in another city is allowed.
     const azaz = await addCity('أعزاز');
+    // Row `azaz`: a city without areas lists `areas: []` and zero counts.
+    expect((await list()).find((c) => c.id === azaz.id)).toEqual({
+      id: azaz.id,
+      name: 'أعزاز',
+      archivedAt: null,
+      branchCount: 0,
+      clinicCount: 0,
+      doctorCount: 0,
+      areas: [],
+    });
     await addArea(azaz.id, 'الشهباء');
   });
 

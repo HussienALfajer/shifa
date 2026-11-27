@@ -254,7 +254,7 @@ describe('counts on the super admin’s list (criterion 24)', () => {
     // the other clinic has none.
     expect(city?.doctorCount).toBe(3);
     expect(city?.areas.find((a) => a.id === shahba)).toMatchObject({
-      archivedAt: expect.any(String),
+      archivedAt: expect.any(String) as unknown,
       branchCount: 1,
       clinicCount: 1,
       doctorCount: 3,

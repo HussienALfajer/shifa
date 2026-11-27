@@ -136,3 +136,20 @@ describe('the clinic’s tenant row', () => {
     }
   });
 });
+
+describe('own role assignments on the auth path', () => {
+  it('a person reads their own roles in every clinic, nobody else’s', async () => {
+    const own = await testAuthDb().withUser(INVITED, (tx) =>
+      tx.execute<{ role: string }>(sql`select role from role_assignment`),
+    );
+    expect(own.rows).toEqual([{ role: 'doctor' }]);
+    const stranger = await testAuthDb().withUser(STRANGER, (tx) =>
+      tx.execute(sql`select role from role_assignment`),
+    );
+    expect(stranger.rows).toEqual([]);
+    const anonymous = await testAuthDb().withAuth((tx) =>
+      tx.execute(sql`select role from role_assignment`),
+    );
+    expect(anonymous.rows).toEqual([]);
+  });
+});

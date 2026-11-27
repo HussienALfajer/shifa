@@ -16,6 +16,10 @@
 --   work there; integers only (the place's position in the array, never an id or a name), for
 --   shifa_platform alone, in its place actions only. It reads each clinic given in turn under that
 --   clinic's own tenant policies (as tenant_usage_counts() does) and restores the caller's tenant.
+--   The guarantee is integers only: the clinics are the caller's list (placeCounts() passes every
+--   clinic from `tenant`), so a caller that passes one clinic gets that clinic's figures per place,
+--   the same class as tenant_usage_counts() (accepted risk, OD-129). Both arrays are capped at
+--   10000 entries.
 -- * Contract of A-02-04 (after it is deployed; before real data): tenant.idle_minutes and its check
 --   went in the migration before; here shifa_app loses UPDATE (updated_at) on tenant and the
 --   policy tenant_app_settings, which existed only for the idle setting. shifa_app now reads its
@@ -113,8 +117,11 @@ BEGIN
 END $$;
 --> statement-breakpoint
 -- A rename changes the name only, an archive sets archived_at, a restore clears it; an area stays
--- in its city and no place changes its id (no column grant either). Owner updates fall under it
--- too: a later migration that edits the list sets the matching app.admin_reason.
+-- in its city and no place changes its id (no column grant either). The owner is bound by FORCE
+-- RLS with no UPDATE policy of its own, so an owner's UPDATE changes 0 rows: a later migration that
+-- edits the list runs ALTER TABLE … NO FORCE ROW LEVEL SECURITY, sets the matching
+-- app.admin_reason with set_config(…, true) for this trigger, edits the rows, checks ROW_COUNT and
+-- RAISEs on a mismatch, then runs ALTER TABLE … FORCE ROW LEVEL SECURITY again.
 CREATE FUNCTION public.place_change_guard() RETURNS trigger
   LANGUAGE plpgsql SET search_path = pg_catalog, public
   AS $$
@@ -150,9 +157,9 @@ CREATE FUNCTION public.place_counts(p_kind text, p_places uuid[], p_tenants uuid
 DECLARE
   previous text := coalesce(current_setting('app.tenant_id', true), '');
   n integer := coalesce(cardinality(p_places), 0);
-  b integer[] := array_fill(0, ARRAY[n]);
-  c integer[] := array_fill(0, ARRAY[n]);
-  d integer[] := array_fill(0, ARRAY[n]);
+  b integer[];
+  c integer[];
+  d integer[];
   t uuid;
   r record;
 BEGIN
@@ -163,9 +170,16 @@ BEGIN
     RAISE EXCEPTION 'place_counts runs inside a place action of the platform'
       USING ERRCODE = '42501';
   END IF;
+  IF n > 10000 OR coalesce(cardinality(p_tenants), 0) > 10000 THEN
+    RAISE EXCEPTION 'place_counts takes at most 10000 places and 10000 clinics'
+      USING ERRCODE = '54000';
+  END IF;
   IF n = 0 THEN
     RETURN;
   END IF;
+  b := array_fill(0, ARRAY[n]);
+  c := array_fill(0, ARRAY[n]);
+  d := array_fill(0, ARRAY[n]);
   FOR t IN SELECT DISTINCT x FROM unnest(p_tenants) AS x WHERE x IS NOT NULL LOOP
     PERFORM set_config('app.tenant_id', t::text, true);
     FOR r IN

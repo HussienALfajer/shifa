@@ -13,7 +13,7 @@ Granting the platform role SELECT on `branch`, `membership` or `role_assignment`
 ## Decision
 - **SECURITY DEFINER count functions** in `public`, owned by `shifa_owner` (NOBYPASSRLS), with `SET search_path = pg_catalog, public`, `REVOKE ALL … FROM PUBLIC` and `GRANT EXECUTE … TO shifa_platform` only.
 - **Integers only.** Every result column is an `integer`. A function never returns a row, an id, a name or text. Where the caller asks about several things at once (places), results are keyed by the position of each input in the caller's array, so even the platform's own ids do not come back from it.
-- **Under the clinic's own policies.** The function reads clinic rows by setting `app.tenant_id` (transaction-local) to one clinic at a time, so the tenant policies still decide what it sees, and restores the caller's value before it returns. Clinics to read are passed by the caller from `tenant` (which the platform role may list) in the same statement; the owner itself cannot list tenants.
+- **Under the clinic's own policies.** The function reads clinic rows by setting `app.tenant_id` (transaction-local) to one clinic at a time, so the tenant policies still decide what it sees, and restores the caller's value before it returns. Clinics to read are passed by the caller from `tenant` (which the platform role may list) in the same statement (`placeCounts()` always passes every clinic; a test pins it); the owner itself cannot list tenants. The function trusts that list: it caps it (and the places) at 10000 entries, nothing more.
 - **Inside named actions only.** Each function refuses (`42501`) unless `app.admin_reason` is one of the platform actions that show its figures, so every call sits inside an audited `withPlatformAdmin()` transaction.
 - **Listed and pinned.** Each function is listed with its reason in `COUNT_FUNCTIONS` of `packages/db/src/schema/classification.ts`; `packages/db/test/privileges.test.ts` fails when the set of SECURITY DEFINER functions in `public` differs from that list, or one of them has another search path, a non-integer result, or EXECUTE for any role but `shifa_platform`.
 - Functions today: `tenant_usage_counts(uuid)` (A-02-02) and `place_counts(text, uuid[], uuid[])` (A-02-06). A-02-07 adds its own the same way.
@@ -21,7 +21,7 @@ Granting the platform role SELECT on `branch`, `membership` or `role_assignment`
 ## Consequences
 + The super admin sees the figures the screens need; the platform role still holds no SELECT on clinic rows, and nothing but numbers leaves the function.
 + Each new count is a reviewed, reasoned, pinned database object, not a grant.
-− Counts are small information leaks by design: a count of 1 in a place tells the super admin one clinic holds it (never which, from this function). Acceptable for a platform operator who already lists clinics.
+− The guarantee is integers only, not anonymity: the platform path can pass a single clinic and read that clinic's figures per place (branches, doctors), the same class of figure `tenant_usage_counts(uuid)` already gives per clinic. Accepted as a risk pending the owner (OD-129); the alternative is a function that lists clinics itself under a dedicated role, or counter tables.
 − `place_counts` runs one query per clinic per call: fine for the pilot (tens of clinics); a materialised count table would replace it at hundreds (backlog).
 − A SECURITY DEFINER bug runs as the owner; the fixed search path, the action check and the privilege pin bound it.
 

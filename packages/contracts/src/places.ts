@@ -57,9 +57,19 @@ export const CityListQuery = z
   })
   .meta({ id: 'CityListQuery' });
 
-/** A place's Arabic name as typed: 1 to 100 characters once trimmed. */
+/**
+ * A place's Arabic name as typed: 1 to 100 characters once trimmed, and something left once folded
+ * (a lone tatweel or a direction mark folds to nothing: 400 on body.name, `custom`).
+ */
 export const PlaceNameRequest = z
-  .object({ name: z.string().trim().min(1).max(100) })
+  .object({
+    name: z
+      .string()
+      .trim()
+      .min(1)
+      .max(100)
+      .refine((n) => placeKey(n).length > 0),
+  })
   .meta({ id: 'PlaceNameRequest' });
 export type PlaceNameRequest = z.infer<typeof PlaceNameRequest>;
 
