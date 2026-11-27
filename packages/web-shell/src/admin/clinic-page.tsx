@@ -15,6 +15,10 @@ import {
   RadioGroup,
   SkeletonGroup,
   SkeletonText,
+  Tab,
+  TabList,
+  TabPanel,
+  Tabs,
 } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
@@ -35,7 +39,11 @@ import {
   TYPE_WORD,
   useClinic,
 } from './data.ts';
+import { LimitsTab } from './limits-tab.tsx';
 import { OwnerCard } from './owner-card.tsx';
+import { SettingsTab } from './settings-tab.tsx';
+import { SupportTab } from './support-tab.tsx';
+import { UsageTab } from './usage-tab.tsx';
 
 interface Note {
   tone: 'success' | 'danger';
@@ -167,6 +175,7 @@ export function ClinicPage() {
   const text = useText();
   const params: Record<string, string | undefined> = useParams({ strict: false });
   const { data: clinic, isError, refetch } = useClinic(params['id'] ?? '');
+  const [tab, setTab] = useState('info');
   if (clinic === null) return <NotFound />;
   if (!clinic) {
     return (
@@ -190,10 +199,34 @@ export function ClinicPage() {
       })}
       actions={<Badge tone={STATUS_TONE[clinic.status]}>{text(STATUS_WORD[clinic.status])}</Badge>}
     >
-      <div className="grid max-w-(--shifa-width-140) gap-5">
-        <SubscriptionCard clinic={clinic} />
-        <OwnerCard clinic={clinic} />
-      </div>
+      {/* A-02-08: the tabs of board `A02Clinic`; «العيادة» keeps the A-01-10 cards. */}
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabList aria-label={text('clinicTabs')}>
+          <Tab value="info">{text('clinicTabInfo')}</Tab>
+          <Tab value="limits">{text('clinicTabLimits')}</Tab>
+          <Tab value="settings">{text('clinicTabSettings')}</Tab>
+          <Tab value="support">{text('clinicTabSupport')}</Tab>
+          <Tab value="usage">{text('clinicTabUsage')}</Tab>
+        </TabList>
+        <TabPanel value="info">
+          <div className="grid max-w-(--shifa-width-140) gap-5">
+            <SubscriptionCard clinic={clinic} />
+            <OwnerCard clinic={clinic} />
+          </div>
+        </TabPanel>
+        <TabPanel value="limits">
+          <LimitsTab clinic={clinic} />
+        </TabPanel>
+        <TabPanel value="settings">
+          <SettingsTab clinicId={clinic.id} />
+        </TabPanel>
+        <TabPanel value="support">
+          <SupportTab clinic={clinic} />
+        </TabPanel>
+        <TabPanel value="usage">
+          <UsageTab clinicId={clinic.id} />
+        </TabPanel>
+      </Tabs>
     </AdminFrame>
   );
 }
