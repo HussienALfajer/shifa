@@ -46,13 +46,20 @@ Built with `/ui-component` in the component PR (`feat/A-02-components`), synced 
 - **PageBanner:** as the sheet: `info`, `warning` and the solid `support` tone, icon and word, the text, at most one action, the pager «1 من 3», a named close only where it can be hidden, a region named by its word, the buttons under the text on a phone. Differences: previous uses `caret-back` and next `caret-forward`, as Pagination does (the sheet drew `caret-forward` for previous); previous and next are disabled at the ends (the sheet showed only the middle one); the phone layout starts under 430 px of the banner's own width (Pagination's container breakpoint). The text is a polite live region, so paging is read; a banner already there when the page loads is not announced by itself: A-02-10 decides how a newly arrived announcement is announced once (backlog).
 
 ## Stopped at
-Checkpoints 1–3 built and green (`verify` fast); checkpoint 4 (journeys, screenshots, review) next.
+Built and verified; PR open (cloud session, branch `claude/sharp-maxwell-4ud3y7`).
 
 ## Evidence
-- Contract check: —
-- `verify` (full): —
-- Screenshots: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- **Contract check (checkpoint 1, 2026-11-27):** every row of "Flags", "Announcements" and "Cities and areas" in the screen contract matches the built API (`packages/contracts/src/{flags,announcements,places}.ts`, the three controllers, the generated client): fields, statuses and error codes as listed. No API gap; nothing changed in the API or contracts. No design-system release since A-02-01 to apply. One finding, not a contract mismatch: Release 1 declares no flag in code (`PRODUCTION_FLAGS` is empty), so on the real backend the flags list is the "none declared" state; the list, kill switch, confirmation and picker are proven by the page tests with flags from the fake API.
+- **Tests first:** `packages/web-shell/test/admin-{flags,announcements,places}.test.tsx` (30 tests) written and run red ("الصفحة غير موجودة") before the pages, then locked. Changed after locking, with the owner's consent (2026-11-27): the reason field is found by its label, not as the first `<textarea>` (MultiCombobox renders a hidden one for its form value); then only lint fixes (unused variables, import order, `must()` in place of non-null assertions), no assertion changed.
+- **Journeys** (`e2e/tests/admin-console.spec.ts`, a fifth seeded super admin): (1) enrols, opens «الميزات التجريبية» (none declared); (2) an announcement with a refused link, refused without clinics, then for two selected clinics, created, edited and ended early, seen under «المنتهية»; (3) a new city «مارع» gets two areas, a taken name is refused on the field, the Arabic search, one area archived and shown with «عرض المؤرشفة». `pnpm --filter @shifa/e2e e2e`: 25 passed (all journeys), axe clean in light and dark on every looked screen.
+- **`verify` (fast):** all green (format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test, e2e). The slice touches no build, boot, DB harness, drift generator or CI: CI's `verify (full)` is the gate.
+- **Screenshots** (`E2E_SHOTS`, outside the repository; Arabic RTL, 1440 px, light and dark): `a02-flags-none`, `a02-announcements-empty`, `a02-announcement-form`, `a02-announcements-active`, `a02-announcements-ended`, `a02-places-list`, `a02-places-archived`. Compared with the drawings `A02Flags`, `A02Announcements`, `A02Cities` read from "Shifa Screens · Admin web" (version 1795743865-9d4d). Fixed after the comparison: the date fields two per row (axe `target-size` in four columns), the chosen city's row in the selection colour with its name in the body colour. Remaining differences, explained:
+  - The navigation gains «الميزات التجريبية», «الإعلانات», «المدن والمناطق» with the drawn icons (`list`, `bell`, `buildings`).
+  - Flags: a flag's title comes from i18n by key; none is declared yet, so a row shows its code `description`; the list has the drawn header row and columns (12-column token grid).
+  - Announcements: the preview is the real PageBanner (the drawing drew a Callout); at the form's width the banner uses its phone layout, so the close button goes under the text. Each date has its time field labelled «ساعة البدء» / «ساعة الانتهاء» (the drawing labelled both «الساعة»: two fields with one name). The level starts at «معلومة».
+  - Cities: the list follows the API's order (by name: «أعزاز» before «حلب»), and the first city is chosen at first; the add field sits under each list without a visible label (named «مدينة جديدة» / «منطقة جديدة»), as drawn.
+  - The clinic picker reads `GET /platform/clinics` once and matches on the client with MultiCombobox's fold, the same matching as the server's folded word-start search; `search` is optional in the contract row.
+- Reviewer findings fixed: see the PR; deferred to backlog: see `docs/backlog.md`.
 
 ## Notes for the next session
 - The drawings are named in A-02-01 (links not committed, ADR-0040).
