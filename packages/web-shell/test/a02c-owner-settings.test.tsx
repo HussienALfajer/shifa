@@ -152,7 +152,11 @@ describe('owner: «الاشتراك»', () => {
   });
 
   it('warns when the subscription ends within 14 days', async () => {
-    const soon = new Date(Date.now() + 9 * 86_400_000 + 3_600_000).toISOString().slice(0, 10);
+    // Nine Damascus days ahead: the card counts Damascus days, and after 21:00 UTC the Damascus
+    // date is already the next one (a UTC date failed every night).
+    const soon = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }).format(
+      new Date(Date.now() + 9 * 86_400_000),
+    );
     const { r } = await open('/settings', withA02(teamApi(), { subscriptionEnd: soon }));
     expect(r.container.textContent).toMatch(/ينتهي اشتراكك خلال (9|10) أيام/);
   });
