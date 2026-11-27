@@ -8,5 +8,6 @@ environment:
 
 workspace:
   - packages/api_client_dart
+  - packages/shifa_name_key
   - packages/shifa_testing
   - packages/shifa_ui

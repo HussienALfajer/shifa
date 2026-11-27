@@ -64,6 +64,7 @@ describe('verify parts', () => {
   it('splits Turborepo packages into the pub workspace and everything else', () => {
     assert.deepEqual(dart.sort(), [
       '@shifa/api-client-dart',
+      '@shifa/dart-name-key',
       '@shifa/dart-testing',
       '@shifa/dart-ui',
     ]);

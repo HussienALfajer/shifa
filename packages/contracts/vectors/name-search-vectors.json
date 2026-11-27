@@ -1,0 +1,2278 @@
+{
+  "version": 2,
+  "description": "Shared Arabic name-search key vectors (ADR-0034, ADR-0052; key version 2, OD-145). Both normaliser ports (TypeScript in @shifa/contracts, Dart in shifa_name_key) and the SQL drift check must give `key` for `input`. Synthetic names only. Version 1 is the spike S3 file.",
+  "rules": [
+    {
+      "id": "nfc",
+      "description": "Unicode NFC first (and once more at the end, after removals)."
+    },
+    {
+      "id": "tashkeel",
+      "description": "Remove U+064B–065F, U+0670 and Quranic marks U+06D6–06ED."
+    },
+    {
+      "id": "tatweel",
+      "description": "Remove tatweel U+0640."
+    },
+    {
+      "id": "format",
+      "description": "Remove every format character (Unicode category Cf: bidi controls U+200E, U+200F, U+202A–202E, U+2066–2069, ALM U+061C, word joiner U+2060, soft hyphen, tags …) except ZWSP, ZWNJ, ZWJ and BOM, which are spaces (OD-145)."
+    },
+    {
+      "id": "alef",
+      "description": "Fold أ إ آ ٱ to ا."
+    },
+    {
+      "id": "hamza-carrier",
+      "description": "Fold ؤ to و and ئ to ي."
+    },
+    {
+      "id": "teh-marbuta",
+      "description": "ة → ه when not followed by an Arabic letter."
+    },
+    {
+      "id": "alef-maksura",
+      "description": "ى → ي when not followed by an Arabic letter."
+    },
+    {
+      "id": "digits",
+      "description": "Arabic-Indic U+0660–0669 and Persian U+06F0–06F9 digits → 0–9."
+    },
+    {
+      "id": "latin",
+      "description": "Upper-case and title-case letters of Basic Latin, Latin-1 Supplement, Latin Extended-A and -B, Latin Extended Additional and full-width Latin lower-cased by the Unicode default mapping, without locale rules; İ (U+0130) → i (OD-145, amends OD-40's ASCII-only rule). Latin Extended-C and -D stay as typed."
+    },
+    {
+      "id": "whitespace",
+      "description": "Unicode spaces, ZWSP, ZWNJ, ZWJ and BOM → one space; trimmed."
+    },
+    {
+      "id": "particle",
+      "description": "عبد ابو ابي ام ابن بن بنت joined with the next word (two passes)."
+    },
+    {
+      "id": "interaction",
+      "description": "Several rules on one input."
+    },
+    {
+      "id": "passthrough",
+      "description": "Inputs no rule may change."
+    },
+    {
+      "id": "empty",
+      "description": "Empty, whitespace-only, diacritics-only and tatweel-only input."
+    },
+    {
+      "id": "list",
+      "description": "Every entry of the @shifa/testing name lists."
+    },
+    {
+      "id": "full-name",
+      "description": "Full synthetic names and their typed variants."
+    }
+  ],
+  "cases": [
+    {
+      "id": "nfc-001",
+      "rule": "nfc",
+      "input": "ا\u0654حمد",
+      "key": "احمد",
+      "note": "decomposed hamza above composes to أ, then folds"
+    },
+    {
+      "id": "nfc-002",
+      "rule": "nfc",
+      "input": "ا\u0655براهيم",
+      "key": "ابراهيم",
+      "note": "decomposed hamza below composes to إ"
+    },
+    {
+      "id": "nfc-003",
+      "rule": "nfc",
+      "input": "ا\u0653منة",
+      "key": "امنه",
+      "note": "decomposed madda composes to آ"
+    },
+    {
+      "id": "nfc-004",
+      "rule": "nfc",
+      "input": "مو\u0654من",
+      "key": "مومن",
+      "note": "decomposed ؤ"
+    },
+    {
+      "id": "nfc-005",
+      "rule": "nfc",
+      "input": "هاي\u0654",
+      "key": "هاي",
+      "note": "decomposed ئ at the end"
+    },
+    {
+      "id": "nfc-006",
+      "rule": "nfc",
+      "input": "Jose\u0301",
+      "key": "josé",
+      "note": "Latin combining acute composes"
+    },
+    {
+      "id": "nfc-007",
+      "rule": "nfc",
+      "input": "Karim",
+      "key": "karim",
+      "note": "Kelvin sign is a singleton decomposition to K"
+    },
+    {
+      "id": "nfc-008",
+      "rule": "nfc",
+      "input": "Ame\u0301lie",
+      "key": "amélie"
+    },
+    {
+      "id": "nfc-009",
+      "rule": "nfc",
+      "input": "ي\u0654اسر",
+      "key": "ياسر",
+      "note": "decomposed ئ inside a word"
+    },
+    {
+      "id": "nfc-010",
+      "rule": "nfc",
+      "input": "ا\u064E\u0654حمد",
+      "key": "احمد",
+      "note": "fatha before hamza above: reordered, composes to أ"
+    },
+    {
+      "id": "nfc-011",
+      "rule": "nfc",
+      "input": "Jose\u0301",
+      "key": "josé",
+      "note": "decomposed Latin accent composes"
+    },
+    {
+      "id": "nfc-012",
+      "rule": "nfc",
+      "input": "لو\u0654ي",
+      "key": "لوي",
+      "note": "decomposed ؤ in لؤي"
+    },
+    {
+      "id": "tashkeel-001",
+      "rule": "tashkeel",
+      "input": "م\u064Fح\u064Eم\u0651\u064Eد",
+      "key": "محمد"
+    },
+    {
+      "id": "tashkeel-002",
+      "rule": "tashkeel",
+      "input": "ع\u064Eل\u0650ي\u0651",
+      "key": "علي"
+    },
+    {
+      "id": "tashkeel-003",
+      "rule": "tashkeel",
+      "input": "خ\u064Eال\u0650د",
+      "key": "خالد"
+    },
+    {
+      "id": "tashkeel-004",
+      "rule": "tashkeel",
+      "input": "ي\u064Fوس\u064Fف",
+      "key": "يوسف"
+    },
+    {
+      "id": "tashkeel-005",
+      "rule": "tashkeel",
+      "input": "ح\u064Eس\u064Eن",
+      "key": "حسن"
+    },
+    {
+      "id": "tashkeel-006",
+      "rule": "tashkeel",
+      "input": "ز\u064Eي\u0652ن\u064Eب",
+      "key": "زينب"
+    },
+    {
+      "id": "tashkeel-007",
+      "rule": "tashkeel",
+      "input": "م\u064Eر\u0652ي\u064Eم",
+      "key": "مريم"
+    },
+    {
+      "id": "tashkeel-008",
+      "rule": "tashkeel",
+      "input": "ر\u064Eح\u0652م\u0670ن",
+      "key": "رحمن",
+      "note": "superscript alef U+0670"
+    },
+    {
+      "id": "tashkeel-009",
+      "rule": "tashkeel",
+      "input": "ياس\u0650ر\u064C",
+      "key": "ياسر"
+    },
+    {
+      "id": "tashkeel-010",
+      "rule": "tashkeel",
+      "input": "ب\u0650ل\u064Eال",
+      "key": "بلال"
+    },
+    {
+      "id": "tashkeel-011",
+      "rule": "tashkeel",
+      "input": "الح\u064Eل\u064Eب\u0650ي\u0651",
+      "key": "الحلبي"
+    },
+    {
+      "id": "tashkeel-012",
+      "rule": "tashkeel",
+      "input": "محمد\u06D6",
+      "key": "محمد",
+      "note": "Quranic mark U+06D6"
+    },
+    {
+      "id": "tashkeel-013",
+      "rule": "tashkeel",
+      "input": "عمر\u06E1",
+      "key": "عمر",
+      "note": "Quranic mark U+06E1"
+    },
+    {
+      "id": "tashkeel-014",
+      "rule": "tashkeel",
+      "input": "س\u064Eل\u0650يم\u064D",
+      "key": "سليم"
+    },
+    {
+      "id": "tashkeel-015",
+      "rule": "tashkeel",
+      "input": "ن\u064Fور",
+      "key": "نور"
+    },
+    {
+      "id": "tatweel-001",
+      "rule": "tatweel",
+      "input": "محـمد",
+      "key": "محمد"
+    },
+    {
+      "id": "tatweel-002",
+      "rule": "tatweel",
+      "input": "عـلي",
+      "key": "علي"
+    },
+    {
+      "id": "tatweel-003",
+      "rule": "tatweel",
+      "input": "خـــالد",
+      "key": "خالد"
+    },
+    {
+      "id": "tatweel-004",
+      "rule": "tatweel",
+      "input": "ـسامر",
+      "key": "سامر"
+    },
+    {
+      "id": "tatweel-005",
+      "rule": "tatweel",
+      "input": "رامي ـ",
+      "key": "رامي",
+      "note": "a lone tatweel word disappears"
+    },
+    {
+      "id": "tatweel-006",
+      "rule": "tatweel",
+      "input": "زيـاد",
+      "key": "زياد"
+    },
+    {
+      "id": "format-001",
+      "rule": "format",
+      "input": "\u200Fمحمد",
+      "key": "محمد",
+      "note": "RLM"
+    },
+    {
+      "id": "format-002",
+      "rule": "format",
+      "input": "علي\u200E",
+      "key": "علي",
+      "note": "LRM"
+    },
+    {
+      "id": "format-003",
+      "rule": "format",
+      "input": "\u202Bحسن\u202C",
+      "key": "حسن",
+      "note": "RLE … PDF"
+    },
+    {
+      "id": "format-004",
+      "rule": "format",
+      "input": "\u2067خالد\u2069",
+      "key": "خالد",
+      "note": "RLI … PDI"
+    },
+    {
+      "id": "format-005",
+      "rule": "format",
+      "input": "عمر\u200E \u200Fيوسف",
+      "key": "عمر يوسف"
+    },
+    {
+      "id": "format-006",
+      "rule": "format",
+      "input": "ريم\u061C",
+      "key": "ريم",
+      "note": "ALM U+061C (OD-145)"
+    },
+    {
+      "id": "format-007",
+      "rule": "format",
+      "input": "\u061Cسامر\u061C الحلبي",
+      "key": "سامر الحلبي",
+      "note": "ALM around a word"
+    },
+    {
+      "id": "format-008",
+      "rule": "format",
+      "input": "عبد\u2060 الله",
+      "key": "عبدالله",
+      "note": "word joiner U+2060 no longer stops a particle join (OD-145)"
+    },
+    {
+      "id": "format-009",
+      "rule": "format",
+      "input": "عبد\u2060الله",
+      "key": "عبدالله",
+      "note": "word joiner inside a word"
+    },
+    {
+      "id": "format-010",
+      "rule": "format",
+      "input": "مح\u00ADمد",
+      "key": "محمد",
+      "note": "soft hyphen"
+    },
+    {
+      "id": "format-011",
+      "rule": "format",
+      "input": "\u0600١٢",
+      "key": "12",
+      "note": "Arabic number sign U+0600"
+    },
+    {
+      "id": "format-012",
+      "rule": "format",
+      "input": "علي\u2062",
+      "key": "علي",
+      "note": "invisible times U+2062"
+    },
+    {
+      "id": "format-013",
+      "rule": "format",
+      "input": "حسن\u206Aي",
+      "key": "حسني",
+      "note": "deprecated format U+206A"
+    },
+    {
+      "id": "format-014",
+      "rule": "format",
+      "input": "سامر\uFFF9",
+      "key": "سامر",
+      "note": "interlinear annotation anchor"
+    },
+    {
+      "id": "format-015",
+      "rule": "format",
+      "input": "ليلى\uDB40\uDC41",
+      "key": "ليلي",
+      "note": "tag character, then final ى"
+    },
+    {
+      "id": "format-016",
+      "rule": "format",
+      "input": "نور\u180E",
+      "key": "نور",
+      "note": "Mongolian vowel separator"
+    },
+    {
+      "id": "format-017",
+      "rule": "format",
+      "input": "ا\u00AD\u0600\u0601\u0602\u0603\u0604\u0605\u061C\u06DD\u070F\u0890\u0891\u08E2\u180E\u200E\u200F\u202A\u202B\u202C\u202D\u202E\u2060\u2061\u2062\u2063\u2064\u2066\u2067\u2068\u2069\u206A\u206B\u206C\u206D\u206E\u206F\uFFF9\uFFFA\uFFFB\uD804\uDCBD\uD804\uDCCD\uD80D\uDC30\uD80D\uDC31\uD80D\uDC32\uD80D\uDC33\uD80D\uDC34\uD80D\uDC35\uD80D\uDC36\uD80D\uDC37\uD80D\uDC38\uD80D\uDC39\uD80D\uDC3A\uD80D\uDC3B\uD80D\uDC3C\uD80D\uDC3D\uD80D\uDC3E\uD80D\uDC3F\uD82F\uDCA0\uD82F\uDCA1\uD82F\uDCA2\uD82F\uDCA3\uD834\uDD73\uD834\uDD74\uD834\uDD75\uD834\uDD76\uD834\uDD77\uD834\uDD78\uD834\uDD79\uD834\uDD7A\uDB40\uDC01\uDB40\uDC20\uDB40\uDC21\uDB40\uDC22\uDB40\uDC23\uDB40\uDC24\uDB40\uDC25\uDB40\uDC26\uDB40\uDC27\uDB40\uDC28\uDB40\uDC29\uDB40\uDC2A\uDB40\uDC2B\uDB40\uDC2C\uDB40\uDC2D\uDB40\uDC2E\uDB40\uDC2F\uDB40\uDC30\uDB40\uDC31\uDB40\uDC32\uDB40\uDC33\uDB40\uDC34\uDB40\uDC35\uDB40\uDC36\uDB40\uDC37\uDB40\uDC38\uDB40\uDC39\uDB40\uDC3A\uDB40\uDC3B\uDB40\uDC3C\uDB40\uDC3D\uDB40\uDC3E\uDB40\uDC3F\uDB40\uDC40\uDB40\uDC41\uDB40\uDC42\uDB40\uDC43\uDB40\uDC44\uDB40\uDC45\uDB40\uDC46\uDB40\uDC47\uDB40\uDC48\uDB40\uDC49\uDB40\uDC4A\uDB40\uDC4B\uDB40\uDC4C\uDB40\uDC4D\uDB40\uDC4E\uDB40\uDC4F\uDB40\uDC50\uDB40\uDC51\uDB40\uDC52\uDB40\uDC53\uDB40\uDC54\uDB40\uDC55\uDB40\uDC56\uDB40\uDC57\uDB40\uDC58\uDB40\uDC59\uDB40\uDC5A\uDB40\uDC5B\uDB40\uDC5C\uDB40\uDC5D\uDB40\uDC5E\uDB40\uDC5F\uDB40\uDC60\uDB40\uDC61\uDB40\uDC62\uDB40\uDC63\uDB40\uDC64\uDB40\uDC65\uDB40\uDC66\uDB40\uDC67\uDB40\uDC68\uDB40\uDC69\uDB40\uDC6A\uDB40\uDC6B\uDB40\uDC6C\uDB40\uDC6D\uDB40\uDC6E\uDB40\uDC6F\uDB40\uDC70\uDB40\uDC71\uDB40\uDC72\uDB40\uDC73\uDB40\uDC74\uDB40\uDC75\uDB40\uDC76\uDB40\uDC77\uDB40\uDC78\uDB40\uDC79\uDB40\uDC7A\uDB40\uDC7B\uDB40\uDC7C\uDB40\uDC7D\uDB40\uDC7E\uDB40\uDC7Fب",
+      "key": "اب",
+      "note": "every format character Unicode lists (166) except ZWSP, ZWNJ, ZWJ, BOM"
+    },
+    {
+      "id": "format-018",
+      "rule": "format",
+      "input": "ريم\u200Cأحمد",
+      "key": "ريم احمد",
+      "note": "ZWNJ is still a word break"
+    },
+    {
+      "id": "alef-001",
+      "rule": "alef",
+      "input": "أحمد",
+      "key": "احمد"
+    },
+    {
+      "id": "alef-002",
+      "rule": "alef",
+      "input": "إبراهيم",
+      "key": "ابراهيم"
+    },
+    {
+      "id": "alef-003",
+      "rule": "alef",
+      "input": "آمنة",
+      "key": "امنه"
+    },
+    {
+      "id": "alef-004",
+      "rule": "alef",
+      "input": "ٱلحلبي",
+      "key": "الحلبي",
+      "note": "alef wasla"
+    },
+    {
+      "id": "alef-005",
+      "rule": "alef",
+      "input": "أنس",
+      "key": "انس"
+    },
+    {
+      "id": "alef-006",
+      "rule": "alef",
+      "input": "أسماء",
+      "key": "اسماء"
+    },
+    {
+      "id": "alef-007",
+      "rule": "alef",
+      "input": "إيمان",
+      "key": "ايمان"
+    },
+    {
+      "id": "alef-008",
+      "rule": "alef",
+      "input": "الأحمد",
+      "key": "الاحمد"
+    },
+    {
+      "id": "alef-009",
+      "rule": "alef",
+      "input": "الإدلبي",
+      "key": "الادلبي"
+    },
+    {
+      "id": "alef-010",
+      "rule": "alef",
+      "input": "أوزتورك",
+      "key": "اوزتورك"
+    },
+    {
+      "id": "alef-011",
+      "rule": "alef",
+      "input": "أصلان",
+      "key": "اصلان"
+    },
+    {
+      "id": "alef-012",
+      "rule": "alef",
+      "input": "احمد",
+      "key": "احمد",
+      "note": "already folded"
+    },
+    {
+      "id": "hamza-carrier-001",
+      "rule": "hamza-carrier",
+      "input": "عائشة",
+      "key": "عايشه"
+    },
+    {
+      "id": "hamza-carrier-002",
+      "rule": "hamza-carrier",
+      "input": "مؤمن",
+      "key": "مومن"
+    },
+    {
+      "id": "hamza-carrier-003",
+      "rule": "hamza-carrier",
+      "input": "لؤي",
+      "key": "لوي"
+    },
+    {
+      "id": "hamza-carrier-004",
+      "rule": "hamza-carrier",
+      "input": "رئيف",
+      "key": "رييف"
+    },
+    {
+      "id": "hamza-carrier-005",
+      "rule": "hamza-carrier",
+      "input": "سؤدد",
+      "key": "سودد"
+    },
+    {
+      "id": "hamza-carrier-006",
+      "rule": "hamza-carrier",
+      "input": "هانئ",
+      "key": "هاني"
+    },
+    {
+      "id": "hamza-carrier-007",
+      "rule": "hamza-carrier",
+      "input": "وائل",
+      "key": "وايل"
+    },
+    {
+      "id": "hamza-carrier-008",
+      "rule": "hamza-carrier",
+      "input": "رؤوف",
+      "key": "رووف",
+      "note": "ؤ inside a word"
+    },
+    {
+      "id": "hamza-carrier-009",
+      "rule": "hamza-carrier",
+      "input": "شؤون",
+      "key": "شوون"
+    },
+    {
+      "id": "hamza-carrier-010",
+      "rule": "hamza-carrier",
+      "input": "مسؤول",
+      "key": "مسوول"
+    },
+    {
+      "id": "hamza-carrier-011",
+      "rule": "hamza-carrier",
+      "input": "رو\u0654وف",
+      "key": "رووف",
+      "note": "decomposed ؤ composes, then folds"
+    },
+    {
+      "id": "hamza-carrier-012",
+      "rule": "hamza-carrier",
+      "input": "ر\u064Fؤى",
+      "key": "روي",
+      "note": "ؤ with a damma before it, then final ى"
+    },
+    {
+      "id": "teh-marbuta-001",
+      "rule": "teh-marbuta",
+      "input": "فاطمة",
+      "key": "فاطمه"
+    },
+    {
+      "id": "teh-marbuta-002",
+      "rule": "teh-marbuta",
+      "input": "حمزة",
+      "key": "حمزه"
+    },
+    {
+      "id": "teh-marbuta-003",
+      "rule": "teh-marbuta",
+      "input": "خديجة",
+      "key": "خديجه"
+    },
+    {
+      "id": "teh-marbuta-004",
+      "rule": "teh-marbuta",
+      "input": "هبة",
+      "key": "هبه"
+    },
+    {
+      "id": "teh-marbuta-005",
+      "rule": "teh-marbuta",
+      "input": "سارة",
+      "key": "ساره"
+    },
+    {
+      "id": "teh-marbuta-006",
+      "rule": "teh-marbuta",
+      "input": "غادة",
+      "key": "غاده"
+    },
+    {
+      "id": "teh-marbuta-007",
+      "rule": "teh-marbuta",
+      "input": "نادية",
+      "key": "ناديه"
+    },
+    {
+      "id": "teh-marbuta-008",
+      "rule": "teh-marbuta",
+      "input": "فاطمة الحلبي",
+      "key": "فاطمه الحلبي"
+    },
+    {
+      "id": "teh-marbuta-009",
+      "rule": "teh-marbuta",
+      "input": "هبة سارة",
+      "key": "هبه ساره"
+    },
+    {
+      "id": "teh-marbuta-010",
+      "rule": "teh-marbuta",
+      "input": "فاطمه",
+      "key": "فاطمه",
+      "note": "already ه"
+    },
+    {
+      "id": "teh-marbuta-011",
+      "rule": "teh-marbuta",
+      "input": "فاطمةالحلبي",
+      "key": "فاطمةالحلبي",
+      "note": "ة followed by a letter is not word-final"
+    },
+    {
+      "id": "teh-marbuta-012",
+      "rule": "teh-marbuta",
+      "input": "ة",
+      "key": "ه",
+      "note": "a lone ة is word-final"
+    },
+    {
+      "id": "teh-marbuta-013",
+      "rule": "teh-marbuta",
+      "input": "فاطمة-علي",
+      "key": "فاطمه-علي",
+      "note": "a hyphen ends the word"
+    },
+    {
+      "id": "alef-maksura-001",
+      "rule": "alef-maksura",
+      "input": "مصطفى",
+      "key": "مصطفي"
+    },
+    {
+      "id": "alef-maksura-002",
+      "rule": "alef-maksura",
+      "input": "ليلى",
+      "key": "ليلي"
+    },
+    {
+      "id": "alef-maksura-003",
+      "rule": "alef-maksura",
+      "input": "سلمى",
+      "key": "سلمي"
+    },
+    {
+      "id": "alef-maksura-004",
+      "rule": "alef-maksura",
+      "input": "هدى",
+      "key": "هدي"
+    },
+    {
+      "id": "alef-maksura-005",
+      "rule": "alef-maksura",
+      "input": "منى",
+      "key": "مني"
+    },
+    {
+      "id": "alef-maksura-006",
+      "rule": "alef-maksura",
+      "input": "عيسى",
+      "key": "عيسي"
+    },
+    {
+      "id": "alef-maksura-007",
+      "rule": "alef-maksura",
+      "input": "موسى",
+      "key": "موسي"
+    },
+    {
+      "id": "alef-maksura-008",
+      "rule": "alef-maksura",
+      "input": "يحيى",
+      "key": "يحيي"
+    },
+    {
+      "id": "alef-maksura-009",
+      "rule": "alef-maksura",
+      "input": "لمى",
+      "key": "لمي"
+    },
+    {
+      "id": "alef-maksura-010",
+      "rule": "alef-maksura",
+      "input": "مصطفى علي",
+      "key": "مصطفي علي"
+    },
+    {
+      "id": "alef-maksura-011",
+      "rule": "alef-maksura",
+      "input": "مصطفىعلي",
+      "key": "مصطفىعلي",
+      "note": "ى followed by a letter is not word-final"
+    },
+    {
+      "id": "alef-maksura-012",
+      "rule": "alef-maksura",
+      "input": "ى",
+      "key": "ي"
+    },
+    {
+      "id": "digits-001",
+      "rule": "digits",
+      "input": "محمد ٢",
+      "key": "محمد 2"
+    },
+    {
+      "id": "digits-002",
+      "rule": "digits",
+      "input": "١٢٣",
+      "key": "123"
+    },
+    {
+      "id": "digits-003",
+      "rule": "digits",
+      "input": "۴۵۶",
+      "key": "456",
+      "note": "Persian digits"
+    },
+    {
+      "id": "digits-004",
+      "rule": "digits",
+      "input": "علي ٠٩",
+      "key": "علي 09"
+    },
+    {
+      "id": "digits-005",
+      "rule": "digits",
+      "input": "رقم ۱۰",
+      "key": "رقم 10"
+    },
+    {
+      "id": "digits-006",
+      "rule": "digits",
+      "input": "٧",
+      "key": "7"
+    },
+    {
+      "id": "digits-007",
+      "rule": "digits",
+      "input": "١2۳",
+      "key": "123",
+      "note": "mixed digit systems"
+    },
+    {
+      "id": "digits-008",
+      "rule": "digits",
+      "input": "٠١٢٣٤٥٦٧٨٩",
+      "key": "0123456789"
+    },
+    {
+      "id": "digits-009",
+      "rule": "digits",
+      "input": "۰۱۲۳۴۵۶۷۸۹",
+      "key": "0123456789"
+    },
+    {
+      "id": "digits-010",
+      "rule": "digits",
+      "input": "محمد١",
+      "key": "محمد1",
+      "note": "a digit joined to a word"
+    },
+    {
+      "id": "digits-011",
+      "rule": "digits",
+      "input": "٣محمد",
+      "key": "3محمد"
+    },
+    {
+      "id": "digits-012",
+      "rule": "digits",
+      "input": "علي ٢٠٢٦",
+      "key": "علي 2026"
+    },
+    {
+      "id": "digits-013",
+      "rule": "digits",
+      "input": "0930 012 345",
+      "key": "0930 012 345",
+      "note": "ASCII digits unchanged"
+    },
+    {
+      "id": "digits-014",
+      "rule": "digits",
+      "input": "٠٩٣٠ ۰۱۲ 345",
+      "key": "0930 012 345",
+      "note": "three digit systems in one phone"
+    },
+    {
+      "id": "latin-001",
+      "rule": "latin",
+      "input": "Mohammad",
+      "key": "mohammad"
+    },
+    {
+      "id": "latin-002",
+      "rule": "latin",
+      "input": "AHMAD ALI",
+      "key": "ahmad ali"
+    },
+    {
+      "id": "latin-003",
+      "rule": "latin",
+      "input": "Fatima Al-Halabi",
+      "key": "fatima al-halabi"
+    },
+    {
+      "id": "latin-004",
+      "rule": "latin",
+      "input": "omar",
+      "key": "omar"
+    },
+    {
+      "id": "latin-005",
+      "rule": "latin",
+      "input": "Yusuf Kaya",
+      "key": "yusuf kaya"
+    },
+    {
+      "id": "latin-006",
+      "rule": "latin",
+      "input": "Ali 2",
+      "key": "ali 2"
+    },
+    {
+      "id": "latin-007",
+      "rule": "latin",
+      "input": "ÖZTÜRK",
+      "key": "öztürk",
+      "note": "non-ASCII Latin capitals are lower-cased too (OD-145)"
+    },
+    {
+      "id": "latin-008",
+      "rule": "latin",
+      "input": "Abd Allah",
+      "key": "abd allah",
+      "note": "Latin particles are not joined"
+    },
+    {
+      "id": "latin-009",
+      "rule": "latin",
+      "input": "Öz",
+      "key": "öz",
+      "note": "Azaz names: «Öztürk» found from «öz»"
+    },
+    {
+      "id": "latin-010",
+      "rule": "latin",
+      "input": "İsmail",
+      "key": "ismail",
+      "note": "dotted capital I folds to a plain i"
+    },
+    {
+      "id": "latin-011",
+      "rule": "latin",
+      "input": "IŞIK",
+      "key": "işik",
+      "note": "no Turkish locale rule: I → i"
+    },
+    {
+      "id": "latin-012",
+      "rule": "latin",
+      "input": "ÇELİK",
+      "key": "çelik"
+    },
+    {
+      "id": "latin-013",
+      "rule": "latin",
+      "input": "ĞÜLŞEN Kaya",
+      "key": "ğülşen kaya"
+    },
+    {
+      "id": "latin-014",
+      "rule": "latin",
+      "input": "ÉLODIE",
+      "key": "élodie"
+    },
+    {
+      "id": "latin-015",
+      "rule": "latin",
+      "input": "O\u0308ZTU\u0308RK",
+      "key": "öztürk",
+      "note": "decomposed capitals compose first"
+    },
+    {
+      "id": "latin-016",
+      "rule": "latin",
+      "input": "ＡＬＩ",
+      "key": "ａｌｉ",
+      "note": "full-width Latin is Latin script"
+    },
+    {
+      "id": "latin-017",
+      "rule": "latin",
+      "input": "ǅemal",
+      "key": "ǆemal",
+      "note": "title-case digraph"
+    },
+    {
+      "id": "latin-018",
+      "rule": "latin",
+      "input": "ΑΘΗΝΑ Жанна",
+      "key": "ΑΘΗΝΑ Жанна",
+      "note": "Greek and Cyrillic are not Latin: unchanged"
+    },
+    {
+      "id": "latin-019",
+      "rule": "latin",
+      "input": "ABCDEFGHIJKLMNOPQRSTUVWXYZÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖØÙÚÛÜÝÞĀĂĄĆĈĊČĎĐĒĔĖĘĚĜĞĠĢĤĦĨĪĬĮİĲĴĶĹĻĽĿŁŃŅŇŊŌŎŐŒŔŖŘŚŜŞŠŢŤŦŨŪŬŮŰŲŴŶŸŹŻŽƁƂƄƆƇƉƊƋƎƏƐƑƓƔƖƗƘƜƝƟƠƢƤƦƧƩƬƮƯƱƲƳƵƷƸƼǄǅǇǈǊǋǍǏǑǓǕǗǙǛǞǠǢǤǦǨǪǬǮǱǲǴǶǷǸǺǼǾȀȂȄȆȈȊȌȎȐȒȔȖȘȚȜȞȠȢȤȦȨȪȬȮȰȲȺȻȽȾɁɃɄɅɆɈɊɌɎḀḂḄḆḈḊḌḎḐḒḔḖḘḚḜḞḠḢḤḦḨḪḬḮḰḲḴḶḸḺḼḾṀṂṄṆṈṊṌṎṐṒṔṖṘṚṜṞṠṢṤṦṨṪṬṮṰṲṴṶṸṺṼṾẀẂẄẆẈẊẌẎẐẒẔẞẠẢẤẦẨẪẬẮẰẲẴẶẸẺẼẾỀỂỄỆỈỊỌỎỐỒỔỖỘỚỜỞỠỢỤỦỨỪỬỮỰỲỴỶỸỺỼỾＡＢＣＤＥＦＧＨＩＪＫＬＭＮＯＰＱＲＳＴＵＶＷＸＹＺ",
+      "key": "abcdefghijklmnopqrstuvwxyzàáâãäåæçèéêëìíîïðñòóôõöøùúûüýþāăąćĉċčďđēĕėęěĝğġģĥħĩīĭįiĳĵķĺļľŀłńņňŋōŏőœŕŗřśŝşšţťŧũūŭůűųŵŷÿźżžɓƃƅɔƈɖɗƌǝəɛƒɠɣɩɨƙɯɲɵơƣƥʀƨʃƭʈưʊʋƴƶʒƹƽǆǆǉǉǌǌǎǐǒǔǖǘǚǜǟǡǣǥǧǩǫǭǯǳǳǵƕƿǹǻǽǿȁȃȅȇȉȋȍȏȑȓȕȗșțȝȟƞȣȥȧȩȫȭȯȱȳⱥȼƚⱦɂƀʉʌɇɉɋɍɏḁḃḅḇḉḋḍḏḑḓḕḗḙḛḝḟḡḣḥḧḩḫḭḯḱḳḵḷḹḻḽḿṁṃṅṇṉṋṍṏṑṓṕṗṙṛṝṟṡṣṥṧṩṫṭṯṱṳṵṷṹṻṽṿẁẃẅẇẉẋẍẏẑẓẕßạảấầẩẫậắằẳẵặẹẻẽếềểễệỉịọỏốồổỗộớờởỡợụủứừửữựỳỵỷỹỻỽỿａｂｃｄｅｆｇｈｉｊｋｌｍｎｏｐｑｒｓｔｕｖｗｘｙｚ",
+      "note": "every capital of Basic Latin to Extended-B, Extended Additional and full-width Latin (376): both ports agree on each"
+    },
+    {
+      "id": "latin-020",
+      "rule": "latin",
+      "input": "ⱰꞍꞪ",
+      "key": "ⱰꞍꞪ",
+      "note": "Latin Extended-C and -D capitals stay as typed (Dart's case tables predate them)"
+    },
+    {
+      "id": "whitespace-001",
+      "rule": "whitespace",
+      "input": "  محمد   علي  ",
+      "key": "محمد علي"
+    },
+    {
+      "id": "whitespace-002",
+      "rule": "whitespace",
+      "input": "محمد\u00A0علي",
+      "key": "محمد علي",
+      "note": "NBSP"
+    },
+    {
+      "id": "whitespace-003",
+      "rule": "whitespace",
+      "input": "محمد\tعلي\n",
+      "key": "محمد علي"
+    },
+    {
+      "id": "whitespace-004",
+      "rule": "whitespace",
+      "input": "محمد\u200Cعلي",
+      "key": "محمد علي",
+      "note": "ZWNJ"
+    },
+    {
+      "id": "whitespace-005",
+      "rule": "whitespace",
+      "input": "محمد\u200Dعلي",
+      "key": "محمد علي",
+      "note": "ZWJ"
+    },
+    {
+      "id": "whitespace-006",
+      "rule": "whitespace",
+      "input": "محمد\u2003علي",
+      "key": "محمد علي",
+      "note": "em space"
+    },
+    {
+      "id": "whitespace-007",
+      "rule": "whitespace",
+      "input": "محمد\u3000علي",
+      "key": "محمد علي",
+      "note": "ideographic space"
+    },
+    {
+      "id": "whitespace-008",
+      "rule": "whitespace",
+      "input": "\u202Fحسن\u205F",
+      "key": "حسن"
+    },
+    {
+      "id": "whitespace-009",
+      "rule": "whitespace",
+      "input": "\uFEFFعمر",
+      "key": "عمر",
+      "note": "BOM / ZWNBSP"
+    },
+    {
+      "id": "whitespace-010",
+      "rule": "whitespace",
+      "input": "محمد\u200Bعلي",
+      "key": "محمد علي",
+      "note": "ZWSP"
+    },
+    {
+      "id": "whitespace-011",
+      "rule": "whitespace",
+      "input": "محمد\r\n\r\nعلي",
+      "key": "محمد علي"
+    },
+    {
+      "id": "particle-001",
+      "rule": "particle",
+      "input": "عبد الله",
+      "key": "عبدالله"
+    },
+    {
+      "id": "particle-002",
+      "rule": "particle",
+      "input": "عبد الرحمن",
+      "key": "عبدالرحمن"
+    },
+    {
+      "id": "particle-003",
+      "rule": "particle",
+      "input": "عبدالله",
+      "key": "عبدالله",
+      "note": "already joined"
+    },
+    {
+      "id": "particle-004",
+      "rule": "particle",
+      "input": "أبو بكر",
+      "key": "ابوبكر"
+    },
+    {
+      "id": "particle-005",
+      "rule": "particle",
+      "input": "ابو بكر",
+      "key": "ابوبكر"
+    },
+    {
+      "id": "particle-006",
+      "rule": "particle",
+      "input": "أبي طالب",
+      "key": "ابيطالب"
+    },
+    {
+      "id": "particle-007",
+      "rule": "particle",
+      "input": "أم كلثوم",
+      "key": "امكلثوم"
+    },
+    {
+      "id": "particle-008",
+      "rule": "particle",
+      "input": "ابن خالد",
+      "key": "ابنخالد"
+    },
+    {
+      "id": "particle-009",
+      "rule": "particle",
+      "input": "إبن سليم",
+      "key": "ابنسليم"
+    },
+    {
+      "id": "particle-010",
+      "rule": "particle",
+      "input": "محمد بن علي",
+      "key": "محمد بنعلي"
+    },
+    {
+      "id": "particle-011",
+      "rule": "particle",
+      "input": "فاطمة بنت حسن",
+      "key": "فاطمه بنتحسن"
+    },
+    {
+      "id": "particle-012",
+      "rule": "particle",
+      "input": "محمد عبد القادر الحلبي",
+      "key": "محمد عبدالقادر الحلبي"
+    },
+    {
+      "id": "particle-013",
+      "rule": "particle",
+      "input": "أبو عبد الله",
+      "key": "ابوعبدالله",
+      "note": "a particle chain joins right to left"
+    },
+    {
+      "id": "particle-014",
+      "rule": "particle",
+      "input": "محمد عبد",
+      "key": "محمد عبد",
+      "note": "a trailing particle is left alone"
+    },
+    {
+      "id": "particle-015",
+      "rule": "particle",
+      "input": "حسن ابو",
+      "key": "حسن ابو",
+      "note": "a trailing particle is left alone"
+    },
+    {
+      "id": "particle-016",
+      "rule": "particle",
+      "input": "عبد",
+      "key": "عبد"
+    },
+    {
+      "id": "particle-017",
+      "rule": "particle",
+      "input": "عبد  الكريم",
+      "key": "عبدالكريم"
+    },
+    {
+      "id": "particle-018",
+      "rule": "particle",
+      "input": "عبد\u00A0الله",
+      "key": "عبدالله"
+    },
+    {
+      "id": "particle-019",
+      "rule": "particle",
+      "input": "عبد\u200Cالله",
+      "key": "عبدالله"
+    },
+    {
+      "id": "particle-020",
+      "rule": "particle",
+      "input": "أبى بكر",
+      "key": "ابيبكر",
+      "note": "final ى folds to ي first, then ابي is a particle"
+    },
+    {
+      "id": "particle-021",
+      "rule": "particle",
+      "input": "بن ت محمد",
+      "key": "بنتمحمد",
+      "note": "second pass: بن + ت forms بنت, which joins again"
+    },
+    {
+      "id": "particle-022",
+      "rule": "particle",
+      "input": "عبدو",
+      "key": "عبدو",
+      "note": "a particle only as a whole word"
+    },
+    {
+      "id": "particle-023",
+      "rule": "particle",
+      "input": "بني مروان",
+      "key": "بني مروان",
+      "note": "بني is not a particle"
+    },
+    {
+      "id": "particle-024",
+      "rule": "particle",
+      "input": "امل علي",
+      "key": "امل علي",
+      "note": "ام only as a whole word"
+    },
+    {
+      "id": "particle-025",
+      "rule": "particle",
+      "input": "أمل",
+      "key": "امل"
+    },
+    {
+      "id": "interaction-001",
+      "rule": "interaction",
+      "input": "فاط\u0650مة\u064F",
+      "key": "فاطمه",
+      "note": "diacritic on a final ة"
+    },
+    {
+      "id": "interaction-002",
+      "rule": "interaction",
+      "input": "عبـد الله",
+      "key": "عبدالله",
+      "note": "particle after tatweel"
+    },
+    {
+      "id": "interaction-003",
+      "rule": "interaction",
+      "input": "أبـو بكر",
+      "key": "ابوبكر"
+    },
+    {
+      "id": "interaction-004",
+      "rule": "interaction",
+      "input": "أ\u064Eب\u064Fو ب\u064Eك\u0652ر\u064D",
+      "key": "ابوبكر",
+      "note": "hamza and marks on a particle"
+    },
+    {
+      "id": "interaction-005",
+      "rule": "interaction",
+      "input": "م\u064Fص\u0652ط\u064Eف\u064Eى",
+      "key": "مصطفي"
+    },
+    {
+      "id": "interaction-006",
+      "rule": "interaction",
+      "input": "مصطفىـ",
+      "key": "مصطفي",
+      "note": "tatweel after a final ى"
+    },
+    {
+      "id": "interaction-007",
+      "rule": "interaction",
+      "input": "فاطمة\u200Eالحلبي",
+      "key": "فاطمةالحلبي",
+      "note": "bidi mark removed first, so ة is not final"
+    },
+    {
+      "id": "interaction-008",
+      "rule": "interaction",
+      "input": "إ\u0650ب\u0652ر\u064Eاه\u0650يم",
+      "key": "ابراهيم"
+    },
+    {
+      "id": "interaction-009",
+      "rule": "interaction",
+      "input": "آم\u0650ن\u064Eة",
+      "key": "امنه"
+    },
+    {
+      "id": "interaction-010",
+      "rule": "interaction",
+      "input": "أ\u064Fم\u0651 ك\u064Fلثوم",
+      "key": "امكلثوم"
+    },
+    {
+      "id": "interaction-011",
+      "rule": "interaction",
+      "input": "عائ\u0650شة بنت أبي بكر",
+      "key": "عايشه بنتابيبكر"
+    },
+    {
+      "id": "interaction-012",
+      "rule": "interaction",
+      "input": "ليلى\u00A0عبد\u00A0الله",
+      "key": "ليلي عبدالله"
+    },
+    {
+      "id": "interaction-013",
+      "rule": "interaction",
+      "input": "MOHAMMAD عبد الله ٣",
+      "key": "mohammad عبدالله 3"
+    },
+    {
+      "id": "interaction-014",
+      "rule": "interaction",
+      "input": "يحيى ١",
+      "key": "يحيي 1"
+    },
+    {
+      "id": "interaction-015",
+      "rule": "interaction",
+      "input": "سلمى\u0670",
+      "key": "سلمي",
+      "note": "superscript alef after ى"
+    },
+    {
+      "id": "interaction-016",
+      "rule": "interaction",
+      "input": "هبة\u064B",
+      "key": "هبه"
+    },
+    {
+      "id": "interaction-017",
+      "rule": "interaction",
+      "input": "عبد\u064F الله\u0650",
+      "key": "عبدالله"
+    },
+    {
+      "id": "interaction-018",
+      "rule": "interaction",
+      "input": "فاطمة\u200C",
+      "key": "فاطمه",
+      "note": "ZWNJ after ة ends the word"
+    },
+    {
+      "id": "interaction-019",
+      "rule": "interaction",
+      "input": "ة\u200Dب",
+      "key": "ه ب",
+      "note": "ZWJ is whitespace: ة is final"
+    },
+    {
+      "id": "interaction-020",
+      "rule": "interaction",
+      "input": "eـ\u0301",
+      "key": "é",
+      "note": "composes after tatweel removal (final NFC)"
+    },
+    {
+      "id": "passthrough-001",
+      "rule": "passthrough",
+      "input": "الحلبي",
+      "key": "الحلبي",
+      "note": "ال is never stripped (OD-40)"
+    },
+    {
+      "id": "passthrough-002",
+      "rule": "passthrough",
+      "input": "حلبي",
+      "key": "حلبي"
+    },
+    {
+      "id": "passthrough-003",
+      "rule": "passthrough",
+      "input": "دعاء",
+      "key": "دعاء",
+      "note": "standalone hamza is kept"
+    },
+    {
+      "id": "passthrough-004",
+      "rule": "passthrough",
+      "input": "ولاء",
+      "key": "ولاء"
+    },
+    {
+      "id": "passthrough-005",
+      "rule": "passthrough",
+      "input": "کریم",
+      "key": "کریم",
+      "note": "Persian keheh and yeh are not folded"
+    },
+    {
+      "id": "passthrough-006",
+      "rule": "passthrough",
+      "input": "123",
+      "key": "123"
+    },
+    {
+      "id": "passthrough-007",
+      "rule": "passthrough",
+      "input": "ali-2",
+      "key": "ali-2"
+    },
+    {
+      "id": "passthrough-008",
+      "rule": "passthrough",
+      "input": "محمد علي",
+      "key": "محمد علي"
+    },
+    {
+      "id": "empty-001",
+      "rule": "empty",
+      "input": "",
+      "key": ""
+    },
+    {
+      "id": "empty-002",
+      "rule": "empty",
+      "input": " ",
+      "key": ""
+    },
+    {
+      "id": "empty-003",
+      "rule": "empty",
+      "input": "   \u00A0 ",
+      "key": ""
+    },
+    {
+      "id": "empty-004",
+      "rule": "empty",
+      "input": "\u064E\u0650",
+      "key": "",
+      "note": "diacritics only"
+    },
+    {
+      "id": "empty-005",
+      "rule": "empty",
+      "input": "ـــ",
+      "key": "",
+      "note": "tatweel only"
+    },
+    {
+      "id": "empty-006",
+      "rule": "empty",
+      "input": "\u200C",
+      "key": "",
+      "note": "ZWNJ only"
+    },
+    {
+      "id": "empty-007",
+      "rule": "empty",
+      "input": "\u064Bـ\u0651",
+      "key": ""
+    },
+    {
+      "id": "empty-008",
+      "rule": "empty",
+      "input": "\u200F",
+      "key": "",
+      "note": "RLM only"
+    },
+    {
+      "id": "list-001",
+      "rule": "list",
+      "input": "محمد",
+      "key": "محمد"
+    },
+    {
+      "id": "list-002",
+      "rule": "list",
+      "input": "علي",
+      "key": "علي"
+    },
+    {
+      "id": "list-003",
+      "rule": "list",
+      "input": "حسن",
+      "key": "حسن"
+    },
+    {
+      "id": "list-004",
+      "rule": "list",
+      "input": "حسين",
+      "key": "حسين"
+    },
+    {
+      "id": "list-005",
+      "rule": "list",
+      "input": "خالد",
+      "key": "خالد"
+    },
+    {
+      "id": "list-006",
+      "rule": "list",
+      "input": "عمر",
+      "key": "عمر"
+    },
+    {
+      "id": "list-007",
+      "rule": "list",
+      "input": "يوسف",
+      "key": "يوسف"
+    },
+    {
+      "id": "list-008",
+      "rule": "list",
+      "input": "محمود",
+      "key": "محمود"
+    },
+    {
+      "id": "list-009",
+      "rule": "list",
+      "input": "ياسر",
+      "key": "ياسر"
+    },
+    {
+      "id": "list-010",
+      "rule": "list",
+      "input": "سامر",
+      "key": "سامر"
+    },
+    {
+      "id": "list-011",
+      "rule": "list",
+      "input": "باسل",
+      "key": "باسل"
+    },
+    {
+      "id": "list-012",
+      "rule": "list",
+      "input": "فادي",
+      "key": "فادي"
+    },
+    {
+      "id": "list-013",
+      "rule": "list",
+      "input": "رامي",
+      "key": "رامي"
+    },
+    {
+      "id": "list-014",
+      "rule": "list",
+      "input": "وليد",
+      "key": "وليد"
+    },
+    {
+      "id": "list-015",
+      "rule": "list",
+      "input": "ماهر",
+      "key": "ماهر"
+    },
+    {
+      "id": "list-016",
+      "rule": "list",
+      "input": "زياد",
+      "key": "زياد"
+    },
+    {
+      "id": "list-017",
+      "rule": "list",
+      "input": "طارق",
+      "key": "طارق"
+    },
+    {
+      "id": "list-018",
+      "rule": "list",
+      "input": "بلال",
+      "key": "بلال"
+    },
+    {
+      "id": "list-019",
+      "rule": "list",
+      "input": "عمار",
+      "key": "عمار"
+    },
+    {
+      "id": "list-020",
+      "rule": "list",
+      "input": "معاذ",
+      "key": "معاذ"
+    },
+    {
+      "id": "list-021",
+      "rule": "list",
+      "input": "جمال",
+      "key": "جمال"
+    },
+    {
+      "id": "list-022",
+      "rule": "list",
+      "input": "نزار",
+      "key": "نزار"
+    },
+    {
+      "id": "list-023",
+      "rule": "list",
+      "input": "هشام",
+      "key": "هشام"
+    },
+    {
+      "id": "list-024",
+      "rule": "list",
+      "input": "كريم",
+      "key": "كريم"
+    },
+    {
+      "id": "list-025",
+      "rule": "list",
+      "input": "مالك",
+      "key": "مالك"
+    },
+    {
+      "id": "list-026",
+      "rule": "list",
+      "input": "سليم",
+      "key": "سليم"
+    },
+    {
+      "id": "list-027",
+      "rule": "list",
+      "input": "رياض",
+      "key": "رياض"
+    },
+    {
+      "id": "list-028",
+      "rule": "list",
+      "input": "فراس",
+      "key": "فراس"
+    },
+    {
+      "id": "list-029",
+      "rule": "list",
+      "input": "غسان",
+      "key": "غسان"
+    },
+    {
+      "id": "list-030",
+      "rule": "list",
+      "input": "عدنان",
+      "key": "عدنان"
+    },
+    {
+      "id": "list-031",
+      "rule": "list",
+      "input": "صالح",
+      "key": "صالح"
+    },
+    {
+      "id": "list-032",
+      "rule": "list",
+      "input": "أحمد",
+      "key": "احمد"
+    },
+    {
+      "id": "list-033",
+      "rule": "list",
+      "input": "مصطفى",
+      "key": "مصطفي"
+    },
+    {
+      "id": "list-034",
+      "rule": "list",
+      "input": "إبراهيم",
+      "key": "ابراهيم"
+    },
+    {
+      "id": "list-035",
+      "rule": "list",
+      "input": "عبد الله",
+      "key": "عبدالله"
+    },
+    {
+      "id": "list-036",
+      "rule": "list",
+      "input": "عبد الرحمن",
+      "key": "عبدالرحمن"
+    },
+    {
+      "id": "list-037",
+      "rule": "list",
+      "input": "عبد القادر",
+      "key": "عبدالقادر"
+    },
+    {
+      "id": "list-038",
+      "rule": "list",
+      "input": "عبد الكريم",
+      "key": "عبدالكريم"
+    },
+    {
+      "id": "list-039",
+      "rule": "list",
+      "input": "أنس",
+      "key": "انس"
+    },
+    {
+      "id": "list-040",
+      "rule": "list",
+      "input": "حمزة",
+      "key": "حمزه"
+    },
+    {
+      "id": "list-041",
+      "rule": "list",
+      "input": "عيسى",
+      "key": "عيسي"
+    },
+    {
+      "id": "list-042",
+      "rule": "list",
+      "input": "موسى",
+      "key": "موسي"
+    },
+    {
+      "id": "list-043",
+      "rule": "list",
+      "input": "يحيى",
+      "key": "يحيي"
+    },
+    {
+      "id": "list-044",
+      "rule": "list",
+      "input": "مريم",
+      "key": "مريم"
+    },
+    {
+      "id": "list-045",
+      "rule": "list",
+      "input": "زينب",
+      "key": "زينب"
+    },
+    {
+      "id": "list-046",
+      "rule": "list",
+      "input": "رنا",
+      "key": "رنا"
+    },
+    {
+      "id": "list-047",
+      "rule": "list",
+      "input": "ريم",
+      "key": "ريم"
+    },
+    {
+      "id": "list-048",
+      "rule": "list",
+      "input": "نور",
+      "key": "نور"
+    },
+    {
+      "id": "list-049",
+      "rule": "list",
+      "input": "لينا",
+      "key": "لينا"
+    },
+    {
+      "id": "list-050",
+      "rule": "list",
+      "input": "ديما",
+      "key": "ديما"
+    },
+    {
+      "id": "list-051",
+      "rule": "list",
+      "input": "رهف",
+      "key": "رهف"
+    },
+    {
+      "id": "list-052",
+      "rule": "list",
+      "input": "سعاد",
+      "key": "سعاد"
+    },
+    {
+      "id": "list-053",
+      "rule": "list",
+      "input": "سمر",
+      "key": "سمر"
+    },
+    {
+      "id": "list-054",
+      "rule": "list",
+      "input": "رغد",
+      "key": "رغد"
+    },
+    {
+      "id": "list-055",
+      "rule": "list",
+      "input": "بتول",
+      "key": "بتول"
+    },
+    {
+      "id": "list-056",
+      "rule": "list",
+      "input": "شهد",
+      "key": "شهد"
+    },
+    {
+      "id": "list-057",
+      "rule": "list",
+      "input": "روان",
+      "key": "روان"
+    },
+    {
+      "id": "list-058",
+      "rule": "list",
+      "input": "دعاء",
+      "key": "دعاء"
+    },
+    {
+      "id": "list-059",
+      "rule": "list",
+      "input": "ولاء",
+      "key": "ولاء"
+    },
+    {
+      "id": "list-060",
+      "rule": "list",
+      "input": "حلا",
+      "key": "حلا"
+    },
+    {
+      "id": "list-061",
+      "rule": "list",
+      "input": "ياسمين",
+      "key": "ياسمين"
+    },
+    {
+      "id": "list-062",
+      "rule": "list",
+      "input": "رشا",
+      "key": "رشا"
+    },
+    {
+      "id": "list-063",
+      "rule": "list",
+      "input": "فاطمة",
+      "key": "فاطمه"
+    },
+    {
+      "id": "list-064",
+      "rule": "list",
+      "input": "عائشة",
+      "key": "عايشه"
+    },
+    {
+      "id": "list-065",
+      "rule": "list",
+      "input": "خديجة",
+      "key": "خديجه"
+    },
+    {
+      "id": "list-066",
+      "rule": "list",
+      "input": "هبة",
+      "key": "هبه"
+    },
+    {
+      "id": "list-067",
+      "rule": "list",
+      "input": "سارة",
+      "key": "ساره"
+    },
+    {
+      "id": "list-068",
+      "rule": "list",
+      "input": "آمنة",
+      "key": "امنه"
+    },
+    {
+      "id": "list-069",
+      "rule": "list",
+      "input": "إيمان",
+      "key": "ايمان"
+    },
+    {
+      "id": "list-070",
+      "rule": "list",
+      "input": "أسماء",
+      "key": "اسماء"
+    },
+    {
+      "id": "list-071",
+      "rule": "list",
+      "input": "سلمى",
+      "key": "سلمي"
+    },
+    {
+      "id": "list-072",
+      "rule": "list",
+      "input": "ليلى",
+      "key": "ليلي"
+    },
+    {
+      "id": "list-073",
+      "rule": "list",
+      "input": "هدى",
+      "key": "هدي"
+    },
+    {
+      "id": "list-074",
+      "rule": "list",
+      "input": "منى",
+      "key": "مني"
+    },
+    {
+      "id": "list-075",
+      "rule": "list",
+      "input": "نادية",
+      "key": "ناديه"
+    },
+    {
+      "id": "list-076",
+      "rule": "list",
+      "input": "جنى",
+      "key": "جني"
+    },
+    {
+      "id": "list-077",
+      "rule": "list",
+      "input": "غادة",
+      "key": "غاده"
+    },
+    {
+      "id": "list-078",
+      "rule": "list",
+      "input": "لمى",
+      "key": "لمي"
+    },
+    {
+      "id": "list-079",
+      "rule": "list",
+      "input": "الحلبي",
+      "key": "الحلبي"
+    },
+    {
+      "id": "list-080",
+      "rule": "list",
+      "input": "المصري",
+      "key": "المصري"
+    },
+    {
+      "id": "list-081",
+      "rule": "list",
+      "input": "الشامي",
+      "key": "الشامي"
+    },
+    {
+      "id": "list-082",
+      "rule": "list",
+      "input": "العلي",
+      "key": "العلي"
+    },
+    {
+      "id": "list-083",
+      "rule": "list",
+      "input": "الحسن",
+      "key": "الحسن"
+    },
+    {
+      "id": "list-084",
+      "rule": "list",
+      "input": "الخطيب",
+      "key": "الخطيب"
+    },
+    {
+      "id": "list-085",
+      "rule": "list",
+      "input": "النجار",
+      "key": "النجار"
+    },
+    {
+      "id": "list-086",
+      "rule": "list",
+      "input": "الحداد",
+      "key": "الحداد"
+    },
+    {
+      "id": "list-087",
+      "rule": "list",
+      "input": "العمر",
+      "key": "العمر"
+    },
+    {
+      "id": "list-088",
+      "rule": "list",
+      "input": "الحمصي",
+      "key": "الحمصي"
+    },
+    {
+      "id": "list-089",
+      "rule": "list",
+      "input": "الجاسم",
+      "key": "الجاسم"
+    },
+    {
+      "id": "list-090",
+      "rule": "list",
+      "input": "السيد",
+      "key": "السيد"
+    },
+    {
+      "id": "list-091",
+      "rule": "list",
+      "input": "الشيخ",
+      "key": "الشيخ"
+    },
+    {
+      "id": "list-092",
+      "rule": "list",
+      "input": "الحسين",
+      "key": "الحسين"
+    },
+    {
+      "id": "list-093",
+      "rule": "list",
+      "input": "البكري",
+      "key": "البكري"
+    },
+    {
+      "id": "list-094",
+      "rule": "list",
+      "input": "الرفاعي",
+      "key": "الرفاعي"
+    },
+    {
+      "id": "list-095",
+      "rule": "list",
+      "input": "الزعبي",
+      "key": "الزعبي"
+    },
+    {
+      "id": "list-096",
+      "rule": "list",
+      "input": "المحمد",
+      "key": "المحمد"
+    },
+    {
+      "id": "list-097",
+      "rule": "list",
+      "input": "قباني",
+      "key": "قباني"
+    },
+    {
+      "id": "list-098",
+      "rule": "list",
+      "input": "كيالي",
+      "key": "كيالي"
+    },
+    {
+      "id": "list-099",
+      "rule": "list",
+      "input": "طرابيشي",
+      "key": "طرابيشي"
+    },
+    {
+      "id": "list-100",
+      "rule": "list",
+      "input": "دباغ",
+      "key": "دباغ"
+    },
+    {
+      "id": "list-101",
+      "rule": "list",
+      "input": "صباغ",
+      "key": "صباغ"
+    },
+    {
+      "id": "list-102",
+      "rule": "list",
+      "input": "عطار",
+      "key": "عطار"
+    },
+    {
+      "id": "list-103",
+      "rule": "list",
+      "input": "زيدان",
+      "key": "زيدان"
+    },
+    {
+      "id": "list-104",
+      "rule": "list",
+      "input": "حمدان",
+      "key": "حمدان"
+    },
+    {
+      "id": "list-105",
+      "rule": "list",
+      "input": "شيخو",
+      "key": "شيخو"
+    },
+    {
+      "id": "list-106",
+      "rule": "list",
+      "input": "بكور",
+      "key": "بكور"
+    },
+    {
+      "id": "list-107",
+      "rule": "list",
+      "input": "قدور",
+      "key": "قدور"
+    },
+    {
+      "id": "list-108",
+      "rule": "list",
+      "input": "عثمان",
+      "key": "عثمان"
+    },
+    {
+      "id": "list-109",
+      "rule": "list",
+      "input": "سليمان",
+      "key": "سليمان"
+    },
+    {
+      "id": "list-110",
+      "rule": "list",
+      "input": "يونس",
+      "key": "يونس"
+    },
+    {
+      "id": "list-111",
+      "rule": "list",
+      "input": "حجازي",
+      "key": "حجازي"
+    },
+    {
+      "id": "list-112",
+      "rule": "list",
+      "input": "ملا",
+      "key": "ملا"
+    },
+    {
+      "id": "list-113",
+      "rule": "list",
+      "input": "دلال",
+      "key": "دلال"
+    },
+    {
+      "id": "list-114",
+      "rule": "list",
+      "input": "الأحمد",
+      "key": "الاحمد"
+    },
+    {
+      "id": "list-115",
+      "rule": "list",
+      "input": "الإدلبي",
+      "key": "الادلبي"
+    },
+    {
+      "id": "list-116",
+      "rule": "list",
+      "input": "الأسعد",
+      "key": "الاسعد"
+    },
+    {
+      "id": "list-117",
+      "rule": "list",
+      "input": "حاجي أوغلو",
+      "key": "حاجي اوغلو"
+    },
+    {
+      "id": "list-118",
+      "rule": "list",
+      "input": "قره أوغلو",
+      "key": "قره اوغلو"
+    },
+    {
+      "id": "list-119",
+      "rule": "list",
+      "input": "أوزتورك",
+      "key": "اوزتورك"
+    },
+    {
+      "id": "list-120",
+      "rule": "list",
+      "input": "أوزدمير",
+      "key": "اوزدمير"
+    },
+    {
+      "id": "list-121",
+      "rule": "list",
+      "input": "أصلان",
+      "key": "اصلان"
+    },
+    {
+      "id": "list-122",
+      "rule": "list",
+      "input": "أرسلان",
+      "key": "ارسلان"
+    },
+    {
+      "id": "list-123",
+      "rule": "list",
+      "input": "أيدن",
+      "key": "ايدن"
+    },
+    {
+      "id": "list-124",
+      "rule": "list",
+      "input": "أوزكان",
+      "key": "اوزكان"
+    },
+    {
+      "id": "list-125",
+      "rule": "list",
+      "input": "يلدريم",
+      "key": "يلدريم"
+    },
+    {
+      "id": "list-126",
+      "rule": "list",
+      "input": "يلماز",
+      "key": "يلماز"
+    },
+    {
+      "id": "list-127",
+      "rule": "list",
+      "input": "كايا",
+      "key": "كايا"
+    },
+    {
+      "id": "list-128",
+      "rule": "list",
+      "input": "دمير",
+      "key": "دمير"
+    },
+    {
+      "id": "list-129",
+      "rule": "list",
+      "input": "تشليك",
+      "key": "تشليك"
+    },
+    {
+      "id": "list-130",
+      "rule": "list",
+      "input": "قوجه",
+      "key": "قوجه"
+    },
+    {
+      "id": "list-131",
+      "rule": "list",
+      "input": "طوبال",
+      "key": "طوبال"
+    },
+    {
+      "id": "list-132",
+      "rule": "list",
+      "input": "بيرقدار",
+      "key": "بيرقدار"
+    },
+    {
+      "id": "list-133",
+      "rule": "list",
+      "input": "قره خان",
+      "key": "قره خان"
+    },
+    {
+      "id": "list-134",
+      "rule": "list",
+      "input": "كوركماز",
+      "key": "كوركماز"
+    },
+    {
+      "id": "list-135",
+      "rule": "list",
+      "input": "شاهين",
+      "key": "شاهين"
+    },
+    {
+      "id": "list-136",
+      "rule": "list",
+      "input": "توران",
+      "key": "توران"
+    },
+    {
+      "id": "list-137",
+      "rule": "list",
+      "input": "قورت",
+      "key": "قورت"
+    },
+    {
+      "id": "list-138",
+      "rule": "list",
+      "input": "بولات",
+      "key": "بولات"
+    },
+    {
+      "id": "list-139",
+      "rule": "list",
+      "input": "جاووش",
+      "key": "جاووش"
+    },
+    {
+      "id": "full-name-001",
+      "rule": "full-name",
+      "input": "فاط\u0650مة عبد الله الحلبي",
+      "key": "فاطمه عبدالله الحلبي"
+    },
+    {
+      "id": "full-name-002",
+      "rule": "full-name",
+      "input": "فاطمه عبدالله الحلبي",
+      "key": "فاطمه عبدالله الحلبي"
+    },
+    {
+      "id": "full-name-003",
+      "rule": "full-name",
+      "input": "أحمد مصطفى الأسعد",
+      "key": "احمد مصطفي الاسعد"
+    },
+    {
+      "id": "full-name-004",
+      "rule": "full-name",
+      "input": "احمد مصطفي الاسعد",
+      "key": "احمد مصطفي الاسعد"
+    },
+    {
+      "id": "full-name-005",
+      "rule": "full-name",
+      "input": "ليلى عبد الرحمن قره أوغلو",
+      "key": "ليلي عبدالرحمن قره اوغلو"
+    },
+    {
+      "id": "full-name-006",
+      "rule": "full-name",
+      "input": "عائشة إبراهيم يلماز",
+      "key": "عايشه ابراهيم يلماز"
+    },
+    {
+      "id": "full-name-007",
+      "rule": "full-name",
+      "input": "محمد ٢ الحلبي",
+      "key": "محمد 2 الحلبي"
+    }
+  ]
+}
