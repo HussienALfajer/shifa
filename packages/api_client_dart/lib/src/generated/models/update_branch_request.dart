@@ -8,13 +8,23 @@ part 'update_branch_request.g.dart';
 
 @JsonSerializable()
 class UpdateBranchRequest {
-  const UpdateBranchRequest({this.address, this.name, this.phone});
+  const UpdateBranchRequest({
+    this.address,
+    this.areaId,
+    this.cityId,
+    this.name,
+    this.phone,
+  });
 
   factory UpdateBranchRequest.fromJson(Map<String, Object?> json) =>
       _$UpdateBranchRequestFromJson(json);
 
   @JsonKey(includeIfNull: false)
   final String? address;
+  @JsonKey(includeIfNull: false)
+  final String? areaId;
+  @JsonKey(includeIfNull: false)
+  final String? cityId;
   @JsonKey(includeIfNull: false)
   final String? name;
   @JsonKey(includeIfNull: false)

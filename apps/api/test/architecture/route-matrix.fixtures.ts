@@ -3,6 +3,8 @@
 // access only.
 import { randomUUID } from 'node:crypto';
 import {
+  area,
+  city,
   createClinic,
   membership,
   platformAdmin,
@@ -88,6 +90,35 @@ export async function clinicWithLock(): Promise<string> {
     locked: true,
   });
   return clinicId;
+}
+
+/**
+ * A fresh city (with a fresh area) written as the superuser (A-02-06): archived for a restore,
+ * live otherwise, each with a unique name so adds and renames never collide.
+ */
+export async function placeOf(
+  kind: 'city' | 'area',
+  state: 'live' | 'archived' = 'live',
+): Promise<string> {
+  const su = superuserDb(workerDatabaseName());
+  const tag = randomUUID().slice(0, 8);
+  const archivedAt = state === 'archived' ? new Date() : null;
+  const [c] = await su
+    .insert(city)
+    .values({
+      name: `مدينة ${tag}`,
+      nameKey: `مدينه ${tag}`,
+      archivedAt: kind === 'city' ? archivedAt : null,
+    })
+    .returning({ id: city.id });
+  if (!c) throw new Error('city not written');
+  if (kind === 'city') return c.id;
+  const [a] = await su
+    .insert(area)
+    .values({ cityId: c.id, name: `منطقة ${tag}`, nameKey: `منطقه ${tag}`, archivedAt })
+    .returning({ id: area.id });
+  if (!a) throw new Error('area not written');
+  return a.id;
 }
 
 /**

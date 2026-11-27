@@ -27,7 +27,9 @@ enum ValidationIssueCode {
   @JsonValue('invalid_value')
   invalidValue('invalid_value'),
   @JsonValue('custom')
-  custom('custom');
+  custom('custom'),
+  @JsonValue('area_not_in_city')
+  areaNotInCity('area_not_in_city');
 
   const ValidationIssueCode(this.json);
 

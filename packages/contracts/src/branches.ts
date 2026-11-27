@@ -4,12 +4,23 @@
 import { z } from 'zod';
 import { defineContract } from './define.ts';
 import { ErrorEnvelope } from './errors.ts';
+import { BranchPlace } from './places.ts';
 
 /** A name as typed: 1 to 200 characters, not only spaces. */
 const BranchName = z.string().max(200).regex(/\S/);
 /** As typed; normalised to E.164 by the server (400 on body.phone when invalid). */
 const BranchPhoneInput = z.string().min(1).max(32);
 const BranchAddress = z.string().max(300).regex(/\S/);
+
+/**
+ * A branch's place (A-02-06): an area only with its city (400 on body.areaId,
+ * `area_not_in_city`); an archived place chosen anew answers 409 `place_archived` (one the branch
+ * already holds is kept); `null` clears it.
+ */
+const placeFields = {
+  cityId: z.uuid().nullable().optional(),
+  areaId: z.uuid().nullable().optional(),
+};
 
 export const Branch = z
   .object({
@@ -21,6 +32,9 @@ export const Branch = z
     archivedAt: z.iso.datetime().nullable(),
     /** Active members with a role in this branch (tenant-wide roles not counted). */
     memberCount: z.int().min(0),
+    /** Its city and area (A-02-06), each null when not chosen («لم تُحدَّد المدينة»). */
+    city: BranchPlace.nullable(),
+    area: BranchPlace.nullable(),
   })
   .meta({ id: 'Branch' });
 export type Branch = z.infer<typeof Branch>;
@@ -35,6 +49,7 @@ export const CreateBranchRequest = z
     name: BranchName,
     address: BranchAddress.nullable().optional(),
     phone: BranchPhoneInput.nullable().optional(),
+    ...placeFields,
   })
   .meta({ id: 'CreateBranchRequest' });
 export type CreateBranchRequest = z.infer<typeof CreateBranchRequest>;
@@ -45,6 +60,7 @@ export const UpdateBranchRequest = z
     name: BranchName.optional(),
     address: BranchAddress.nullable().optional(),
     phone: BranchPhoneInput.nullable().optional(),
+    ...placeFields,
   })
   .meta({ id: 'UpdateBranchRequest' });
 export type UpdateBranchRequest = z.infer<typeof UpdateBranchRequest>;
@@ -75,8 +91,9 @@ export const branchesCreate = defineContract({
   path: '/branches',
   summary: 'Add a branch',
   request: { body: CreateBranchRequest },
-  // 400 `validation_failed`: an empty name or an invalid phone; 409 `limit_reached` (the branch
-  // limit, with `limitReached`; A-02-03).
+  // 400 `validation_failed`: an empty name, an invalid phone, an unknown place or an area outside
+  // its city; 409 `limit_reached` (the branch limit, with `limitReached`; A-02-03) or
+  // `place_archived` (with `place`; A-02-06).
   responses: { 201: Branch, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
@@ -84,9 +101,9 @@ export const branchesUpdate = defineContract({
   operationId: 'branchesUpdate',
   method: 'PATCH',
   path: '/branches/:id',
-  summary: 'Rename a branch or change its address and phone',
+  summary: 'Rename a branch or change its address, phone, city and area',
   request: { params: BranchIdParams, body: UpdateBranchRequest },
-  // 400 `validation_failed`; 409 `branch_archived`.
+  // 400 `validation_failed`; 409 `branch_archived` or `place_archived` (with `place`).
   responses: { 200: Branch, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 

@@ -16,6 +16,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { createdAt, E164_CHECK, SHA256_HEX_CHECK, updatedAt } from './columns.ts';
 import { user } from './identity.ts';
+import { area, city } from './places.ts';
 import { tenant } from './platform.ts';
 
 const at = (name: string) => timestamp(name, { withTimezone: true });
@@ -56,7 +57,10 @@ export const deploymentRoute = pgTable(
   ],
 );
 
-/** A location (PLT-03, PLT-04); the first one, «الفرع الرئيسي», comes with the clinic. */
+/**
+ * A location (PLT-03, PLT-04); the first one, «الفرع الرئيسي», comes with the clinic. A-02-06: an
+ * optional city and area (platform places); the area belongs to the city (composite key).
+ */
 export const branch = pgTable(
   'branch',
   {
@@ -68,11 +72,22 @@ export const branch = pgTable(
     archivedAt: at('archived_at'),
     createdAt: createdAt(),
     updatedAt: updatedAt(),
+    cityId: uuid('city_id').references(() => city.id),
+    areaId: uuid('area_id'),
   },
   (t) => [
     unique('branch_tenant_id_id_key').on(t.tenantId, t.id),
     nameCheck('branch', t.name),
     check('branch_phone_check', sql`${t.phone} ~ ${sql.raw(E164_CHECK)}`),
+    foreignKey({
+      name: 'branch_area_fk',
+      columns: [t.areaId, t.cityId],
+      foreignColumns: [area.id, area.cityId],
+    }),
+    // MATCH SIMPLE skips the key above when the city is null: an area needs its city.
+    check('branch_area_needs_city', sql`${t.areaId} is null or ${t.cityId} is not null`),
+    index('branch_tenant_id_city_id_idx').on(t.tenantId, t.cityId),
+    index('branch_tenant_id_area_id_idx').on(t.tenantId, t.areaId),
   ],
 );
 

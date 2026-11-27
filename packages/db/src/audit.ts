@@ -33,6 +33,16 @@ export const PLATFORM_EVENTS = [
   'support.opened',
   'support.handoff_issued',
   'support.ended',
+  // A-02-06: cities and areas (criteria 15, 18); names stay on the rows, never in audit data
+  'city.listed',
+  'city.created',
+  'city.renamed',
+  'city.archived',
+  'city.restored',
+  'area.created',
+  'area.renamed',
+  'area.archived',
+  'area.restored',
 ] as const;
 
 /**
@@ -89,6 +99,8 @@ export const TENANT_EVENTS = [
   'member.renamed',
   'member.phone_changed',
   'branch.restored',
+  // A-02-06: a branch's city or area set, changed or cleared (ids only)
+  'branch.place_changed',
 ] as const;
 
 export type AuditEventName =

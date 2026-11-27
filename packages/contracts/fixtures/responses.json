@@ -400,7 +400,17 @@
             "address": "شارع تجريبي",
             "phone": "+963980039822",
             "archivedAt": null,
-            "memberCount": 3
+            "memberCount": 3,
+            "city": {
+              "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+              "name": "حلب",
+              "archived": false
+            },
+            "area": {
+              "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+              "name": "الشهباء",
+              "archived": true
+            }
           }
         ],
         "archived": [
@@ -410,7 +420,9 @@
             "address": null,
             "phone": null,
             "archivedAt": "2026-11-24T10:00:00.000Z",
-            "memberCount": 0
+            "memberCount": 0,
+            "city": null,
+            "area": null
           }
         ]
       }
@@ -1301,9 +1313,97 @@
           "message": "Support access is read-only"
         }
       }
+    },
+    {
+      "name": "cities with counts, an archived area among them",
+      "schema": "CityList",
+      "body": {
+        "cities": [
+          {
+            "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+            "name": "حلب",
+            "archivedAt": null,
+            "branchCount": 5,
+            "clinicCount": 4,
+            "doctorCount": 11,
+            "areas": [
+              {
+                "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e",
+                "cityId": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+                "name": "الشهباء",
+                "archivedAt": "2026-11-27T09:00:00.000Z",
+                "branchCount": 1,
+                "clinicCount": 1,
+                "doctorCount": 2
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "the clinic's places, an archived area it holds",
+      "schema": "ClinicPlaces",
+      "body": {
+        "cities": [
+          {
+            "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+            "name": "حلب",
+            "archived": false,
+            "areas": [
+              { "id": "2b3c4d5e-6f7a-4b8c-9d0e-1f2a3b4c5d6e", "name": "الشهباء", "archived": true }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "an archived place chosen anew",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "place_archived", "message": "This place is archived", "place": "area" }
+      }
+    },
+    {
+      "name": "a place name taken",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "place_name_taken",
+          "message": "A place with this name already exists here"
+        }
+      }
+    },
+    {
+      "name": "a live place restored",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "place_not_archived", "message": "This place is not archived" } }
+    },
+    {
+      "name": "a branch area outside its city",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "validation_failed",
+          "message": "Bad request",
+          "details": [{ "path": "body.areaId", "code": "area_not_in_city" }]
+        }
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "city without its name",
+      "schema": "City",
+      "body": {
+        "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+        "archivedAt": null,
+        "branchCount": 0,
+        "clinicCount": 0,
+        "doctorCount": 0,
+        "areas": []
+      }
+    },
     {
       "name": "setting with an unknown source",
       "schema": "SettingView",

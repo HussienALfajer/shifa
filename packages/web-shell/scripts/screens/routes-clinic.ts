@@ -209,6 +209,9 @@ export const clinicRoutes: RouteTable = {
         phone: null,
         archivedAt: null,
         memberCount: 0,
+        // A-02-06: the dialog's city and area come with A-02-10.
+        city: null,
+        area: null,
       };
       const refused = branchUpdate(b, body);
       if (refused) return refused;

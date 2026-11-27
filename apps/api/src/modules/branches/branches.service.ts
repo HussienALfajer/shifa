@@ -3,7 +3,8 @@
 // clinic's active branches, so two archives at once cannot leave none; members left without an
 // active branch in their roles hold nothing here any more, and their sessions in this clinic end
 // through identity (as deactivation does). Creating or restoring a branch stays within the
-// clinic's branch limit (A-02 criterion 4, 409 `limit_reached`).
+// clinic's branch limit (A-02 criterion 4, 409 `limit_reached`). A-02-06: a branch's optional city
+// and area, checked by the places module (`branch.place_changed`, ids only).
 import { ConflictException, Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type ArchiveBranchPreview,
@@ -27,6 +28,7 @@ import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { ClinicLimits } from '../entitlements/index.ts';
 import { MemberAccounts } from '../identity/index.ts';
+import { branchPlaces, nextBranchPlace } from '../places/index.ts';
 
 type BranchRow = typeof branch.$inferSelect;
 
@@ -44,7 +46,8 @@ export class BranchesService {
     return this.tenants.run(scope, async (tx) => {
       const rows = await tx.select().from(branch).orderBy(asc(branch.createdAt), asc(branch.id));
       const counts = await memberCounts(tx);
-      const view = (row: BranchRow) => toBranch(row, counts.get(row.id) ?? 0);
+      const placeOf = await branchPlaces(tx, rows);
+      const view = (row: BranchRow) => toBranch(row, counts.get(row.id) ?? 0, placeOf(row));
       return {
         active: rows.filter((r) => r.archivedAt === null).map(view),
         archived: rows.filter((r) => r.archivedAt !== null).map(view),
@@ -58,6 +61,7 @@ export class BranchesService {
       // A-02 criterion 4: within the branch limit, under the clinic's limits lock.
       await this.limits.lock(tx);
       await this.limits.assertRoom(tx, scope.tenantId, 'limits.branches');
+      const place = await nextBranchPlace(tx, null, input);
       const [row] = await tx
         .insert(branch)
         .values({
@@ -65,11 +69,14 @@ export class BranchesService {
           name: input.name.trim(),
           address: input.address?.trim() ?? null,
           phone: phone ?? null,
+          cityId: place?.cityId ?? null,
+          areaId: place?.areaId ?? null,
         })
         .returning();
       if (!row) throw new Error('branch not written');
       await audit(tx, scope, 'branch.created', row.id, requestId);
-      return toBranch(row, 0);
+      if (row.cityId) await auditPlace(tx, scope, row, requestId);
+      return branchView(tx, row);
     });
   }
 
@@ -83,26 +90,34 @@ export class BranchesService {
     return this.tenants.run(scope, async (tx) => {
       const current = await find(tx, id, { lock: true });
       if (current.archivedAt) throw archivedError();
+      // A-02-06: the city and area it is left with (an archived one only if it holds it already).
+      const place = await nextBranchPlace(tx, current, input);
+      const moved =
+        place !== undefined && (place.cityId !== current.cityId || place.areaId !== current.areaId);
       // Nothing given: nothing changes and nothing is audited.
-      const nothing = [input.name, input.address, input.phone].every((v) => v === undefined);
-      if (nothing) return toBranch(current, (await memberCounts(tx)).get(current.id) ?? 0);
+      const details = [input.name, input.address, input.phone].some((v) => v !== undefined);
+      if (!details && !moved) return branchView(tx, current);
       const [row] = await tx
         .update(branch)
         .set({
           ...(input.name === undefined ? {} : { name: input.name.trim() }),
           ...(input.address === undefined ? {} : { address: input.address?.trim() ?? null }),
           ...(phone === undefined ? {} : { phone }),
+          ...(moved ? { cityId: place.cityId, areaId: place.areaId } : {}),
           updatedAt: new Date(),
         })
         .where(eq(branch.id, id))
         .returning();
       if (!row) throw new NotFoundException();
-      await audit(tx, scope, 'branch.renamed', row.id, requestId, {
-        name: input.name !== undefined,
-        address: input.address !== undefined,
-        phone: input.phone !== undefined,
-      });
-      return toBranch(row, (await memberCounts(tx)).get(row.id) ?? 0);
+      if (details) {
+        await audit(tx, scope, 'branch.renamed', row.id, requestId, {
+          name: input.name !== undefined,
+          address: input.address !== undefined,
+          phone: input.phone !== undefined,
+        });
+      }
+      if (moved) await auditPlace(tx, scope, row, requestId);
+      return branchView(tx, row);
     });
   }
 
@@ -137,7 +152,7 @@ export class BranchesService {
         .returning();
       if (!row) throw new NotFoundException();
       await audit(tx, scope, 'branch.restored', row.id, requestId);
-      return toBranch(row, (await memberCounts(tx)).get(row.id) ?? 0);
+      return branchView(tx, row);
     });
   }
 
@@ -165,7 +180,7 @@ export class BranchesService {
         if (member.userId)
           await this.accounts.endSessionsInClinic(member.userId, scope.tenantId, by);
       }
-      return toBranch(row, (await memberCounts(tx)).get(row.id) ?? 0);
+      return branchView(tx, row);
     });
   }
 }
@@ -235,7 +250,11 @@ async function memberCounts(tx: Tx): Promise<Map<string, number>> {
   return new Map(rows.flatMap((r) => (r.branchId ? [[r.branchId, r.count] as const] : [])));
 }
 
-function toBranch(row: BranchRow, memberCount: number): Branch {
+function toBranch(
+  row: BranchRow,
+  memberCount: number,
+  place: Pick<Branch, 'city' | 'area'>,
+): Branch {
   return {
     id: row.id,
     name: row.name,
@@ -243,17 +262,32 @@ function toBranch(row: BranchRow, memberCount: number): Branch {
     phone: row.phone,
     archivedAt: row.archivedAt?.toISOString() ?? null,
     memberCount,
+    ...place,
   };
 }
 
-/** One row in the clinic: actor, branch, request; `data` only booleans and counts. */
+/** One branch with its member count and place, read in `tx`. */
+async function branchView(tx: Tx, row: BranchRow): Promise<Branch> {
+  const placeOf = await branchPlaces(tx, [row]);
+  return toBranch(row, (await memberCounts(tx)).get(row.id) ?? 0, placeOf(row));
+}
+
+/** `branch.place_changed`: the city and area the branch now holds (ids only, null when none). */
+function auditPlace(tx: Tx, scope: RequestScope, row: BranchRow, requestId: string) {
+  return audit(tx, scope, 'branch.place_changed', row.id, requestId, {
+    cityId: row.cityId,
+    areaId: row.areaId,
+  });
+}
+
+/** One row in the clinic: actor, branch, request; `data` only booleans, counts and place ids. */
 async function audit(
   tx: Tx,
   scope: RequestScope,
   event: AuditEventName,
   targetId: string,
   requestId: string,
-  data: Record<string, boolean | number> = {},
+  data: Record<string, boolean | number | string | null> = {},
 ): Promise<void> {
   await tx.insert(auditEvent).values({
     tenantId: scope.tenantId,

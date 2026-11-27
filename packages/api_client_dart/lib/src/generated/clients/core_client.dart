@@ -8,14 +8,18 @@ import 'package:retrofit/retrofit.dart';
 import '../models/active_clinic.dart';
 import '../models/add_member_request.dart';
 import '../models/archive_branch_preview.dart';
+import '../models/area.dart';
 import '../models/branch.dart';
 import '../models/branch_list.dart';
 import '../models/capabilities.dart';
 import '../models/change_password_request.dart';
+import '../models/city.dart';
+import '../models/city_list.dart';
 import '../models/clinic_created.dart';
 import '../models/clinic_detail.dart';
 import '../models/clinic_entitlements.dart';
 import '../models/clinic_list.dart';
+import '../models/clinic_places.dart';
 import '../models/clinic_setting_list.dart';
 import '../models/clinic_settings.dart';
 import '../models/clinic_support_grants.dart';
@@ -45,6 +49,7 @@ import '../models/opened_support_grant.dart';
 import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
 import '../models/permission_defaults.dart';
+import '../models/place_name_request.dart';
 import '../models/platform_support_grants.dart';
 import '../models/recovery_codes.dart';
 import '../models/renew_recovery_codes.dart';
@@ -176,7 +181,7 @@ abstract class CoreClient {
   @POST('/branches')
   Future<Branch> branchesCreate({@Body() required CreateBranchRequest body});
 
-  /// Rename a branch or change its address and phone
+  /// Rename a branch or change its address, phone, city and area
   @PATCH('/branches/{id}')
   Future<Branch> branchesUpdate({
     @Path('id') required String id,
@@ -200,6 +205,10 @@ abstract class CoreClient {
   /// What the active clinic may use: features, limits with use, evaluated flags
   @GET('/clinic/capabilities')
   Future<Capabilities> clinicCapabilities();
+
+  /// Cities and areas a branch may take, and the archived ones a branch of this clinic holds
+  @GET('/clinic/places')
+  Future<ClinicPlaces> clinicPlaces();
 
   /// The clinic’s settings (automatic sign-out)
   @GET('/clinic/settings')
@@ -258,6 +267,53 @@ abstract class CoreClient {
   /// Switch the session to one of the person’s clinics and branches
   @POST('/me/switch')
   Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});
+
+  /// Rename an area
+  @PATCH('/platform/areas/{id}')
+  Future<Area> platformRenameArea({
+    @Path('id') required String id,
+    @Body() required PlaceNameRequest body,
+  });
+
+  /// Archive an area: no longer offered to branches; kept on branches that hold it
+  @POST('/platform/areas/{id}/archive')
+  Future<Area> platformArchiveArea({@Path('id') required String id});
+
+  /// Restore an archived area: offered to branches again
+  @POST('/platform/areas/{id}/restore')
+  Future<Area> platformRestoreArea({@Path('id') required String id});
+
+  /// Cities with their areas, and the counts of branches, clinics and doctors on each
+  @GET('/platform/cities')
+  Future<CityList> platformCities({
+    @Query('includeArchived') String? includeArchived,
+  });
+
+  /// Add a city
+  @POST('/platform/cities')
+  Future<City> platformCreateCity({@Body() required PlaceNameRequest body});
+
+  /// Rename a city
+  @PATCH('/platform/cities/{id}')
+  Future<City> platformRenameCity({
+    @Path('id') required String id,
+    @Body() required PlaceNameRequest body,
+  });
+
+  /// Archive a city: no longer offered to branches; kept on branches that hold it
+  @POST('/platform/cities/{id}/archive')
+  Future<City> platformArchiveCity({@Path('id') required String id});
+
+  /// Add an area to a city
+  @POST('/platform/cities/{id}/areas')
+  Future<Area> platformCreateArea({
+    @Path('id') required String id,
+    @Body() required PlaceNameRequest body,
+  });
+
+  /// Restore an archived city: offered to branches again
+  @POST('/platform/cities/{id}/restore')
+  Future<City> platformRestoreCity({@Path('id') required String id});
 
   /// Clinics, newest first; search by name
   @GET('/platform/clinics')

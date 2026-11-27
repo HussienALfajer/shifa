@@ -8,13 +8,23 @@ part 'create_branch_request.g.dart';
 
 @JsonSerializable()
 class CreateBranchRequest {
-  const CreateBranchRequest({required this.name, this.address, this.phone});
+  const CreateBranchRequest({
+    required this.name,
+    this.address,
+    this.areaId,
+    this.cityId,
+    this.phone,
+  });
 
   factory CreateBranchRequest.fromJson(Map<String, Object?> json) =>
       _$CreateBranchRequestFromJson(json);
 
   @JsonKey(includeIfNull: false)
   final String? address;
+  @JsonKey(includeIfNull: false)
+  final String? areaId;
+  @JsonKey(includeIfNull: false)
+  final String? cityId;
   final String name;
   @JsonKey(includeIfNull: false)
   final String? phone;

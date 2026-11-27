@@ -77,11 +77,15 @@ export const ErrorCode = z
     'support_active',
     'support_ended',
     'support_read_only',
+    // cities and areas (A-02-06)
+    'place_name_taken',
+    'place_archived',
+    'place_not_archived',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
 
-/** Zod 4 issue codes, as reported in `details[].code` of a `validation_failed` error. */
+/** Zod 4 issue codes, and the API's own field codes after them, as reported in `details[].code` of a `validation_failed` error. */
 export const ValidationIssueCode = z
   .enum([
     'invalid_type',
@@ -95,6 +99,8 @@ export const ValidationIssueCode = z
     'invalid_element',
     'invalid_value',
     'custom',
+    // A-02-06: a branch's area is not in its city (or has no city)
+    'area_not_in_city',
   ])
   .meta({ id: 'ValidationIssueCode' });
 export type ValidationIssueCode = z.infer<typeof ValidationIssueCode>;
@@ -146,6 +152,10 @@ export const LimitReached = z
   .meta({ id: 'LimitReached' });
 export type LimitReached = z.infer<typeof LimitReached>;
 
+/** Which place of a branch save was archived (with 409 `place_archived`; A-02-06). */
+export const PlaceKind = z.enum(['city', 'area']).meta({ id: 'PlaceKind' });
+export type PlaceKind = z.infer<typeof PlaceKind>;
+
 export const ErrorBody = z
   .object({
     code: ErrorCode,
@@ -161,6 +171,8 @@ export const ErrorBody = z
     limitReached: LimitReached.optional(),
     /** How the support grant ended: only with `session_expired`, reason `support_ended`. */
     supportEnded: SupportEnded.optional(),
+    /** Which place of a branch was archived: only with `place_archived` on a branch save. */
+    place: PlaceKind.optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -235,6 +247,9 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   support_active: 'You already have open support access to this clinic',
   support_ended: 'This support access has ended',
   support_read_only: 'Support access is read-only',
+  place_name_taken: 'A place with this name already exists here',
+  place_archived: 'This place is archived',
+  place_not_archived: 'This place is not archived',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

@@ -26,8 +26,8 @@ export {
   user,
   verification,
 } from './identity.ts';
+export { area, city } from './places.ts';
 export {
-  IDLE_MINUTES,
   TENANT_STATUSES,
   TENANT_TYPES,
   type TenantStatus,

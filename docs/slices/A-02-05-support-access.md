@@ -1,6 +1,6 @@
 # A-02-05 Read-only support access
 
-Status: Built, in review · Tier: T0 · Branch: `claude/admiring-johnson-rxetti` (cloud session; planned as `feat/A-02-05-support-access`)
+Status: Done (merged [#187](https://github.com/HussienALfajer/shifa/pull/187), 2026-11-27) · Tier: T0 · Branch: `claude/admiring-johnson-rxetti` (cloud session; planned as `feat/A-02-05-support-access`)
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 11–14 · Requirements: PLT-14, PLT-46 (`support.elevate` reserved), PLT-47 · Decisions: OD-111, OD-112, ADR-0043, ADR-0044; new ADR (support grant mechanism) · From A-02-01: criteria 11–13 (amended), 26
 
 After [A-02-04](A-02-04-settings-cascade.md) (merged), so every A-02 write route before it is in the support matrix; later write routes join the matrix automatically.
@@ -37,7 +37,7 @@ Names in the earlier plan above that the contract replaces: routes are `…/supp
 - Ending from the support tab (review of A-02-01, owner 2026-11-27): `POST /auth/support/end` is the one write a support session may make, ending its own grant only; it is a row of the support write-route test matrix (allowed) and every other write stays 403. ~40 lines more.
 
 ## Stopped at
-Built (2026-11-27): every layer green, pushed; review and PR next (the supervisor runs the reviewer and security reviewer).
+Done (2026-11-27): reviewed, merged as [#187](https://github.com/HussienALfajer/shifa/pull/187).
 
 ## Checkpoints (run under the owner's overnight delegation; nobody answered, the recommended option taken)
 - **Checkpoint 1 — ADR and schema.** Shown to the owner would have been: [ADR-0050](../adr/0050-support-grant-and-handoff-session.md) (grant + single-use 2-minute hand-off in the URL fragment + separate support session under `__Host-shifa.support`), and the two migrations below with every grant and policy. Taken: the recommended mechanism (OD-124); expiry closed by the first path that sees it (OD-125); the admin's and the ending owner's names stored on the grant (no cross-pool account reads; OD-127).
