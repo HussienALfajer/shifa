@@ -20,6 +20,15 @@ export const PRODUCTION_PERMISSIONS = [
   // A-02-05 (PLT-46): reserved for support write elevation; granted to nobody in Release 1, and
   // not sensitive, so no member toggle can switch it on.
   { key: 'support.elevate', sensitive: false },
+  // A-03-02 (spec A-03 Permissions): charts. View: every clinic role (a support session reads);
+  // manage: register, edit, family, treating doctors; archive, merge, field definitions and the
+  // read log: the owner. The routes of the last four come with later A-03 slices.
+  { key: 'patients.view', sensitive: false },
+  { key: 'patients.manage', sensitive: false },
+  { key: 'patients.archive', sensitive: false },
+  { key: 'patients.merge', sensitive: false },
+  { key: 'patients.fields.manage', sensitive: false },
+  { key: 'patients.read_log.view', sensitive: false },
 ] as const satisfies readonly PermissionDefinition[];
 
 export type PermissionKey = (typeof PRODUCTION_PERMISSIONS)[number]['key'];

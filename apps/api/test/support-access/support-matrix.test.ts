@@ -20,6 +20,7 @@ import { errorCode } from '../platform/support.ts';
 import { testContract } from '../support.ts';
 import {
   grantRow,
+  nextPhone,
   request,
   supportAuditRows,
   supportTab,
@@ -64,6 +65,16 @@ beforeAll(async () => {
   const branchId = branches.json<{ active: { id: string }[] }>().active[0]?.id ?? ANY_ID;
   samples.set('GET /team/members/:id', `/team/members/${memberId}`);
   samples.set('GET /branches/:id/archive-preview', `/branches/${branchId}/archive-preview`);
+  // A-03-02: a chart of the clinic, registered by the owner.
+  const chart = await request(world, 'POST', '/patients', world.owner, {
+    id: '00000000-0000-4000-8000-0000000000c1',
+    givenName: 'مريض',
+    contactPhone: nextPhone(),
+    sex: 'male',
+    age: { value: 40, unit: 'years' },
+  });
+  const chartId = chart.json<{ id?: string }>().id ?? ANY_ID;
+  samples.set('GET /patients/:id', `/patients/${chartId}`);
 });
 
 afterAll(async () => {

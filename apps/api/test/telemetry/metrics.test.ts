@@ -39,7 +39,8 @@ async function traffic(): Promise<void> {
   await fetch(`${base}/health/live`);
   await fetch(`${base}/health/live`);
   await fetch(`${base}/health/ready`); // offline database → 503
-  await fetch(`${base}/patients/synthetic-path-7710?phone=synthetic-query-7711`); // 404
+  // No route (A-03-02 added /patients/:id, so the probe lives under a path that is never routed).
+  await fetch(`${base}/__unrouted/synthetic-path-7710?phone=synthetic-query-7711`); // 404
   // onResponse runs after the reply has been sent.
   await new Promise((resolve) => setTimeout(resolve, 50));
 }

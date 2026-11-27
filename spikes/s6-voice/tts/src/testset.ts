@@ -39,7 +39,7 @@ export function stripTashkeel(text: string): string {
 /** Two synthetic doctors from @shifa/testing that are not in names.json (no real person). */
 export const DOCTOR_FIRST_NAMES = ['رياض', 'فراس'] as const;
 for (const name of DOCTOR_FIRST_NAMES) {
-  if (!(MALE_GIVEN_NAMES as readonly string[]).includes(name)) {
+  if (!MALE_GIVEN_NAMES.includes(name)) {
     throw new Error(`doctor name not in @shifa/testing: ${name}`);
   }
 }

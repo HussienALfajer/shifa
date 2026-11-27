@@ -669,6 +669,92 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Register a chart; the same id and body again returns the stored chart */
+        post: operations["patientsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** How many active and archived charts the clinic holds */
+        get: operations["patientsCount"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A chart’s summary (identity part) */
+        get: operations["patientsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit a chart’s identity */
+        patch: operations["patientsUpdate"];
+        trace?: never;
+    };
+    "/patients/{id}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archive a chart (never deleted) */
+        post: operations["patientsArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/{id}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restore an archived chart */
+        post: operations["patientsRestore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/announcements": {
         parameters: {
             query?: never;
@@ -1322,6 +1408,8 @@ export interface components {
             phone: string;
             roles: components["schemas"]["RoleScopeInput"][];
         };
+        /** @enum {string} */
+        AgeUnit: "years" | "months";
         Announcement: {
             body: string;
             clinics: components["schemas"]["AnnouncementClinic"][];
@@ -1539,6 +1627,20 @@ export interface components {
             subscriptionEnd?: string | null;
             type: components["schemas"]["ClinicType"];
         };
+        CreatePatientRequest: {
+            age?: components["schemas"]["PatientAge"];
+            birthDate?: string;
+            contactPhone: string;
+            familyName?: string | null;
+            fatherName?: string | null;
+            givenName: string;
+            /** Format: uuid */
+            id: string;
+            motherName?: string | null;
+            previousFileNumber?: string | null;
+            secondPhone?: string | null;
+            sex: components["schemas"]["Sex"];
+        };
         DismissAnnouncementRequest: {
             version: number;
         };
@@ -1571,6 +1673,7 @@ export interface components {
             message: string;
             place?: components["schemas"]["PlaceKind"];
             reason?: components["schemas"]["SessionEndReason"];
+            stale?: components["schemas"]["StaleChange"];
             supportEnded?: components["schemas"]["SupportEnded"];
             /** Format: date-time */
             until?: string;
@@ -1579,7 +1682,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended" | "previous_file_number_taken" | "patient_id_taken" | "patient_archived" | "patient_not_archived" | "patient_merged" | "stale";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -1789,6 +1892,57 @@ export interface components {
         OwnerPhoneRequest: {
             phone: string;
         };
+        PatientAge: {
+            unit: components["schemas"]["AgeUnit"];
+            value: number;
+        };
+        PatientBranch: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        PatientChart: {
+            archivedAt: string | null;
+            archivedByName: string | null;
+            birthDate: string;
+            birthDateEstimated: boolean;
+            contactPhone: string;
+            /** Format: date-time */
+            createdAt: string;
+            createdByName: string | null;
+            displayName: string;
+            familyName: string | null;
+            fatherName: string | null;
+            fileNumber: number;
+            givenName: string;
+            /** Format: uuid */
+            id: string;
+            mergedInto: components["schemas"]["PatientMergedInto"] | null;
+            motherName: string | null;
+            previousFileNumber: string | null;
+            registeredBranch: components["schemas"]["PatientBranch"] | null;
+            secondPhone: string | null;
+            sex: components["schemas"]["Sex"];
+            state: components["schemas"]["PatientState"];
+            /** Format: date-time */
+            updatedAt: string;
+            updatedByName: string | null;
+        };
+        PatientCount: {
+            active: number;
+            archived: number;
+        };
+        PatientMergedInto: {
+            fileNumber: number;
+            /** Format: uuid */
+            id: string;
+        };
+        /** @enum {string} */
+        PatientState: "active" | "archived" | "merged";
+        PatientStateChangeRequest: {
+            /** Format: date-time */
+            expectedUpdatedAt: string;
+        };
         PermissionDefault: {
             key: components["schemas"]["PermissionKeyName"];
             roles: components["schemas"]["SessionRole"][];
@@ -1917,9 +2071,16 @@ export interface components {
             purpose: components["schemas"]["SetupLinkPurpose"];
             role: components["schemas"]["SetupLinkRole"];
         };
+        /** @enum {string} */
+        Sex: "male" | "female";
         SignInRequest: {
             password: string;
             phone: string;
+        };
+        StaleChange: {
+            /** Format: date-time */
+            updatedAt: string;
+            updatedByName: string | null;
         };
         Subscription: {
             features: string[];
@@ -2037,6 +2198,20 @@ export interface components {
             name?: string;
             permissions?: components["schemas"]["PermissionSwitch"][];
             roles?: components["schemas"]["RoleScopeInput"][];
+        };
+        UpdatePatientRequest: {
+            age?: components["schemas"]["PatientAge"];
+            birthDate?: string;
+            contactPhone?: string;
+            /** Format: date-time */
+            expectedUpdatedAt: string;
+            familyName?: string | null;
+            fatherName?: string | null;
+            givenName?: string;
+            motherName?: string | null;
+            previousFileNumber?: string | null;
+            secondPhone?: string | null;
+            sex?: components["schemas"]["Sex"];
         };
         UsageDay: {
             date: string;
@@ -4029,6 +4204,375 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActiveClinic"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePatientRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientChart"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientCount"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientChart"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientChart"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsArchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatientStateChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientChart"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientsRestore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatientStateChangeRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientChart"];
                 };
             };
             /** @description Bad request */
