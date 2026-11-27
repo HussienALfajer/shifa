@@ -1,6 +1,6 @@
 # A-03-01 Design slice: every A-03 screen and the screen-to-API contract
 
-Status: In progress (checkpoint 1 drawn, waiting for the owner) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
+Status: In progress (checkpoint 1 approved 2026-11-27; checkpoint 2 next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
 Spec: [A-03](../specs/patients/A-03-patients.md), section "Screens" (all of it), criteria 1–20 as seen on screen · Requirements: CLN-01, CLN-27, CLN-39 to CLN-45, PLT-07, PLT-08, PLT-13, PLT-30 to PLT-36, PLT-44, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, ADR-0049, OD-80
 
 First slice of A-03 (ADR-0047): nothing of A-03 is built before its drawings, contract and improvements are approved. It may run beside the A-02 UI code slices (A-02-08 to A-02-10): it writes no product code.
@@ -34,7 +34,7 @@ Tests written first: none (no code). The proof is the owner's approval of both c
 Estimated hand-written lines: ~1,000 in the repository (contract ~650, spec amendments ~150, slice and roadmap updates ~200); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 drawn (2026-11-27), round 2 the same day (real components everywhere, three proposed components and the Drawer «wide» change on their sheets, every state rendered in Chromium): `A03Search`, `A03Register`, `A03Chart` with tablet and phone boards, the contract rows of checkpoint 1 in `docs/specs/patients/A-03-screen-contract.md`, the analysis below. Waiting for the owner's review of checkpoint 1; checkpoint 2 starts after it.
+Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Next: checkpoint 2 (`A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`).
 
 ## Checkpoint 1 (reception and charts)
 ### What is drawn
@@ -83,6 +83,11 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 - Improvements 3 («فرد آخر من العائلة») and 5 (Drawer «wide», sheet `A03SheetDrawerWide`) accepted.
 - RecordList (family, candidates) and RecordHeader (the saved file) approved by the owner.
 
+### Owner review, chart (2026-11-27)
+- Spec gaps 4 (created and last edited by whom and when) and 5 (the card is never empty; "none yet" only on the full log) accepted as drawn.
+- DescriptionList approved. With RecordList, RecordHeader and the Drawer «wide» change, every checkpoint 1 component is approved.
+- Checkpoint 1 approved (2026-11-27); its answers are criteria 21–33 of the spec.
+
 ### Component changes (proposed)
 1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
 
@@ -95,8 +100,8 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
-- Owner approvals (dates): <checkpoint 1, checkpoint 2, re-plan>
-- Improvements accepted / declined: <list>
+- Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 <pending>; re-plan <pending>
+- Improvements accepted / declined: 1–5 accepted (2026-11-27); none declined
 
 ## Notes for the next session
 - Drawing and artifact links are not committed (public repository, ADR-0040); record page and artboard names and approval dates here.

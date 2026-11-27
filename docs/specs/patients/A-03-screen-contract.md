@@ -1,6 +1,6 @@
 # A-03 screen-to-API contract
 
-Status: Draft for the owner's review in [A-03-01](../../slices/A-03-01-design-and-screen-contract.md): clinic web reception and chart rows (checkpoint 1) written 2026-11-27; owner tools and settings rows follow at checkpoint 2 · Date: 2026-11-27 · Owner: product owner
+Status: Checkpoint 1 rows (reception and charts) approved by the owner in [A-03-01](../../slices/A-03-01-design-and-screen-contract.md) 2026-11-27; owner tools and settings rows follow at checkpoint 2 · Date: 2026-11-27 · Owner: product owner
 Companion of [spec A-03](A-03-patients.md) (ADR-0047). Rows come from the drawings. After approval a row changes only in the slice that owns it, with the drawing updated and the owner told.
 
 ## How to read and use it
@@ -15,7 +15,7 @@ Companion of [spec A-03](A-03-patients.md) (ADR-0047). Rows come from the drawin
 ## Drawings
 "Shifa Screens · Clinic web", page "Proposals": `A03Search`, `A03Register`, `A03Chart`, each with a tablet (`…Tablet`) and a phone (`…Phone`) board. Each board's state panel lists the states named in the rows below.
 
-## Contract: reception and charts (checkpoint 1)
+## Contract: reception and charts (checkpoint 1, approved 2026-11-27)
 
 ### «المرضى», search (`A03Search`)
 | Screen · state | Route (method, path) | Request fields | Response fields → what they drive | Errors and statuses → screen behaviour | Access | Owner |

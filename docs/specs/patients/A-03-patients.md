@@ -1,6 +1,6 @@
 # Spec A-03: patients — registration, search, duplicates, family, summary, custom fields, chart-read audit
 
-Status: Approved by the owner 2026-11-27 · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
+Status: Approved by the owner 2026-11-27; criteria 21–33 added from A-03-01 checkpoint 1 (owner, 2026-11-27) · Date: 2026-11-27 · Risk tier: T0 (patient data, tenancy/RLS, read audit, permissions, migrations) · Owner: product owner
 Builds on [A-01a](../platform/A-01a-clinic-owner-sign-in.md), [A-01b](../platform/A-01b-team-roles-branches-switcher.md) and [A-02](../platform/A-02-settings-entitlements-console.md) (order: OD-75). Decisions: ADR-0004, ADR-0006, ADR-0008, ADR-0031, ADR-0034, ADR-0047; OD-42, OD-135 to OD-144. One spec by the owner's choice (OD-135), above the usual size. Screens: inventory below; drawn in the design slice before the API, with a screen-to-API contract (ADR-0047).
 
 ## Goal
@@ -53,6 +53,21 @@ Read audit and events (OD-141)
 19. The owner's card «من فتح هذا الملف» lists those rows for the chart, newest first, paged by 50: person, role, branch, time; support reads as «الدعم الفني» with the super admin's name.
 20. Audit (A-01a criterion 14) also records chart created, edited (changed field keys, no values), archived, restored, merged (both ids), duplicate registered anyway (candidate ids), treating doctors changed, and custom field created, edited, archived, restored and purged.
 
+Added at A-03-01 checkpoint 1 (owner, 2026-11-27; drawings `A03Search`, `A03Register`, `A03Chart`, contract `A-03-screen-contract.md`)
+21. A search term needs 2 letters for a name; digits search from the first digit for a file number and from 7 for a phone tail; a shorter term is not sent. The answer says when more than 20 charts matched (`truncated`) and the screen asks for another word.
+22. `GET /patients/count` gives the charts the member may see; with none at all the page shows «سجّل أول مريض» instead of results.
+23. The session carries the member's effective permission keys (`permissions[]`, overrides included) and each summary carries `allowed` (edit, archive, restore, merge, read log) for that member, chart state and session, so no screen offers an action the server would refuse; the server still enforces each.
+24. Each search result says why it matched (`matchedBy`: name, name variant, part order, phone, phone tail, file number, previous file number, custom field) and which name parts matched (`matchedParts`); the screen marks those words in a heavier weight, never a colour.
+25. Under an empty search box, «فتحتها مؤخرًا» lists the last 8 distinct charts this member opened, from their own `patient.chart_viewed` rows, visibility applied (hidden charts left out, a merged one replaced by the kept one); reading it writes no `chart_viewed` row.
+26. The results move with ↑ and ↓ and open with Enter; each result row is a link to the chart.
+27. A duplicate candidate that is archived does not block registration: any member who may register can register anyway after acknowledging the candidates, audited with their ids (criterion 7); the screen says the owner could restore it instead.
+28. Edits and archive send `expectedUpdatedAt`; a save after someone else's answers 409 `stale`, and the screen names who saved and when, with «تحميل التعديل الأحدث».
+29. The relation to the phone's holder is asked only when the phone already has a holder; a phone new to the clinic makes the chart its holder.
+30. After saving, «فرد آخر من العائلة» opens a new registration with the same contact phone.
+31. Registration and edit open as a wide side panel (550 px, Drawer `size="wide"`) on desktop and tablet, and as a full page on a phone.
+32. The summary shows the registering branch and date, and who last edited the chart and when (`createdAt`, `createdByName`, `updatedAt`, `updatedByName`).
+33. «من فتح هذا الملف» on the chart always lists at least the current opening; the full log keeps a "none yet" state for safety only.
+
 ## Edge cases and offline
 - Twins on one phone: different given names are no duplicate; the same name warns and reception registers anyway.
 - A child without a phone uses a guardian's; an Azaz patient a +90 number.
@@ -89,6 +104,10 @@ No money. Tenant scoping: the chart, the file-number counter, name tokens, treat
 | 12, 13 | Contract test of the summary; archive and restore rules; edit refused on archived |
 | 14–17 | API tests: every type and validation, limit 409 and use in capabilities, searchable limit, view stripping and 403 on edit per role, sensitive kept out of lists, 30-day restore and purge on a fake clock |
 | 18–20 | API tests: one row per summary read and none for search; support marking; log paging and contents; one audit row per event without values; isolation cases for every new table |
+| 21, 22, 24, 25, 26 | API tests: term lengths, `truncated` at 21 matches, `count` under "my patients only", `matchedBy` and `matchedParts` per search path, recent list (distinct, visibility, merged replaced, no audit row); UI journey: arrows and Enter open a chart |
+| 23 | Contract tests of `permissions[]` with an override and of `allowed` per role, chart state and support session |
+| 27, 28, 29 | API tests: archived candidate registered anyway and audited; 409 `stale` on edit and archive; relation required only with a holder |
+| 30, 31, 32, 33 | UI checks against the drawings; contract test of the summary's created and updated fields |
 | Screens | Design slice: drawings, screen-to-API contract and analysis approved; API slices: each contract row proven by a contract test; UI code slices: browser screenshot compared with the approved drawing; Playwright journeys against the real backend (register with a family phone; duplicate warning then open existing; search by a variant spelling; owner merges; "my patients only" hides a chart) |
 
 ## Screens (inventory; drawn before the API, ADR-0047)
