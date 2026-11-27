@@ -74,7 +74,7 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 ### Owner review, search (2026-11-27)
 - Spec gaps 1 (term lengths), 2 (`truncated`), 3 (`GET /patients/count`) and 9 (`permissions[]` in the session, `allowed` on the chart) accepted as drawn; written into the spec with the other checkpoint 1 answers.
 - Improvements 1 (why each result matched, matched words heavier), 2 («فتحتها مؤخرًا») and 4 (arrows and Enter on the results) accepted.
-- The owner asked whether RecordList is the DataTable; answered (RecordList is a list of links, the DataTable a grid), decision pending.
+- RecordList or DataTable for the results: the owner chose RecordList (option 1 of three: one component for every list of people; its header and row heights follow the DataTable's tokens, `shifa-table-row-height`). The DataTable stays for records that are read, sorted and paged («من فتح هذا الملف»).
 
 ### Component changes (proposed)
 1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
