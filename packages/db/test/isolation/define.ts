@@ -45,9 +45,10 @@ export interface IsolationCase {
    * For a read-write table where shifa_app holds no INSERT or no DELETE privilege at all (A-02-05:
    * support grants are opened by the platform; the clinic only ends one by column UPDATE): those
    * writes must be refused by privileges, and with `insert` listed the runner seeds as the owner
-   * inside each tenant's context, as for a read-only table.
+   * inside each tenant's context, as for a read-only table. With `update` (A-03-03: name tokens
+   * are deleted and written again, never updated) both UPDATE checks expect privilege refusals.
    */
-  readonly withoutPrivilege?: readonly ('insert' | 'delete')[] | undefined;
+  readonly withoutPrivilege?: readonly ('insert' | 'update' | 'delete')[] | undefined;
   /**
    * The runner's update without WHERE (setting `updatable`) must be refused by a restrictive
    * policy of this table (A-02-05: an open grant changes only into a full owner's end), instead of

@@ -60,6 +60,8 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-03-02: charts and the file-number counter, never deleted
     patient: ['SELECT', 'INSERT', 'UPDATE'],
     patient_file_counter: ['SELECT', 'INSERT', 'UPDATE'],
+    // A-03-03: name tokens, rewritten (deleted and written again) on every name change
+    patient_name_token: ['SELECT', 'INSERT', 'DELETE'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {

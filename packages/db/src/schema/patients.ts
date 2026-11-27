@@ -11,9 +11,11 @@ import {
   check,
   date,
   foreignKey,
+  index,
   integer,
   pgTable,
   primaryKey,
+  smallint,
   text,
   timestamp,
   unique,
@@ -65,6 +67,18 @@ export const patient = pgTable(
     relation: text('relation'),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     archivedBy: uuid('archived_by'),
+    /**
+     * The display name's search key (ADR-0034, ADR-0052), written by the chart repository with
+     * its name tokens; ranks the token matches by trigram similarity. Null until written.
+     */
+    nameKey: text('name_key'),
+    /** The key version of `name_key` and the name tokens; 0: not written yet (backfilled). */
+    nameKeyVersion: smallint('name_key_version').notNull().default(0),
+    /** The last 7 digits of each phone, for a search by phone tail (criterion 4; ADR-0052). */
+    contactPhoneTail: text('contact_phone_tail')
+      .notNull()
+      .generatedAlwaysAs(sql`right(contact_phone, 7)`),
+    secondPhoneTail: text('second_phone_tail').generatedAlwaysAs(sql`right(second_phone, 7)`),
     /** SHA-256 of the registration request, so a replay with the same body is recognised. */
     createHash: text('create_hash').notNull(),
     /** User ids of who registered and who last saved (audit actors; no foreign key). */
@@ -111,6 +125,56 @@ export const patient = pgTable(
     check('patient_relation_check', sql`${t.relation} ~ '^[a-z][a-z_]{0,31}$'`),
     check('patient_create_hash_check', sql`${t.createHash} ~ ${sql.raw(SHA256_HEX_CHECK)}`),
     check('patient_updated_at_check', sql`${t.updatedAt} >= ${t.createdAt}`),
+    check(
+      'patient_name_key_check',
+      sql`char_length(${t.nameKey}) <= 200 and (${t.nameKey} is null) = (${t.nameKeyVersion} = 0)`,
+    ),
+    check('patient_name_key_version_check', sql`${t.nameKeyVersion} >= 0`),
+    // Search (A-03-03): phone tails by equality; charts whose tokens need writing.
+    index('patient_tenant_id_contact_phone_tail_idx').on(t.tenantId, t.contactPhoneTail),
+    index('patient_tenant_id_second_phone_tail_idx').on(t.tenantId, t.secondPhoneTail),
+    index('patient_tenant_id_name_key_version_idx').on(t.tenantId, t.nameKeyVersion),
+  ],
+);
+
+/**
+ * The name tokens of a chart (spec A-03 criterion 5; ADR-0052, OD-42): every prefix of two letters
+ * or more of every word of the given, father and family names' keys (`nameTokens` in
+ * @shifa/contracts), so a typed word is found by equality on `(tenant_id, token)` inside RLS with
+ * no operator that is not leakproof. Written by the chart repository in the transaction that
+ * writes the chart, and rewritten on every name change; personal data (parts of names).
+ */
+export const patientNameToken = pgTable(
+  'patient_name_token',
+  {
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    patientId: uuid('patient_id').notNull(),
+    /** 0 given, 1 father, 2 family: the index of the part in the display name. */
+    part: smallint('part').notNull(),
+    /** The word's place within its part. */
+    word: smallint('word').notNull(),
+    token: text('token').notNull(),
+    /** True when the token is the whole word. */
+    whole: boolean('whole').notNull(),
+    keyVersion: smallint('key_version').notNull(),
+  },
+  (t) => [
+    primaryKey({
+      name: 'patient_name_token_pkey',
+      columns: [t.tenantId, t.patientId, t.part, t.word, t.token],
+    }),
+    foreignKey({
+      name: 'patient_name_token_patient_fk',
+      columns: [t.tenantId, t.patientId],
+      foreignColumns: [patient.tenantId, patient.id],
+    }),
+    index('patient_name_token_tenant_id_token_idx').on(t.tenantId, t.token, t.patientId),
+    check('patient_name_token_part_check', sql`${t.part} between 0 and 2`),
+    check('patient_name_token_word_check', sql`${t.word} between 0 and 40`),
+    check('patient_name_token_token_check', sql`char_length(${t.token}) between 1 and 24`),
+    check('patient_name_token_key_version_check', sql`${t.keyVersion} >= 1`),
   ],
 );
 

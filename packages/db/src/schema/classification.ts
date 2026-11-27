@@ -205,6 +205,8 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   // data on `patient`; shifa_app holds no DELETE on either (charts are never deleted).
   patient: { kind: 'tenant' },
   patient_file_counter: { kind: 'tenant' },
+  // A-03-03: the name tokens of a clinic's charts (criterion 5, ADR-0052); parts of names.
+  patient_name_token: { kind: 'tenant' },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',
