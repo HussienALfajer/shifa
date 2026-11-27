@@ -42,6 +42,7 @@ const unit = [
   'test/flags/catalogue.test.ts',
   'test/settings/resolve.test.ts',
   'test/settings/catalogue.test.ts',
+  'test/patients/birth.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg
@@ -57,6 +58,8 @@ const telemetry = [
   'test/telemetry/sampling.test.ts',
   'test/telemetry/request-id-export.test.ts',
   'test/telemetry/identity-leak.test.ts',
+  // A-03-02 security review L2: with the SDK set up first, the leak test sees query spans too.
+  'test/telemetry/patients-leak.test.ts',
 ];
 
 // The identity tests sign in up to 30 times per case, and every attempt verifies a scrypt hash on

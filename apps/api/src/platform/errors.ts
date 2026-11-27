@@ -10,6 +10,7 @@ import {
   type LimitReached,
   type PlaceKind,
   type SessionEndReason,
+  type StaleChange,
   type SupportEnded,
   VALIDATION_FAILED_MESSAGE,
 } from '@shifa/contracts';
@@ -40,8 +41,16 @@ export class ApiError extends HttpException {
     readonly setCookie?: string,
     /** Which place was archived: only with `place_archived` on a branch save (A-02-06). */
     readonly place?: PlaceKind,
+    /** Who saved since the form was filled, and when: only with `stale` (A-03-02). */
+    readonly stale?: StaleChange,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
+  }
+
+  /** 409 `stale`: someone saved the record since `expectedUpdatedAt` (A-03 criterion 28). */
+  static stale(change: StaleChange): ApiError {
+    const none = undefined;
+    return new ApiError(409, 'stale', none, none, none, none, none, none, change);
   }
 }
 
@@ -57,6 +66,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         ...(exception.limitReached ? { limitReached: { ...exception.limitReached } } : {}),
         ...(exception.supportEnded ? { supportEnded: { ...exception.supportEnded } } : {}),
         ...(exception.place ? { place: exception.place } : {}),
+        ...(exception.stale ? { stale: { ...exception.stale } } : {}),
       },
     };
   }

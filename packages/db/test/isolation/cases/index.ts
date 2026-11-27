@@ -9,6 +9,7 @@ import { tenantAddonCase, tenantOverrideCase, tenantOverrideEventCase } from './
 import { featureFlagTenantCase } from './feature-flags.ts';
 import { membershipCase } from './membership.ts';
 import { organizationCase } from './organization.ts';
+import { patientCase, patientFileCounterCase } from './patients.ts';
 import { permissionOverrideCase } from './permission-override.ts';
 import { roleAssignmentCase } from './role-assignment.ts';
 import { settingValueCase } from './setting-value.ts';
@@ -32,4 +33,6 @@ export const ISOLATION_CASES: readonly IsolationCase[] = [
   supportAccessGrantCase,
   announcementTargetCase,
   usageDailyCase,
+  patientCase,
+  patientFileCounterCase,
 ];

@@ -138,7 +138,19 @@ enum ErrorCode {
   @JsonValue('announcement_link')
   announcementLink('announcement_link'),
   @JsonValue('announcement_ended')
-  announcementEnded('announcement_ended');
+  announcementEnded('announcement_ended'),
+  @JsonValue('previous_file_number_taken')
+  previousFileNumberTaken('previous_file_number_taken'),
+  @JsonValue('patient_id_taken')
+  patientIdTaken('patient_id_taken'),
+  @JsonValue('patient_archived')
+  patientArchived('patient_archived'),
+  @JsonValue('patient_not_archived')
+  patientNotArchived('patient_not_archived'),
+  @JsonValue('patient_merged')
+  patientMerged('patient_merged'),
+  @JsonValue('stale')
+  stale('stale');
 
   const ErrorCode(this.json);
 

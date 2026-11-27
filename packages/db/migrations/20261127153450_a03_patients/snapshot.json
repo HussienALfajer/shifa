@@ -1,0 +1,900 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "d86e1598-4469-49ce-b814-fad789cfec71",
+  "prevIds": [
+    "bba61339-4aa8-4d1f-b292-2b8363823a0c"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient"
+      ],
+      "writes": [
+        "s|tbl|public.patient",
+        "n|tbl|public.patient",
+        "e|tbl|public.patient",
+        "n|rel|public.patient",
+        "n|type|public.patient",
+        "n|rel|public.patient_pkey",
+        "n|rel|public.patient_tenant_id_file_number_key",
+        "n|rel|public.patient_tenant_id_previous_file_number_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_file_counter"
+      ],
+      "writes": [
+        "s|tbl|public.patient_file_counter",
+        "n|tbl|public.patient_file_counter",
+        "e|tbl|public.patient_file_counter",
+        "n|rel|public.patient_file_counter",
+        "n|type|public.patient_file_counter",
+        "n|rel|public.patient_file_counter_pkey"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient"
+      ],
+      "writes": [
+        "s|fk|public.patient.patient_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient.patient_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient.patient_tenant_id_tenant_id_fkey",
+        "n|con|public.patient.patient_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient"
+      ],
+      "writes": [
+        "s|fk|public.patient.patient_registered_branch_fk",
+        "n|fk|public.patient.patient_registered_branch_fk",
+        "e|fk|public.patient.patient_registered_branch_fk",
+        "n|con|public.patient.patient_registered_branch_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|tbl|public.branch",
+        "n|sch|public",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.registered_branch_id",
+        "n|col|public.branch.tenant_id",
+        "n|col|public.branch.id",
+        "e|uniqueness|public.branch.id.tenant_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient"
+      ],
+      "writes": [
+        "s|fk|public.patient.patient_merged_into_fk",
+        "n|fk|public.patient.patient_merged_into_fk",
+        "e|fk|public.patient.patient_merged_into_fk",
+        "n|con|public.patient.patient_merged_into_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.merged_into_id",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.id",
+        "e|uniqueness|public.patient.id.tenant_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_file_counter"
+      ],
+      "writes": [
+        "s|fk|public.patient_file_counter.patient_file_counter_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient_file_counter.patient_file_counter_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient_file_counter.patient_file_counter_tenant_id_tenant_id_fkey",
+        "n|con|public.patient_file_counter.patient_file_counter_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient_file_counter",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient_file_counter.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient_file_counter",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "file_number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "previous_file_number",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "given_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "father_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "family_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "mother_name",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "contact_phone",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "second_phone",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "sex",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "birth_date",
+        "type": "date",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "birth_date_estimated",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "registered_branch_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "state",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'active'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "merged_into_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "relation",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "archived_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "create_hash",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "created_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "updated_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "next",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_registered_branch_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "registered_branch_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "branch",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_merged_into_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "merged_into_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "patient",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "patient_file_counter_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_pkey",
+        "columns": [
+          "tenant_id",
+          "id"
+        ],
+        "nameExplicit": true,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "patient_file_counter_pkey",
+        "columns": [
+          "tenant_id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_tenant_id_file_number_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "file_number"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_tenant_id_previous_file_number_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "previous_file_number"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_file_number_check",
+        "value": "\"file_number\" >= 1",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_previous_file_number_check",
+        "value": "char_length(\"previous_file_number\") between 1 and 40 and \"previous_file_number\" = btrim(\"previous_file_number\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_given_name_check",
+        "value": "char_length(\"given_name\") between 1 and 40 and \"given_name\" = btrim(\"given_name\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_father_name_check",
+        "value": "char_length(\"father_name\") between 1 and 40 and \"father_name\" = btrim(\"father_name\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_family_name_check",
+        "value": "char_length(\"family_name\") between 1 and 40 and \"family_name\" = btrim(\"family_name\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_mother_name_check",
+        "value": "char_length(\"mother_name\") between 1 and 40 and \"mother_name\" = btrim(\"mother_name\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_contact_phone_check",
+        "value": "\"contact_phone\" ~ '^\\+[1-9][0-9]{7,14}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_second_phone_check",
+        "value": "\"second_phone\" ~ '^\\+[1-9][0-9]{7,14}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_sex_check",
+        "value": "\"sex\" in ('male', 'female')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_state_check",
+        "value": "\"state\" in ('active', 'archived', 'merged')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_merged_check",
+        "value": "(\"state\" = 'merged') = (\"merged_into_id\" is not null) and \"merged_into_id\" is distinct from \"id\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_archived_check",
+        "value": "(\"state\" = 'archived') = (\"archived_at\" is not null) and (\"archived_at\" is null) = (\"archived_by\" is null)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_relation_check",
+        "value": "\"relation\" ~ '^[a-z][a-z_]{0,31}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_create_hash_check",
+        "value": "\"create_hash\" ~ '^[0-9a-f]{64}$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_updated_at_check",
+        "value": "\"updated_at\" >= \"created_at\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_file_counter",
+        "name": "patient_file_counter_next_check",
+        "value": "\"next\" >= 1",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

@@ -107,6 +107,11 @@ export const TENANT_EVENTS = [
   'branch.restored',
   // A-02-06: a branch's city or area set, changed or cleared (ids only)
   'branch.place_changed',
+  // A-03-02: charts (spec A-03 criterion 20); the chart id only, an edit's changed field keys
+  'patient.created',
+  'patient.edited',
+  'patient.archived',
+  'patient.restored',
 ] as const;
 
 export type AuditEventName =

@@ -57,6 +57,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     announcement_target: ['SELECT'],
     announcement_dismissal: ['SELECT', 'INSERT'],
     usage_daily: DML,
+    // A-03-02: charts and the file-number counter, never deleted
+    patient: ['SELECT', 'INSERT', 'UPDATE'],
+    patient_file_counter: ['SELECT', 'INSERT', 'UPDATE'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {

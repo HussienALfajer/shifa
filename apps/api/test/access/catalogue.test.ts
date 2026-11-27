@@ -45,6 +45,13 @@ describe('the A-01 catalogue and grants', () => {
       ['clinic.capabilities.view', false],
       // A-02-05 (PLT-46): reserved, granted to nobody
       ['support.elevate', false],
+      // A-03-02: charts (spec A-03 Permissions)
+      ['patients.view', false],
+      ['patients.manage', false],
+      ['patients.archive', false],
+      ['patients.merge', false],
+      ['patients.fields.manage', false],
+      ['patients.read_log.view', false],
     ]);
   });
 
@@ -55,15 +62,22 @@ describe('the A-01 catalogue and grants', () => {
       'clinic.settings.manage',
       'members.manage',
       'members.view',
+      'patients.archive',
+      'patients.fields.manage',
+      'patients.manage',
+      'patients.merge',
+      'patients.read_log.view',
+      'patients.view',
     ]);
-    expect(PRODUCTION_GRANTS.doctor).toEqual(['clinical.notes.view', 'clinic.capabilities.view']);
-    expect(PRODUCTION_GRANTS.assistant).toEqual([
-      'clinical.notes.view',
-      'clinic.capabilities.view',
-    ]);
+    // A-03-02 (spec A-03 Permissions): every clinic role views charts; all but the accountant
+    // register and edit them; archive, merge, fields and the read log are the owner's.
+    const clinical = ['clinical.notes.view', 'clinic.capabilities.view'];
+    const charts = ['patients.view', 'patients.manage'];
+    expect(PRODUCTION_GRANTS.doctor).toEqual([...clinical, ...charts]);
+    expect(PRODUCTION_GRANTS.assistant).toEqual([...clinical, ...charts]);
     // A-02-03: every clinic role reads what its clinic may use; a super admin never does.
-    expect(PRODUCTION_GRANTS.receptionist).toEqual(['clinic.capabilities.view']);
-    expect(PRODUCTION_GRANTS.accountant).toEqual(['clinic.capabilities.view']);
+    expect(PRODUCTION_GRANTS.receptionist).toEqual(['clinic.capabilities.view', ...charts]);
+    expect(PRODUCTION_GRANTS.accountant).toEqual(['clinic.capabilities.view', 'patients.view']);
     expect(PRODUCTION_GRANTS.platform_admin).toEqual([]);
   });
 

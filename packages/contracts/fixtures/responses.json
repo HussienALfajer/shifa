@@ -1573,9 +1573,97 @@
           "message": "This announcement has ended"
         }
       }
+    },
+    {
+      "name": "a chart's summary, estimated birth date, registered in a branch",
+      "schema": "PatientChart",
+      "body": {
+        "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+        "displayName": "ريم أحمد الحلبي",
+        "fileNumber": 1043,
+        "sex": "female",
+        "birthDate": "1996-11-27",
+        "birthDateEstimated": true,
+        "contactPhone": "+963930012345",
+        "state": "active",
+        "givenName": "ريم",
+        "fatherName": "أحمد",
+        "familyName": "الحلبي",
+        "motherName": null,
+        "secondPhone": null,
+        "previousFileNumber": "K-17",
+        "registeredBranch": {
+          "id": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
+          "name": "الفرع الرئيسي"
+        },
+        "createdAt": "2026-11-27T10:00:00.000Z",
+        "createdByName": "موظف تجريبي",
+        "updatedAt": "2026-11-27T10:05:00.000Z",
+        "updatedByName": "موظف تجريبي",
+        "archivedAt": null,
+        "archivedByName": null,
+        "mergedInto": null
+      }
+    },
+    {
+      "name": "the clinic's chart counts",
+      "schema": "PatientCount",
+      "body": { "active": 1284, "archived": 0 }
+    },
+    {
+      "name": "a chart saved by someone else meanwhile",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "stale",
+          "message": "Someone else saved this record since you opened it",
+          "stale": { "updatedAt": "2026-11-27T10:05:00.000Z", "updatedByName": "موظف تجريبي" }
+        }
+      }
+    },
+    {
+      "name": "a previous file number another chart holds",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "previous_file_number_taken",
+          "message": "Another chart of this clinic has this previous file number"
+        }
+      }
+    },
+    {
+      "name": "a chart id that holds another chart",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "patient_id_taken", "message": "This chart id holds another chart" }
+      }
+    },
+    {
+      "name": "an archived chart edited",
+      "schema": "ErrorEnvelope",
+      "body": { "error": { "code": "patient_archived", "message": "This chart is archived" } }
+    },
+    {
+      "name": "an active chart restored",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "patient_not_archived", "message": "This chart is not archived" }
+      }
+    },
+    {
+      "name": "a merged chart edited",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "patient_merged", "message": "This chart was merged into another" }
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "chart counts without the archived count",
+      "schema": "PatientCount",
+      "body": { "active": 3 }
+    },
     {
       "name": "city without its name",
       "schema": "City",

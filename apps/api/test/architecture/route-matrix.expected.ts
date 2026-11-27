@@ -6,7 +6,7 @@
 // 500 = the route fails on purpose (test-only routes only).
 
 import type { Role } from '../../src/access/roles.ts';
-import { A02_CONSOLE_SAMPLES } from './route-matrix.samples.ts';
+import { A02_CONSOLE_SAMPLES, A03_PATIENT_SAMPLES } from './route-matrix.samples.ts';
 
 export type Caller = 'anonymous' | Role;
 export type Expected = 200 | 401 | 403 | 500;
@@ -106,6 +106,8 @@ export interface SampleContext {
   placeId(kind: 'city' | 'area', state?: 'live' | 'archived'): Promise<string>;
   /** A fresh active announcement for every clinic (A-02-07). */
   announcementId(): Promise<string>;
+  /** A fresh chart of the callers' clinic, active or archived, with its updatedAt (A-03-02). */
+  chart(state?: 'active' | 'archived'): Promise<{ id: string; updatedAt: string }>;
 }
 
 export interface SampleRequest {
@@ -208,6 +210,7 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   }),
   'POST /auth/support/session': async (ctx) => ({ body: { token: await ctx.handoffToken() } }),
   ...A02_CONSOLE_SAMPLES,
+  ...A03_PATIENT_SAMPLES,
   'PUT /platform/flags/:key': () => ({
     url: '/platform/flags/test.flag_on',
     body: { mode: 'on', reason: 'سبب تجريبي للمصفوفة' },
@@ -304,6 +307,9 @@ const clinicMember: MatrixRow = {
   accountant: 200,
   platform_admin: 403,
 };
+
+/** A-03-02 `patients.manage`: every clinic role but the accountant. */
+const patientManagers: MatrixRow = { ...clinicMember, accountant: 403 };
 
 /** Signed in, but refused: a gated probe whose feature or flag is off for the clinic. */
 const refusedForEveryone: MatrixRow = {
@@ -426,6 +432,14 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /branches/:id/archive': ownerOnly,
   // A-01-12: branches.manage (OD-105)
   'POST /branches/:id/restore': ownerOnly,
+  // A-03-02: charts. patients.view (every clinic role), patients.manage (not the accountant),
+  // patients.archive (owner only)
+  'GET /patients/count': clinicMember,
+  'POST /patients': patientManagers,
+  'GET /patients/:id': clinicMember,
+  'PATCH /patients/:id': patientManagers,
+  'POST /patients/:id/archive': ownerOnly,
+  'POST /patients/:id/restore': ownerOnly,
   // invitations (A-01-04): the token is the credential to view; answering needs a session
   'POST /invitations/view': everyone,
   'POST /invitations/accept': signedIn,

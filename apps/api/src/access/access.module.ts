@@ -7,6 +7,7 @@ import { APP_GUARD, DiscoveryModule } from '@nestjs/core';
 import { AccessGuard } from './access.guard.ts';
 import { AccessCheck, ROLE_GRANTS } from './access-check.ts';
 import { AUTH_PORT, type AuthPort, NoAuthAdapter } from './auth.port.ts';
+import { PermissionCheck } from './permission-check.ts';
 import {
   PERMISSION_CATALOGUE,
   PermissionCatalogue,
@@ -46,8 +47,9 @@ export class AccessModule {
         { provide: APP_GUARD, useClass: AccessGuard },
         AccessCheck,
         TenantDb,
+        PermissionCheck,
       ],
-      exports: [TenantDb, PERMISSION_CATALOGUE],
+      exports: [TenantDb, PERMISSION_CATALOGUE, PermissionCheck],
     };
   }
 }

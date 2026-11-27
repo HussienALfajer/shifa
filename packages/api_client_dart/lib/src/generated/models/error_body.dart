@@ -8,6 +8,7 @@ import 'error_code.dart';
 import 'limit_reached.dart';
 import 'place_kind.dart';
 import 'session_end_reason.dart';
+import 'stale_change.dart';
 import 'support_ended.dart';
 import 'validation_issue.dart';
 
@@ -22,6 +23,7 @@ class ErrorBody {
     this.limitReached,
     this.place,
     this.reason,
+    this.stale,
     this.supportEnded,
     this.until,
   });
@@ -39,6 +41,8 @@ class ErrorBody {
   final PlaceKind? place;
   @JsonKey(includeIfNull: false)
   final SessionEndReason? reason;
+  @JsonKey(includeIfNull: false)
+  final StaleChange? stale;
   @JsonKey(includeIfNull: false)
   final SupportEnded? supportEnded;
   @JsonKey(includeIfNull: false)
