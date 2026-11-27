@@ -242,3 +242,9 @@ export {
   ToolbarSeparator,
 } from './toolbar/toolbar.tsx';
 export { Tooltip, type TooltipProps } from './tooltip/tooltip.tsx';
+export {
+  UsageChart,
+  type UsageChartDay,
+  type UsageChartLabels,
+  type UsageChartProps,
+} from './usage-chart/usage-chart.tsx';

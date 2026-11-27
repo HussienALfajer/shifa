@@ -78,6 +78,7 @@ export const BUNDLE_COMPONENTS = [
   'Toolbar',
   'Pagination',
   'DataTable',
+  'UsageChart',
 ] as const;
 
 /** The "Shifa Components" canvas: one sheet per component, every state, working in Play (ADR-0048). */

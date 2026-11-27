@@ -31,6 +31,7 @@ import {
 } from '../../src/index.ts';
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
+import { UsageChart } from './compound-a02.tsx';
 import { CommandPalette } from './compound-command.tsx';
 import {
   Avatar,
@@ -90,6 +91,7 @@ const COMPONENTS = {
   Toolbar,
   Pagination,
   DataTable,
+  UsageChart,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

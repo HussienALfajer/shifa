@@ -128,13 +128,15 @@ export interface PaginationProps {
 
 export interface DataTableProps {
   'aria-label': string;
-  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`, `hideable`. */
+  /** Columns: `id`, `header`, `kind` (text, number, latin), `sortable`, `hideable`, `wrap`. */
   columns: {
     id: string;
     header: string;
     kind?: 'text' | 'number' | 'latin';
     sortable?: boolean;
     hideable?: boolean;
+    /** Free text (a reason, a note) shown whole on several lines; the row grows to fit. */
+    wrap?: boolean;
   }[];
   /** Rows as cell values by column id. */
   rows: Record<string, string | number>[];
@@ -192,6 +194,21 @@ export declare const Avatar: (props: AvatarProps) => unknown;
 export declare const Toolbar: (props: ToolbarProps) => unknown;
 export declare const Pagination: (props: PaginationProps) => unknown;
 export declare const DataTable: (props: DataTableProps) => unknown;
+
+/** Daily counts of the last 30 days (A-02): bars, quarter axis, the average line, today in gold. */
+export interface UsageChartProps {
+  /** The chart's name: «آخر 30 يومًا». */
+  'aria-label': string;
+  /** Oldest first, the last is today: `{ date: '2026-11-26', count: 14 }`. None: the empty state. */
+  days: { date: string; count: number }[];
+  /** The figure's words in the tooltip, `{n}` for the count: «{n} تسجيل دخول». */
+  unit?: string;
+  /** The last day is today, drawn in gold (default true). */
+  lastIsToday?: boolean;
+  loading?: boolean;
+}
+
+export declare const UsageChart: (props: UsageChartProps) => unknown;
 
 /** A button that opens a list of actions, or a choice among groups (A-01-08). */
 export interface MenuProps {
