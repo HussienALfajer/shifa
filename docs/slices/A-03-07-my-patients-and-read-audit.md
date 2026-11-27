@@ -1,7 +1,7 @@
 # A-03-07 "My patients only" and the chart-read audit
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-07-my-patients-and-read-audit`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 11, 18, 19 · Requirements: CLN-27, CLN-45, PLT-44, PLT-47 · Decisions: OD-140, OD-141, ADR-0050
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 11, 18, 19; from A-03-01: criteria 23, 25, 33, 36, 41 · Requirements: CLN-27, CLN-45, PLT-44, PLT-47 · Decisions: OD-140, OD-141, ADR-0050
 
 Sixth API slice of A-03, after A-03-06 (the read row records whether sensitive fields were included).
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -22,6 +22,13 @@ The owner can limit doctors to the charts that list them, and sees on each chart
 
 Tests written first: route matrix with the setting on and off for search, family, summary (404) and candidates; owner-doctor sees all; a doctor added to the list sees the chart at once (11); one read row per summary read, none for search, family or candidates; `sensitiveIncluded` by role; support marking (18); log paging by 50, order and contents, support shown with the super admin's name (19); a failed read writes no row; plan check of the log query.
 Estimated hand-written lines: ~2,900 (contracts ~200, database ~150, setting and predicate ~700, read audit and log ~650, tests ~1,200).
+
+## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded names: `ChartReadPage` with a cursor and `GET /patients/:id/reads?cursor=` → page numbers (`page`, `pageSize`: 5 on the card, 50 on the full log) with `total`, `supportTotal` and `sensitiveIncluded`; `hiddenByDoctorList: true` → `visible: false`. Added: `limitedToMyPatients` in the search and count answers (a doctor cannot read `GET /clinic/settings`). The one visibility predicate also covers `GET /patients/count`, `familySize` in search results, `GET /patients/recent` and `GET /patients/:id/merge-preview`. Criterion 33 gets an API test: `GET /patients/:id`, then `GET /patients/:id/reads` holds that opening. The impact route returns numbers only (`ownerDoctors` is a count).
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `permissions[]` in `GET /auth/session` and `allowed` on the summary (moved here from A-03-02); the hidden candidate shape and 404 for hidden charts; `GET /patients/:id/reads` (card and full log: page numbers, `sensitiveIncluded`, `support=only`, `supportTotal`); `GET /patients/recent` (improvement 2); `patients.my_patients_only` in the settings cascade; `GET /patients/my-patients/impact` (improvement 7).
+- Criteria added: 23, 25, 33, 36, 41.
+- Components: none (API slice).
+- New estimate: ~3,510 (contracts ~300, database ~150, setting and predicate ~700, permissions and `allowed` ~300, read audit and log ~730, recent ~130, impact ~100, tests ~1,100).
 
 ## Stopped at
 Planned.

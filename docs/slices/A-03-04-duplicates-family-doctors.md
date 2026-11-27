@@ -1,7 +1,7 @@
 # A-03-04 Duplicates, family and treating doctors
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-04-duplicates-family-doctors`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 7, 9, 10, 20 (duplicate registered anyway, treating doctors changed) · Requirements: CLN-41 (warning part), CLN-42, CLN-43 · Decisions: OD-138, OD-139, OD-140
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 7, 9, 10, 20 (duplicate registered anyway, treating doctors changed); from A-03-01: criteria 27, 29 · Requirements: CLN-41 (warning part), CLN-42, CLN-43 · Decisions: OD-138, OD-139, OD-140
 
 Third API slice of A-03, after A-03-03.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -25,6 +25,13 @@ Registration warns before a duplicate and the server refuses an unacknowledged o
 
 Tests written first: each candidate rule and the near misses (twins with different given names are no duplicate; the same name warns) (7); archived candidates marked; 409 on an unacknowledged create, success with the ids and its audit row (7, 20); family by phone, relation values, a phone change moves the chart (9); doctors on create by role, a non-doctor refused, edit by anyone with `patients.manage`, deactivated doctor kept and not offered (10); audit rows without names; isolation case; candidate check within the A-03-03 benchmark's budget (re-run).
 Estimated hand-written lines: ~3,300 (contracts ~300, database ~300, duplicates ~600, family ~350, doctors ~500, tests ~1,250).
+
+## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded names: `GET /patients/doctor-choices` → `GET /patients/doctors`; `GET /patients/:id/family` → `POST /patients/family` (phone in the body) plus `family` in the summary; `PUT /patients/:id/doctors` → `treatingDoctorIds` in `PATCH /patients/:id`; `acknowledgedCandidates` → `acknowledgedCandidateIds`; `DuplicateCandidate.archived` → `visible`, `state` and `reason`.
+- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `POST /patients/duplicates` (visible and hidden candidate shapes, archived candidates registered anyway, gap 6 option a); `POST /patients/family` (holder, members, relation asked only with a holder); `GET /patients/doctors` (names and `active`, `patients.manage`); `familySize` and `relation` in search results; `family` and `treatingDoctors` in the summary.
+- Criteria added: 27, 29.
+- Components: none (API slice).
+- New estimate: ~3,500 (contracts ~340, database ~300, duplicates ~620, family ~380, doctors ~600, tests ~1,260).
 
 ## Stopped at
 Planned.
