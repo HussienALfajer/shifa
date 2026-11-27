@@ -6,7 +6,14 @@
 // 640 px (a phone, a panel) shows as two lines. The links share one Tab stop; ↑ ↓ move between
 // rows, Home and End to the first and last, Enter opens; a row with its own buttons keeps them in
 // the Tab order and its first one is where the arrows land.
-import { type KeyboardEvent, type MouseEvent, type ReactNode, useRef, useState } from 'react';
+import {
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from 'react';
 import { EmptyState } from '../empty-state/empty-state.tsx';
 import type { IconName } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
@@ -112,8 +119,28 @@ export function RecordList({
     lockedLabel: words.locked,
     tabStop,
     onLinkFocus: setActive,
+    onToolPress: (id, tool) => {
+      pressed.current = { id, tool };
+    },
     onOpen,
   };
+  // A tool that moves its row (the caller reorders the items) re-inserts the row's node, which
+  // drops the focus: after the render, it goes back to the same tool of the same row.
+  const pressed = useRef<{ id: string; tool: string } | null>(null);
+  useLayoutEffect(() => {
+    const last = pressed.current;
+    if (last === null) return;
+    pressed.current = null;
+    // Only when the focus was dropped (on the page's body), never taken from where it went since.
+    const owner = body.current?.ownerDocument;
+    if (owner === undefined || (owner.activeElement !== null && owner.activeElement !== owner.body))
+      return;
+    body.current
+      ?.querySelector<HTMLElement>(
+        `[data-id="${CSS.escape(last.id)}"] [data-tool="${CSS.escape(last.tool)}"]`,
+      )
+      ?.focus();
+  });
 
   const move = (event: KeyboardEvent<HTMLDivElement>) => {
     if (body.current === null) return;
@@ -140,11 +167,6 @@ export function RecordList({
   const emptyShown = !loading && items.length === 0 && empty !== undefined;
   return (
     <div
-      // Empty, it holds the EmptyState's heading, which a list may not: a named group then.
-      role={emptyShown ? 'group' : 'list'}
-      aria-label={props['aria-label']}
-      aria-busy={loading || undefined}
-      data-slot="record-list"
       className={cn(
         '@container flex min-w-0 flex-col font-ui text-text-default',
         framed &&
@@ -152,74 +174,86 @@ export function RecordList({
         className,
       )}
     >
-      {table && showRows && (
-        <div
-          aria-hidden="true"
-          data-slot="record-list-head"
-          className={cn(
-            'hidden min-h-(--shifa-table-row-height) items-center border-b border-border-default bg-bg-surface-raised @record-table:flex',
-            'text-caption font-medium leading-heading text-text-muted',
-            small ? 'gap-3 px-3' : 'gap-4 px-4',
-          )}
-        >
-          <span
+      <div
+        // Empty, it holds the EmptyState's heading, which a list may not: a named group then.
+        role={emptyShown ? 'group' : 'list'}
+        aria-label={props['aria-label']}
+        aria-busy={loading || undefined}
+        data-slot="record-list"
+        className="flex min-w-0 flex-col"
+      >
+        {table && showRows && (
+          <div
+            aria-hidden="true"
+            data-slot="record-list-head"
             className={cn(
-              'shrink-0',
-              small ? 'w-(--shifa-size-avatar-sm)' : 'w-(--shifa-size-avatar-md)',
+              'hidden min-h-(--shifa-table-row-height) items-center border-b border-border-default bg-bg-surface-raised @record-table:flex',
+              'text-caption font-medium leading-heading text-text-muted',
+              small ? 'gap-3 px-3' : 'gap-4 px-4',
             )}
-          />
-          <span style={share(TITLE_SHARE)} className="min-w-0 truncate">
-            {titleHeader}
-          </span>
-          {columns.map((column) => (
+          >
             <span
-              key={column.header}
-              style={share(column.weight ?? 1)}
-              className="min-w-0 truncate"
-            >
-              {column.header}
+              className={cn(
+                'shrink-0',
+                small ? 'w-(--shifa-size-avatar-sm)' : 'w-(--shifa-size-avatar-md)',
+              )}
+            />
+            <span style={share(TITLE_SHARE)} className="min-w-0 truncate">
+              {titleHeader}
             </span>
-          ))}
-          {chevron && items.some(isLink) && <span className="w-(--shifa-size-icon-sm) shrink-0" />}
-        </div>
-      )}
-      {loading && (
-        <div className="flex flex-col gap-4 p-4">
-          <span className="sr-only">{loadingLabel ?? words.loading}</span>
-          {Array.from({ length: loadingRows }, (_, i) => (
-            // Placeholder rows have no identity but their place.
-            <div key={i} className="flex items-center gap-4">
-              <Skeleton
-                shape="circle"
-                className={cn(
-                  'shrink-0',
-                  small ? 'size-(--shifa-size-avatar-sm)' : 'size-(--shifa-size-avatar-md)',
-                )}
-              />
-              <SkeletonText lines={2} />
-            </div>
-          ))}
-        </div>
-      )}
-      {emptyShown && (
-        <EmptyState
-          title={empty.title}
-          {...(empty.description === undefined ? {} : { description: empty.description })}
-          icon={empty.icon ?? 'magnifying-glass'}
-        />
-      )}
-      {showRows && (
-        <div
-          ref={body}
-          onKeyDown={move}
-          {...(layout === 'tiles' ? { style: TILES } : {})}
-          className={cn('min-w-0', layout === 'tiles' ? 'grid gap-3' : 'flex flex-col')}
-        >
-          {items.map((item) => (
-            <RecordRow key={item.id} item={item} ctx={ctx} />
-          ))}
-        </div>
-      )}
+            {columns.map((column) => (
+              <span
+                key={column.header}
+                style={share(column.weight ?? 1)}
+                className="min-w-0 truncate"
+              >
+                {column.header}
+              </span>
+            ))}
+            {chevron && items.some(isLink) && (
+              <span className="w-(--shifa-size-icon-sm) shrink-0" />
+            )}
+          </div>
+        )}
+        {loading && (
+          <div className="flex flex-col gap-4 p-4">
+            <span className="sr-only">{loadingLabel ?? words.loading}</span>
+            {Array.from({ length: loadingRows }, (_, i) => (
+              // Placeholder rows have no identity but their place.
+              <div key={i} className="flex items-center gap-4">
+                <Skeleton
+                  shape="circle"
+                  className={cn(
+                    'shrink-0',
+                    small ? 'size-(--shifa-size-avatar-sm)' : 'size-(--shifa-size-avatar-md)',
+                  )}
+                />
+                <SkeletonText lines={2} />
+              </div>
+            ))}
+          </div>
+        )}
+        {emptyShown && (
+          <EmptyState
+            title={empty.title}
+            {...(empty.description === undefined ? {} : { description: empty.description })}
+            icon={empty.icon ?? 'magnifying-glass'}
+          />
+        )}
+        {showRows && (
+          <div
+            ref={body}
+            onKeyDown={move}
+            {...(layout === 'tiles' ? { style: TILES } : {})}
+            className={cn('min-w-0', layout === 'tiles' ? 'grid gap-3' : 'flex flex-col')}
+          >
+            {items.map((item) => (
+              <RecordRow key={item.id} item={item} ctx={ctx} />
+            ))}
+          </div>
+        )}
+      </div>
+      {/* After the list, not in it: a screen reader hears it as the list's note, not a row. */}
       {footer !== undefined && !loading && (
         <div className="flex flex-wrap items-center gap-3 border-t border-border-default bg-bg-surface-raised px-4 py-3 text-caption leading-body text-text-muted">
           {footer}

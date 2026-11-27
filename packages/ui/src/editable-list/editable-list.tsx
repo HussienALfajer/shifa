@@ -268,6 +268,8 @@ export function EditableList({
                           at={false}
                           tooltip
                           onPress={() => {
+                            // The tools give way to «استعادة»: the focus goes there.
+                            refocus.current = { id: item.id, tool: 'restore' };
                             onArchive?.(item.id);
                           }}
                         />
@@ -278,7 +280,11 @@ export function EditableList({
                         size="sm"
                         data-tool="restore"
                         aria-label={words.restoreItem(item.label)}
+                        // Full: kept focusable and said so; the reason is under the add field.
+                        aria-disabled={full || undefined}
+                        className="aria-disabled:cursor-not-allowed aria-disabled:text-text-disabled"
                         onClick={() => {
+                          if (full) return;
                           refocus.current = { id: item.id, tool: 'archive' };
                           onRestore?.(item.id);
                         }}

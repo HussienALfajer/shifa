@@ -3,7 +3,8 @@
 import type { IconName } from './index.d.ts';
 
 type Tone = 'neutral' | 'brand' | 'outline' | 'success' | 'warning' | 'danger' | 'info';
-type Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
+// Joined into one file with index.d.ts (bundle.ts), so this name must not repeat one there.
+type A03Variant = 'primary' | 'secondary' | 'ghost' | 'danger';
 
 export interface RecordListItem {
   id: string;
@@ -22,7 +23,7 @@ export interface RecordListItem {
   cells?: { text: string; kind?: 'text' | 'number' | 'latin' | 'muted'; icon?: IconName }[];
   /** The whole row is this link (when there is no action or tools). */
   href?: string;
-  action?: { label: string; variant?: Variant };
+  action?: { label: string; variant?: A03Variant };
   tools?: { icon: IconName; label: string; disabled?: boolean }[];
   badge?: { label: string; tone?: Tone; icon?: IconName };
   /** A record hidden from the viewer: no avatar, no name, no link. */
@@ -66,7 +67,7 @@ export interface RecordHeaderProps {
   meta?: string;
   /** Buttons by label, and at most one menu (Menu's props with `menu: true`). */
   actions?: (
-    | { label: string; icon?: IconName; variant?: Variant }
+    | { label: string; icon?: IconName; variant?: A03Variant }
     | ({ menu: true } & Record<string, unknown>)
   )[];
   readOnlyNote?: string;

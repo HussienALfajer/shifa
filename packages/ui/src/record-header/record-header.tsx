@@ -103,11 +103,14 @@ export function RecordHeader({
         </div>
       ) : (
         <>
-          <Avatar
-            name={avatarName ?? title}
-            {...(avatarSrc === undefined ? {} : { src: avatarSrc })}
-            size={compact ? 'md' : 'lg'}
-          />
+          {/* The title beside it says the name: the avatar is not read again. */}
+          <span aria-hidden="true" className="inline-flex shrink-0">
+            <Avatar
+              name={avatarName ?? title}
+              {...(avatarSrc === undefined ? {} : { src: avatarSrc })}
+              size={compact ? 'md' : 'lg'}
+            />
+          </span>
           <div className="flex min-w-0 flex-1 basis-(--shifa-width-80) flex-col gap-2">
             <Heading
               className={cn(

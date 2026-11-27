@@ -37,6 +37,8 @@ Built, tested and reviewed; PR open. Left for the owner: start the design-system
 5. **RecordHeader actions are any content** (Buttons and one Menu, as drawn); `muted` hides them all, as the sheet's behaviour note says.
 6. **EditableList checks duplicates itself** with `foldArabic` among all items, archived included (spec gap 15); the archive Toast with «تراجع» is the screen's (A-03-10).
 7. **Drawer «wide»** is an inline `calc` of the two tokens, not a new token, as the sheet names it.
+8. **Tab enters RecordList on its first link, not on the `current` row** (a locked test holds this): on the search page focus stays in the box and the screen moves `current`; a list entered by Tab starts at its top.
+9. **Read-only EditableList shows no «استعادة»** on archived rows; the sheet drew it disabled. The locked test asks for no buttons at all in read-only rows; a support session cannot restore either way.
 
 ## Tests
 Written first and locked (`.claude/state/locked-tests.txt` while building): `record-list.test.tsx` (13 cases × 2 directions), `record-header.test.tsx` (8 × 2), `description-list.test.tsx` (7 × 2), `editable-list.test.tsx` (10 × 2), `drawer/drawer.wide.test.tsx` (4 × 2); all failed first on the missing modules. After locking, lint refused their nullable casts; they were changed to the repository's `must(value, what)` helper (a missing element now fails louder), every `expect` unchanged, and locked again (reported to the owner).
@@ -46,7 +48,12 @@ Written first and locked (`.claude/state/locked-tests.txt` while building): `rec
 - `node scripts/verify.mjs full --part ui`: all green — browser tests, every story as a test with axe, Storybook build, 353 screenshots against the baselines in the pinned Docker image.
 - New baselines (34): `packages/ui/screenshots/baselines/components-{recordlist,recordheader,descriptionlist,editablelist}--*.png`, `components-drawer--shown-wide.png`. Compared with `A03SheetRecordList`, `A03SheetRecordHeader`, `A03SheetDescriptionList`, `A03SheetEditableList` and `A03SheetDrawerWide`: same structure, tokens and states; differences 1–3 above. `--update` also rewrote 89 existing baselines with no visible change; they were restored, and the compare pass is green with them.
 - `pnpm design-system:build`: writes the four new components with README and preview.
-- Reviewer findings fixed: see below.
+- Reviewer (2026-11-27), all fixed or answered, with regression tests in `record-list.review.test.tsx` and `editable-list.review.test.tsx`:
+  - B1 RecordList lost the keyboard's focus when a row tool reordered the rows (and at an end, natively disabled): tools are `aria-disabled` at an end and the pressed tool is focused again after the render, only when focus fell to the page.
+  - B2 EditableList's archive dropped focus: it moves to the row's «استعادة».
+  - «استعادة» is `aria-disabled` when the list is full; the footer sits after the list, not in it; RecordHeader's avatar is hidden from screen readers (the title says the name); the design-system types' second `Variant` was renamed (the joined `index.d.ts` now passes `tsc --strict`); a test for ↑ ↓ across link, button and locked rows.
+  - Tab on `current` and read-only «استعادة»: kept, see differences 8 and 9.
+- After the fixes: `pnpm verify` and `verify full --part ui` all green again; screenshots unchanged.
 
 ## Notes for the next session
 - Sync: the owner starts it; then `canvas.ts`, `check.ts --measure`, `canvas.ts`, `check.ts` for the five sheets on "Shifa Components", and the proposal sheets on "Shifa Screens · Clinic web" marked superseded.

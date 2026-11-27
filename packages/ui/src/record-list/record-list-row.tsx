@@ -20,6 +20,8 @@ export interface RowContext {
   /** The link holding the list's Tab stop. */
   tabStop: string | null;
   onLinkFocus: (id: string) => void;
+  /** A row's tool or action was pressed: focus returns to it after the list re-renders. */
+  onToolPress: (id: string, tool: string) => void;
   onOpen: ((id: string, event: MouseEvent<HTMLAnchorElement>) => void) | undefined;
 }
 
@@ -199,25 +201,37 @@ function Trail({ item, link, ctx }: { item: RecordListItem; link: boolean; ctx: 
   if (tools.length === 0 && item.action === undefined && item.badge === undefined) return null;
   return (
     <span className="inline-flex shrink-0 items-center gap-1">
-      {tools.map((tool) => (
-        <IconButton
-          key={tool.label}
-          icon={tool.icon}
-          label={tool.label}
-          variant="ghost"
-          size="sm"
-          tooltip
-          disabled={tool.disabled === true}
-          onClick={() => {
-            tool.onClick();
-          }}
-        />
-      ))}
+      {tools.map((tool, i) => {
+        // Disabled stays focusable (`aria-disabled`): a tool that moves its row to an end must
+        // keep the keyboard's focus, as EditableList's do.
+        const off = tool.disabled === true;
+        return (
+          <IconButton
+            // A row's tools keep their order: the index is their identity.
+            key={i}
+            data-tool={String(i)}
+            icon={tool.icon}
+            label={tool.label}
+            variant="ghost"
+            size="sm"
+            tooltip
+            aria-disabled={off || undefined}
+            className="aria-disabled:cursor-not-allowed aria-disabled:bg-transparent aria-disabled:text-text-disabled"
+            onClick={() => {
+              if (off) return;
+              ctx.onToolPress(item.id, String(i));
+              tool.onClick();
+            }}
+          />
+        );
+      })}
       {item.action !== undefined && (
         <Button
           size="sm"
+          data-tool="action"
           variant={item.action.variant ?? 'secondary'}
           onClick={() => {
+            ctx.onToolPress(item.id, 'action');
             item.action?.onClick();
           }}
         >
