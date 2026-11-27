@@ -77,6 +77,15 @@ export class SwitcherService {
           requestId,
           data: { branch: branchId !== null },
         });
+        // A session that signed in without a clinic (not one whose clinic was suspended or left
+        // since: the principal shows no clinic for those too) counts its sign-in on its first
+        // choice (A-02 criterion 17).
+        const [before] = await this.authDb.withAuth((auth) =>
+          auth
+            .select({ activeTenantId: session.activeTenantId })
+            .from(session)
+            .where(and(eq(session.id, sessionId), eq(session.userId, principal.userId))),
+        );
         const moved = await this.authDb.withAuth((auth) =>
           auth
             .update(session)
@@ -89,9 +98,8 @@ export class SwitcherService {
             .returning({ id: session.id }),
         );
         if (moved.length === 0) throw new SessionExpiredError();
-        // A session that signed in without a clinic counts its sign-in in the first one chosen
-        // (A-02 criterion 17); a switch between clinics is no new sign-in.
-        if (principal.tenantId === null) await recordSignIn(tx, now, principal.userId);
+        // A switch between clinics is no new sign-in.
+        if (before?.activeTenantId === null) await recordSignIn(tx, now, principal.userId);
       },
     );
     return active;

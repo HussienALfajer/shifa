@@ -1,7 +1,7 @@
 // A-02 criteria 17, 19 and 21 (A-02-07; contract rows `use`, `useMembers`, `useLoading`,
-// `useEmpty` and the clinics list with usage). Sign-ins through the API are counted in the
-// sign-in's clinic (every sign-in, and each member once a day); the clinic page reads today's
-// figures, the current members and branches, the last activity, 30 zero-filled Damascus days
+// `useEmpty` and the clinics list with usage). Sign-ins through the API, and a setup link's first
+// session (review N1), are counted in the sign-in's clinic (every sign-in, and each member once a
+// day); the clinic page reads today's figures, the current members and branches, the last activity, 30 zero-filled Damascus days
 // (oldest first, today last) and the totals of the 30 days before; the clinics list gains the
 // last activity and the sign-ins of the last seven days. Audited (`clinic.usage_viewed`).
 import { ClinicList, ClinicUsage } from '@shifa/contracts';
@@ -70,21 +70,22 @@ describe('counted on sign-in (criterion 17)', () => {
     const view = await usage(clinic.clinicId);
     expect(view.today).toBe(today());
     expect(view.hasData).toBe(true);
+    // Two setup links' first sessions (the owner's and the doctor's) and three sign-ins.
     expect(view.todayCounts).toEqual({
-      signIns: 3,
+      signIns: 5,
       membersSignedIn: 2,
       activeMembers: 2,
       activeBranches: 1,
     });
     expect(view.lastActivityAt).not.toBeNull();
-    // The other clinic counted nothing.
-    expect((await usage(quiet.clinicId)).todayCounts.signIns).toBe(0);
+    // The other clinic counted only its owner's setup link.
+    expect((await usage(quiet.clinicId)).todayCounts.signIns).toBe(1);
   });
 
   it('a failed sign-in counts nothing', async () => {
     const res = await signIn(world.app, doctor.phone, 'not the password at all');
     expect(res.statusCode).toBe(401);
-    expect((await usage(clinic.clinicId)).todayCounts.signIns).toBe(3);
+    expect((await usage(clinic.clinicId)).todayCounts.signIns).toBe(5);
   });
 
   it('shows the current members (pending included) and branches beside today’s figures', async () => {
@@ -110,7 +111,7 @@ describe('counted on sign-in (criterion 17)', () => {
     const stored = Object.fromEntries(
       (await rowsOf(clinic.clinicId, today())).map((r) => [r.key, r.value]),
     );
-    expect(stored).toMatchObject({ active_members: 1, active_branches: 1, sign_ins: 3 });
+    expect(stored).toMatchObject({ active_members: 1, active_branches: 1, sign_ins: 5 });
     expect((await usage(clinic.clinicId)).todayCounts.activeMembers).toBe(1);
   });
 });
@@ -171,10 +172,11 @@ describe('the clinics list (criterion 21)', () => {
     await seed(id, dayBefore(3), 'last_activity_minute', minute);
     const rows = await summaries();
     const quietRow = rows.find((r) => r.id === id);
-    // 5 (yesterday) + 2 (six days ago); seven days ago and earlier are out.
-    expect(quietRow?.signIns7d).toBe(7);
+    // 1 (today, the owner's setup link) + 5 (yesterday) + 2 (six days ago); seven days ago and
+    // earlier are out.
+    expect(quietRow?.signIns7d).toBe(8);
     const busy = rows.find((r) => r.id === clinic.clinicId);
-    expect(busy?.signIns7d).toBe(3);
+    expect(busy?.signIns7d).toBe(5);
     expect(busy?.lastActivityAt).not.toBeNull();
     // A clinic whose owner never set up: no activity yet.
     const unused = rows.find((r) => r.ownerStatus === 'pending');

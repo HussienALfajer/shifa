@@ -2,9 +2,10 @@
 -- (20261127101855_a02_announcements_usage). Runs as shifa_owner, which is NOBYPASSRLS.
 -- * announcement (global, no clinic data): shifa_platform reads it in announcement actions, inserts
 --   only in announcement.created (as its own author, not ended, stamped now) and updates by column
---   only in announcement.edited or announcement.ended (an end names the acting super admin); no
---   role deletes one. shifa_app reads seven columns (never who wrote or ended it) of the
---   announcements aimed at its clinic: every clinic, or a target row of its own. Which of them are
+--   only in announcement.edited or announcement.ended (an end names the acting super admin; the
+--   trigger announcement_change_guard() keeps each action to its columns); no role deletes one.
+--   shifa_app reads seven columns (never who wrote or ended it) of the announcements aimed at its
+--   clinic (every clinic, or a target row of its own), never a cancelled one. Which of them are
 --   active is decided by the API's clock (start, end), as every other time rule of the API is.
 -- * announcement_target (tenant): read-only for shifa_app (its own rows); shifa_platform reads every
 --   clinic's in announcement actions (tenant ids only), inserts them in created and edited and
@@ -13,16 +14,15 @@
 --   only the signed-in person's row (app.user_id), for an announcement its clinic can see and a
 --   version not above the current; every role reads only app.user_id's rows (the count function
 --   sets it per member); no role deletes one.
--- * usage_daily (tenant): shifa_app reads and writes its own clinic's counters (the API never
---   deletes one);
---   shifa_platform reads every clinic's in clinic.listed and clinic.usage_viewed only.
+-- * usage_daily (tenant): shifa_app reads and writes its own clinic's counters (full DML, as the
+--   tenant class requires; the API never deletes one); shifa_platform reads every clinic's in clinic.listed and clinic.usage_viewed only.
 -- * membership.last_sign_in_on: shifa_app may UPDATE it (the day of the member's last sign-in).
 -- * announcement_counts(uuid[], integer[], boolean[], uuid[]) and clinic_member_counts(uuid)
 --   (SECURITY DEFINER, ADR-0051): integers only, for shifa_platform alone, inside their actions;
 --   each clinic is read under its own tenant policies and every setting it moves is restored.
 -- Every policy for shifa_platform has its reason in src/schema/classification.ts; the functions are
 -- listed there (COUNT_FUNCTIONS) and pinned in test/privileges.test.ts.
--- Rollback: drop both functions and every policy below, disable RLS on the four tables, revoke the
+-- Rollback: drop both functions, the trigger and its function and every policy below, disable RLS on the four tables, revoke the
 -- grants (and UPDATE (last_sign_in_on) ON membership FROM shifa_app); the tables and the column go
 -- with a contract migration.
 ALTER TABLE "announcement" ENABLE ROW LEVEL SECURITY;
@@ -38,8 +38,11 @@ GRANT SELECT, INSERT ON "announcement" TO shifa_platform;
 GRANT UPDATE (version, body, level, starts_at, ends_at, target, ended_early, ended_by,
               ended_by_name, updated_at) ON "announcement" TO shifa_platform;
 --> statement-breakpoint
+-- A cancelled announcement (ended before it started: the only way ends_at <= starts_at arises,
+-- since the API refuses such periods) was never shown, and stays out of the clinic's reach.
 CREATE POLICY announcement_clinic_read ON "announcement" FOR SELECT TO shifa_app
   USING (current_tenant_id() IS NOT NULL
+         AND (ends_at IS NULL OR ends_at > starts_at)
          AND (target = 'all'
               OR EXISTS (SELECT 1 FROM "announcement_target" t
                           WHERE t.tenant_id = current_tenant_id()
@@ -63,6 +66,41 @@ CREATE POLICY announcement_platform_change ON "announcement" FOR UPDATE TO shifa
               AND (current_setting('app.admin_reason', true) <> 'announcement.ended'
                    OR (ended_early AND ended_by = current_user_id()))
               AND updated_at BETWEEN now() - interval '5 minutes' AND now() + interval '5 minutes');
+--> statement-breakpoint
+-- Each action keeps to its columns (security review S2): an end sets only ends_at (now, earlier
+-- than any end it had) and who ended it, never the text, period start, target or version, and
+-- never twice; an edit never touches who ended it and moves the version by one at most.
+CREATE FUNCTION public.announcement_change_guard() RETURNS trigger
+  LANGUAGE plpgsql SET search_path = pg_catalog, public
+  AS $$
+DECLARE
+  reason text := coalesce(current_setting('app.admin_reason', true), '');
+BEGIN
+  IF reason = 'announcement.ended' THEN
+    IF (NEW.version, NEW.body, NEW.level, NEW.starts_at, NEW.target)
+         IS DISTINCT FROM (OLD.version, OLD.body, OLD.level, OLD.starts_at, OLD.target)
+       OR OLD.ended_early OR NEW.ends_at IS NULL
+       OR NEW.ends_at > now() + interval '5 minutes'
+       OR (OLD.ends_at IS NOT NULL AND NEW.ends_at > OLD.ends_at) THEN
+      RAISE EXCEPTION 'an end sets the end and who ended it only' USING ERRCODE = '42501';
+    END IF;
+  ELSIF reason = 'announcement.edited' THEN
+    IF (NEW.ended_early, NEW.ended_by, NEW.ended_by_name)
+         IS DISTINCT FROM (OLD.ended_early, OLD.ended_by, OLD.ended_by_name)
+       OR NEW.version NOT IN (OLD.version, OLD.version + 1) THEN
+      RAISE EXCEPTION 'an edit changes the text, level, period or target only'
+        USING ERRCODE = '42501';
+    END IF;
+  ELSE
+    RAISE EXCEPTION 'an announcement changes only in its edit or end' USING ERRCODE = '42501';
+  END IF;
+  RETURN NEW;
+END $$;
+--> statement-breakpoint
+REVOKE ALL ON FUNCTION public.announcement_change_guard() FROM PUBLIC;
+--> statement-breakpoint
+CREATE TRIGGER announcement_change_guard BEFORE UPDATE ON "announcement"
+  FOR EACH ROW EXECUTE FUNCTION public.announcement_change_guard();
 --> statement-breakpoint
 ALTER TABLE "announcement_target" ENABLE ROW LEVEL SECURITY;
 --> statement-breakpoint

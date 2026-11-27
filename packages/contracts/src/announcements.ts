@@ -22,22 +22,41 @@ export type AnnouncementStatus = z.infer<typeof AnnouncementStatus>;
 export const AnnouncementTarget = z.enum(['all', 'selected']).meta({ id: 'AnnouncementTarget' });
 export type AnnouncementTarget = z.infer<typeof AnnouncementTarget>;
 
-// Top-level domains a link in a banner would most likely use: the two-letter country codes and
-// the common generic ones. A word before a dot and one of these (`example.com`, `t.me`) is a link.
-const TLDS = 'com|net|org|info|biz|app|dev|xyz|online|site|link|shop|store|top|club|live|io|ly';
+// What a link in a banner looks like (spec "Money, abuse and privacy": phishing). The body is
+// matched as a copy: NFKC (full-width letters and dots fold to ASCII), dot look-alikes turned into
+// a dot, invisible characters (soft hyphen, zero-width space, word joiner) removed; the stored text
+// stays as typed. Refused: a bidirectional embedding or override (text shown reversed), a scheme,
+// `www.`, an e-mail, a host (a name in any script, a dot, then an ASCII top-level domain or an
+// Arabic country one: `example.com`, `t.me`, `shifa-login.support`, `شفاء.com`, `موقع.سورية`),
+// an IPv4 address, and markup (a tag or an entity). Not a link: a decimal number (`9.30`), an
+// abbreviation before a space (`د. أحمد`), Arabic sentences joined by a full stop
+// (`التحديث.شكرا`). Spaced or spelled-out dots (`shifa . com`) are out of reach of any list.
+const DOT_LOOKALIKES = /[\u2024\u3002\uFE52\uFF0E\uFF61\u0701\u0702\u06D4]/gu;
+const INVISIBLE = /\p{Default_Ignorable_Code_Point}/gu;
+const BIDI_CONTROLS = /[\u202A-\u202E\u2066-\u2069]/u;
+const ARABIC_TLDS =
+  'سورية|سوريا|السعودية|امارات|مصر|عمان|قطر|الاردن|الجزائر|المغرب|تونس|السودان|فلسطين|عراق|البحرين|اليمن|موريتانيا';
 const LINK_PATTERNS: readonly RegExp[] = [
   /[a-z][a-z0-9+.-]*:\/\//iu,
   /\bwww\./iu,
   /[^\s@]+@[^\s@]+\.[^\s@]+/u,
-  new RegExp(`\\b[a-z0-9-]+(?:\\.[a-z0-9-]+)*\\.(?:[a-z]{2}|${TLDS})(?![a-z0-9])`, 'iu'),
-  // Markup: a tag, a comment or an entity.
+  new RegExp(
+    String.raw`[\p{L}\p{N}-]*\p{L}[\p{L}\p{N}-]*(?:\.[\p{L}\p{N}-]+)*\.(?:[a-z]{2,63}|${ARABIC_TLDS})(?![\p{L}\p{N}])`,
+    'iu',
+  ),
+  /\b\d{1,3}(?:\.\d{1,3}){3}\b/u,
   /<\s*[a-z!/?]/iu,
   /&(?:[a-z]+|#\d+|#x[0-9a-f]+);/iu,
 ];
 
-/** True when the body holds a URL, `www.`, a domain, an e-mail address or markup. */
+/**
+ * True when the body holds a bidirectional override, a URL, `www.`, a host or address, an e-mail
+ * address or markup.
+ */
 export function hasAnnouncementLink(body: string): boolean {
-  return LINK_PATTERNS.some((pattern) => pattern.test(body));
+  if (BIDI_CONTROLS.test(body)) return true;
+  const text = body.normalize('NFKC').replace(DOT_LOOKALIKES, '.').replace(INVISIBLE, '');
+  return LINK_PATTERNS.some((pattern) => pattern.test(text));
 }
 
 /** 1 to 280 characters once trimmed (400 `validation_failed` on body.body). */
