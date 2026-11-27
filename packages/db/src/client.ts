@@ -49,11 +49,28 @@ export function createDb(url: string, options: CreateDbOptions = {}): ShifaDb {
 }
 
 /**
+ * Package-internal (test harness): `handle` wraps `db` and uses its pool (the shared test
+ * handles of testDb()), so the helpers below find it.
+ */
+export function sharePool(handle: ShifaDb, db: ShifaDb): void {
+  const pool = pools.get(db);
+  if (pool) pools.set(handle, pool);
+}
+
+/**
+ * Package-internal: `fn` on this db's pool with no context set (global tables only show rows;
+ * FORCE RLS hides every tenant row). Not exported from the package entry point.
+ */
+export function withoutContext<T>(db: ShifaDb, fn: (tx: Tx) => Promise<T>): Promise<T> {
+  const pool = pools.get(db);
+  if (!pool) return Promise.reject(new Error('not a ShifaDb created by createDb()'));
+  return runWithoutContext(pool, fn);
+}
+
+/**
  * Tests only (`@shifa/db/testing` re-exports it): runs `fn` on this db's pool with no tenant
  * context, to prove that FORCE RLS then shows no tenant rows.
  */
 export function runWithoutTenantForTests<T>(db: ShifaDb, fn: (tx: Tx) => Promise<T>): Promise<T> {
-  const pool = pools.get(db);
-  if (!pool) throw new Error('not a ShifaDb created by createDb()');
-  return runWithoutContext(pool, fn);
+  return withoutContext(db, fn);
 }

@@ -548,8 +548,60 @@ export interface paths {
         delete?: never;
         options?: never;
         head?: never;
-        /** Change a clinic’s status or subscription end date */
+        /** Change a clinic’s type (and so its plan), status or subscription end date */
         patch: operations["platformUpdateClinic"];
+        trace?: never;
+    };
+    "/platform/clinics/{id}/entitlements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A clinic’s plan and every catalogue key with plan value, override and effective value */
+        get: operations["platformClinicEntitlements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/clinics/{id}/overrides/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Set or change a clinic’s override of one key (reason required, optional expiry) */
+        put: operations["platformSetOverride"];
+        post?: never;
+        /** Remove a clinic’s override of one key */
+        delete: operations["platformRemoveOverride"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/clinics/{id}/overrides/{key}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Every change of one key for a clinic, newest first */
+        get: operations["platformOverrideHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/platform/clinics/{id}/owner": {
@@ -614,6 +666,23 @@ export interface paths {
         put?: never;
         /** Issue a new setup link to the owner (ends the owner’s sessions) */
         post: operations["platformOwnerSetupLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/clinics/{id}/type-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The limits a clinic would have under another type, against its current use */
+        get: operations["platformTypePreview"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -816,6 +885,10 @@ export interface components {
             subscriptionEnd: string | null;
             type: components["schemas"]["ClinicType"];
         };
+        ClinicEntitlements: {
+            items: components["schemas"]["EntitlementItem"][];
+            plan: components["schemas"]["ClinicType"];
+        };
         ClinicList: {
             clinics: components["schemas"]["ClinicSummary"][];
         };
@@ -862,6 +935,25 @@ export interface components {
         EndedSessions: {
             ended: number;
         };
+        EntitlementItem: {
+            effective: components["schemas"]["EntitlementValue"];
+            key: string;
+            kind: components["schemas"]["EntitlementKind"];
+            override: components["schemas"]["EntitlementOverride"] | null;
+            planValue: components["schemas"]["EntitlementValue"];
+        };
+        /** @enum {string} */
+        EntitlementKind: "limit" | "feature";
+        EntitlementOverride: {
+            expired: boolean;
+            expiresAt: string | null;
+            reason: string;
+            /** Format: date-time */
+            setAt: string;
+            setByName: string | null;
+            value: components["schemas"]["EntitlementValue"];
+        };
+        EntitlementValue: number | boolean;
         ErrorBody: {
             code: components["schemas"]["ErrorCode"];
             details?: components["schemas"]["ValidationIssue"][];
@@ -1003,6 +1095,24 @@ export interface components {
             /** Format: uuid */
             userId: string;
         };
+        OverrideEvent: {
+            after: components["schemas"]["OverrideState"] | null;
+            /** Format: date-time */
+            at: string;
+            before: components["schemas"]["OverrideState"] | null;
+            byName: string | null;
+            kind: components["schemas"]["OverrideEventKind"];
+            reason: string | null;
+        };
+        /** @enum {string} */
+        OverrideEventKind: "set" | "changed" | "removed" | "expired" | "type_changed";
+        OverrideHistory: {
+            events: components["schemas"]["OverrideEvent"][];
+        };
+        OverrideState: {
+            expiresAt: string | null;
+            value: components["schemas"]["EntitlementValue"];
+        };
         OwnerPhoneRequest: {
             phone: string;
         };
@@ -1073,6 +1183,11 @@ export interface components {
             /** Format: uuid */
             userId: string;
         };
+        SetOverrideRequest: {
+            expiresAt?: string | null;
+            reason: string;
+            value: components["schemas"]["EntitlementValue"];
+        };
         SetPasswordRequest: {
             password: string;
             token: components["schemas"]["SetupLinkToken"];
@@ -1130,6 +1245,17 @@ export interface components {
         TotpReenrolStart: {
             code: components["schemas"]["TotpCode"];
         };
+        TypePreview: {
+            limits: components["schemas"]["TypePreviewLimit"][];
+            type: components["schemas"]["ClinicType"];
+        };
+        TypePreviewLimit: {
+            current: number;
+            key: string;
+            next: number;
+            over: boolean;
+            used: number;
+        };
         UpdateBranchRequest: {
             address?: string | null;
             name?: string;
@@ -1138,6 +1264,7 @@ export interface components {
         UpdateClinicRequest: {
             status?: components["schemas"]["ClinicStatus"];
             subscriptionEnd?: string | null;
+            type?: components["schemas"]["ClinicType"];
         };
         UpdateMemberRequest: {
             name?: string;
@@ -2985,6 +3112,245 @@ export interface operations {
             };
         };
     };
+    platformClinicEntitlements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicEntitlements"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformSetOverride: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SetOverrideRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntitlementItem"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformRemoveOverride: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EntitlementItem"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformOverrideHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                key: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverrideHistory"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     platformOwnerPhone: {
         parameters: {
             query?: never;
@@ -3204,6 +3570,66 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["SetupLinkIssued"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformTypePreview: {
+        parameters: {
+            query: {
+                type: components["schemas"]["ClinicType"];
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TypePreview"];
                 };
             };
             /** @description Bad request */

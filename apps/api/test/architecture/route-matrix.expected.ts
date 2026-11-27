@@ -90,6 +90,8 @@ export interface SampleContext {
   password(): Promise<string>;
   /** A fresh active doctor of TENANT_A with an account and TOTP enrolled (A-01-09 reset). */
   enrolledMemberId(): Promise<string>;
+  /** A new clinic with an override of `limits.branches` (A-02-02 removal). */
+  overriddenClinicId(): Promise<string>;
 }
 
 export interface SampleRequest {
@@ -146,6 +148,22 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'PATCH /platform/clinics/:id/owner': (ctx) => ({
     url: `/platform/clinics/${ctx.clinicId}/owner`,
     body: { phone: ctx.nextPhone() },
+  }),
+  'GET /platform/clinics/:id/entitlements': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/entitlements`,
+  }),
+  'PUT /platform/clinics/:id/overrides/:key': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/overrides/limits.branches`,
+    body: { value: 2, reason: 'سبب تجريبي للمصفوفة' },
+  }),
+  'DELETE /platform/clinics/:id/overrides/:key': async (ctx) => ({
+    url: `/platform/clinics/${await ctx.overriddenClinicId()}/overrides/limits.branches`,
+  }),
+  'GET /platform/clinics/:id/overrides/:key/history': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/overrides/limits.branches/history`,
+  }),
+  'GET /platform/clinics/:id/type-preview': (ctx) => ({
+    url: `/platform/clinics/${ctx.clinicId}/type-preview?type=multi_branch`,
   }),
   'GET /team/members/:id': async (ctx) => ({ url: `/team/members/${await ctx.memberId()}` }),
   'POST /team/members': (ctx) => ({
@@ -268,6 +286,12 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /platform/clinics/:id/owner/end-sessions': platformAdmin,
   // A-01-11: a pending owner's phone corrected (OD-99)
   'PATCH /platform/clinics/:id/owner': platformAdmin,
+  // A-02-02: a clinic's entitlements, overrides, their history and the type preview
+  'GET /platform/clinics/:id/entitlements': platformAdmin,
+  'PUT /platform/clinics/:id/overrides/:key': platformAdmin,
+  'DELETE /platform/clinics/:id/overrides/:key': platformAdmin,
+  'GET /platform/clinics/:id/overrides/:key/history': platformAdmin,
+  'GET /platform/clinics/:id/type-preview': platformAdmin,
   // team (A-01-04): members.view / members.manage, owner only
   'GET /team/members': ownerOnly,
   'GET /team/members/:id': ownerOnly,

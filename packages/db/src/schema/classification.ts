@@ -43,7 +43,44 @@ const authAll = (table: string): RoleAccess => ({
     'the Better Auth adapter reads and writes identity rows before any tenant or person is known (sign-in, sessions, MFA)',
 });
 
+const PLAN_TABLE =
+  'what a plan or add-on gives (A-02 criterion 1, ADR-0007); keys and values only, no clinic data; written by migrations alone';
+const ENTITLEMENT_READ =
+  'restrictive: shifa_platform reads a clinic’s add-ons, overrides and their history only inside that clinic in an entitlement action (view, history, set, remove, type preview and change; A-02 criteria 1–3, 20)';
+
 export const TABLE_CLASSIFICATION: TableClassification = {
+  plan: { kind: 'global', reason: PLAN_TABLE },
+  plan_feature: { kind: 'global', reason: PLAN_TABLE },
+  addon: { kind: 'global', reason: PLAN_TABLE },
+  tenant_addon: {
+    kind: 'tenant',
+    access: 'read-only',
+    roleAccess: { tenant_addon_platform_read_only_in_actions: ENTITLEMENT_READ },
+  },
+  tenant_override: {
+    kind: 'tenant',
+    access: 'read-only',
+    roleAccess: {
+      tenant_override_platform_read_only_in_actions: ENTITLEMENT_READ,
+      tenant_override_platform_set_only:
+        'restrictive: shifa_platform inserts an override only in an entitlement.override_set action (A-02 criterion 3)',
+      tenant_override_platform_change_only:
+        'restrictive: shifa_platform changes an override only in an entitlement.override_set action (A-02 criterion 3)',
+      tenant_override_platform_remove_only:
+        'restrictive: shifa_platform removes an override only in an entitlement.override_removed action (A-02 criterion 3)',
+    },
+  },
+  // shifa_app only reads it ('read-only'); no role may UPDATE or DELETE it (privileges pinned in
+  // test/privileges.test.ts, and a trigger refuses even the owner).
+  tenant_override_event: {
+    kind: 'tenant',
+    access: 'read-only',
+    roleAccess: {
+      tenant_override_event_platform_read_only_in_actions: ENTITLEMENT_READ,
+      tenant_override_event_platform_append_only:
+        'restrictive: shifa_platform appends a key’s history only in the actions that change it (override set or removed, type changed; A-02 criterion 20)',
+    },
+  },
   tenant: {
     kind: 'global',
     reason:

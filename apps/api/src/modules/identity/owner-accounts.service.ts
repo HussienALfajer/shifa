@@ -7,7 +7,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { SetupLinkIssued } from '@shifa/contracts';
 import { type AuthDb, session, type Tx, twoFactor, user } from '@shifa/db';
-import { eq } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { clearPassword, userIdByPhone } from './accounts.ts';
 import { IdentityAudit, type IdentityEvent } from './identity-audit.ts';
@@ -51,6 +51,19 @@ export class OwnerAccounts {
 
   userIdByPhone(phoneE164: string): Promise<string | null> {
     return this.authDb.withAuth((tx) => userIdByPhone(tx, phoneE164));
+  }
+
+  /**
+   * Display names of accounts by id (A-02-02: the super admin who set an override, shown to super
+   * admins). Ids without an account are left out.
+   */
+  async displayNames(userIds: readonly string[]): Promise<Map<string, string>> {
+    const ids = [...new Set(userIds)];
+    if (ids.length === 0) return new Map();
+    const rows = await this.authDb.withAuth((tx) =>
+      tx.select({ id: user.id, name: user.name }).from(user).where(inArray(user.id, ids)),
+    );
+    return new Map(rows.map((r) => [r.id, r.name]));
   }
 
   endSessions(userId: string, by: ActionBy): Promise<void> {

@@ -1,6 +1,6 @@
 # A-02-02 Entitlements, plans and overrides
 
-Status: Planned · Tier: T0 · Branch: `feat/A-02-02-entitlements-and-overrides`
+Status: Built, in review · Tier: T0 · Branch: `claude/eloquent-archimedes-s0wr42` (cloud session; planned as `feat/A-02-02-entitlements-and-overrides`)
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 1–3, 18 (type, plan and override events) · Requirements: PLT-13, PLT-21, PLT-29 · Decisions: ADR-0007, OD-109, OD-110 · From A-02-01: criteria 20
 
 First API slice of A-02, after the design slice [A-02-01](A-02-01-design-and-screen-contract.md) (approved). Schema changes of A-02 are serialised: A-02-02 → 03 → 04 → 05 → 06 → 07.
@@ -36,7 +36,21 @@ Names in the earlier plan above that the contract replaces: override `reason` 10
 - History table (review of A-02-01, owner 2026-11-27): `tenant_override_event` (tenant_id, key, kind, before, after, reason, by, at; FORCE RLS; written in the same transaction as each override change, at expiry and on a type change), read by `GET …/overrides/:key/history`; the audit rows stay without reason text. ~150 lines more.
 
 ## Stopped at
-Planned.
+Built: contracts, database (two migrations), API (`modules/entitlements`, the type change on `PATCH /platform/clinics/:id`). Reviewed and opened as a PR.
+
+## As built (changes from the plan, reported to the owner)
+- **`tenant_addon`** (tenant, FORCE RLS, read-only for `shifa_app`): `addon` has no `tenant_id`, so a clinic's add-ons need a link table. No screen, no writer but migrations.
+- **Uuid primary keys:** `plan`, `plan_feature` and `tenant_override` have an `id` with the natural key unique (`test/schema-keys.test.ts` requires uuid keys).
+- **`expired` history events are derived, not written:** the history reads `tenant_override_event` and adds an `expired` event at the expiry instant of an override that ran out before the next change (or before now). Nothing runs at expiry, so nothing can miss it. Contract row `history` updated; no drawing change (same fields).
+- **`tenant_override_event`** is `read-only` for `shifa_app`. `shifa_platform` has INSERT, never UPDATE or DELETE, and a trigger refuses both even for the owner.
+- **`tenant_usage_counts(uuid)`**: a SECURITY DEFINER function that returns two integers (doctors, branches) to `shifa_platform` inside a platform action only. It is the integers-only pattern of the spec's "Money, abuse and privacy"; the ADR amending ADR-0043 stays with A-02-06. `limits.custom_fields` counts 0 until A-03.
+- **Type change:** `PATCH` with a new `type` is one `clinic.type_changed` action (`before`, `after`, plus `status`/`endDate` when sent) instead of `clinic.status_changed`. The same type again runs as a status change.
+- **Audit:** events `entitlement.viewed`, `entitlement.history_viewed`, `entitlement.override_set`, `entitlement.override_removed`, `clinic.type_previewed`, `clinic.type_changed`. Override rows carry `key`, `before`, `after`, `expires`, never the reason. `withPlatformAdmin()` gained `audit.setData()` (same allowlist), and that allowlist now accepts dots (catalogue keys).
+- **Start-up check:** `main.ts` refuses to start when plans or add-ons hold a key outside `PRODUCTION_ENTITLEMENTS` (`entitlementKeysInUse()` reads the global tables with no context).
+- **Super-admin names** (`setByName`, `byName`) come from `OwnerAccounts.displayNames()` on the auth path. Rows hold user ids without a foreign key, so a missing account reads as null.
+- **Test harness:** `resetTestDb()` keeps the seeded `plan` and `plan_feature` rows (`SEEDED_TABLES`).
+- **Locked tests:** two setup lines were fixed with the owner's approval (a deactivated member is inserted pending, then deactivated; the super admin signs in again after a two-day clock jump). No assertion changed.
+- **Migrations:** `20261126235059_a02_entitlements` (expand: six tables) and `20261126235100_a02_entitlement_policies` (expand: seeds, RLS, grants, policies, trigger, function). Rollback notes are in the SQL header.
 
 ## Evidence
 - `verify` (full): —

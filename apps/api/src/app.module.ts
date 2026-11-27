@@ -2,6 +2,7 @@ import { type DynamicModule, Module } from '@nestjs/common';
 import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import { AccessModule, type PermissionDefinition } from './access/index.ts';
 import { BranchesModule } from './modules/branches/index.ts';
+import { EntitlementsModule } from './modules/entitlements/index.ts';
 import { HealthModule } from './modules/health/index.ts';
 import {
   BetterAuthAdapter,
@@ -49,12 +50,14 @@ export class AppModule {
       ...(clock ? { clock } : {}),
       ...(clinicWebUrl ? { clinicWebUrl } : {}),
     });
+    const entitlements = EntitlementsModule.register({ platformDb, identity });
     return {
       module: AppModule,
       imports: [
         DatabaseModule.register(db),
         identity,
-        PlatformModule.register({ platformDb, identity }),
+        entitlements,
+        PlatformModule.register({ platformDb, identity, entitlements }),
         AccessModule.register({
           imports: [identity],
           authPort: BetterAuthAdapter,
