@@ -87,6 +87,38 @@ export function restore(world: TeamWorld, cookie: string, id: string, expectedUp
   return post(world.app, `/patients/${id}/restore`, { expectedUpdatedAt }, cookie);
 }
 
+/** One search result (A-03-03; contract `POST /patients/search`). */
+export interface SearchHit {
+  id: string;
+  displayName: string;
+  fileNumber: number;
+  sex: 'male' | 'female';
+  birthDate: string;
+  birthDateEstimated: boolean;
+  contactPhone: string;
+  state: 'active' | 'archived' | 'merged';
+  archivedAt: string | null;
+  matchedBy: string;
+  matchedParts: number[];
+  mergedFileNumber: number | null;
+}
+
+export function search(world: TeamWorld, cookie: string, body: Record<string, unknown>) {
+  return post(world.app, '/patients/search', body, cookie);
+}
+
+/** The results of a search (200 expected). */
+export async function found(
+  world: TeamWorld,
+  cookie: string,
+  term: string,
+  extra: Record<string, unknown> = {},
+): Promise<{ results: SearchHit[]; truncated: boolean }> {
+  const res = await search(world, cookie, { term, ...extra });
+  if (res.statusCode !== 200) throw new Error(`search: ${String(res.statusCode)} ${res.body}`);
+  return res.json<{ results: SearchHit[]; truncated: boolean }>();
+}
+
 export function countOf(world: TeamWorld, cookie: string) {
   return get(world.app, '/patients/count', cookie);
 }

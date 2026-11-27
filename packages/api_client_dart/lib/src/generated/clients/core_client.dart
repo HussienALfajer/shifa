@@ -58,6 +58,8 @@ import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
 import '../models/patient_chart.dart';
 import '../models/patient_count.dart';
+import '../models/patient_search_request.dart';
+import '../models/patient_search_results.dart';
 import '../models/patient_state_change_request.dart';
 import '../models/permission_defaults.dart';
 import '../models/place_name_request.dart';
@@ -301,6 +303,12 @@ abstract class CoreClient {
   /// How many active and archived charts the clinic holds
   @GET('/patients/count')
   Future<PatientCount> patientsCount();
+
+  /// Find charts by name, phone, file number or previous file number
+  @POST('/patients/search')
+  Future<PatientSearchResults> patientsSearch({
+    @Body() required PatientSearchRequest body,
+  });
 
   /// A chart’s summary (identity part)
   @GET('/patients/{id}')

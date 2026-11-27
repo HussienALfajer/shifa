@@ -67,6 +67,7 @@ export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
       age: { value: 30, unit: 'years' },
     },
   }),
+  'POST /patients/search': () => ({ body: { term: 'مريض' } }),
   'GET /patients/:id': async (ctx) => ({ url: `/patients/${(await ctx.chart()).id}` }),
   'PATCH /patients/:id': async (ctx) => {
     const chart = await ctx.chart();

@@ -6087,6 +6087,10 @@
   "@errorsPreviousFileNumberTaken": {
     "description": "errors.previous_file_number_taken"
   },
+  "errorsRateLimited": "بحثت كثيرًا في وقت قصير. انتظر دقيقة ثم أعد المحاولة.",
+  "@errorsRateLimited": {
+    "description": "errors.rate_limited"
+  },
   "errorsRequestTimeout": "استغرق الطلب وقتًا طويلًا. حاول مرة أخرى.",
   "@errorsRequestTimeout": {
     "description": "errors.request_timeout"

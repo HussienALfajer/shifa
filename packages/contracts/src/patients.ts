@@ -214,12 +214,84 @@ export type PatientCount = z.infer<typeof PatientCount>;
 
 export const PatientIdParams = z.object({ id: z.uuid() }).meta({ id: 'PatientIdParams' });
 
+/**
+ * A search (criteria 4, 21; contract `POST /patients/search`): the term travels in the body
+ * only. A name needs 2 letters, digits search from 1 for a file number and from 7 for a phone
+ * tail (400 `validation_failed` on `body.term` otherwise). `includeArchived` needs
+ * `patients.archive` (403 otherwise).
+ */
+export const PatientSearchRequest = z
+  .object({
+    term: z.string().max(100).regex(/\S/u),
+    includeArchived: z.boolean().optional(),
+  })
+  .meta({ id: 'PatientSearchRequest' });
+export type PatientSearchRequest = z.infer<typeof PatientSearchRequest>;
+
+/** Why a result matched (criterion 24); `custom_field` comes with A-03-06. */
+export const PatientMatchKind = z
+  .enum([
+    'name',
+    'name_variant',
+    'name_order',
+    'phone',
+    'phone_tail',
+    'file_number',
+    'previous_file_number',
+    'custom_field',
+  ])
+  .meta({ id: 'PatientMatchKind' });
+export type PatientMatchKind = z.infer<typeof PatientMatchKind>;
+
+/**
+ * One search result (criteria 4, 24): the chart's card, why it matched, and which display-name
+ * parts matched (0 given, 1 father, 2 family; empty for a number or phone). `mergedFileNumber`:
+ * the merged chart's number that led here (A-03-08), else null. `familySize` and `relation`
+ * come with A-03-04.
+ */
+export const PatientSearchResult = z
+  .object({
+    id: z.uuid(),
+    displayName: z.string(),
+    fileNumber: z.int().min(1),
+    sex: Sex,
+    /** `YYYY-MM-DD`. */
+    birthDate: CalendarDate,
+    birthDateEstimated: z.boolean(),
+    /** E.164. */
+    contactPhone: z.string(),
+    state: PatientState,
+    archivedAt: z.iso.datetime().nullable(),
+    matchedBy: PatientMatchKind,
+    matchedParts: z.array(z.int().min(0).max(2)),
+    mergedFileNumber: z.int().min(1).nullable(),
+  })
+  .meta({ id: 'PatientSearchResult' });
+export type PatientSearchResult = z.infer<typeof PatientSearchResult>;
+
+/** At most 20 results, best first; `truncated` when more charts matched (criterion 21). */
+export const PatientSearchResults = z
+  .object({ results: z.array(PatientSearchResult).max(20), truncated: z.boolean() })
+  .meta({ id: 'PatientSearchResults' });
+export type PatientSearchResults = z.infer<typeof PatientSearchResults>;
+
 export const patientsCount = defineContract({
   operationId: 'patientsCount',
   method: 'GET',
   path: '/patients/count',
   summary: 'How many active and archived charts the clinic holds',
   responses: { 200: PatientCount },
+});
+
+export const patientsSearch = defineContract({
+  operationId: 'patientsSearch',
+  method: 'POST',
+  path: '/patients/search',
+  summary: 'Find charts by name, phone, file number or previous file number',
+  request: { body: PatientSearchRequest },
+  // 400 `validation_failed` (`body.term` too short); 403 `forbidden` (`includeArchived` without
+  // `patients.archive`); 429 `rate_limited`. A read: allowed in a support session.
+  responses: { 200: PatientSearchResults, 400: ErrorEnvelope, 429: ErrorEnvelope },
 });
 
 export const patientsCreate = defineContract({

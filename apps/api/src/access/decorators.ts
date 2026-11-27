@@ -45,6 +45,15 @@ export const SUPPORT_WRITE_METADATA = 'shifa:access:support-write';
  */
 export const SupportSessionWrite = (): MethodDecorator => SetMetadata(SUPPORT_WRITE_METADATA, true);
 
+export const READ_IN_BODY_METADATA = 'shifa:access:read-in-body';
+
+/**
+ * With @RequirePermission on a POST only (A-03-03): a read whose input travels in the body
+ * because it is personal data (a patient search term, spec A-03 criterion 6). A support session
+ * may call it like a GET; its transaction stays READ ONLY there. It must write nothing.
+ */
+export const ReadInBody = (): MethodDecorator => SetMetadata(READ_IN_BODY_METADATA, true);
+
 export const NOT_IN_SUPPORT_METADATA = 'shifa:access:not-in-support';
 
 /**

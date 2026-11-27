@@ -12,6 +12,7 @@ export {
   NotInSupportSession,
   PlatformAdmin,
   Public,
+  ReadInBody,
   RequireEntitlement,
   RequireFlag,
   RequirePermission,

@@ -91,6 +91,8 @@ export const ErrorCode = z
     'patient_not_archived',
     'patient_merged',
     'stale',
+    // patient search (A-03-03)
+    'rate_limited',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -280,6 +282,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   patient_not_archived: 'This chart is not archived',
   patient_merged: 'This chart was merged into another',
   stale: 'Someone else saved this record since you opened it',
+  rate_limited: 'Too many searches in a short time',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

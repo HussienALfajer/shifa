@@ -48,6 +48,8 @@ const ALLOWED_WRITE = 'POST /auth/support/end';
 /** Owner reads a support session may not make: subscription card, support log (A-02 Permissions). */
 const NOT_IN_SUPPORT = new Set(['GET /clinic/subscription', 'GET /clinic/support-grants']);
 const READS = new Set(['GET', 'HEAD']);
+/** Reads whose input is personal data, so it travels in a POST body (A-03-03). */
+const READS_IN_BODY = new Set(['POST /patients/search']);
 const ANY_ID = '00000000-0000-4000-8000-0000000000ff';
 
 let world: World;
@@ -88,7 +90,10 @@ function expected(route: string): { status: number; code?: string } | null {
   if (row.anonymous !== 401) return null; // public: acts as nobody
   const [method = ''] = route.split(' ');
   if (route === ALLOWED_WRITE) return null; // ends the grant: its own test
-  if (!READS.has(method)) return { status: 403, code: 'support_read_only' };
+  // A-03-03: reads by POST (@ReadInBody) answer as an owner's GET would.
+  if (!READS.has(method) && !READS_IN_BODY.has(route)) {
+    return { status: 403, code: 'support_read_only' };
+  }
   // The super admin belongs to no clinic: their own chooser has nothing to list (as for any super
   // admin; the route matrix shows 200 with an invitation).
   if (route === 'GET /me/clinics') return { status: 404, code: 'no_clinic' };
@@ -111,7 +116,8 @@ describe('every route in a support session (criterion 12)', () => {
       const want = expected(route);
       if (!want) continue;
       const [method = 'GET'] = route.split(' ');
-      const res = await request(world, method as 'GET', urlOf(route), tab);
+      const body = READS_IN_BODY.has(route) ? { term: 'مريض' } : undefined;
+      const res = await request(world, method as 'GET', urlOf(route), tab, body);
       called += 1;
       const status = res.statusCode >= 200 && res.statusCode < 300 ? 200 : res.statusCode;
       if (status !== want.status || (want.code && errorCode(res) !== want.code)) {

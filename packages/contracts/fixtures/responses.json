@@ -1656,9 +1656,70 @@
       "body": {
         "error": { "code": "patient_merged", "message": "This chart was merged into another" }
       }
+    },
+    {
+      "name": "search results, one by a variant name, one led to by a merged number",
+      "schema": "PatientSearchResults",
+      "body": {
+        "results": [
+          {
+            "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+            "displayName": "ريم أحمد الحلبي",
+            "fileNumber": 1043,
+            "sex": "female",
+            "birthDate": "1990-03-12",
+            "birthDateEstimated": false,
+            "contactPhone": "+963930012345",
+            "state": "active",
+            "archivedAt": null,
+            "matchedBy": "name_variant",
+            "matchedParts": [0, 1],
+            "mergedFileNumber": null
+          },
+          {
+            "id": "1c7a3f5e-6e8b-4d2f-8b4c-3a2f1e0d9c8b",
+            "displayName": "نزار الصباغ",
+            "fileNumber": 12,
+            "sex": "male",
+            "birthDate": "1971-01-01",
+            "birthDateEstimated": true,
+            "contactPhone": "+905320012345",
+            "state": "active",
+            "archivedAt": null,
+            "matchedBy": "file_number",
+            "matchedParts": [],
+            "mergedFileNumber": 1077
+          }
+        ],
+        "truncated": false
+      }
+    },
+    {
+      "name": "too many searches",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": { "code": "rate_limited", "message": "Too many searches in a short time" }
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "a search result without why it matched",
+      "schema": "PatientSearchResult",
+      "body": {
+        "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+        "displayName": "ريم أحمد الحلبي",
+        "fileNumber": 1043,
+        "sex": "female",
+        "birthDate": "1990-03-12",
+        "birthDateEstimated": false,
+        "contactPhone": "+963930012345",
+        "state": "active",
+        "archivedAt": null,
+        "matchedParts": [0],
+        "mergedFileNumber": null
+      }
+    },
     {
       "name": "chart counts without the archived count",
       "schema": "PatientCount",
