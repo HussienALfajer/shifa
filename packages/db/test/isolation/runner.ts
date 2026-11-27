@@ -227,6 +227,8 @@ export async function runIsolationCase(
   const updated = await attempt(tenantA, (tx) => tx.execute(sql`update ${t} set ${set}`));
   if (access !== 'read-write') {
     out.push(...refusedByPrivilege(updated, 'update without WHERE', c.table, tenantA));
+  } else if (c.updateRefused) {
+    out.push(...refusedByRls(updated, 'update without WHERE', c.table, tenantA));
   } else if (updated !== undefined) {
     out.push(
       `${c.table}: update without WHERE inside tenant A failed with ${describeError(updated)}`,

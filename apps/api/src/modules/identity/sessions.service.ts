@@ -172,7 +172,7 @@ export class SessionsService {
       idleExpiresAt: new Date(lastActive.getTime() + idleMinutes * MINUTE_MS).toISOString(),
       // A support session ends with its grant, before 12 hours (A-02-05).
       absoluteExpiresAt: (principal.support
-        ? new Date(Math.min(absoluteEnd(row).getTime(), row.expiresAt.getTime()))
+        ? new Date(Math.min(absoluteEnd(row).getTime(), Date.parse(principal.support.expiresAt)))
         : absoluteEnd(row)
       ).toISOString(),
       support: await this.support.view(principal),

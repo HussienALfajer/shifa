@@ -9,7 +9,7 @@ export {
   isCommonPassword,
   type PasswordProblem,
 } from './password-rules.ts';
-export { SESSION_COOKIE, SUPPORT_COOKIE } from './session-cookie.ts';
+export { CLEAR_SUPPORT_COOKIE, SESSION_COOKIE, SUPPORT_COOKIE } from './session-cookie.ts';
 export {
   parseSeedArgs,
   type SeedArgs,

@@ -16,7 +16,8 @@ CREATE TABLE "support_access_grant" (
 	CONSTRAINT "support_access_grant_duration_check" CHECK ("expires_at" > "opened_at" and "expires_at" <= "opened_at" + interval '4 hours'),
 	CONSTRAINT "support_access_grant_end_check" CHECK (("ended_at" is null) = ("end_reason" is null)
           and ("end_reason" is null or "end_reason" in ('admin', 'owner', 'expiry'))
-          and (("end_reason" = 'expiry') = ("end_reason" is not null and "ended_by" is null))),
+          and (("end_reason" = 'expiry') = ("end_reason" is not null and "ended_by" is null))
+          and ("ended_at" is not null or ("ended_by" is null and "ended_by_name" is null))),
 	CONSTRAINT "support_access_grant_names_check" CHECK (char_length("admin_name") between 1 and 200
           and ("ended_by_name" is null or char_length("ended_by_name") between 1 and 200)),
 	CONSTRAINT "support_access_grant_handoff_check" CHECK ("handoff_token_hash" is null or "handoff_token_hash" ~ '^[0-9a-f]{64}$')

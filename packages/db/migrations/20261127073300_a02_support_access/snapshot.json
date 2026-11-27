@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "0367e906-ae74-4f44-b432-34c70043e638",
+  "id": "eb92cd3d-54bd-48b8-beb5-c3f357231126",
   "prevIds": [
     "2f2a12da-1a68-421f-8d7e-6dab6bd1cebb"
   ],
@@ -561,7 +561,7 @@
         "schema": "public",
         "table": "support_access_grant",
         "name": "support_access_grant_end_check",
-        "value": "(\"ended_at\" is null) = (\"end_reason\" is null)\n          and (\"end_reason\" is null or \"end_reason\" in ('admin', 'owner', 'expiry'))\n          and ((\"end_reason\" = 'expiry') = (\"end_reason\" is not null and \"ended_by\" is null))",
+        "value": "(\"ended_at\" is null) = (\"end_reason\" is null)\n          and (\"end_reason\" is null or \"end_reason\" in ('admin', 'owner', 'expiry'))\n          and ((\"end_reason\" = 'expiry') = (\"end_reason\" is not null and \"ended_by\" is null))\n          and (\"ended_at\" is not null or (\"ended_by\" is null and \"ended_by_name\" is null))",
         "entityType": "checks"
       }
     },

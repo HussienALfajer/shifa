@@ -1,6 +1,7 @@
 // A-02-05 criterion 12, enforced twice: every route of the API called from a real support tab (the
 // production AuthPort and cookie). Expected statuses come from the reviewed route matrix: a GET
-// answers what an owner gets, except @PlatformAdmin routes (403); every other method answers 403
+// answers what an owner gets, except @PlatformAdmin routes and the owner reads the spec keeps from
+// support (subscription card, support log: 403, `NOT_IN_SUPPORT`); every other method answers 403
 // `support_read_only` before the handler, `@SignedIn` account writes included, except
 // `POST /auth/support/end`; public routes act as nobody and are left out. Then a write forced past
 // the guard (a GET that writes) fails on the READ ONLY transaction.
@@ -43,6 +44,8 @@ class ForcedWriteController {
 }
 
 const ALLOWED_WRITE = 'POST /auth/support/end';
+/** Owner reads a support session may not make: subscription card, support log (A-02 Permissions). */
+const NOT_IN_SUPPORT = new Set(['GET /clinic/subscription', 'GET /clinic/support-grants']);
 const READS = new Set(['GET', 'HEAD']);
 const ANY_ID = '00000000-0000-4000-8000-0000000000ff';
 
@@ -78,6 +81,8 @@ function expected(route: string): { status: number; code?: string } | null {
   // The super admin belongs to no clinic: their own chooser has nothing to list (as for any super
   // admin; the route matrix shows 200 with an invitation).
   if (route === 'GET /me/clinics') return { status: 404, code: 'no_clinic' };
+  // The spec's Permissions table keeps these owner reads from support (review 2).
+  if (NOT_IN_SUPPORT.has(route)) return { status: 403, code: 'forbidden' };
   const platformOnly = row.platform_admin === 200 && row.owner === 403;
   return { status: platformOnly ? 403 : row.owner };
 }

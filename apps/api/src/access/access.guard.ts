@@ -51,13 +51,13 @@ type GuardRequest = Pick<FastifyRequest, 'log'> & {
 
 /** The only methods a support session may use, besides its one marked write (A-02 criterion 12). */
 const READ_METHODS = new Set(['GET', 'HEAD']);
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-/** The path's `:id` when it is a lower-case UUID (the audit row's target); otherwise null. */
+/** The path's `:id` when it is a UUID, lower-cased (the audit row's target); otherwise null. */
 function targetIdOf(params: unknown): string | null {
   if (typeof params !== 'object' || params === null) return null;
   const id = (params as Record<string, unknown>)['id'];
-  return typeof id === 'string' && UUID.test(id) ? id : null;
+  return typeof id === 'string' && UUID.test(id) ? id.toLowerCase() : null;
 }
 
 @Injectable()
@@ -173,6 +173,10 @@ export class AccessGuard implements CanActivate {
     }
     if (access.platformAdmin) {
       this.#deny(request, { ...fields, userId: principal.userId, grantId, platformAdmin: true });
+    }
+    // An owner's read the spec keeps from support (subscription card, support log; review 2).
+    if (access.notInSupport) {
+      this.#deny(request, { ...fields, userId: principal.userId, grantId, notInSupport: true });
     }
   }
 

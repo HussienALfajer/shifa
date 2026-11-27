@@ -233,7 +233,7 @@ export class PlatformSupport {
           .where(eq(tenant.id, clinicId));
         if (!clinic) throw new NotFoundException();
         return inTenantContext(tx, clinicId, async (sp) => {
-          await closeExpired(sp, action.requestId);
+          await closeExpired(sp, this.clock.now(), action.requestId);
           return fn(sp, audit);
         });
       },
@@ -242,10 +242,15 @@ export class PlatformSupport {
 }
 
 /**
- * Closes the clinic's grants whose expiry has passed (database time), each with one
- * `support.expired` row: the one-open-grant index then allows a new one (criterion 11).
+ * Closes the clinic's grants whose expiry has passed, each with one `support.expired` row: the
+ * one-open-grant index then allows a new one (criterion 11). Expired by the API's clock, as list()
+ * and open() decide (review 13), bounded by the database's (the policy closes nothing early).
  */
-async function closeExpired(sp: PlatformTx, requestId: string | undefined): Promise<void> {
+async function closeExpired(
+  sp: PlatformTx,
+  now: Date,
+  requestId: string | undefined,
+): Promise<void> {
   const closed = await sp
     .update(supportAccessGrant)
     .set({
@@ -254,7 +259,12 @@ async function closeExpired(sp: PlatformTx, requestId: string | undefined): Prom
       handoffTokenHash: null,
       handoffExpiresAt: null,
     })
-    .where(and(isNull(supportAccessGrant.endedAt), lte(supportAccessGrant.expiresAt, sql`now()`)))
+    .where(
+      and(
+        isNull(supportAccessGrant.endedAt),
+        lte(supportAccessGrant.expiresAt, sql`least(${now}::timestamptz, now())`),
+      ),
+    )
     .returning({ id: supportAccessGrant.id, adminUserId: supportAccessGrant.adminUserId });
   for (const { id, adminUserId } of closed) {
     await sp.insert(auditEvent).values({

@@ -85,7 +85,8 @@ describe('side-role pools behind PgBouncer', () => {
     try {
       expect(
         await platform.withPlatformAdmin({ actorId: ADMIN, event: 'clinic.created' }, view),
-      ).toEqual({ pid, t: '', u: '', r: 'clinic.created', l: '' });
+        // app.user_id is the acting super admin since A-02-05 (review 5), never a leftover.
+      ).toEqual({ pid, t: '', u: ADMIN, r: 'clinic.created', l: '' });
     } finally {
       await platform.close();
     }

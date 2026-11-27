@@ -22,6 +22,9 @@ export class SupportSessionController {
     const { view, cookie } = await this.handoffs.exchange(body.token, {
       requestId: request.requestId,
       userAgent: request.userAgent,
+      log: (fields, message) => {
+        request.logInfo(fields, message);
+      },
     });
     request.setCookie(cookie);
     return view;

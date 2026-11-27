@@ -11,6 +11,7 @@ import {
 } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { CLEAR_SUPPORT_COOKIE } from '../identity/index.ts';
 import { PlatformSupport } from './platform-support.service.ts';
 
 @Controller('auth/support')
@@ -27,5 +28,7 @@ export class SupportEndController {
     @ClientRequest() request: RequestMeta,
   ): Promise<void> {
     await this.support.endFromSession(principal, request.requestId);
+    // The tab's cookie goes with its grant (review 7).
+    request.setCookie(CLEAR_SUPPORT_COOKIE);
   }
 }

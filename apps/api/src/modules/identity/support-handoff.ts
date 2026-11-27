@@ -12,7 +12,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { IdentityAudit } from './identity-audit.ts';
 import { linkTokenHash } from './links.ts';
-import { SUPPORT_COOKIE, sessionCookieFor } from './session-cookie.ts';
+import { SESSION_ABSOLUTE_MS, SUPPORT_COOKIE, sessionCookieFor } from './session-cookie.ts';
 import { SessionsService } from './sessions.service.ts';
 import { linkInvalid } from './setup-links.service.ts';
 import { AUTH_DB, IDENTITY_CONFIG, type IdentitySecrets } from './tokens.ts';
@@ -20,6 +20,8 @@ import { AUTH_DB, IDENTITY_CONFIG, type IdentitySecrets } from './tokens.ts';
 export interface HandoffMeta {
   requestId: string;
   userAgent: string | undefined;
+  /** The request's info logger (RequestMeta.logInfo). */
+  log?: (fields: Record<string, string>, message: string) => void;
 }
 
 @Injectable()
@@ -51,9 +53,19 @@ export class SupportHandoffs {
     if (grant === undefined) throw linkInvalid();
     const open = grant.endedAt === null && grant.expiresAt > now;
     const fresh = grant.handoffExpiresAt !== null && grant.handoffExpiresAt > now;
-    if (!open || !fresh) throw linkInvalid();
+    if (!open || !fresh) {
+      // A matched hand-off that cannot be used leaves a trace (review 11): the grant id only.
+      meta.log?.(
+        { grantId: grant.id, reason: open ? 'handoff_expired' : 'grant_ended' },
+        'support hand-off refused',
+      );
+      throw linkInvalid();
+    }
     // 192 bits, like Better Auth's own tokens.
     const sessionToken = randomBytes(24).toString('base64url');
+    // The row and the cookie outlive the grant (12 hours, the absolute limit; review 1): the tab
+    // learns why it ended, expiry included. Whether it is open is decided by the grant alone.
+    const sessionEnd = new Date(now.getTime() + SESSION_ABSOLUTE_MS);
     await this.authDb.withHandoff(
       hash,
       async (tx) => {
@@ -94,7 +106,7 @@ export class SupportHandoffs {
           createdAt: now,
           updatedAt: now,
           lastActiveAt: now,
-          expiresAt: grant.expiresAt,
+          expiresAt: sessionEnd,
           userAgent: meta.userAgent?.slice(0, 512) ?? null,
           activeTenantId: grant.tenantId,
           activeBranchId: null,
@@ -116,7 +128,7 @@ export class SupportHandoffs {
       cookie: sessionCookieFor(
         sessionToken,
         this.secrets.betterAuthSecret,
-        grant.expiresAt,
+        sessionEnd,
         now,
         SUPPORT_COOKIE,
       ),

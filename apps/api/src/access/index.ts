@@ -9,6 +9,7 @@ export {
 export {
   BeforeMfa,
   CurrentPrincipal,
+  NotInSupportSession,
   PlatformAdmin,
   Public,
   RequireEntitlement,

@@ -188,14 +188,13 @@ describe('the owner’s banner, log and end (criteria 13, 26)', () => {
     expect(res.statusCode).toBe(200);
     const body = res.json<{ now: string; open: Record<string, unknown>[]; grants: unknown[] }>();
     expect(Date.parse(body.now)).toBe(world.clock.now().getTime());
-    expect(body.open).toEqual([
-      {
-        id: grantId,
-        adminName: 'مشرف تجريبي',
-        reason: REASON,
-        expiresAt: expect.any(String),
-      },
+    expect(body.open.map((g) => [g['id'], g['adminName'], g['reason']])).toEqual([
+      [grantId, 'مشرف تجريبي', REASON],
     ]);
+    expect(body.open.map((g) => Object.keys(g).sort())).toEqual([
+      ['adminName', 'expiresAt', 'id', 'reason'],
+    ]);
+    expect(body.open.map((g) => typeof g['expiresAt'])).toEqual(['string']);
     expect(body.grants).toHaveLength(1);
   });
 

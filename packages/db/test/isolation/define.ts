@@ -49,6 +49,12 @@ export interface IsolationCase {
    */
   readonly withoutPrivilege?: readonly ('insert' | 'delete')[] | undefined;
   /**
+   * The runner's update without WHERE (setting `updatable`) must be refused by a restrictive
+   * policy of this table (A-02-05: an open grant changes only into a full owner's end), instead of
+   * succeeding on tenant A's rows. Tenant B's rows must stay unchanged either way.
+   */
+  readonly updateRefused?: boolean | undefined;
+  /**
    * Inserts with tenant A's own tenant_id that a restrictive policy of this table must refuse
    * (SQLSTATE 42501 naming the table), by name; each runs inside tenant A (A-01-05: a membership
    * already bound to an account).

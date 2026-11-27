@@ -74,7 +74,8 @@ export const supportAccessGrant = pgTable(
       'support_access_grant_end_check',
       sql`(${t.endedAt} is null) = (${t.endReason} is null)
           and (${t.endReason} is null or ${t.endReason} in ('admin', 'owner', 'expiry'))
-          and ((${t.endReason} = 'expiry') = (${t.endReason} is not null and ${t.endedBy} is null))`,
+          and ((${t.endReason} = 'expiry') = (${t.endReason} is not null and ${t.endedBy} is null))
+          and (${t.endedAt} is not null or (${t.endedBy} is null and ${t.endedByName} is null))`,
     ),
     check(
       'support_access_grant_names_check',

@@ -30,18 +30,19 @@ export interface AuthPort {
  * the super admin, a change of password): 401 with the reason (A-01a criterion 9).
  */
 export class SessionExpiredError extends ApiError {
-  constructor(reason: SessionEndReason = 'ended', supportEnded?: SupportEnded) {
-    super(401, 'session_expired', undefined, reason, undefined, supportEnded);
+  constructor(reason: SessionEndReason = 'ended', supportEnded?: SupportEnded, setCookie?: string) {
+    super(401, 'session_expired', undefined, reason, undefined, supportEnded, setCookie);
   }
 }
 
 /**
  * A support session whose grant ended (A-02 criterion 12): 401 `session_expired`, reason
- * `support_ended`, with who ended it and when (the owner's name when an owner did).
+ * `support_ended`, with who ended it and when (the owner's name when an owner did); the adapter
+ * passes the Set-Cookie line that clears the support cookie.
  */
 export class SupportEndedError extends SessionExpiredError {
-  constructor(ended: SupportEnded) {
-    super('support_ended', ended);
+  constructor(ended: SupportEnded, clearCookie?: string) {
+    super('support_ended', ended, clearCookie);
   }
 }
 

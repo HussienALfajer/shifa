@@ -361,7 +361,7 @@ export const EXPECTED_MATRIX: Matrix = {
   // A-02-05: support access. The super admin opens, hands off and ends; an owner sees and ends
   // (clinic.settings.manage); the hand-off token is the credential of the exchange; ending from
   // the support tab refuses every session that is not a support session (support matrix:
-  // test/support/support-matrix.test.ts)
+  // test/support-access/support-matrix.test.ts)
   'GET /platform/clinics/:id/support-grants': platformAdmin,
   'POST /platform/clinics/:id/support-grants': platformAdmin,
   'POST /platform/support-grants/:id/handoff': platformAdmin,

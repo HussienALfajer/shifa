@@ -12,6 +12,8 @@ import { RequirePermission, SignedIn, SupportSessionWrite } from '../../src/acce
 import { PermissionCatalogue, PRODUCTION_PERMISSIONS } from '../../src/access/permissions.ts';
 import { PrincipalSchema } from '../../src/access/principal.ts';
 import { PRODUCTION_GRANTS, ROLES } from '../../src/access/roles.ts';
+import { Contract } from '../../src/platform/contract/index.ts';
+import { buildTestApp, offlineDb, testContract } from '../support.ts';
 import { HeaderAuthAdapter, PRINCIPAL_HEADER } from './probe.ts';
 
 const USER = '0b6f2a4e-6c1d-4d7a-9b0e-2f4c5a6b7c8d';
@@ -119,6 +121,22 @@ describe('the guard in a support session', () => {
     };
     await expect(guard.canActivate(context as never)).rejects.toMatchObject({ status: 500 });
     expect(JSON.stringify(logged)).toContain(GRANT);
+  });
+
+  it('the start-up check refuses @SupportSessionWrite on any route but the support end (review 9)', async () => {
+    @Controller('__support_bad')
+    class BadController {
+      @SignedIn()
+      @SupportSessionWrite()
+      @Contract(testContract('POST', '/__support_bad/write'))
+      @Post('write')
+      write(): string {
+        return 'never';
+      }
+    }
+    await expect(buildTestApp({ db: offlineDb(), controllers: [BadController] })).rejects.toThrow(
+      /@SupportSessionWrite on a route other than the support end/,
+    );
   });
 
   it('reads @SupportSessionWrite as the one allowed write', () => {

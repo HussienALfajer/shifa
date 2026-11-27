@@ -25,6 +25,7 @@ import {
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
+import { CLEAR_SUPPORT_COOKIE } from './session-cookie.ts';
 import { NO_CLINIC_IDLE_MINUTES } from './tenant-view.ts';
 import { AUTH_DB } from './tokens.ts';
 
@@ -96,9 +97,10 @@ export class SupportSessions {
     }
     const ended = await this.#ended(grant, now, requestId);
     if (ended) {
-      // The ended page stays until the grant's own end; then the row goes.
+      // The row and its cookie outlive the grant (12 hours from the hand-off, review 1), so the
+      // tab keeps learning why it ended, expiry included; the row goes only after that.
       if (now >= row.expiresAt) await end('support_ended');
-      throw new SupportEndedError(ended);
+      throw new SupportEndedError(ended, CLEAR_SUPPORT_COOKIE);
     }
     const lastActive = row.lastActiveAt ?? row.createdAt;
     if (now.getTime() - lastActive.getTime() >= NO_CLINIC_IDLE_MINUTES * MINUTE_MS) {

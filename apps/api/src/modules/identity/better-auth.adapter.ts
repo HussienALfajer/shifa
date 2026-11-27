@@ -7,7 +7,12 @@ import type { FastifyRequest } from 'fastify';
 import { type AuthPort, type Principal, SessionExpiredError } from '../../access/index.ts';
 import { errorClass } from '../../platform/errors.ts';
 import { parseCookies } from '../../platform/request-meta.ts';
-import { SESSION_COOKIE, SUPPORT_COOKIE, verifySessionCookie } from './session-cookie.ts';
+import {
+  CLEAR_SUPPORT_COOKIE,
+  SESSION_COOKIE,
+  SUPPORT_COOKIE,
+  verifySessionCookie,
+} from './session-cookie.ts';
 import { SessionsService } from './sessions.service.ts';
 import { IDENTITY_CONFIG, type IdentitySecrets } from './tokens.ts';
 
@@ -29,13 +34,17 @@ export class BetterAuthAdapter implements AuthPort {
   async authenticate(request: FastifyRequest): Promise<Principal | null> {
     const cookies = parseCookies(request.headers.cookie);
     // A support tab (A-02-05, ADR-0050): its own cookie comes first. Once its session row is gone
-    // (after the grant's end) the cookie is ignored and the request goes on as without it.
+    // the cookie is ignored when the browser also holds a clinic session; alone, it answers
+    // `session_expired` (`ended`) and is cleared (review 7).
     const support = verifySessionCookie(cookies.get(SUPPORT_COOKIE), this.secrets.betterAuthSecret);
     if (support !== null) {
       const principal = await this.#lookup(request, support);
       if (principal !== null) return principal;
     }
     const token = verifySessionCookie(cookies.get(SESSION_COOKIE), this.secrets.betterAuthSecret);
+    if (token === null && support !== null) {
+      throw new SessionExpiredError('ended', undefined, CLEAR_SUPPORT_COOKIE);
+    }
     // A missing or forged cookie is anonymous: 401 `unauthorized`, no reason.
     if (token === null) return null;
     const principal = await this.#lookup(request, token);

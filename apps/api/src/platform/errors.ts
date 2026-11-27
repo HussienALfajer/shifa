@@ -35,6 +35,8 @@ export class ApiError extends HttpException {
     readonly limitReached?: LimitReached,
     /** How a support grant ended: only with `session_expired`, `support_ended` (A-02-05). */
     readonly supportEnded?: SupportEnded,
+    /** A Set-Cookie line sent with the answer (A-02-05: the support cookie cleared). */
+    readonly setCookie?: string,
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -158,6 +160,9 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       report(exception);
     }
     if (reply.sent) return;
+    if (exception instanceof ApiError && exception.setCookie) {
+      void reply.header('set-cookie', exception.setCookie);
+    }
     void reply.status(status).send(bodyFor(exception, status));
   }
 }
