@@ -18,7 +18,13 @@ import {
 import { useRef, useState } from 'react';
 import { useShell } from '../providers.tsx';
 import { useText } from '../text.ts';
-import { damascusToday, type EntitlementItem, keyWord, nextDay } from './clinic-data.ts';
+import {
+  damascusToday,
+  type EntitlementItem,
+  entitlementWord,
+  keyWord,
+  nextDay,
+} from './clinic-data.ts';
 import { calendarDate } from './data.ts';
 import type { TabNote } from './tab-parts.tsx';
 
@@ -59,7 +65,8 @@ export function OverrideDialog({
   const name = keyWord(text, item.key);
   const kept = item.override !== null && !item.override.expired ? item.override : null;
   const [value, setValue] = useState<number | boolean | null>(kept?.value ?? item.planValue);
-  const [reason, setReason] = useState(kept?.reason ?? '');
+  // Each change gives its own reason (criterion 3): never the last one's.
+  const [reason, setReason] = useState('');
   const [expiry, setExpiry] = useState<string | null>(kept?.expiresAt ?? null);
   const [problem, setProblem] = useState<Problem | null>(null);
   const [busy, setBusy] = useState(false);
@@ -93,7 +100,7 @@ export function OverrideDialog({
         },
       );
       if (data) {
-        const shown = String(data.override?.value ?? data.effective);
+        const shown = entitlementWord(text, data.override?.value ?? data.effective);
         onSaved(data, {
           tone: 'success',
           title: text('overrideSavedTitle'),
@@ -138,8 +145,11 @@ export function OverrideDialog({
         >
           <Callout tone="info">
             {item.used === null
-              ? text('overridePlan', { plan: String(item.planValue) })
-              : text('overridePlanUsed', { plan: String(item.planValue), used: String(item.used) })}
+              ? text('overridePlan', { plan: entitlementWord(text, item.planValue) })
+              : text('overridePlanUsed', {
+                  plan: entitlementWord(text, item.planValue),
+                  used: String(item.used),
+                })}
           </Callout>
           {item.kind === 'limit' ? (
             <NumberInput

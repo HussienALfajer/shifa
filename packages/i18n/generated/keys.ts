@@ -659,6 +659,7 @@ export type CommonKey =
   | 'settingColSource'
   | 'settingColValue'
   | 'settingFalse'
+  | 'settingGoneTitle'
   | 'settingIdle'
   | 'settingLock'
   | 'settingLocked'

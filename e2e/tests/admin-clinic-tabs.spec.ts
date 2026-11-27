@@ -203,9 +203,10 @@ test('(4) support access is opened in a new tab, shown with its time left, then 
   await admin.getByRole('button', { name: 'فتح الدخول' }).click();
   const tab = await opened;
   // The tab opens empty in the click and is sent to the hand-off once it arrives.
-  await tab.waitForURL((u) => u.href.startsWith(`${urls().clinic}/`));
-  // Booleans only: a failed match would print the hand-off.
-  expect(tab.url().startsWith(`${urls().clinic}/`), 'clinic web opened').toBe(true);
+  // Booleans only: waitForURL or a failed match would print the hand-off.
+  await expect
+    .poll(() => tab.url().startsWith(`${urls().clinic}/`), { message: 'clinic web opened' })
+    .toBe(true);
   expect(await tab.evaluate(() => window.opener === null), 'no opener').toBe(true);
   await tab.close();
   await expect(admin.getByText('دخولك مفتوح')).toBeVisible();

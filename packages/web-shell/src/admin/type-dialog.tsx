@@ -41,7 +41,7 @@ export function TypeDialog({
   const text = useText();
   const { shell } = useShell();
   const [type, setType] = useState<ClinicType>(TYPES.find((t) => t !== clinic.type) ?? 'solo');
-  const { data: preview, isError } = useTypePreview(clinic.id, type);
+  const { data: preview, isError, isFetching } = useTypePreview(clinic.id, type);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<'server' | 'network' | null>(null);
   const inFlight = useRef(false);
@@ -51,8 +51,9 @@ export function TypeDialog({
   };
   const usedOf = (key: string, used: number) =>
     items.find((i) => i.key === key)?.used === null ? '—' : String(used);
-  const over = (preview?.type === type ? preview.limits : []).filter((l) => l.over);
-  const ready = preview?.type === type;
+  // Never a preview from before the latest change: wait for the read in flight.
+  const ready = preview?.type === type && !isFetching;
+  const over = (ready ? preview.limits : []).filter((l) => l.over);
 
   async function save() {
     if (inFlight.current || !ready) return;

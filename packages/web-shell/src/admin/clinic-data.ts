@@ -167,6 +167,11 @@ export function nextDay(date: string): string {
   return new Date(Date.UTC(y ?? 0, (m ?? 1) - 1, (d ?? 1) + 1)).toISOString().slice(0, 10);
 }
 
+/** A limit's number, or a feature's «مفعّلة» / «مطفأة». */
+export function entitlementWord(text: (key: CommonKey) => string, value: number | boolean): string {
+  return typeof value === 'boolean' ? text(value ? 'featureOn' : 'featureOff') : String(value);
+}
+
 /** «اليوم 10:42», «أمس 18:05», «قبل 6 أيام», «لا نشاط بعد» (the device's clock). */
 export function activityText(
   text: (key: CommonKey, values?: Record<string, unknown>) => string,

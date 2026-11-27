@@ -3271,6 +3271,10 @@
   "@commonSettingFalse": {
     "description": "common.settingFalse"
   },
+  "commonSettingGoneTitle": "تغيّرت الإعدادات في الأثناء",
+  "@commonSettingGoneTitle": {
+    "description": "common.settingGoneTitle"
+  },
   "commonSettingIdle": "الخروج عند عدم النشاط",
   "@commonSettingIdle": {
     "description": "common.settingIdle"

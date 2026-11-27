@@ -65,7 +65,7 @@ function LockDialog({
   clinicId: string;
   setting: SettingView;
   onLocked: (saved: SettingView) => void;
-  onRefused: () => void;
+  onRefused: (gone: boolean) => void;
   onClose: () => void;
 }) {
   const text = useText();
@@ -95,7 +95,8 @@ function LockDialog({
         body: { value: parsed() },
       });
       if (data) onLocked(data);
-      else if (response.status === 409 || response.status === 404) onRefused();
+      else if (response.status === 409 || response.status === 404)
+        onRefused(response.status === 404);
       else setProblem(response.status === 400 ? 'value' : 'server');
     } catch {
       setProblem('network');
@@ -288,14 +289,22 @@ export function SettingsTab({ clinicId }: { clinicId: string }) {
               text: text('lockedText'),
             });
           }}
-          onRefused={() => {
+          onRefused={(gone) => {
             setLocking(null);
-            setNote({
-              tone: 'danger',
-              icon: 'warning',
-              title: text('notLockableTitle'),
-              text: text('notLockableText'),
-            });
+            setNote(
+              gone
+                ? {
+                    tone: 'warning',
+                    title: text('settingGoneTitle'),
+                    text: text('overrideGoneText'),
+                  }
+                : {
+                    tone: 'danger',
+                    icon: 'warning',
+                    title: text('notLockableTitle'),
+                    text: text('notLockableText'),
+                  },
+            );
             void refetch();
           }}
           onClose={() => {

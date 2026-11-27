@@ -126,6 +126,20 @@ export function SupportTab({ clinic }: { clinic: ClinicDetail }) {
   const [busy, setBusy] = useState(false);
   const inFlight = useRef(false);
 
+  // At its expiry the open grant becomes a log row: read again then (server's clock).
+  const expiresAt = data?.mine?.expiresAt;
+  useEffect(() => {
+    if (expiresAt === undefined) return undefined;
+    const wait = Math.max(0, Date.parse(expiresAt) - now) + 1_000;
+    const timer = setTimeout(() => {
+      void refetch();
+    }, wait);
+    return () => {
+      clearTimeout(timer);
+    };
+    // `now` moves every 15 s; the timer is set once per grant, so it is not a dependency.
+  }, [expiresAt, refetch]);
+
   const handoffNote = (result: HandoffResult): TabNote | null =>
     result === 'opened'
       ? null
@@ -187,6 +201,9 @@ export function SupportTab({ clinic }: { clinic: ClinicDetail }) {
   }
 
   async function handoff(grant: SupportGrant) {
+    // One hand-off at a time: a double click must not open two tabs.
+    if (inFlight.current) return;
+    inFlight.current = true;
     const tab = openBlankTab();
     setNote(null);
     try {
@@ -209,6 +226,8 @@ export function SupportTab({ clinic }: { clinic: ClinicDetail }) {
       } else failed(null, false);
     } catch {
       failed(tab, true);
+    } finally {
+      inFlight.current = false;
     }
   }
 

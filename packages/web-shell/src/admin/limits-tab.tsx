@@ -19,6 +19,7 @@ import {
   type EntitlementItem,
   type Entitlements,
   entitlementsKey,
+  entitlementWord,
   keyWord,
   useEntitlements,
 } from './clinic-data.ts';
@@ -46,9 +47,7 @@ type Open =
   | { kind: 'history'; item: EntitlementItem }
   | { kind: 'type' };
 
-function shown(text: ReturnType<typeof useText>, v: number | boolean): string {
-  return typeof v === 'boolean' ? text(v ? 'featureOn' : 'featureOff') : String(v);
-}
+const shown = entitlementWord;
 
 function OverrideCell({ item }: { item: EntitlementItem }) {
   const text = useText();
@@ -97,6 +96,8 @@ export function LimitsTab({ clinic }: { clinic: ClinicDetail }) {
       old ? { ...old, items: old.items.map((i) => (i.key === saved.key ? saved : i)) } : old,
     );
     void queryClient.invalidateQueries({ queryKey: ['platform', 'clinic', clinic.id, 'history'] });
+    // The type preview counts overrides: drop the one cached before this change.
+    queryClient.removeQueries({ queryKey: ['platform', 'clinic', clinic.id, 'type-preview'] });
   };
 
   async function remove(item: EntitlementItem) {

@@ -517,6 +517,7 @@
   "overrideSavedUntil": "حد {name} الآن {value} حتى {date}. يسري خلال دقيقة على كل الخوادم.",
   "overrideSavedNoEnd": "حد {name} الآن {value} دون تاريخ نهاية. يسري خلال دقيقة على كل الخوادم.",
   "overrideGoneTitle": "تغيّرت الحدود في الأثناء",
+  "settingGoneTitle": "تغيّرت الإعدادات في الأثناء",
   "overrideGoneText": "حدّثنا القائمة. راجعها ثم أعد المحاولة.",
   "overrideRemoveTitle": "إزالة تجاوز حد {name}؟",
   "overrideRemoveFits": "يعود حد {name} إلى قيمة الخطة ({plan}). العيادة تستخدم {used} فلا يتأثر أحد. يُسجَّل في سجل الحد.",

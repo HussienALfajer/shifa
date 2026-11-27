@@ -4,6 +4,7 @@
 // A key or clinic gone meanwhile closes the drawer and reloads the list.
 import { Badge, Drawer, DrawerContent, SkeletonGroup, SkeletonText } from '@shifa/ui';
 import { useEffect } from 'react';
+import { LoadFailed } from '../account/load-failed.tsx';
 import { dayDate } from '../auth/dates.ts';
 import { clockTime } from '../auth/lock.ts';
 import { useText } from '../text.ts';
@@ -57,7 +58,7 @@ export function OverrideHistory({
   onClose: () => void;
 }) {
   const text = useText();
-  const { data, isPending } = useOverrideHistory(clinicId, itemKey);
+  const { data, isPending, isError, refetch } = useOverrideHistory(clinicId, itemKey);
   useEffect(() => {
     if (data === null) onGone();
   }, [data, onGone]);
@@ -81,7 +82,9 @@ export function OverrideHistory({
           <SkeletonGroup label={text('historyLoading')}>
             <SkeletonText lines={6} />
           </SkeletonGroup>
-        ) : !data || data.events.length === 0 ? (
+        ) : isError ? (
+          <LoadFailed retry={refetch} />
+        ) : data === null || data.events.length === 0 ? (
           <p className="m-0 text-data leading-body text-text-muted">{text('historyEmpty')}</p>
         ) : (
           <ol className="m-0 flex list-none flex-col p-0">
