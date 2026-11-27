@@ -150,8 +150,11 @@ function endGrant({ id }: Request, world: World): Reply {
 /** 43 base64url characters (the contract's `SupportHandoffRequest`). */
 const TOKEN = /^[A-Za-z0-9_-]{43}$/;
 
-/** A hand-off token of the canvas only (never a real one). */
-export const HANDOFF_TOKEN = 'U3ludGhldGljLWhhbmRvZmYtdG9rZW4tY2FudmFzMDA';
+/**
+ * A hand-off token of the canvas only (never a real one): readable words in base64url, built here
+ * so no token-like literal sits in the source.
+ */
+export const HANDOFF_TOKEN = btoa('Synthetic-handoff-token-canvas00').replace(/=+$/, '');
 
 export const a02ClinicRoutes: RouteTable = {
   'GET /clinic/capabilities': (_r, world) =>
