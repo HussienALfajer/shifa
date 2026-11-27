@@ -983,9 +983,82 @@
           "message": "This branch is not archived"
         }
       }
+    },
+    {
+      "name": "clinic entitlements with an expired override",
+      "schema": "ClinicEntitlements",
+      "body": {
+        "plan": "multi_doctor",
+        "items": [
+          {
+            "key": "limits.practitioners",
+            "kind": "limit",
+            "planValue": 10,
+            "override": {
+              "value": 15,
+              "reason": "سبب تجريبي للتجاوز",
+              "expiresAt": "2026-12-31",
+              "expired": true,
+              "setByName": "مشرف تجريبي",
+              "setAt": "2026-11-27T09:00:00.000Z"
+            },
+            "effective": 10
+          },
+          {
+            "key": "limits.branches",
+            "kind": "limit",
+            "planValue": 1,
+            "override": null,
+            "effective": 1
+          }
+        ]
+      }
+    },
+    {
+      "name": "override history, newest first",
+      "schema": "OverrideHistory",
+      "body": {
+        "events": [
+          {
+            "kind": "expired",
+            "at": "2026-12-31T21:00:00.000Z",
+            "byName": null,
+            "before": { "value": 15, "expiresAt": "2026-12-31" },
+            "after": null,
+            "reason": null
+          },
+          {
+            "kind": "set",
+            "at": "2026-11-27T09:00:00.000Z",
+            "byName": "مشرف تجريبي",
+            "before": null,
+            "after": { "value": 15, "expiresAt": "2026-12-31" },
+            "reason": "سبب تجريبي للتجاوز"
+          }
+        ]
+      }
+    },
+    {
+      "name": "type preview with a limit over",
+      "schema": "TypePreview",
+      "body": {
+        "type": "solo",
+        "limits": [{ "key": "limits.branches", "current": 5, "next": 1, "used": 3, "over": true }]
+      }
     }
   ],
   "invalid": [
+    {
+      "name": "entitlement item with an unknown kind",
+      "schema": "EntitlementItem",
+      "body": {
+        "key": "limits.branches",
+        "kind": "quota",
+        "planValue": 1,
+        "override": null,
+        "effective": 1
+      }
+    },
     {
       "name": "clinic owner card without the masked phone",
       "schema": "ClinicCreated",

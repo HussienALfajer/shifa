@@ -11,6 +11,7 @@ export {
   type CreatedClinic,
   changeOwnerPhone,
   createClinic,
+  inTenantContext,
   issueOwnerLink,
   MAIN_BRANCH_NAME,
   type NewClinic,
@@ -21,6 +22,7 @@ export {
   ownerLinkExpiry,
   registerPlatformAdmin,
 } from './clinic.ts';
+export { entitlementKeysInUse, tenantUsageCounts, type UsageCounts } from './entitlements.ts';
 export { MIGRATIONS_DIR, migrate, ROLES_SQL } from './migrate.ts';
 export {
   type AuditTarget,

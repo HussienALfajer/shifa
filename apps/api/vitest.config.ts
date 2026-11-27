@@ -33,6 +33,9 @@ const unit = [
   'test/access/principal-schema.test.ts',
   'test/architecture/raw-routes.test.ts',
   'test/contract/openapi-meta-schema.test.ts',
+  'test/entitlements/resolve.test.ts',
+  'test/entitlements/catalogue.test.ts',
+  'test/entitlements/cache.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg

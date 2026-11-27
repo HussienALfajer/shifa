@@ -26,13 +26,18 @@ export interface PlatformAction {
   data?: Readonly<Record<string, string | boolean | null>>;
 }
 
-/** Keys and values allowed in `data`: enum-like words and ids (a lower-case UUID) only. */
+/**
+ * Keys and values allowed in `data`: enum-like words, ids (a lower-case UUID), numbers, dates and
+ * dotted catalogue keys (`limits.branches`, A-02-02) only.
+ */
 const DATA_KEY = /^[a-z][a-zA-Z]{0,31}$/;
-const DATA_VALUE = /^[a-z0-9_-]{0,36}$/;
+const DATA_VALUE = /^[a-z0-9_.-]{0,36}$/;
 
 /** Lets the work name its target once it is known (e.g. the id of a clinic it created). */
 export interface AuditTarget {
   setTarget(id: string): void;
+  /** Adds details learnt during the work (A-02-02: an override's value before); same rules. */
+  setData(data: NonNullable<PlatformAction['data']>): void;
 }
 
 export interface PlatformDb {
@@ -62,7 +67,11 @@ function assertAction(action: PlatformAction): void {
     throw new TenantContextError('requestId must be 1 to 64 letters, digits or ._:-');
   }
   if (action.targetId !== undefined) assertUuid('targetId', action.targetId);
-  for (const [key, value] of Object.entries(action.data ?? {})) {
+  assertData(action.data ?? {});
+}
+
+function assertData(data: NonNullable<PlatformAction['data']>): void {
+  for (const [key, value] of Object.entries(data)) {
     if (!DATA_KEY.test(key) || (typeof value === 'string' && !DATA_VALUE.test(value))) {
       throw new TenantContextError('audit data must be short identifiers and enum values');
     }
@@ -76,10 +85,15 @@ async function runAsPlatformAdmin<T>(
 ): Promise<T> {
   assertAction(action);
   let targetId = action.targetId;
+  let data = { ...action.data };
   const audit: AuditTarget = {
     setTarget: (id) => {
       assertUuid('targetId', id);
       targetId = id;
+    },
+    setData: (more) => {
+      assertData(more);
+      data = { ...data, ...more };
     },
   };
   const setup = contextSetup({ adminReason: action.event });
@@ -91,7 +105,7 @@ async function runAsPlatformAdmin<T>(
     await tx.execute(sql`insert into audit_event
         (tenant_id, actor_id, target_id, event, request_id, data)
       values (null, ${action.actorId}, ${targetId ?? null}, ${action.event},
-              ${action.requestId ?? null}, ${JSON.stringify(action.data ?? {})}::jsonb)`);
+              ${action.requestId ?? null}, ${JSON.stringify(data)}::jsonb)`);
     return result;
   });
 }

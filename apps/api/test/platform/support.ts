@@ -198,6 +198,7 @@ export function platformAuditRows() {
         like(auditEvent.event, 'clinic.%'),
         like(auditEvent.event, 'owner.%'),
         like(auditEvent.event, 'platform.%'),
+        like(auditEvent.event, 'entitlement.%'),
         like(auditEvent.event, 'auth.%'),
       ),
     )

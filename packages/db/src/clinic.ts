@@ -59,8 +59,17 @@ export interface CreatedClinic {
   ownerMembershipId?: string;
 }
 
-/** Runs `fn` with `app.tenant_id` set in a savepoint, cleared again before it ends. */
-async function inTenant<T>(tx: PlatformTx, tenantId: string, fn: (sp: PlatformTx) => Promise<T>) {
+/**
+ * Runs `fn` with `app.tenant_id` set in a savepoint, cleared again before it ends. What the
+ * platform may then do in the clinic's tables is what its privileges and the restrictive policies
+ * for its action allow (createClinic(), the entitlement actions of A-02-02).
+ */
+export async function inTenantContext<T>(
+  tx: PlatformTx,
+  tenantId: string,
+  fn: (sp: PlatformTx) => Promise<T>,
+): Promise<T> {
+  assertUuid('tenantId', tenantId);
   // If anything throws, the setting is rolled back with the rows, so no later statement of the
   // platform transaction runs inside this tenant.
   return tx.transaction(async (sp) => {
@@ -92,7 +101,7 @@ export async function createClinic(tx: PlatformTx, input: NewClinic): Promise<Cr
     subscriptionEnd: input.subscriptionEnd ?? null,
     idleMinutes: input.idleMinutes ?? 30,
   });
-  await inTenant(tx, tenantId, async (sp) => {
+  await inTenantContext(tx, tenantId, async (sp) => {
     await sp.insert(organization).values({ id: organizationId, tenantId, name: input.name });
     await sp.insert(branch).values({ id: branchId, tenantId, name: MAIN_BRANCH_NAME });
     await sp.insert(deploymentRoute).values({
@@ -145,7 +154,7 @@ export async function issueOwnerLink(tx: PlatformTx, link: OwnerLink): Promise<v
   assertUuid('tenantId', link.tenantId);
   assertUuid('membershipId', link.membershipId);
   assertTokenHash(link.tokenHash);
-  await inTenant(tx, link.tenantId, async (sp) => {
+  await inTenantContext(tx, link.tenantId, async (sp) => {
     await sp
       .update(setupLink)
       .set({ replacedAt: sql`now()` })
@@ -185,7 +194,7 @@ export async function ownerLinkExpiry(
 ): Promise<Date | null> {
   assertUuid('tenantId', owner.tenantId);
   assertUuid('membershipId', owner.membershipId);
-  const [open] = await inTenant(tx, owner.tenantId, (sp) =>
+  const [open] = await inTenantContext(tx, owner.tenantId, (sp) =>
     sp
       .select({ expiresAt: setupLink.expiresAt })
       .from(setupLink)
@@ -219,7 +228,7 @@ export interface OwnerPhone {
 export async function changeOwnerPhone(tx: PlatformTx, owner: OwnerPhone): Promise<boolean> {
   assertUuid('tenantId', owner.tenantId);
   assertUuid('membershipId', owner.membershipId);
-  const changed = await inTenant(tx, owner.tenantId, (sp) =>
+  const changed = await inTenantContext(tx, owner.tenantId, (sp) =>
     sp
       .update(membership)
       .set({ phoneE164: owner.phoneE164, updatedAt: sql`now()` })

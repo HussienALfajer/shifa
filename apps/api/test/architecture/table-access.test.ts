@@ -27,6 +27,14 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
     'auditEvent',
   ],
   platform: ['tenant', 'auditEvent'],
+  entitlements: [
+    'plan',
+    'planFeature',
+    'addon',
+    'tenantAddon',
+    'tenantOverride',
+    'tenantOverrideEvent',
+  ],
   branches: ['branch', 'auditEvent'],
   team: ['membership', 'roleAssignment', 'permissionOverride', 'setupLink', 'auditEvent'],
 };
@@ -45,6 +53,9 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
   },
   platform: {
     membership: 'the owner card of a clinic (owner memberships only, by policy)',
+  },
+  entitlements: {
+    tenant: 'a clinic’s type is its plan (A-02 criterion 1); read only',
   },
   branches: {
     membership: 'read: the members whose sessions end when a branch is archived (A-01b 4, 9)',

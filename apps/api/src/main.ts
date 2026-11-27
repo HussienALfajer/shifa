@@ -1,7 +1,12 @@
 // Process entry point (bootstrap only): config, logger, database, app, signals.
-import { createAuthDb, createDb, createPlatformDb, user } from '@shifa/db';
+import { createAuthDb, createDb, createPlatformDb, entitlementKeysInUse, user } from '@shifa/db';
 import { createApp } from './app.ts';
 import { ConfigError, loadConfig, loadIdentityConfig } from './config/env.ts';
+import {
+  assertEntitlementKeysKnown,
+  EntitlementCatalogue,
+  PRODUCTION_ENTITLEMENTS,
+} from './modules/entitlements/index.ts';
 import { describeError, errorClass } from './platform/errors.ts';
 import { createLogger } from './platform/logging.ts';
 import { flushErrors, reportError } from './telemetry/errors.ts';
@@ -65,6 +70,11 @@ async function main(): Promise<void> {
   try {
     await db.ping();
     await authDb.withAuth((tx) => tx.select({ id: user.id }).from(user).limit(1));
+    // A-02 criterion 2: a key the plans or add-ons hold that the catalogue does not list.
+    assertEntitlementKeysKnown(
+      new EntitlementCatalogue(PRODUCTION_ENTITLEMENTS),
+      await entitlementKeysInUse(db),
+    );
   } catch (err) {
     logger.fatal({ err: describeError(err) }, 'database check failed at startup');
     await db.close().catch(() => undefined);

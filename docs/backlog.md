@@ -1,6 +1,6 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-25 · Owner: product owner
+Status: Living · Last updated: 2026-11-27 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
@@ -204,3 +204,10 @@ Non-blocking findings from reviews and small follow-ups. Each item names its sou
 - **Leak test misses the team routes of A-01-09** (security review L4): `mfa-link-leak.test.ts` never calls `POST /team/members/:id/reset-mfa` (success and `account_shared`) or `GET /team/members/:id`, its audit store leaves out `member.%` rows, and the 429 path of the password change is not driven.
 - **Untested branches of A-01-09** (review N5): the `account_shared` race inside `MemberAccounts.resetMfa`, and a concurrent second password change (the per-person advisory lock).
 - **`GET /platform/clinics` has no pages** (A-02-01 checkpoint 1): it returns every clinic; fine for the pilot (tens of clinics). Add server-side pages and sort when the platform passes a few hundred clinics.
+- **The clinic role reads override reasons and authors** (A-02-02 security review L2): `shifa_app` has table SELECT on `tenant_override` and `tenant_override_event`, so `reason`, `set_by` and `by` are readable on the clinic path (resolution selects key, value and expiry only since the review). Before A-02-03 shows limits to the clinic: column grants without those columns, pinned in `privileges.test.ts`, and the isolation cases and the locked `packages/db/test/entitlements.test.ts` read (owner's consent) moved to explicit columns.
+- **ADR for integers-only count functions** (A-02-02 security review L4): `tenant_usage_counts()` is the first function that reads clinic tables as the owner for the platform role. Write the ADR amending ADR-0043 with it, not in A-02-06 as the spec planned (owner's choice). The SECURITY DEFINER functions are now pinned in `packages/db/test/entitlements-platform.test.ts`; move that check into `privileges.test.ts` when a second one comes.
+- **Platform tenant context has no structural guard** (A-02-02 security review L6): `inTenantContext()` is exported; only privileges and restrictive policies keep `shifa_platform` off a clinic's tables. Add an rls-presence check that any side-role SELECT on a tenant table has a restrictive policy for that role. `OwnerAccounts.displayNames()` answers any user's name: limit it to super admins (`platform_admin`).
+- **Add-on and override values are not checked against the key's kind** (A-02-02 review N3, N2): the start-up check reads keys only; a boolean `replace` add-on on a limit resolves to `true` (shown as 1 in the preview). Check kinds at start-up. Overrides of a key removed from the catalogue are now ignored; also list them at start-up as a warning.
+- **The audit `before` of an override differs on set and remove** (A-02-02 review N4): on set an expired override counts as no `before` (null); on remove its value is recorded. Pick one meaning (the active value) or add the expiry state.
+- **A same-type PATCH writes a status row with empty data** (A-02-02 review N6): `PATCH {type: <current>}` alone writes `clinic.status_changed` with `{}` and bumps `updated_at`, as `{}` did before. Answer without a write when nothing changes.
+- **The start-up refusal of an unknown plan key is not driven end to end** (A-02-02 review N5): `assertEntitlementKeysKnown` is unit-tested; `boot-check` only covers the passing start.

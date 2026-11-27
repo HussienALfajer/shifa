@@ -16,17 +16,22 @@ import { PLATFORM_DB } from './tokens.ts';
 export class PlatformModule implements OnApplicationShutdown {
   constructor(@Inject(PLATFORM_DB) private readonly platformDb: PlatformDb) {}
 
-  /** `identity`: the registered IdentityModule (OwnerAccounts). */
+  /**
+   * `identity`: the registered IdentityModule (OwnerAccounts); `entitlements`: the registered
+   * EntitlementsModule (a type change records its plan's moves, A-02-02).
+   */
   static register({
     platformDb,
     identity,
+    entitlements,
   }: {
     platformDb: PlatformDb;
     identity: NonNullable<ModuleMetadata['imports']>[number];
+    entitlements: NonNullable<ModuleMetadata['imports']>[number];
   }): DynamicModule {
     return {
       module: PlatformModule,
-      imports: [identity],
+      imports: [identity, entitlements],
       controllers: [ClinicsController],
       providers: [{ provide: PLATFORM_DB, useValue: platformDb }, ClinicsService],
     };
