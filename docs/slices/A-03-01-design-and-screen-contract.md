@@ -134,6 +134,7 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 - Not new components: the merge chooser (RecordHeader cards and one RadioGroup per field), the meters (A-02's subscription card), RecordList gained a type icon and small tool buttons in a row (fields list), drawn on its sheet's source.
 
 ## Evidence
+- Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
 - Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 <pending>; re-plan <pending>
 - Improvements accepted / declined: 1–5 accepted (2026-11-27); none declined
