@@ -38,6 +38,7 @@ export {
   PATIENT_STATES,
   patient,
   patientFileCounter,
+  patientNameToken,
 } from './patients.ts';
 export { area, city } from './places.ts';
 export {

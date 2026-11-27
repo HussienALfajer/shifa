@@ -2,7 +2,8 @@
 // scope the guard checked (TenantDb) and writes its audit row in the same transaction. Audit data
 // holds no name, phone, date or previous number: a chart's id, and for an edit the changed keys.
 // No read audit yet: `GET /patients/:id` gains its `patient.chart_viewed` row in A-03-07, before
-// any screen reads a chart (A-03-09).
+// any screen reads a chart (A-03-09). Every save that sets a name part rewrites the chart's name
+// key and tokens in the same transaction (A-03-03, ADR-0052).
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type CreatePatientRequest,
@@ -32,6 +33,7 @@ import {
   takeFileNumber,
   violates,
 } from './charts.ts';
+import { namesChanged, writeNameKey } from './name-keys.ts';
 
 /** The identity fields an edit may change; the audit names the ones that did. */
 const EDITABLE = [
@@ -137,6 +139,7 @@ export class PatientsService {
           })
           .returning();
         if (!row) throw new Error('chart not written');
+        await writeNameKey(tx, row);
         await audit(tx, scope, 'patient.created', row.id, requestId);
         return chartView(tx, row);
       });
@@ -218,6 +221,7 @@ export class PatientsService {
           .where(eq(patient.id, id))
           .returning();
         if (!row) throw new NotFoundException();
+        if (namesChanged(current, next)) await writeNameKey(tx, row);
         await audit(
           tx,
           scope,

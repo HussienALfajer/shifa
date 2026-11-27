@@ -203,7 +203,8 @@ export async function runIsolationCase(
     access === 'read-only' || c.withoutPrivilege?.includes('insert')
       ? refusedByPrivilege
       : refusedByRls;
-  const changeRefused = access === 'read-write' ? refusedByRls : refusedByPrivilege;
+  const noUpdate = access !== 'read-write' || c.withoutPrivilege?.includes('update') === true;
+  const changeRefused = noUpdate ? refusedByPrivilege : refusedByRls;
   const forged = "insert with tenant B's tenant_id";
   for (const scope of [tenantA, noTenant]) {
     const err = await attempt(scope, (tx) => c.seed(tx, TENANT_B));
@@ -225,7 +226,7 @@ export async function runIsolationCase(
     ? sql`${sql.identifier(c.updatable.column)} = ${c.updatable.value}`
     : sql`tenant_id = ${TENANT_A}`;
   const updated = await attempt(tenantA, (tx) => tx.execute(sql`update ${t} set ${set}`));
-  if (access !== 'read-write') {
+  if (noUpdate) {
     out.push(...refusedByPrivilege(updated, 'update without WHERE', c.table, tenantA));
   } else if (c.updateRefused) {
     out.push(...refusedByRls(updated, 'update without WHERE', c.table, tenantA));

@@ -4,9 +4,9 @@
 // criterion 13), so the runner expects every DELETE refused by privileges.
 import { createRandom, generatePatientCharts } from '@shifa/testing';
 import { and, eq } from 'drizzle-orm';
-import { patient, patientFileCounter } from '../../../src/index.ts';
+import { patient, patientFileCounter, patientNameToken } from '../../../src/index.ts';
 import { fixtureId } from '../../../test-harness/index.ts';
-import { defineIsolationCase } from '../define.ts';
+import { defineIsolationCase, type PrepareContext } from '../define.ts';
 import { parentsOf, prepareBranches } from './parents.ts';
 
 const CHARTS = generatePatientCharts({
@@ -57,6 +57,65 @@ export const patientCase = defineIsolationCase({
         .select()
         .from(patient)
         .where(and(eq(patient.fileNumber, 1), eq(patient.state, 'active'))),
+  },
+});
+
+/** A-03-03: the charts the name tokens belong to, written in each clinic before the seed. */
+async function prepareCharts(ctx: PrepareContext): Promise<void> {
+  for (const tenantId of ctx.tenants) {
+    await ctx.inTenant(tenantId, (tx) =>
+      tx.insert(patient).values({
+        tenantId,
+        id: chartId(0),
+        fileNumber: 1,
+        givenName: CHARTS[0]?.givenName ?? 'ريم',
+        contactPhone: CHARTS[0]?.contactPhone ?? '+963930012345',
+        sex: 'female',
+        birthDate: '1990-03-12',
+        createHash: HASH,
+        createdBy: ACTOR,
+        updatedBy: ACTOR,
+      }),
+    );
+  }
+}
+
+/** Tokens of «ريم» (synthetic); the same token in both clinics, so equality must not leak. */
+export const patientNameTokenCase = defineIsolationCase({
+  table: 'patient_name_token',
+  prepare: prepareCharts,
+  // Tokens are rewritten (deleted, then written again), never updated.
+  withoutPrivilege: ['update'],
+  seed: async (tx, tenantId) => {
+    await tx.insert(patientNameToken).values([
+      {
+        tenantId,
+        patientId: chartId(0),
+        part: 0,
+        word: 0,
+        token: 'ري',
+        whole: false,
+        keyVersion: 2,
+      },
+      {
+        tenantId,
+        patientId: chartId(0),
+        part: 0,
+        word: 0,
+        token: 'ريم',
+        whole: true,
+        keyVersion: 2,
+      },
+    ]);
+  },
+  paths: {
+    'search by token (equality)': (tx) =>
+      tx.select().from(patientNameToken).where(eq(patientNameToken.token, 'ريم')),
+    'a chart’s tokens (rewrite, matched parts)': (tx) =>
+      tx
+        .select()
+        .from(patientNameToken)
+        .where(eq(patientNameToken.patientId, chartId(0))),
   },
 });
 

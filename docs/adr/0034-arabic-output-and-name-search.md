@@ -1,6 +1,6 @@
 # ADR-0034: Arabic output and name search — Gotenberg settings, Vazirmatn, thermal raster, normaliser
 
-Status: Accepted (owner, 2026-11-16) · Date: 2026-11-16 · Deciders: product owner (with Claude) · Amends: [ADR-0021](0021-supporting-services.md)
+Status: Accepted (owner, 2026-11-16); name-search normaliser and index amended by [ADR-0052](0052-patient-name-search-on-a-token-table.md) · Date: 2026-11-16 · Deciders: product owner (with Claude) · Amends: [ADR-0021](0021-supporting-services.md)
 
 ## Context
 [ADR-0021](0021-supporting-services.md) chose Gotenberg (headless Chromium) for Arabic PDFs, one HTML/CSS template set for browser printing and server PDFs, raster ESC/POS for cheap thermal printers, and an application-side Arabic name normaliser with `pg_trgm`. Spike S3 ([spec](../specs/spikes/0.3-s3-arabic-output.md), [result](../spikes/s3-arabic-output.md)) ran each part on synthetic data: four document types in both digit styles, goldens, browser-print parity, a thermal raster round-trip, the normaliser in TypeScript, Dart and SQL with shared vectors, and search on PostgreSQL 18 under RLS.

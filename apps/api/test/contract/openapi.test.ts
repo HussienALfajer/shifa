@@ -270,6 +270,7 @@ describe('OpenAPI document', () => {
       '/me/switch',
       '/patients',
       '/patients/count',
+      '/patients/search',
       '/patients/{id}',
       '/patients/{id}/archive',
       '/patients/{id}/restore',

@@ -59,6 +59,10 @@ final _decoders = <String, Object Function(_Json)>{
   // A-03-02
   'PatientChart': (json) => PatientChart.fromJson(json).toJson(),
   'PatientCount': (json) => PatientCount.fromJson(json).toJson(),
+  // A-03-03
+  'PatientSearchResults': (json) =>
+      PatientSearchResults.fromJson(json).toJson(),
+  'PatientSearchResult': (json) => PatientSearchResult.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

@@ -3,6 +3,7 @@
 import { type DynamicModule, Module, type ModuleMetadata } from '@nestjs/common';
 import { PatientsController } from './patients.controller.ts';
 import { PatientsService } from './patients.service.ts';
+import { PatientSearchService } from './search.service.ts';
 
 @Module({})
 export class PatientsModule {
@@ -16,7 +17,7 @@ export class PatientsModule {
       module: PatientsModule,
       imports: [identity],
       controllers: [PatientsController],
-      providers: [PatientsService],
+      providers: [PatientsService, PatientSearchService],
     };
   }
 }

@@ -51,7 +51,7 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   announcements: ['announcement', 'announcementTarget', 'announcementDismissal'],
   usage: ['usageDaily'],
   // A-03-02: a clinic's charts and its file-number counter (audited per chart event)
-  patients: ['patient', 'patientFileCounter', 'auditEvent'],
+  patients: ['patient', 'patientFileCounter', 'patientNameToken', 'auditEvent'],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */

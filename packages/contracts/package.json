@@ -6,6 +6,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./fold-arabic": "./src/fold-arabic.ts",
+    "./name-key": "./src/name-key.ts",
+    "./name-search-vectors.json": "./vectors/name-search-vectors.json",
     "./openapi.json": "./generated/openapi.json"
   },
   "scripts": {

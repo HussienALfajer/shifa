@@ -435,6 +435,8 @@ export const EXPECTED_MATRIX: Matrix = {
   // A-03-02: charts. patients.view (every clinic role), patients.manage (not the accountant),
   // patients.archive (owner only)
   'GET /patients/count': clinicMember,
+  // A-03-03: search, a read by POST (patients.view; includeArchived also needs patients.archive)
+  'POST /patients/search': clinicMember,
   'POST /patients': patientManagers,
   'GET /patients/:id': clinicMember,
   'PATCH /patients/:id': patientManagers,

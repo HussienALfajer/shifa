@@ -41,4 +41,4 @@ Planned.
 - Reviewer and security-reviewer findings fixed: <list>
 
 ## Notes for the next session
-- <only what is needed to resume>
+- From A-03-03: build the candidate query on `patient_name_token` (`name-search.ts`: intersected index-only scans, the trigram check per word) and the phone-tail columns. The A-03-03 benchmark timed only the duplicate check's lookups as search terms (full name, contact phone); add this slice's own query shape ("similar given name", "similar full name with birth year ±2") to `apps/api/test/patients/search-bench.test.ts` and keep p95 ≤ 150 ms. `familySize` and `relation` on search results are this slice's (contract row `POST /patients/search`).

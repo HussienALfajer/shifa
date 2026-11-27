@@ -150,7 +150,9 @@ enum ErrorCode {
   @JsonValue('patient_merged')
   patientMerged('patient_merged'),
   @JsonValue('stale')
-  stale('stale');
+  stale('stale'),
+  @JsonValue('rate_limited')
+  rateLimited('rate_limited');
 
   const ErrorCode(this.json);
 

@@ -1522,7 +1522,8 @@
           "patient_archived",
           "patient_not_archived",
           "patient_merged",
-          "stale"
+          "stale",
+          "rate_limited"
         ],
         "type": "string"
       },
@@ -2722,6 +2723,19 @@
         ],
         "type": "object"
       },
+      "PatientMatchKind": {
+        "enum": [
+          "name",
+          "name_variant",
+          "name_order",
+          "phone",
+          "phone_tail",
+          "file_number",
+          "previous_file_number",
+          "custom_field"
+        ],
+        "type": "string"
+      },
       "PatientMergedInto": {
         "properties": {
           "fileNumber": {
@@ -2738,6 +2752,142 @@
         "required": [
           "id",
           "fileNumber"
+        ],
+        "type": "object"
+      },
+      "PatientSearchRequest": {
+        "properties": {
+          "includeArchived": {
+            "type": "boolean"
+          },
+          "term": {
+            "maxLength": 100,
+            "pattern": "\\S",
+            "type": "string"
+          }
+        },
+        "required": [
+          "term"
+        ],
+        "type": "object"
+      },
+      "PatientSearchResult": {
+        "properties": {
+          "archivedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "birthDate": {
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "type": "string"
+          },
+          "birthDateEstimated": {
+            "type": "boolean"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "familyName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fatherName": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "fileNumber": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "givenName": {
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "matchedBy": {
+            "$ref": "#/components/schemas/PatientMatchKind"
+          },
+          "matchedParts": {
+            "items": {
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "mergedFileNumber": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": 1,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sex": {
+            "$ref": "#/components/schemas/Sex"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PatientState"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "givenName",
+          "fatherName",
+          "familyName",
+          "fileNumber",
+          "sex",
+          "birthDate",
+          "birthDateEstimated",
+          "contactPhone",
+          "state",
+          "archivedAt",
+          "matchedBy",
+          "matchedParts",
+          "mergedFileNumber"
+        ],
+        "type": "object"
+      },
+      "PatientSearchResults": {
+        "properties": {
+          "results": {
+            "items": {
+              "$ref": "#/components/schemas/PatientSearchResult"
+            },
+            "maxItems": 20,
+            "type": "array"
+          },
+          "truncated": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "results",
+          "truncated"
         ],
         "type": "object"
       },
@@ -6522,6 +6672,75 @@
           }
         },
         "summary": "How many active and archived charts the clinic holds",
+        "x-permission": "patients.view"
+      }
+    },
+    "/patients/search": {
+      "post": {
+        "operationId": "patientsSearch",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientSearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientSearchResults"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Find charts by name, phone, file number or previous file number",
         "x-permission": "patients.view"
       }
     },

@@ -38,4 +38,5 @@ Planned.
 - Reviewer and security-reviewer findings fixed: <list>
 
 ## Notes for the next session
+- From A-03-03: `patient_name_token_patient_fk` is a chart foreign key: register its merge step (the merged chart's tokens are deleted; the kept chart's are rewritten with `writeNameKey` when the chosen name parts change). Search already answers a merged chart's file or previous number with the kept chart and `mergedFileNumber`; add `excludeId` and `forMerge` to `PatientSearchRequest`.
 - Later specs (A-04 appointments, A-05 queue, A-06 invoices, A-07 visits) each register a merge step for their chart foreign key; the start-up check enforces it.

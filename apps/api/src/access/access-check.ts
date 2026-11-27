@@ -2,8 +2,8 @@
 // @RequirePermission or @PlatformAdmin, and @BeforeMfa only together with @SignedIn. Runs on
 // application bootstrap (inside configureApp's app.init()), so the production server, the boot
 // check and every test app refuse to start otherwise.
-import { Inject, Injectable, type OnApplicationBootstrap } from '@nestjs/common';
-import { PATH_METADATA } from '@nestjs/common/constants';
+import { Inject, Injectable, type OnApplicationBootstrap, RequestMethod } from '@nestjs/common';
+import { METHOD_METADATA, PATH_METADATA } from '@nestjs/common/constants';
 import { DiscoveryService, MetadataScanner, ModuleRef, Reflector } from '@nestjs/core';
 import {
   BEFORE_MFA_METADATA,
@@ -13,6 +13,7 @@ import {
   PERMISSION_METADATA,
   PLATFORM_ADMIN_METADATA,
   PUBLIC_METADATA,
+  READ_IN_BODY_METADATA,
   SIGNED_IN_METADATA,
   SUPPORT_WRITE_METADATA,
 } from './decorators.ts';
@@ -50,6 +51,8 @@ export interface AccessAnnotations {
   supportWrite: boolean;
   /** @NotInSupportSession (A-02-05): an owner's read a support session may not make. */
   notInSupport: boolean;
+  /** @ReadInBody (A-03-03): a POST that only reads; a support session may call it. */
+  readInBody: boolean;
 }
 
 export function readAccess(reflector: Reflector, handler: object): AccessAnnotations {
@@ -68,6 +71,7 @@ export function readAccess(reflector: Reflector, handler: object): AccessAnnotat
     flagGate: text(FLAG_GATE_METADATA),
     supportWrite: flag(SUPPORT_WRITE_METADATA),
     notInSupport: flag(NOT_IN_SUPPORT_METADATA),
+    readInBody: flag(READ_IN_BODY_METADATA),
   };
 }
 
@@ -190,6 +194,14 @@ export class AccessCheck implements OnApplicationBootstrap {
         // The one write a support session may make is ending its own grant (A-02-05 review 9).
         if (access.supportWrite && label !== SUPPORT_END_HANDLER) {
           problems.push(`  ${label}: @SupportSessionWrite on a route other than the support end`);
+        }
+        // A read by POST (A-03-03) is a tenant read behind a permission, never a GET or a write.
+        const method = this.reflector.get<unknown>(METHOD_METADATA, handler);
+        if (
+          access.readInBody &&
+          (access.permission === undefined || method !== RequestMethod.POST)
+        ) {
+          problems.push(`  ${label}: @ReadInBody without @RequirePermission on a POST`);
         }
       }
     }

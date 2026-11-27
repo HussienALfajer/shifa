@@ -1199,6 +1199,7 @@ export type ErrorsKey =
   | 'place_name_taken'
   | 'place_not_archived'
   | 'previous_file_number_taken'
+  | 'rate_limited'
   | 'request_timeout'
   | 'self_action'
   | 'service_unavailable'

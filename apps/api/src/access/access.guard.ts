@@ -142,8 +142,9 @@ export class AccessGuard implements CanActivate {
   /**
    * A support session (A-02 criteria 12, 14; ADR-0050): the request is audited first (refused
    * ones too); platform routes are refused (the admin session never travels in a tenant, nor the
-   * support session out of one); every route but GET/HEAD and the one marked write answers 403
-   * `support_read_only` before the handler. Logs carry the grant id, never the reason.
+   * support session out of one); every route but GET/HEAD, reads by POST (@ReadInBody) and the
+   * one marked write answers 403 `support_read_only` before the handler. Logs carry the grant id,
+   * never the reason.
    */
   async #supportSession(
     request: GuardRequest,
@@ -164,7 +165,8 @@ export class AccessGuard implements CanActivate {
       targetId: targetIdOf(request.params),
       requestId: request.id,
     });
-    if (!READ_METHODS.has(method) && !access.supportWrite) {
+    // A read by POST (@ReadInBody, A-03-03) passes like a GET; its scope stays READ ONLY.
+    if (!READ_METHODS.has(method) && !access.supportWrite && !access.readInBody) {
       request.log.info(
         { status: 403, ...fields, userId: principal.userId, grantId, reason: 'support_read_only' },
         'access denied',

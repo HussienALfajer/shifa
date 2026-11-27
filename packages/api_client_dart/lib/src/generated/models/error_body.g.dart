@@ -111,6 +111,7 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.patientNotArchived: 'patient_not_archived',
   ErrorCode.patientMerged: 'patient_merged',
   ErrorCode.stale: 'stale',
+  ErrorCode.rateLimited: 'rate_limited',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};

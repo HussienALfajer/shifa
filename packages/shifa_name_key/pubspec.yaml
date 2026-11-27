@@ -1,0 +1,21 @@
+# Dart port of the Arabic name-search key (ADR-0034, ADR-0052), for the offline clients. The
+# TypeScript port lives in @shifa/contracts (src/name-key.ts); both run the shared vectors in
+# packages/contracts/vectors/name-search-vectors.json.
+name: shifa_name_key
+description: Arabic name-search key shared with the API (synthetic test data only).
+publish_to: none
+version: 0.0.0
+
+environment:
+  sdk: ^3.13.0
+
+resolution: workspace
+
+dependencies:
+  # Dart core has no Unicode normalisation; NFC comes from this pure-Dart port of unorm (spike S3).
+  unorm_dart: 0.3.3
+
+dev_dependencies:
+  # Same pin as api_client_dart (test_api 0.7.14 of Flutter 3.50.1's flutter_test).
+  test: 1.32.0
+  very_good_analysis: ^11.0.0
