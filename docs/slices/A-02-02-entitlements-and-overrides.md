@@ -53,9 +53,11 @@ Built: contracts, database (two migrations), API (`modules/entitlements`, the ty
 - **Migrations:** `20261126235059_a02_entitlements` (expand: six tables) and `20261126235100_a02_entitlement_policies` (expand: seeds, RLS, grants, policies, trigger, function). Rollback notes are in the SQL header.
 
 ## Evidence
-- `verify` (full): —
-- Isolation suite: —
-- Reviewer findings fixed: —; deferred to backlog: —
+- `pnpm verify:full` (2026-11-27, after the review fixes): `all green`: format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test (404 s), build, boot, ui-browser, ui-storybook, ui-storybook-build, ui-screenshots, e2e. Docker ran in the cloud session.
+- `packages/db`: 377 tests passed on the first fast run, including isolation (three new cases, direct and pooled), privileges, rls-presence and schema-keys. After the fixes: `entitlements`, `entitlements-platform`, `privileges`, `isolation` and `architecture` passed, 119 tests.
+- `apps/api` db project `test/entitlements` + `test/platform`: 57 passed; unit project 255 passed (resolver table 13, catalogue 4, cache 3).
+- Contract rows proven: `sub` (`ClinicEntitlements.parse`), `override`/`overrideSaved`/`overrideError` (every 400 path and 404), `removeAsk`, `history` (all five kinds, newest first), `typeChange` (values, kept override, `query.type`), `typeSaved` (`ClinicDetail`, audit, history).
+- Reviewer: one blocking finding, B1 (the Dart client could not decode the number-or-boolean value), fixed by inlining the union. Security review: no blocking findings. Fixed from both: L1/N1 (the clinic row is locked for override changes, and a remove that removes nothing answers 404), L3 (counts only in a type preview or change), L5 (platform-read and count-function regression tests), L6 (the history audit row names its key), L2 partly (resolution reads no reason), N2 (overrides of removed keys are ignored), N5 (cache after a type change), L4 partly (SECURITY DEFINER functions pinned). Deferred to `docs/backlog.md`: L2 column grants, the ADR for L4, L6 structural guard and name lookup, N3, N4, N6, the N5 start-up path.
 
 ## Notes for the next session
 - Use counts for the preview are what A-02-03 enforces; keep the counting query in one place (`entitlements/usage-counts.ts`) for both.
