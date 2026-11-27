@@ -20,6 +20,19 @@ const ROW_TINT =
   'transition-colors duration-(--shifa-motion-duration-fast) motion-reduce:transition-none group-hover/row:bg-selection-subtle';
 const SELECTED = 'bg-selection-default group-hover/row:bg-selection-strong';
 const HEAD = 'h-11 bg-bg-surface-raised in-data-[density=compact]:h-9';
+const HEIGHT = 'h-(--shifa-table-row-height)';
+/** The first band of a growing row: one row high, its content centred in it. */
+// The band stretches over the cell's content box (inside its bottom border), up to one row.
+const BAND = 'flex min-w-0 items-center gap-2 self-stretch max-h-(--shifa-table-row-height)';
+/**
+ * A wrapping cell: the whole text on as many lines as it needs, its first line level with the
+ * band; the bottom padding is a step smaller, so a one-line cell with its border keeps one row.
+ */
+const WRAP = cn(
+  // Its text never widens the table: the column takes its width from the tracks, not the text.
+  'pt-3 pb-2 leading-body whitespace-normal wrap-anywhere contain-inline-size',
+  'in-data-[density=compact]:pt-1 in-data-[density=compact]:pb-0.5',
+);
 
 /** The sticky start of a pinned cell: the selection column at 0, the first data column after it. */
 const pinStart = (col: number) => (col === 0 ? 'start-0' : 'start-(--shifa-space-12)');
@@ -128,6 +141,7 @@ export function BodyRow<Row extends object>({
   format,
   selectLabel,
   onRowAction,
+  measure,
 }: RowsCommon & {
   row: RowLike<Row>;
   /** The data row's index (its grid row is index + 1). */
@@ -137,8 +151,15 @@ export function BodyRow<Row extends object>({
   format: (value: number) => string;
   selectLabel: string;
   onRowAction: ((row: Row) => void) | undefined;
+  /** Set when a column wraps: the virtualiser measures the row's own height. */
+  measure?: (node: Element | null) => void;
 }) {
   const r = index + 1;
+  const wraps = measure !== undefined;
+  /** A cell's height: fixed, or at least a row's in a table whose rows grow. */
+  const cellHeight = wraps ? 'h-auto min-h-(--shifa-table-row-height) items-start' : HEIGHT;
+  /** In a growing row, a one-line cell keeps its content in the row's first band, at the top. */
+  const band = (node: ReactNode) => (wraps ? <span className={BAND}>{node}</span> : node);
   const selected = row.getIsSelected();
   const firstData = selectable ? 1 : 0;
   const content = (meta: ColumnMeta, value: unknown): ReactNode => {
@@ -152,6 +173,7 @@ export function BodyRow<Row extends object>({
       role="row"
       aria-rowindex={r + 1}
       {...(selectable ? { 'aria-selected': selected } : {})}
+      {...(wraps ? { 'data-index': index, ref: measure } : {})}
       onClick={(event) => {
         const target = event.target as HTMLElement;
         if (target.closest('a, button, input, [role="checkbox"]') !== null) return;
@@ -171,22 +193,17 @@ export function BodyRow<Row extends object>({
           data-row={r}
           data-col={0}
           tabIndex={tab({ row: r, col: 0 })}
-          className={cn(
-            CELL,
-            PINNED,
-            pinStart(0),
-            ROW_TINT,
-            selected && SELECTED,
-            'h-(--shifa-table-row-height)',
-          )}
+          className={cn(CELL, PINNED, pinStart(0), ROW_TINT, selected && SELECTED, cellHeight)}
         >
-          <SelectMark
-            checked={selected}
-            label={selectLabel}
-            onToggle={() => {
-              row.toggleSelected();
-            }}
-          />
+          {band(
+            <SelectMark
+              checked={selected}
+              label={selectLabel}
+              onToggle={() => {
+                row.toggleSelected();
+              }}
+            />,
+          )}
         </div>
       )}
       {row.getVisibleCells().map((c, i) => {
@@ -204,12 +221,13 @@ export function BodyRow<Row extends object>({
               CELL,
               ROW_TINT,
               selected && SELECTED,
-              'h-(--shifa-table-row-height)',
+              cellHeight,
               meta.kind === 'number' && 'justify-end text-end tabular-nums',
               i === 0 && cn(PINNED, pinStart(col), 'font-medium'),
+              meta.wrap && WRAP,
             )}
           >
-            {content(meta, c.getValue())}
+            {meta.wrap ? content(meta, c.getValue()) : band(content(meta, c.getValue()))}
           </div>
         );
       })}

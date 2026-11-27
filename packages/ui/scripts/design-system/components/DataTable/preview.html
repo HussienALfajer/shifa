@@ -1,4 +1,4 @@
-<!-- @dsCard group="Data display" height=760 subtitle="A patient list, sorted, two rows selected · RTL light, LTR dark compact" -->
+<!-- @dsCard group="Data display" height=1080 subtitle="A patient list, sorted, two rows selected · RTL light, LTR dark compact · a wrapping reason column" -->
 <!doctype html>
 <html lang="ar" dir="rtl">
 <head>
@@ -14,6 +14,7 @@
 <div class="board">
   <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
   <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+  <section class="panel wrap" data-theme="light" dir="rtl" lang="ar"></section>
 </div>
 <script>
   var PROPS = {
@@ -35,10 +36,25 @@
       { name: 'مريضة مثال', file: 'P-10602', visit: '18/11/2026', balance: 0 }
     ]
   };
+  var LOG = {
+    'aria-label': 'سجل دخول الدعم',
+    columns: [
+      { id: 'who', header: 'من', sortable: true },
+      { id: 'reason', header: 'السبب', wrap: true },
+      { id: 'start', header: 'البداية', sortable: true },
+      { id: 'status', header: 'الحالة' }
+    ],
+    rows: [
+      { who: 'موظفة الدعم', reason: 'مشكلة في الفروع لا تظهر للمالك: فرع العزيزية غائب عن قائمة الفروع عنده منذ أمس', start: '26/11/2026 13:12', status: 'مفتوح' },
+      { who: 'موظف الدعم', reason: 'المالك لا يرى موعدًا حجزه السكرتير صباح الأحد في فرع الجميلية، بينما يظهر الموعد في شاشة السكرتير ولا يظهر في تقويم الطبيب. نريد أن نرى ما يراه المالك قبل أن نطلب منه تصوير الشاشة.', start: '24/11/2026 09:10', status: 'انتهت المدة' },
+      { who: 'موظفة الدعم', reason: 'مراجعة إعداد الفروع بعد النقل', start: '18/11/2026 16:02', status: 'أنهاه المالك' }
+    ]
+  };
   document.querySelectorAll('.panel').forEach(function (panel, i) {
     var slot = document.createElement('div');
     panel.appendChild(slot);
-    var props = Object.assign({}, PROPS, { 'aria-label': PROPS['aria-label'] + ' ' + (i + 1) });
+    var base = panel.classList.contains('wrap') ? LOG : PROPS;
+    var props = Object.assign({}, base, { 'aria-label': base['aria-label'] + ' ' + (i + 1) });
     window.Shifa.mount(slot, 'DataTable', props);
   });
 </script>
