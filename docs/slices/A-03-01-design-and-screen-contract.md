@@ -34,7 +34,7 @@ Tests written first: none (no code). The proof is the owner's approval of both c
 Estimated hand-written lines: ~1,000 in the repository (contract ~650, spec amendments ~150, slice and roadmap updates ~200); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Next: checkpoint 2 (`A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`).
+Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Checkpoint 2 drawn the same day: `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`, the EditableList sheet, contract rows and analysis; waiting for the owner's review screen by screen.
 
 ## Checkpoint 1 (reception and charts)
 ### What is drawn
@@ -97,6 +97,41 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 3. **DescriptionList** «قائمة الوصف» (sheet `A03SheetDescriptionList`, source `A03DescriptionList`): labels and values by section, «—» for an empty value, one badge per value («حساس»), latin values isolated, one or two columns; loading. Estimate ~200 lines in A-03-10.
 - Not new components: age or date of birth with «~» (SegmentedControl, DatePicker, NumberInput, Select), the phone with its family (Input, Callout, RecordList, Select), the duplicate box (Callout, RecordList, Checkbox).
 - The merge chooser and the field-type builder are drawn at checkpoint 2.
+
+## Checkpoint 2 (owner tools and settings)
+### What is drawn
+Same page, below checkpoint 1, same rules; every board on desktop, tablet and phone, light and dark.
+- `A03Merge` (9 states): pick the other chart (search, «اختيار», none found, an archived one refused), compare (the two charts side by side, the kept one marked, «الملف الباقي» with the older as default, one RadioGroup per differing field with the kept value chosen, «6 حقول متطابقة», what is joined automatically, the family note), keep the other (choices swap), the confirmation naming both file numbers, merging, a chart changed meanwhile (409), done.
+- `A03ReadLog` (7 states): the real DataTable (from, role, branch, time, «مع الحقول الحساسة») paged by 50 with the real Pagination, first and last page, «الدعم الفني» only (improvement 6), loading, none yet (safety), error, a support session reading it.
+- `A03Fields` (15 states): the fields by section with a type icon, flag badges and the roles line, move up and down, «تعديل»; the two meters (fields 7 of 20, searchable 2 of 5); archived fields with days left and «استعادة»; none yet; limit full; the wide panel for a new text field (lengths, a value shape preset or a custom expression), a single choice with its choices (EditableList), 250 choices, edit (type fixed, «أرشفة الحقل»), searchable full, sensitive and searchable refused together, saving, the limit reached meanwhile (409), the archive question, a support session.
+- `A03MyPatients` (6 states): the clinic settings section «المرضى»: «مرضاي فقط» (inherited default, chosen by the clinic, just turned on, not saved, locked by the admin, support) with its impact (improvement 7), and the link to «حقول ملف المريض» with its use.
+- Sheet `A03SheetEditableList` and its source `A03EditableList`.
+
+### Check
+- 0 literal colours and 0 unknown tokens on every checkpoint 2 board, the new component and its sheet.
+- All seven A-03 boards re-rendered in Chromium after the shared components changed (every state, three sizes, light and dark): results in Evidence.
+
+### Spec gaps (checkpoint 2)
+10. The merge proposes the older chart (the lower file number) as the one kept; the owner can swap.
+11. When the kept contact phone differs, the other chart's contact phone becomes the second phone if the kept chart has none (the hint on the phone row says so).
+12. A chart that is archived or merged cannot be merged (409 `patient_not_active`): restore it first, or merge the chart it leads to.
+13. The merge sends `expectedUpdatedAt` for both charts; a change meanwhile answers 409 `stale` and nothing is merged.
+14. The full read log pages by page number (page, 50 per page) so the Pagination can show numbers; it shows whether sensitive fields were included (criterion 18).
+15. A choice field needs at least 2 active choices; choice names are unique within the field after Arabic folding.
+16. An active field's label is unique in the clinic after folding.
+17. Fields move up and down within their section; sections keep their creation order (moving a section is not in A-03).
+18. The value shape of a text field is a preset (any, digits only, letters only) or a custom expression checked on the server with a safe engine and a length cap (no catastrophic backtracking).
+
+### Improvements (checkpoint 2)
+| # | Improvement | Adds (API · component · screens) | Lines | Slices |
+|---|---|---|---|---|
+| 6 | «الدعم الفني» filter on the full read log, with counts | `support=only`, `supportTotal` · SegmentedControl · read log | ~120 | A-03-07, A-03-10 |
+| 7 | The impact of «مرضاي فقط» before and after turning it on (doctors affected, owner-doctors, charts without a doctor) | `GET /patients/my-patients/impact`, numbers only · DescriptionList · settings | ~150 | A-03-07, A-03-11 |
+| 8 | How many charts hold each field and choice («في 41 ملفًا»), named in the archive question | `chartCount` on fields and options · none · fields list, EditableList, archive question | ~150 | A-03-06, A-03-11 |
+
+### Missing components (checkpoint 2)
+4. **EditableList** «قائمة قابلة للتحرير» (sheet `A03SheetEditableList`, source `A03EditableList`): a short list edited in place (a choice field's choices): numbered rows, rename in place with its error, up and down, archive (never delete) and restore, how many charts hold each, an add line with its error, the count against the maximum; empty, full, duplicate, read-only, compact, dark, English LTR, narrow. Estimate ~300 lines in A-03-11.
+- Not new components: the merge chooser (RecordHeader cards and one RadioGroup per field), the meters (A-02's subscription card), RecordList gained a type icon and small tool buttons in a row (fields list), drawn on its sheet's source.
 
 ## Evidence
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
