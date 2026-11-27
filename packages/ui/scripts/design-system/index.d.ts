@@ -473,7 +473,8 @@ type Name =
   | 'Toolbar'
   | 'Pagination'
   | 'DataTable'
-  | 'UsageChart';
+  | 'UsageChart'
+  | 'MultiCombobox';
 
 /** Renders a component into an element with the bundle's React; returns the unmount. */
 export function mount(element: Element, name: Name, props?: object): () => void;

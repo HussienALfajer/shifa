@@ -210,6 +210,26 @@ export interface UsageChartProps {
 
 export declare const UsageChart: (props: UsageChartProps) => unknown;
 
+/** Several choices by search (A-02): chips with a named remove, the list open after each pick. */
+export interface MultiComboboxProps {
+  label: string;
+  hint?: string;
+  /** Marks the field invalid; read with it. */
+  error?: string;
+  disabled?: boolean;
+  items: { value: string; label: string; disabled?: boolean }[];
+  /** The chosen values at mount. */
+  defaultValue?: string[];
+  emptyMessage: string;
+  placeholder?: string;
+  /** The list open at mount, to show it at rest. */
+  defaultOpen?: boolean;
+  /** The text in the field at mount, as if typed. */
+  defaultInputValue?: string;
+}
+
+export declare const MultiCombobox: (props: MultiComboboxProps) => unknown;
+
 /** A button that opens a list of actions, or a choice among groups (A-01-08). */
 export interface MenuProps {
   triggerLabel?: string;

@@ -18,6 +18,7 @@ import {
   Icon,
   IconButton,
   Input,
+  MultiCombobox,
   NumberInput,
   OtpInput,
   PasswordInput,
@@ -92,6 +93,7 @@ const COMPONENTS = {
   Pagination,
   DataTable,
   UsageChart,
+  MultiCombobox,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;

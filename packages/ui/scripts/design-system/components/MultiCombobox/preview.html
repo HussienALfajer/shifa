@@ -1,0 +1,45 @@
+<!-- @dsCard group="Forms" height=520 subtitle="Type «عب» to add clinics · empty, two chosen, invalid, disabled · RTL and LTR" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+  .panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(280px, 100%), 1fr)); gap: 16px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"></section>
+</div>
+<script>
+  // Names from the synthetic generator of packages/testing (test/fixtures.ts), never real ones.
+  var ITEMS = [
+    { value: '1061', label: 'عيادة عبد الكريم الحسين' },
+    { value: '1063', label: 'عيادة عبد الكريم العلي' },
+    { value: '1065', label: 'عيادة عبد الكريم العمر' },
+    { value: '1000', label: 'عيادة روان الجاسم' },
+    { value: '1001', label: 'عيادة بلال عطار' },
+    { value: '1002', label: 'عيادة خديجة النجار' }
+  ];
+  var BASE = { items: ITEMS, emptyMessage: 'لا عيادة بهذا الاسم', placeholder: 'ابحث عن عيادة' };
+  var FIELDS = [
+    { label: 'العيادات المختارة', hint: 'ابحث بالاسم واختر عيادة أو أكثر.' },
+    { label: 'عيادات الإعلان', defaultValue: ['1061', '1001'], hint: 'مختارة: 2.' },
+    { label: 'عيادات الميزة', error: 'اختر عيادة واحدة على الأقل.' },
+    { label: 'العيادات', defaultValue: ['1061', '1001'], disabled: true }
+  ];
+  document.querySelectorAll('.panel').forEach(function (panel, i) {
+    FIELDS.forEach(function (field) {
+      var slot = document.createElement('div');
+      panel.appendChild(slot);
+      var props = Object.assign({}, BASE, field, { label: field.label + (i ? ' ' + (i + 1) : '') });
+      window.Shifa.mount(slot, 'MultiCombobox', props);
+    });
+  });
+</script>
+</body>
+</html>

@@ -79,6 +79,7 @@ export const BUNDLE_COMPONENTS = [
   'Pagination',
   'DataTable',
   'UsageChart',
+  'MultiCombobox',
 ] as const;
 
 /** The "Shifa Components" canvas: one sheet per component, every state, working in Play (ADR-0048). */
