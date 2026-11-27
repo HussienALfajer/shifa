@@ -55,7 +55,9 @@ function useColumns(): DataTableColumn<ClinicSummary>[] {
     {
       id: 'name',
       header: text('colClinic'),
-      width: 'lg',
+      // `md` since A-02-08: with «آخر نشاط» and «الدخول (7 أيام)» the row fits at 1440 px and
+      // the owner keeps its room for the name beside «لم يُكمل الإعداد».
+      width: 'md',
       value: (c) => c.name,
       cell: (c) => (
         <Link to="/clinics/$id" params={{ id: c.id }} className="font-medium text-brand-primary">

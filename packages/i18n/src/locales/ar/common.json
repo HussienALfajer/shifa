@@ -637,6 +637,7 @@
   "supportByExpiry": "انتهت المدة",
   "supportByOwner": "أنهاه المالك: {name}",
   "supportByAdmin": "أنهاه: {name}",
+  "supportBySelf": "أنهاه بنفسه",
   "usageLoading": "جارٍ تحميل الاستخدام",
   "usageEmptyTitle": "لا بيانات استخدام بعد",
   "usageEmptyText": "تُحسب الأرقام كل يوم بتوقيت دمشق. تظهر أولاها بعد أول تسجيل دخول في العيادة.",

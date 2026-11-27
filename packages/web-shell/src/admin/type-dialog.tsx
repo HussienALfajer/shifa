@@ -23,7 +23,9 @@ import { type EntitlementItem, keyWord, useTypePreview } from './clinic-data.ts'
 import { type ClinicDetail, type ClinicType, TYPE_WORD, TYPES } from './data.ts';
 import { GridRow, type TabNote } from './tab-parts.tsx';
 
-const COLUMNS = 'minmax(0, 2fr) repeat(3, minmax(0, 1fr))';
+// The dialog is 560 px (the drawing's 640 has no token): «بعد التغيير» gets the widest share so
+// «35 (يبقى التجاوز)» stays on one line.
+const COLUMNS = 'minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.6fr) minmax(0, 0.8fr)';
 
 export function TypeDialog({
   clinic,

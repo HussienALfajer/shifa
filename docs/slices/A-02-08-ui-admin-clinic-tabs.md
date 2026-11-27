@@ -65,10 +65,13 @@ After the red phase, four mechanical fixes, none removing or weakening an assert
 ## Differences from the approved drawings (A02Clinic, A02Clinics)
 1. The override reason's hint and the history drawer say the reason is kept in the limit's own history («سجل هذا الحد»), not «سجل التدقيق»: criterion 20 and the contract keep reasons out of the audit log. The removal question says «يُسجَّل في سجل الحد» for the same reason.
 2. Type change: the current type is listed with «(الحالي)» but disabled (the contract: "not offered"); the first other type is chosen and previewed at once.
-3. Support log: a grant the super admin ended reads «أنهاه: <name>» instead of «أنهيته», since a grant carries no account id to recognise one's own.
+3. Support log: «أنهيته» is not drawn, since a grant carries no account id to recognise the viewer's own; see 9.
 4. Usage: the chart is the real UsageChart (x-axis labels under their bars, as its sheet), not the board's hand-drawn bars. The empty state says the first figures appear after the first sign-in (the counters fill the same Damascus day), not «غدًا».
 5. The lock dialog's Select starts at the current value (the board showed 60 as a sample choice).
 6. Tablet (1024 px): the limits grid keeps the «المستخدم» column (the board hides it); the stats and figures fall to two columns below 1280 px.
+7. The type-change dialog is 560 px (`--shifa-width-140`; the board's 640 px has no token), so its columns give «بعد التغيير» the widest share.
+8. Clinics list: with the two new columns the clinic name column is `md` (was `lg`), so the row fits at 1440 px without scrolling and the owner keeps room for the name beside «لم يُكمل الإعداد».
+9. Support log: a grant its own super admin ended reads «أنهاه بنفسه» (the name is already in «من»); one ended by another super admin «أنهاه: <name>».
 
 ## Evidence
 - Contract check (checkpoint 1): every admin-web row of «الاشتراك والحدود», «الإعدادات», «دخول الدعم», «الاستخدام» and the clinics list against `@shifa/contracts`, the generated client and the API handlers: routes, fields and error codes as the contract lists them (`body.expiresAt` today or past answers `too_small`; `query.type` of the current type 400; `support_active`, `support_ended`, `setting_not_lockable` 409). Real calls in journey 1 against the built API: entitlements (fields of each item), type preview (fields; the current type 400), override history (empty), settings (fields), support grants (`now`, `mine: null`), usage (30 days, `hasData`), clinics list (`lastActivityAt: null`, `signIns7d: 0` for a new clinic). No gap found; no API or contract change.

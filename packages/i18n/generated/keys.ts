@@ -735,6 +735,7 @@ export type CommonKey =
   | 'supportByAdmin'
   | 'supportByExpiry'
   | 'supportByOwner'
+  | 'supportBySelf'
   | 'supportColEnd'
   | 'supportColReason'
   | 'supportColStart'

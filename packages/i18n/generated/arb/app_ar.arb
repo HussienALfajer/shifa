@@ -3647,6 +3647,10 @@
       }
     }
   },
+  "commonSupportBySelf": "أنهاه بنفسه",
+  "@commonSupportBySelf": {
+    "description": "common.supportBySelf"
+  },
   "commonSupportColEnd": "النهاية",
   "@commonSupportColEnd": {
     "description": "common.supportColEnd"

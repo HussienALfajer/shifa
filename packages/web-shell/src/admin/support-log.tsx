@@ -18,7 +18,9 @@ function useColumns(): DataTableColumn<SupportGrant>[] {
     if (g.endedBy === null) return text('supportStateOpen');
     if (g.endedBy === 'expiry') return text('supportByExpiry');
     if (g.endedBy === 'owner') return text('supportByOwner', { name: g.endedByName ?? '' });
-    return text('supportByAdmin', { name: g.endedByName ?? g.adminName });
+    // The super admin who opened it ended it: the name is already in «من».
+    if (g.endedByName === null || g.endedByName === g.adminName) return text('supportBySelf');
+    return text('supportByAdmin', { name: g.endedByName });
   };
   return [
     { id: 'who', header: text('supportColWho'), width: 'md', value: (g) => g.adminName },
