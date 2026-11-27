@@ -1,6 +1,6 @@
 // Entitlements of a clinic (A-02 criteria 1–3, 20; slice A-02-02): its plan is its type, each
 // catalogue key resolves from the plan, add-ons and the super admin's override. Super-admin routes
-// only; the clinic's own view of its limits comes with A-02-03.
+// only; the clinic's own view of its limits is in capabilities.ts (A-02-03).
 import { z } from 'zod';
 import { defineContract } from './define.ts';
 import { ErrorEnvelope } from './errors.ts';
@@ -49,6 +49,8 @@ export const EntitlementItem = z
     override: EntitlementOverride.nullable(),
     /** What the clinic gets now (PLT-21 resolution). */
     effective: EntitlementValue,
+    /** A limit's use now (A-02-03); null for a feature or a key not counted yet. */
+    used: z.number().int().nullable(),
   })
   .meta({ id: 'EntitlementItem' });
 export type EntitlementItem = z.infer<typeof EntitlementItem>;

@@ -21,13 +21,23 @@ import { buildTestApp, type TestApp } from '../support.ts';
 
 export const CLINIC_WEB_URL = 'https://clinic.shifa.invalid';
 
-export async function platformApp(clock: FixedClock = testClock()): Promise<TestApp> {
+/** Extra test controllers and catalogue keys (A-02-03: gated probes, test flags). */
+export type PlatformAppOptions = Pick<
+  Parameters<typeof buildTestApp>[0],
+  'controllers' | 'entitlements' | 'flags'
+>;
+
+export async function platformApp(
+  clock: FixedClock = testClock(),
+  options: PlatformAppOptions = {},
+): Promise<TestApp> {
   return buildTestApp({
     db: testDb(),
     authDb: testAuthDb(),
     platformDb: testPlatformDb(),
     clock,
     clinicWebUrl: CLINIC_WEB_URL,
+    ...options,
   });
 }
 

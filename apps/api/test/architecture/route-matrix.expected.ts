@@ -165,6 +165,10 @@ export const SAMPLE_REQUESTS: Readonly<Record<string, Sample>> = {
   'GET /platform/clinics/:id/type-preview': (ctx) => ({
     url: `/platform/clinics/${ctx.clinicId}/type-preview?type=multi_branch`,
   }),
+  'PUT /platform/flags/:key': () => ({
+    url: '/platform/flags/test.flag_on',
+    body: { mode: 'on', reason: 'سبب تجريبي للمصفوفة' },
+  }),
   'GET /team/members/:id': async (ctx) => ({ url: `/team/members/${await ctx.memberId()}` }),
   'POST /team/members': (ctx) => ({
     body: {
@@ -247,6 +251,28 @@ const ownerOnly: MatrixRow = {
   platform_admin: 403,
 };
 
+/** A-02-03 `clinic.capabilities.view`: every clinic role, never a super admin. */
+const clinicMember: MatrixRow = {
+  anonymous: 401,
+  owner: 200,
+  doctor: 200,
+  receptionist: 200,
+  assistant: 200,
+  accountant: 200,
+  platform_admin: 403,
+};
+
+/** Signed in, but refused: a gated probe whose feature or flag is off for the clinic. */
+const refusedForEveryone: MatrixRow = {
+  anonymous: 401,
+  owner: 403,
+  doctor: 403,
+  receptionist: 403,
+  assistant: 403,
+  accountant: 403,
+  platform_admin: 403,
+};
+
 /** Routes that exist only when NODE_ENV=test; never in production or the OpenAPI document. */
 export const TEST_ONLY_ROUTES: ReadonlySet<string> = new Set(['GET /_test/fail']);
 
@@ -292,6 +318,12 @@ export const EXPECTED_MATRIX: Matrix = {
   'DELETE /platform/clinics/:id/overrides/:key': platformAdmin,
   'GET /platform/clinics/:id/overrides/:key/history': platformAdmin,
   'GET /platform/clinics/:id/type-preview': platformAdmin,
+  // A-02-03: feature flags (super admin); what the clinic may use (every member) and its
+  // subscription card (clinic.settings.manage, owner only)
+  'GET /platform/flags': platformAdmin,
+  'PUT /platform/flags/:key': platformAdmin,
+  'GET /clinic/capabilities': clinicMember,
+  'GET /clinic/subscription': ownerOnly,
   // team (A-01-04): members.view / members.manage, owner only
   'GET /team/members': ownerOnly,
   'GET /team/members/:id': ownerOnly,
@@ -352,6 +384,12 @@ export const EXPECTED_MATRIX: Matrix = {
     accountant: 403,
     platform_admin: 403,
   },
+  // gated probes (A-02-03, test/access/gated-probe.ts): members.view, then the gate. The callers'
+  // clinic has test.feature (an override) and test.flag_on (its default); not the other two.
+  'GET /__probe/entitled': ownerOnly,
+  'GET /__probe/unentitled': refusedForEveryone,
+  'GET /__probe/flagged': ownerOnly,
+  'GET /__probe/unflagged': refusedForEveryone,
   // test-only (TEST_ONLY_ROUTES)
   'GET /_test/fail': failsForEveryone,
 };

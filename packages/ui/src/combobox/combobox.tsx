@@ -24,7 +24,7 @@ import { type ReactNode, useEffect, useState } from 'react';
 import { FIELD_BOX, FieldShell } from '../field/field-shell.tsx';
 import { Icon } from '../icons/icon.tsx';
 import { cn } from '../lib/cn.ts';
-import { foldArabic, foldedMatch } from '../lib/fold-arabic.ts';
+import { foldedMatch, matchesWordStart } from '../lib/fold-arabic.ts';
 import { FLOATING_BOX } from '../popover/popover.tsx';
 import { type Direction, useDirection } from '../providers/direction-provider.tsx';
 
@@ -62,17 +62,10 @@ export interface ComboboxProps {
 }
 
 /**
- * True when `query` starts at the start of a word of `label`, both folded by `foldArabic` (case,
- * harakat, alef forms, final ة and ى; runs of spaces as one): «سا» and «سامر ال» both find «سامر
- * الحلبي»; «امر» does not; «احمد» finds «أحمد».
+ * True when `query` starts at the start of a word of `label`, both folded by `foldArabic`: the one
+ * matching rule, shared with the API's clinic search (in @shifa/contracts since A-02-03).
  */
-export function matchesWordStart(label: string, query: string): boolean {
-  const squash = (text: string) =>
-    foldArabic(text).trim().replace(/\s+/gu, ' ').toLocaleLowerCase();
-  const q = squash(query);
-  if (q === '') return true;
-  return ` ${squash(label)}`.includes(` ${q}`);
-}
+export { matchesWordStart };
 
 /**
  * What a screen reader hears once typing pauses: the number of results, with Arabic plural forms

@@ -1,0 +1,402 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "c6a80984-d5bb-4959-8bab-ea84cc947245",
+  "prevIds": [
+    "049c24f6-81d4-44ac-818b-9e0cb512b491"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "feature_flag"
+      ],
+      "writes": [
+        "s|tbl|public.feature_flag",
+        "n|tbl|public.feature_flag",
+        "e|tbl|public.feature_flag",
+        "n|rel|public.feature_flag",
+        "n|type|public.feature_flag",
+        "n|rel|public.feature_flag_pkey",
+        "n|rel|public.feature_flag_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "feature_flag_tenant"
+      ],
+      "writes": [
+        "s|tbl|public.feature_flag_tenant",
+        "n|tbl|public.feature_flag_tenant",
+        "e|tbl|public.feature_flag_tenant",
+        "n|rel|public.feature_flag_tenant",
+        "n|type|public.feature_flag_tenant",
+        "n|rel|public.feature_flag_tenant_pkey",
+        "n|rel|public.feature_flag_tenant_tenant_id_flag_key_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "feature_flag_tenant"
+      ],
+      "writes": [
+        "s|fk|public.feature_flag_tenant.feature_flag_tenant_tenant_id_tenant_id_fkey",
+        "n|fk|public.feature_flag_tenant.feature_flag_tenant_tenant_id_tenant_id_fkey",
+        "e|fk|public.feature_flag_tenant.feature_flag_tenant_tenant_id_tenant_id_fkey",
+        "n|con|public.feature_flag_tenant.feature_flag_tenant_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.feature_flag_tenant",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.feature_flag_tenant.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "feature_flag_tenant"
+      ],
+      "writes": [
+        "s|fk|public.feature_flag_tenant.feature_flag_tenant_flag_key_feature_flag_key_fkey",
+        "n|fk|public.feature_flag_tenant.feature_flag_tenant_flag_key_feature_flag_key_fkey",
+        "e|fk|public.feature_flag_tenant.feature_flag_tenant_flag_key_feature_flag_key_fkey",
+        "n|con|public.feature_flag_tenant.feature_flag_tenant_flag_key_feature_flag_key_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.feature_flag_tenant",
+        "n|sch|public",
+        "n|tbl|public.feature_flag",
+        "n|sch|public",
+        "n|col|public.feature_flag_tenant.flag_key",
+        "n|col|public.feature_flag.key",
+        "e|uniqueness|public.feature_flag.key"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "feature_flag",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "feature_flag_tenant",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "mode",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "reason",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "changed_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "changed_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "flag_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "feature_flag_tenant_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "feature_flag_tenant_flag_key_feature_flag_key_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "flag_key"
+        ],
+        "schemaTo": "public",
+        "tableTo": "feature_flag",
+        "columnsTo": [
+          "key"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "feature_flag_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "feature_flag_tenant_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "feature_flag_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag_tenant",
+        "name": "feature_flag_tenant_tenant_id_flag_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "flag_key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "feature_flag_key_check",
+        "value": "\"key\" ~ '^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$'",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "feature_flag_mode_check",
+        "value": "\"mode\" in ('off', 'on', 'selected')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "feature_flag",
+        "name": "feature_flag_reason_check",
+        "value": "char_length(btrim(\"reason\")) between 10 and 500",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

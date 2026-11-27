@@ -68,6 +68,21 @@ export async function clinicWithOverride(): Promise<string> {
   return clinicId;
 }
 
+/**
+ * The callers' clinic (A-02-03): the test feature on (so the gated probe shows a pass), and limits
+ * high enough that the matrix's many adds and branches show access, never a full limit.
+ */
+export async function openLimitsAndTestFeature(tenantId: string): Promise<void> {
+  const base = { tenantId, reason: 'سبب تجريبي للمصفوفة', setBy: fixtureId('matrix super admin') };
+  await superuserDb(workerDatabaseName())
+    .insert(tenantOverride)
+    .values([
+      { ...base, key: 'test.feature', value: true },
+      { ...base, key: 'limits.practitioners', value: 100_000 },
+      { ...base, key: 'limits.branches', value: 100_000 },
+    ]);
+}
+
 /** A clinic whose owner set up an account (the owner membership bound and active). */
 export async function clinicWithAccountOwner(): Promise<string> {
   const phone = nextPhone();

@@ -21,6 +21,9 @@ export const PLATFORM_EVENTS = [
   'entitlement.override_removed',
   'clinic.type_previewed',
   'clinic.type_changed',
+  // A-02-03: feature flags (criterion 18)
+  'flag.listed',
+  'flag.changed',
 ] as const;
 export type PlatformEvent = (typeof PLATFORM_EVENTS)[number];
 

@@ -45,8 +45,10 @@ import {
   clinicWithLink,
   clinicWithOverride,
   nextPhone,
+  openLimitsAndTestFeature,
   totpState,
 } from './route-matrix.fixtures.ts';
+import { GatedProbeController, TEST_ENTITLEMENTS, TEST_FLAGS } from '../access/gated-probe.ts';
 
 const CALLERS: readonly Caller[] = ['anonymous', ...ROLES];
 
@@ -186,6 +188,7 @@ async function enrolledMemberOfTenantA(): Promise<string> {
 async function seedPeople(): Promise<void> {
   // The callers' clinic (principalFor: TENANT_A) and a clinic that invites them (TENANT_B).
   await createTestTenants(TENANT_A, TENANT_B);
+  await openLimitsAndTestFeature(TENANT_A);
   const phones = syntheticPhones(2026_11_13, ROLES.length + 1);
   for (const [i, role] of ROLES.entries()) {
     people.set(role, (await seedPerson(phones[i] ?? '')).userId);
@@ -300,7 +303,9 @@ beforeAll(async () => {
     db: testDb(),
     authDb: testAuthDb(),
     platformDb: testPlatformDb(),
-    controllers: [ProbeController],
+    controllers: [ProbeController, GatedProbeController],
+    entitlements: TEST_ENTITLEMENTS,
+    flags: TEST_FLAGS,
     auth: new HeaderAuthAdapter(),
     grants: TEST_GRANTS,
     permissions: TEST_PERMISSIONS,
@@ -310,7 +315,9 @@ beforeAll(async () => {
     db: testDb(),
     authDb: testAuthDb(),
     platformDb: testPlatformDb(),
-    controllers: [ProbeController],
+    controllers: [ProbeController, GatedProbeController],
+    entitlements: TEST_ENTITLEMENTS,
+    flags: TEST_FLAGS,
     permissions: TEST_PERMISSIONS,
     testRoutes: true,
   });

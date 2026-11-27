@@ -5,6 +5,7 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
+    "./fold-arabic": "./src/fold-arabic.ts",
     "./openapi.json": "./generated/openapi.json"
   },
   "scripts": {

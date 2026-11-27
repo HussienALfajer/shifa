@@ -22,7 +22,12 @@ export {
   ownerLinkExpiry,
   registerPlatformAdmin,
 } from './clinic.ts';
-export { entitlementKeysInUse, tenantUsageCounts, type UsageCounts } from './entitlements.ts';
+export {
+  clinicUsageCounts,
+  entitlementKeysInUse,
+  tenantUsageCounts,
+  type UsageCounts,
+} from './entitlements.ts';
 export { MIGRATIONS_DIR, migrate, ROLES_SQL } from './migrate.ts';
 export {
   type AuditTarget,

@@ -10,6 +10,7 @@ import { get, PASSWORD, sessionCookie } from '../identity/support.ts';
 import {
   createClinicViaApi,
   type Enrolled,
+  type PlatformAppOptions,
   patch,
   platformApp,
   post,
@@ -49,9 +50,13 @@ export interface TeamWorld {
 }
 
 /** Empties the database, starts the app and signs in a super admin. */
-export async function teamWorld(clock: FixedClock, seed: number): Promise<TeamWorld> {
+export async function teamWorld(
+  clock: FixedClock,
+  seed: number,
+  options: PlatformAppOptions = {},
+): Promise<TeamWorld> {
   await resetDatabase();
-  const app = await platformApp(clock);
+  const app = await platformApp(clock, options);
   const phones = syntheticPhones(seed, 120);
   let next = 0;
   const phone = () => {
