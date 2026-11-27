@@ -102,7 +102,6 @@ export class TeamService {
       const doctor = input.roles.some((r) => r.role === 'doctor');
       if (doctor) await this.limits.lock(tx);
       const { roles } = await validRoles(tx, input.roles);
-      if (doctor) await this.limits.assertRoom(tx, scope.tenantId, 'limits.practitioners');
       // Two adds of one phone at once: the second waits, then sees the first (409, never 500).
       await lockMemberPhone(tx, phone.e164);
       const [taken] = await tx
@@ -110,6 +109,8 @@ export class TeamService {
         .from(membership)
         .where(eq(membership.phoneE164, phone.e164));
       if (taken) throw new ApiError(409, 'phone_in_team');
+      // A phone already here is named first; then the limit (review N2).
+      if (doctor) await this.limits.assertRoom(tx, scope.tenantId, 'limits.practitioners');
       const [row] = await tx
         .insert(membership)
         .values({

@@ -23,7 +23,11 @@ import { FLAGS, type FlagClient } from './client.ts';
 import { FLAGS_PLATFORM_DB } from './tokens.ts';
 
 type FlagRow = typeof featureFlag.$inferSelect;
-type Selection = { flagKey: string; id: string; name: string };
+interface Selection {
+  flagKey: string;
+  id: string;
+  name: string;
+}
 
 const codeMode = (d: FlagDefinition): FlagMode => (d.defaultValue ? 'on' : 'off');
 

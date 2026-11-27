@@ -38,6 +38,7 @@ const unit = [
   'test/entitlements/cache.test.ts',
   'test/flags/evaluate.test.ts',
   'test/flags/cache.test.ts',
+  'test/flags/catalogue.test.ts',
 ];
 
 // Telemetry integration tests opt in to the SDK: their setup file installs the http and pg

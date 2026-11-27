@@ -17,6 +17,8 @@ export const PRODUCTION_FLAGS: readonly FlagDefinition[] = [];
 export const FLAG_CATALOGUE = Symbol('FLAG_CATALOGUE');
 
 const KEY = /^[a-z][a-z_]*(\.[a-z][a-z_]*)+$/;
+/** A flag's key goes into its audit row, whose values are at most 36 characters. */
+export const FLAG_KEY_MAX = 36;
 
 export class UnknownFlagError extends Error {
   override name = 'UnknownFlagError';
@@ -27,7 +29,7 @@ export class FlagCatalogue {
 
   constructor(definitions: readonly FlagDefinition[]) {
     for (const definition of definitions) {
-      if (!KEY.test(definition.key)) {
+      if (!KEY.test(definition.key) || definition.key.length > FLAG_KEY_MAX) {
         throw new UnknownFlagError(`malformed flag key: ${definition.key}`);
       }
       if (this.#definitions.has(definition.key)) {

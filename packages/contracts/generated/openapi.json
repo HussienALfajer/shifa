@@ -3435,6 +3435,16 @@
               }
             },
             "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
           }
         },
         "summary": "Add a branch",
@@ -5354,7 +5364,7 @@
             "name": "key",
             "required": true,
             "schema": {
-              "maxLength": 64,
+              "maxLength": 36,
               "pattern": "^[a-z][a-z_]*(\\.[a-z][a-z_]*)+$",
               "type": "string"
             }

@@ -3,6 +3,7 @@
 // admin's routes on the shifa_platform pool. Super-admin names come from identity.
 import { type DynamicModule, Module, type ModuleMetadata } from '@nestjs/common';
 import { featureFlag, featureFlagTenant, type PlatformDb } from '@shifa/db';
+import { eq } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { FlagsAdmin } from './admin.service.ts';
@@ -46,9 +47,12 @@ export class FlagsModule {
                   flags: await tx
                     .select({ key: featureFlag.key, mode: featureFlag.mode })
                     .from(featureFlag),
-                  // RLS: only this clinic's selections.
+                  // This clinic's selections (RLS holds it to them too).
                   selected: (
-                    await tx.select({ key: featureFlagTenant.flagKey }).from(featureFlagTenant)
+                    await tx
+                      .select({ key: featureFlagTenant.flagKey })
+                      .from(featureFlagTenant)
+                      .where(eq(featureFlagTenant.tenantId, scope.tenantId))
                   ).map((r) => r.key),
                 })),
               clock,

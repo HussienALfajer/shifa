@@ -33,9 +33,10 @@ export type FlagList = z.infer<typeof FlagList>;
 
 export const FlagParams = z
   .object({
+    // At most 36: the key goes into the flag.changed audit row (the flag catalogue holds the same).
     key: z
       .string()
-      .max(64)
+      .max(36)
       .regex(/^[a-z][a-z_]*(\.[a-z][a-z_]*)+$/),
   })
   .meta({ id: 'FlagParams' });

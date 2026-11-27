@@ -105,6 +105,8 @@ export const TABLE_CLASSIFICATION: TableClassification = {
         'shifa_platform removes a clinic from a flag’s selection only in a flag.changed action',
       feature_flag_tenant_platform_only_in_flag_actions:
         'restrictive: even with a tenant set, shifa_platform reaches selections only in a flag action and writes them only in flag.changed',
+      feature_flag_tenant_platform_delete_only_in_change:
+        'restrictive: even with a tenant set, shifa_platform deletes a selection only in flag.changed (a DELETE has no WITH CHECK)',
     },
   },
   tenant: {

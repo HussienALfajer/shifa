@@ -75,8 +75,9 @@ export const branchesCreate = defineContract({
   path: '/branches',
   summary: 'Add a branch',
   request: { body: CreateBranchRequest },
-  // 400 `validation_failed`: an empty name or an invalid phone.
-  responses: { 201: Branch, 400: ErrorEnvelope },
+  // 400 `validation_failed`: an empty name or an invalid phone; 409 `limit_reached` (the branch
+  // limit, with `limitReached`; A-02-03).
+  responses: { 201: Branch, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
 export const branchesUpdate = defineContract({
@@ -110,7 +111,8 @@ export const branchesArchive = defineContract({
 
 /**
  * OD-105: the branch returns to switchers and role pickers; the roles that pointed at it stand
- * again (sessions the archive ended stay ended). 409 `branch_not_archived`.
+ * again (sessions the archive ended stay ended). 409 `branch_not_archived`; `limit_reached` (the
+ * branch limit, A-02-03).
  */
 export const branchesRestore = defineContract({
   operationId: 'branchesRestore',

@@ -74,8 +74,11 @@ describe('flag evaluation (criterion 7)', () => {
     expect(
       () => new FlagCatalogue([{ key: 'Bad', description: 'x', defaultValue: false }]),
     ).toThrow(UnknownFlagError);
-    expect(() => new FlagCatalogue([...FLAGS, FLAGS[0] as FlagDefinition])).toThrow(
-      UnknownFlagError,
-    );
+    const again: FlagDefinition = {
+      key: 'test.on_by_default',
+      description: 'again',
+      defaultValue: true,
+    };
+    expect(() => new FlagCatalogue([...FLAGS, again])).toThrow(UnknownFlagError);
   });
 });

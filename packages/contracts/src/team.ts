@@ -198,7 +198,8 @@ export const teamAddMember = defineContract({
   summary: 'Add a member with roles; returns their link once',
   request: { body: AddMemberRequest },
   // 400 `validation_failed` (phone, roles, an unknown key), `permission_not_sensitive`;
-  // 409 `phone_in_team`: the phone is already a member of this clinic; `branch_archived`.
+  // 409 `phone_in_team`: the phone is already a member of this clinic; `branch_archived`;
+  // `limit_reached`: a doctor beyond the doctor limit (with `limitReached`; A-02-03).
   responses: { 201: MemberAdded, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
@@ -208,7 +209,8 @@ export const teamUpdateMember = defineContract({
   path: '/team/members/:id',
   summary: 'Change a member’s name, roles and sensitive toggles',
   request: { params: MemberIdParams, body: UpdateMemberRequest },
-  // 400 `validation_failed`, `permission_not_sensitive`; 409 `last_owner`, `branch_archived` (a
+  // 400 `validation_failed`, `permission_not_sensitive`; 409 `limit_reached` (a doctor role added
+  // beyond the doctor limit, A-02-03), `last_owner`, `branch_archived` (a
   // new assignment in an archived branch; one the member already holds there is kept, OD-107), or
   // `owner_role_protected` when another owner's owner role would be removed (OD-97: only they or
   // the super admin may).
@@ -246,7 +248,7 @@ export const teamReactivateMember = defineContract({
   path: '/team/members/:id/reactivate',
   summary: 'Reactivate a deactivated member',
   request: { params: MemberIdParams },
-  // 409 `member_not_deactivated`.
+  // 409 `member_not_deactivated`; `limit_reached`: a doctor beyond the doctor limit (A-02-03).
   responses: { 200: MemberDetail, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 

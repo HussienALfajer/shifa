@@ -1,6 +1,6 @@
 # A-02-03 Limits enforced, feature flags and capabilities
 
-Status: Planned · Tier: T0 · Branch: `feat/A-02-03-limits-flags-capabilities`
+Status: Built, in review · Tier: T0 · Branch: `claude/zen-heisenberg-xkeqjf` (cloud session; planned as `feat/A-02-03-limits-flags-capabilities`)
 Spec: [A-02](../specs/platform/A-02-settings-entitlements-console.md) criteria 4–7, 18 (flag events) · Requirements: PLT-13, PLT-20, PLT-25, PLT-29 · Decisions: ADR-0007, OD-110, OD-114 · From A-02-01: criteria 4, 5, 7 (amended)
 
 After [A-02-02](A-02-02-entitlements-and-overrides.md) (merged).
@@ -49,7 +49,7 @@ Built: contracts, database (two migrations), API (`modules/flags`, `modules/capa
 - **One fold:** `foldArabic` and `matchesWordStart` moved from `@shifa/ui` to `@shifa/contracts/fold-arabic` (no imports); `@shifa/ui` re-exports them (no behaviour or look change) and gained `@shifa/contracts` as a dependency. The clinic search filters the listed clinics with `matchesWordStart` (the list already reads every clinic).
 - **Test worlds:** `teamWorld()` takes `clinicType`; the branch tests and the archived-roles tests use `multi_branch` (a multi-doctor clinic now holds one branch). The route matrix gives TENANT_A overrides (`test.feature` on, both limits 100,000).
 - **Dart client budget** raised to 280 files and 10,500 lines (188 and 6,991 now).
-- **Locked test:** one typing fix with the owner's approval (2026-11-27): `add`'s parameter in `test/limits/limits.test.ts` typed `RoleScope[]`; no assertion changed.
+- **Locked tests:** two fixes with the owner's approval (2026-11-27), no assertion changed: `add`'s parameter in `test/limits/limits.test.ts` typed `RoleScope[]` (tsc); the repeated flag in `test/flags/evaluate.test.ts` written as a literal instead of `FLAGS[0] as FlagDefinition` (lint).
 - **Migrations:** `20261127010323_a02_feature_flags` (expand: two tables) and `20261127010325_a02_flag_policies` (expand: RLS, grants, policies, `tenant_usage_counts` widened). Rollback notes in the SQL header.
 
 ## Evidence

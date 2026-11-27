@@ -59,6 +59,12 @@ CREATE POLICY feature_flag_tenant_platform_only_in_flag_actions ON "feature_flag
   USING (current_setting('app.admin_reason', true) IN ('flag.listed', 'flag.changed'))
   WITH CHECK (current_setting('app.admin_reason', true) = 'flag.changed');
 --> statement-breakpoint
+-- Restrictive: a DELETE has no WITH CHECK, so the policy above alone would let flag.listed delete
+-- a clinic's selection inside its tenant context (review N3).
+CREATE POLICY feature_flag_tenant_platform_delete_only_in_change ON "feature_flag_tenant"
+  AS RESTRICTIVE FOR DELETE TO shifa_platform
+  USING (current_setting('app.admin_reason', true) = 'flag.changed');
+--> statement-breakpoint
 CREATE OR REPLACE FUNCTION public.tenant_usage_counts(p_tenant uuid)
   RETURNS TABLE (practitioners integer, branches integer)
   LANGUAGE plpgsql SECURITY DEFINER SET search_path = pg_catalog, public
