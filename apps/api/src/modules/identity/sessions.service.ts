@@ -24,6 +24,7 @@ import {
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { idleMinutesOfOwnClinics } from '../settings/index.ts';
+import { recordActivity, recordSignIn } from '../usage/index.ts';
 import { activeAtSignIn } from './clinic-choices.ts';
 import { IdentityAudit, type SessionEndReason } from './identity-audit.ts';
 import { SESSION_ABSOLUTE_MS } from './session-cookie.ts';
@@ -145,6 +146,16 @@ export class SessionsService {
       // The data stays; every tenant route answers 403 clinic_suspended (criterion 11).
       ...(view.suspended ? { clinicSuspended: true } : {}),
     });
+  }
+
+  /**
+   * A sign-in of the principal in their active clinic, counted in its daily usage (A-02 criterion
+   * 17): a session that starts without a clinic counts when the person first chooses one.
+   */
+  async countSignIn(userId: string, tenantId: string): Promise<void> {
+    await this.db.withTenant({ tenantId, userId }, (tx) =>
+      recordSignIn(tx, this.clock.now(), userId),
+    );
   }
 
   /** The current session as the client sees it (criterion 9: when it ends). */
@@ -306,13 +317,14 @@ export class SessionsService {
   }
 
   /**
-   * The member's last activity in the clinic (the team list, A-01b), written at most once a
-   * minute so a busy session does not write on every request.
+   * The member's last activity in the clinic (the team list, A-01b) and the clinic's (its usage,
+   * A-02 criterion 17), written at most once a minute so a busy session does not write on every
+   * request.
    */
   async #touchMember(userId: string, tenantId: string, now: Date): Promise<void> {
     const before = new Date(now.getTime() - MINUTE_MS);
-    await this.db.withTenant({ tenantId, userId }, (tx) =>
-      tx
+    await this.db.withTenant({ tenantId, userId }, async (tx) => {
+      const touched = await tx
         .update(membership)
         .set({ lastActiveAt: now })
         .where(
@@ -321,8 +333,10 @@ export class SessionsService {
             eq(membership.status, 'active'),
             or(isNull(membership.lastActiveAt), lt(membership.lastActiveAt, before)),
           ),
-        ),
-    );
+        )
+        .returning({ id: membership.id });
+      if (touched.length > 0) await recordActivity(tx, now);
+    });
   }
 }
 

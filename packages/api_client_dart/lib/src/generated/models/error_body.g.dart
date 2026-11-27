@@ -99,6 +99,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.placeNameTaken: 'place_name_taken',
   ErrorCode.placeArchived: 'place_archived',
   ErrorCode.placeNotArchived: 'place_not_archived',
+  ErrorCode.announcementLink: 'announcement_link',
+  ErrorCode.announcementEnded: 'announcement_ended',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};

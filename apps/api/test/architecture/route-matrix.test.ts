@@ -42,6 +42,7 @@ import {
   TEST_ONLY_ROUTES,
 } from './route-matrix.expected.ts';
 import {
+  announcementOf,
   clinicWithAccountOwner,
   clinicWithLink,
   clinicWithLock,
@@ -248,6 +249,7 @@ async function observe(app: TestApp): Promise<Observed> {
         clinicGrantId: async () => (await openSupportGrant(undefined, TENANT_A)).grantId,
         handoffToken: () => supportHandoffToken(),
         placeId: (kind, state) => placeOf(kind, state),
+        announcementId: () => announcementOf(),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =

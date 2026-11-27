@@ -7,6 +7,9 @@ import 'package:retrofit/retrofit.dart';
 
 import '../models/active_clinic.dart';
 import '../models/add_member_request.dart';
+import '../models/announcement.dart';
+import '../models/announcement_list.dart';
+import '../models/announcement_status.dart';
 import '../models/archive_branch_preview.dart';
 import '../models/area.dart';
 import '../models/branch.dart';
@@ -24,8 +27,11 @@ import '../models/clinic_setting_list.dart';
 import '../models/clinic_settings.dart';
 import '../models/clinic_support_grants.dart';
 import '../models/clinic_type.dart';
+import '../models/clinic_usage.dart';
+import '../models/create_announcement_request.dart';
 import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
+import '../models/dismiss_announcement_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/entitlement_item.dart';
 import '../models/flag_list.dart';
@@ -42,6 +48,7 @@ import '../models/member_phone_request.dart';
 import '../models/mfa_enrolled.dart';
 import '../models/mfa_passed.dart';
 import '../models/mfa_status.dart';
+import '../models/my_announcements.dart';
 import '../models/my_clinics.dart';
 import '../models/my_profile.dart';
 import '../models/open_support_grant_request.dart';
@@ -74,6 +81,7 @@ import '../models/totp_enrol_start.dart';
 import '../models/totp_reenrol_confirm.dart';
 import '../models/totp_reenrol_start.dart';
 import '../models/type_preview.dart';
+import '../models/update_announcement_request.dart';
 import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_clinic_settings_request.dart';
@@ -260,6 +268,17 @@ abstract class CoreClient {
   @GET('/me')
   Future<MyProfile> meProfile();
 
+  /// The active announcements for this clinic the person has not hidden
+  @GET('/me/announcements')
+  Future<MyAnnouncements> myAnnouncements();
+
+  /// Hide this version of an announcement for the person, on every device and clinic
+  @POST('/me/announcements/{id}/dismiss')
+  Future<void> dismissMyAnnouncement({
+    @Path('id') required String id,
+    @Body() required DismissAnnouncementRequest body,
+  });
+
   /// The signed-in person’s clinics and pending invitations (clinic chooser)
   @GET('/me/clinics')
   Future<MyClinics> meClinics();
@@ -267,6 +286,31 @@ abstract class CoreClient {
   /// Switch the session to one of the person’s clinics and branches
   @POST('/me/switch')
   Future<ActiveClinic> meSwitch({@Body() required SwitchRequest body});
+
+  /// Announcements by status, with the counts of each status and of dismissals
+  @GET('/platform/announcements')
+  Future<AnnouncementList> platformAnnouncements({
+    @Query('status') AnnouncementStatus? status,
+  });
+
+  /// Post a plain-text announcement to every clinic or to selected ones
+  @POST('/platform/announcements')
+  Future<Announcement> platformCreateAnnouncement({
+    @Body() required CreateAnnouncementRequest body,
+  });
+
+  /// Edit an announcement that has not ended (a new body or level is a new version)
+  @PATCH('/platform/announcements/{id}')
+  Future<Announcement> platformUpdateAnnouncement({
+    @Path('id') required String id,
+    @Body() required UpdateAnnouncementRequest body,
+  });
+
+  /// End an announcement now (cancelling it when it has not started)
+  @POST('/platform/announcements/{id}/end')
+  Future<Announcement> platformEndAnnouncement({
+    @Path('id') required String id,
+  });
 
   /// Rename an area
   @PATCH('/platform/areas/{id}')
@@ -425,6 +469,10 @@ abstract class CoreClient {
     @Path('id') required String id,
     @Query('type') required ClinicType type,
   });
+
+  /// A clinic’s usage: today, its members and branches, and 30 Damascus days
+  @GET('/platform/clinics/{id}/usage')
+  Future<ClinicUsage> platformClinicUsage({@Path('id') required String id});
 
   /// Every flag declared in code, with its mode, clinics, reason and last change
   @GET('/platform/flags')

@@ -3,6 +3,7 @@
 // access only.
 import { randomUUID } from 'node:crypto';
 import {
+  announcement,
   area,
   city,
   createClinic,
@@ -90,6 +91,26 @@ export async function clinicWithLock(): Promise<string> {
     locked: true,
   });
   return clinicId;
+}
+
+/**
+ * A fresh active announcement for every clinic (A-02-07), written as the superuser: each edit, end
+ * or dismissal of the matrix gets its own.
+ */
+export async function announcementOf(): Promise<string> {
+  const [row] = await superuserDb(workerDatabaseName())
+    .insert(announcement)
+    .values({
+      body: 'إعلان المصفوفة',
+      level: 'info',
+      startsAt: new Date(Date.now() - 3_600_000),
+      target: 'all',
+      createdBy: fixtureId('matrix announcer'),
+      createdByName: 'مشرف تجريبي',
+    })
+    .returning({ id: announcement.id });
+  if (!row) throw new Error('announcement not written');
+  return row.id;
 }
 
 /**

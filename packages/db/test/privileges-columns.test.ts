@@ -15,8 +15,22 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_app account.id SELECT',
   'shifa_app account.provider_id SELECT',
   'shifa_app account.user_id SELECT',
+  // A-02-07: the clinic reads seven columns of the announcements aimed at it; a person changes
+  // only the version and time of their own dismissal
+  'shifa_app announcement.body SELECT',
+  'shifa_app announcement.ends_at SELECT',
+  'shifa_app announcement.id SELECT',
+  'shifa_app announcement.level SELECT',
+  'shifa_app announcement.starts_at SELECT',
+  'shifa_app announcement.target SELECT',
+  'shifa_app announcement.version SELECT',
+  'shifa_app announcement_dismissal.dismissed_at UPDATE',
+  'shifa_app announcement_dismissal.updated_at UPDATE',
+  'shifa_app announcement_dismissal.version UPDATE',
   'shifa_app membership.display_name UPDATE',
   'shifa_app membership.last_active_at UPDATE',
+  // A-02-07: the day of the member's last sign-in (members signed in per day)
+  'shifa_app membership.last_sign_in_on UPDATE',
   // A-01-12: a pending member's phone corrected (OD-103; guarded by a trigger)
   'shifa_app membership.phone_e164 UPDATE',
   'shifa_app membership.status UPDATE',
@@ -66,6 +80,17 @@ const EXPECTED_COLUMN_GRANTS = [
   'shifa_auth support_access_grant.handoff_expires_at UPDATE',
   'shifa_auth support_access_grant.handoff_token_hash UPDATE',
   // A-02-06: renames, archives and restores of cities and areas (place actions, guard trigger)
+  // A-02-07: an announcement edited or ended (policies keep each to its action)
+  'shifa_platform announcement.body UPDATE',
+  'shifa_platform announcement.ended_by UPDATE',
+  'shifa_platform announcement.ended_by_name UPDATE',
+  'shifa_platform announcement.ended_early UPDATE',
+  'shifa_platform announcement.ends_at UPDATE',
+  'shifa_platform announcement.level UPDATE',
+  'shifa_platform announcement.starts_at UPDATE',
+  'shifa_platform announcement.target UPDATE',
+  'shifa_platform announcement.updated_at UPDATE',
+  'shifa_platform announcement.version UPDATE',
   'shifa_platform area.archived_at UPDATE',
   'shifa_platform area.name UPDATE',
   'shifa_platform area.name_key UPDATE',

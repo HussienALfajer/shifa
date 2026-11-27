@@ -61,22 +61,28 @@ export const ClinicOwner = z
   })
   .meta({ id: 'ClinicOwner' });
 
-export const ClinicSummary = z
-  .object({
-    id: z.uuid(),
-    name: z.string(),
-    type: ClinicType,
-    status: ClinicStatus,
-    subscriptionEnd: CalendarDate.nullable(),
-    ownerName: z.string().nullable(),
-    /** The owner membership's status; null when the clinic has no owner row (A-01-11). */
-    ownerStatus: MembershipStatus.nullable(),
-    createdAt: z.iso.datetime(),
-  })
-  .meta({ id: 'ClinicSummary' });
+/** A clinic's own fields, shared by the list row and the clinic page. */
+const ClinicFields = z.object({
+  id: z.uuid(),
+  name: z.string(),
+  type: ClinicType,
+  status: ClinicStatus,
+  subscriptionEnd: CalendarDate.nullable(),
+  ownerName: z.string().nullable(),
+  /** The owner membership's status; null when the clinic has no owner row (A-01-11). */
+  ownerStatus: MembershipStatus.nullable(),
+  createdAt: z.iso.datetime(),
+});
+
+export const ClinicSummary = ClinicFields.extend({
+  /** The clinic's last request by a member, to the minute (A-02-07); null: no activity yet. */
+  lastActivityAt: z.iso.datetime().nullable(),
+  /** Sign-ins of the last seven Damascus days, today included (A-02-07, criterion 21). */
+  signIns7d: z.int().min(0),
+}).meta({ id: 'ClinicSummary' });
 export type ClinicSummary = z.infer<typeof ClinicSummary>;
 
-export const ClinicDetail = ClinicSummary.extend({ owner: ClinicOwner.nullable() }).meta({
+export const ClinicDetail = ClinicFields.extend({ owner: ClinicOwner.nullable() }).meta({
   id: 'ClinicDetail',
 });
 export type ClinicDetail = z.infer<typeof ClinicDetail>;

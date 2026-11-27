@@ -676,6 +676,8 @@ export type CommonKey =
   | 'unreachableTitle';
 export type ErrorsKey =
   | 'account_shared'
+  | 'announcement_ended'
+  | 'announcement_link'
   | 'bad_request'
   | 'branch_archived'
   | 'branch_not_archived'

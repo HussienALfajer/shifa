@@ -119,6 +119,8 @@ export class SignInService implements OnModuleInit {
       { event: 'auth.sign_in' },
       { actorId: principal.userId, targetId: principal.sessionId, requestId: meta.requestId },
     );
+    // The sign-in's clinic counts it (A-02 criterion 17); without one, the first choice does.
+    if (principal.tenantId) await this.sessions.countSignIn(principal.userId, principal.tenantId);
     return { view: await this.sessions.view(principal), cookie };
   }
 

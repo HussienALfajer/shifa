@@ -24,11 +24,13 @@ import {
 } from '@shifa/db';
 import { and, asc, eq, isNotNull, isNull, sql } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
+import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { ClinicLimits } from '../entitlements/index.ts';
 import { MemberAccounts } from '../identity/index.ts';
 import { branchPlaces, nextBranchPlace } from '../places/index.ts';
+import { recordGauges } from '../usage/index.ts';
 
 type BranchRow = typeof branch.$inferSelect;
 
@@ -40,6 +42,7 @@ export class BranchesService {
     @Inject(TenantDb) private readonly tenants: TenantDb,
     @Inject(MemberAccounts) private readonly accounts: MemberAccounts,
     @Inject(ClinicLimits) private readonly limits: ClinicLimits,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   list(scope: RequestScope): Promise<BranchList> {
@@ -75,6 +78,7 @@ export class BranchesService {
         .returning();
       if (!row) throw new Error('branch not written');
       await audit(tx, scope, 'branch.created', row.id, requestId);
+      await recordGauges(tx, this.clock.now());
       if (row.cityId) await auditPlace(tx, scope, row, requestId);
       return branchView(tx, row);
     });
@@ -152,6 +156,7 @@ export class BranchesService {
         .returning();
       if (!row) throw new NotFoundException();
       await audit(tx, scope, 'branch.restored', row.id, requestId);
+      await recordGauges(tx, this.clock.now());
       return branchView(tx, row);
     });
   }
@@ -174,6 +179,7 @@ export class BranchesService {
       await audit(tx, scope, 'branch.archived', row.id, requestId, {
         sessionsEnded: stranded.length,
       });
+      await recordGauges(tx, this.clock.now());
       // Each auth step commits on its own: a failure here rolls back the archive and its row,
       // but sessions already ended stay ended (fails safe; the owner can archive again).
       for (const member of stranded) {

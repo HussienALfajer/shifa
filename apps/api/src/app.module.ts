@@ -1,6 +1,7 @@
 import { type DynamicModule, Module } from '@nestjs/common';
 import type { AuthDb, PlatformDb, ShifaDb } from '@shifa/db';
 import { AccessModule, type PermissionDefinition } from './access/index.ts';
+import { AnnouncementsModule } from './modules/announcements/index.ts';
 import { BranchesModule } from './modules/branches/index.ts';
 import { CapabilitiesModule } from './modules/capabilities/index.ts';
 import { type EntitlementDefinition, EntitlementsModule } from './modules/entitlements/index.ts';
@@ -17,6 +18,7 @@ import { PlatformModule } from './modules/platform/index.ts';
 import { type SettingDefinition, SettingsModule } from './modules/settings/index.ts';
 import { SupportModule } from './modules/support/index.ts';
 import { TeamModule } from './modules/team/index.ts';
+import { UsageModule } from './modules/usage/index.ts';
 import type { Clock } from './platform/clock.ts';
 import { ContractModule } from './platform/contract/index.ts';
 import { DatabaseModule } from './platform/database.module.ts';
@@ -96,6 +98,8 @@ export class AppModule {
         }),
         BranchesModule.register({ identity, entitlements }),
         PlacesModule.register({ platformDb, identity }),
+        AnnouncementsModule.register({ platformDb, identity }),
+        UsageModule.register({ platformDb, identity }),
         SupportModule.register({
           platformDb,
           identity,

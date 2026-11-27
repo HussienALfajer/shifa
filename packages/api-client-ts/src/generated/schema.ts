@@ -601,6 +601,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/me/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The active announcements for this clinic the person has not hidden */
+        get: operations["myAnnouncements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/me/announcements/{id}/dismiss": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Hide this version of an announcement for the person, on every device and clinic */
+        post: operations["dismissMyAnnouncement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/me/clinics": {
         parameters: {
             query?: never;
@@ -629,6 +663,58 @@ export interface paths {
         put?: never;
         /** Switch the session to one of the person’s clinics and branches */
         post: operations["meSwitch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/announcements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Announcements by status, with the counts of each status and of dismissals */
+        get: operations["platformAnnouncements"];
+        put?: never;
+        /** Post a plain-text announcement to every clinic or to selected ones */
+        post: operations["platformCreateAnnouncement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/platform/announcements/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edit an announcement that has not ended (a new body or level is a new version) */
+        patch: operations["platformUpdateAnnouncement"];
+        trace?: never;
+    };
+    "/platform/announcements/{id}/end": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** End an announcement now (cancelling it when it has not started) */
+        post: operations["platformEndAnnouncement"];
         delete?: never;
         options?: never;
         head?: never;
@@ -998,6 +1084,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/platform/clinics/{id}/usage": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** A clinic’s usage: today, its members and branches, and 30 Damascus days */
+        get: operations["platformClinicUsage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/platform/flags": {
         parameters: {
             query?: never;
@@ -1219,6 +1322,46 @@ export interface components {
             phone: string;
             roles: components["schemas"]["RoleScopeInput"][];
         };
+        Announcement: {
+            body: string;
+            clinics: components["schemas"]["AnnouncementClinic"][];
+            /** Format: date-time */
+            createdAt: string;
+            createdByName: string | null;
+            dismissedCount: number | null;
+            endedByName: string | null;
+            endedEarly: boolean;
+            endsAt: string | null;
+            /** Format: uuid */
+            id: string;
+            level: components["schemas"]["AnnouncementLevel"];
+            /** Format: date-time */
+            startsAt: string;
+            status: components["schemas"]["AnnouncementStatus"];
+            target: components["schemas"]["AnnouncementTarget"];
+            targetedMembers: number | null;
+            version: number;
+        };
+        AnnouncementClinic: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        AnnouncementCounts: {
+            active: number;
+            ended: number;
+            scheduled: number;
+        };
+        /** @enum {string} */
+        AnnouncementLevel: "info" | "warning";
+        AnnouncementList: {
+            announcements: components["schemas"]["Announcement"][];
+            counts: components["schemas"]["AnnouncementCounts"];
+        };
+        /** @enum {string} */
+        AnnouncementStatus: "scheduled" | "active" | "ended";
+        /** @enum {string} */
+        AnnouncementTarget: "all" | "selected";
         ArchiveBranchPreview: {
             lastBranch: boolean;
             members: components["schemas"]["ArchivedMember"][];
@@ -1345,9 +1488,11 @@ export interface components {
             createdAt: string;
             /** Format: uuid */
             id: string;
+            lastActivityAt: string | null;
             name: string;
             ownerName: string | null;
             ownerStatus: components["schemas"]["MembershipStatus"] | null;
+            signIns7d: number;
             status: components["schemas"]["ClinicStatus"];
             subscriptionEnd: string | null;
             type: components["schemas"]["ClinicType"];
@@ -1360,6 +1505,25 @@ export interface components {
         };
         /** @enum {string} */
         ClinicType: "solo" | "multi_doctor" | "multi_branch";
+        ClinicUsage: {
+            branches: number;
+            days: components["schemas"]["UsageDay"][];
+            hasData: boolean;
+            lastActivityAt: string | null;
+            members: number;
+            previousTotals: components["schemas"]["UsageTotals"];
+            today: string;
+            todayCounts: components["schemas"]["UsageTodayCounts"];
+        };
+        CreateAnnouncementRequest: {
+            body: string;
+            clinicIds?: string[];
+            endsAt?: string | null;
+            level: components["schemas"]["AnnouncementLevel"];
+            /** Format: date-time */
+            startsAt: string;
+            target: components["schemas"]["AnnouncementTarget"];
+        };
         CreateBranchRequest: {
             address?: string | null;
             areaId?: string | null;
@@ -1374,6 +1538,9 @@ export interface components {
             status: components["schemas"]["ClinicStatus"];
             subscriptionEnd?: string | null;
             type: components["schemas"]["ClinicType"];
+        };
+        DismissAnnouncementRequest: {
+            version: number;
         };
         EndedSessions: {
             ended: number;
@@ -1412,7 +1579,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -1544,6 +1711,19 @@ export interface components {
             enrolled: boolean;
             enrolledAt: string | null;
             recoveryCodesLeft: number | null;
+        };
+        MyAnnouncement: {
+            body: string;
+            endsAt: string | null;
+            /** Format: uuid */
+            id: string;
+            level: components["schemas"]["AnnouncementLevel"];
+            /** Format: date-time */
+            startsAt: string;
+            version: number;
+        };
+        MyAnnouncements: {
+            announcements: components["schemas"]["MyAnnouncement"][];
         };
         MyBranch: {
             /** Format: uuid */
@@ -1829,6 +2009,15 @@ export interface components {
             over: boolean;
             used: number;
         };
+        UpdateAnnouncementRequest: {
+            body?: string;
+            clinicIds?: string[];
+            endsAt?: string | null;
+            level?: components["schemas"]["AnnouncementLevel"];
+            /** Format: date-time */
+            startsAt?: string;
+            target?: components["schemas"]["AnnouncementTarget"];
+        };
         UpdateBranchRequest: {
             address?: string | null;
             areaId?: string | null;
@@ -1848,6 +2037,21 @@ export interface components {
             name?: string;
             permissions?: components["schemas"]["PermissionSwitch"][];
             roles?: components["schemas"]["RoleScopeInput"][];
+        };
+        UsageDay: {
+            date: string;
+            membersSignedIn: number;
+            signIns: number;
+        };
+        UsageTodayCounts: {
+            activeBranches: number;
+            activeMembers: number;
+            membersSignedIn: number;
+            signIns: number;
+        };
+        UsageTotals: {
+            membersSignedIn: number;
+            signIns: number;
         };
         ValidationIssue: {
             code: components["schemas"]["ValidationIssueCode"];
@@ -3660,6 +3864,104 @@ export interface operations {
             };
         };
     };
+    myAnnouncements: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MyAnnouncements"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    dismissMyAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DismissAnnouncementRequest"];
+            };
+        };
+        responses: {
+            /** @description No content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
     meClinics: {
         parameters: {
             query?: never;
@@ -3727,6 +4029,244 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ActiveClinic"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformAnnouncements: {
+        parameters: {
+            query?: {
+                status?: components["schemas"]["AnnouncementStatus"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnnouncementList"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformCreateAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateAnnouncementRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Announcement"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformUpdateAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAnnouncementRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Announcement"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformEndAnnouncement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Announcement"];
                 };
             };
             /** @description Bad request */
@@ -5431,6 +5971,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["TypePreview"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    platformClinicUsage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ClinicUsage"];
                 };
             };
             /** @description Bad request */

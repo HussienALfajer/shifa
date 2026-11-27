@@ -23,6 +23,7 @@ import { linkScope, type Principal, withScope } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { recordGauges } from '../usage/index.ts';
 import { IdentityAudit } from './identity-audit.ts';
 import { linkTokenHash } from './links.ts';
 import { type ClinicLink, linkInvalid, SetupLinksService } from './setup-links.service.ts';
@@ -79,6 +80,8 @@ export class InvitationsService {
       // The auth step commits first; if this clinic transaction failed afterwards the binding
       // would stand without its row (two pools, as the owner support of A-01-03).
       await this.#bind(principal.userId, token, found, answer, requestId);
+      // One more active member in the day's usage (A-02 criterion 17).
+      if (answer === 'accepted') await recordGauges(tx, this.clock.now());
     });
   }
 

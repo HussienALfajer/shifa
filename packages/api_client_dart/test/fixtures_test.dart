@@ -52,6 +52,10 @@ final _decoders = <String, Object Function(_Json)>{
   'CityList': (json) => CityList.fromJson(json).toJson(),
   'City': (json) => City.fromJson(json).toJson(),
   'ClinicPlaces': (json) => ClinicPlaces.fromJson(json).toJson(),
+  // A-02-07
+  'AnnouncementList': (json) => AnnouncementList.fromJson(json).toJson(),
+  'MyAnnouncements': (json) => MyAnnouncements.fromJson(json).toJson(),
+  'ClinicUsage': (json) => ClinicUsage.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

@@ -1,5 +1,12 @@
 // Drizzle schema (tables defined with drizzle-orm/pg-core); every tenant table follows
 // .claude/rules/db.md. Policies, grants and triggers live in the custom migrations.
+export {
+  ANNOUNCEMENT_LEVELS,
+  ANNOUNCEMENT_TARGETS,
+  announcement,
+  announcementDismissal,
+  announcementTarget,
+} from './announcements.ts';
 export { auditEvent } from './audit.ts';
 export {
   ADDON_MODES,
@@ -63,3 +70,4 @@ export {
   SETUP_LINK_PURPOSES,
   setupLink,
 } from './tenancy.ts';
+export { usageDaily } from './usage.ts';

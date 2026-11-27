@@ -1,4 +1,12 @@
 export {
+  type AnnouncementCountInput,
+  type AnnouncementCounts,
+  announcementCounts,
+  type ClinicMemberCounts,
+  clinicActiveCounts,
+  clinicMemberCounts,
+} from './announcements.ts';
+export {
   AUTH_EVENTS,
   type AuditEventName,
   PLATFORM_EVENTS,

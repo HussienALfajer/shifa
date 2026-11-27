@@ -61,6 +61,9 @@ export const summary = (c: ClinicDetail): ClinicSummary => ({
   ownerName: c.ownerName,
   ownerStatus: c.ownerStatus,
   createdAt: c.createdAt,
+  // A-02-07: the list's usage columns (no counters in the screens world yet)
+  lastActivityAt: null,
+  signIns7d: 0,
 });
 
 function clinicAction(run: (p: PlatformClinic, world: World, request: Request) => Reply) {

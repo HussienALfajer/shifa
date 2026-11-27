@@ -15,9 +15,11 @@ class ClinicSummary {
   const ClinicSummary({
     required this.createdAt,
     required this.id,
+    required this.lastActivityAt,
     required this.name,
     required this.ownerName,
     required this.ownerStatus,
+    required this.signIns7d,
     required this.status,
     required this.subscriptionEnd,
     required this.type,
@@ -28,11 +30,14 @@ class ClinicSummary {
 
   final DateTime createdAt;
   final String id;
+  @JsonKey(includeIfNull: true)
+  final DateTime? lastActivityAt;
   final String name;
   @JsonKey(includeIfNull: true)
   final String? ownerName;
   @JsonKey(includeIfNull: true)
   final MembershipStatus? ownerStatus;
+  final int signIns7d;
   final ClinicStatus status;
   @JsonKey(includeIfNull: true)
   final String? subscriptionEnd;

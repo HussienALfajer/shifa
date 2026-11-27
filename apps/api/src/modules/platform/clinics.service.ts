@@ -36,10 +36,12 @@ import {
 } from '@shifa/db';
 import { and, desc, eq, ne } from 'drizzle-orm';
 import type { Principal } from '../../access/index.ts';
+import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { EntitlementsAdmin } from '../entitlements/index.ts';
 import { OwnerAccounts } from '../identity/index.ts';
+import { clinicActivity } from '../usage/index.ts';
 import { PLATFORM_DB } from './tokens.ts';
 
 export type OwnerAction = 'setup-link' | 'reset-mfa' | 'end-sessions';
@@ -56,6 +58,7 @@ export class ClinicsService {
     @Inject(PLATFORM_DB) private readonly platformDb: PlatformDb,
     @Inject(OwnerAccounts) private readonly owners: OwnerAccounts,
     @Inject(EntitlementsAdmin) private readonly entitlements: EntitlementsAdmin,
+    @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
   list(principal: Principal, search: string | undefined, requestId: string): Promise<ClinicList> {
@@ -77,6 +80,8 @@ export class ClinicsService {
       // shifa_platform sees owner memberships only; a clinic can hold several (co-owners the
       // owner invited): one card per clinic, the same one the detail shows.
       const owners = await ownerRows(tx);
+      // A-02-07: last activity and sign-ins of the last seven days (criterion 21).
+      const activity = await clinicActivity(tx, this.clock.now());
       return {
         clinics: found.map((r) => {
           const owner = ownerOf(owners.filter((o) => o.tenantId === r.id));
@@ -85,6 +90,7 @@ export class ClinicsService {
             ownerName: owner?.name ?? null,
             ownerStatus: owner?.status ?? null,
             createdAt: r.createdAt.toISOString(),
+            ...activity.of(r.id),
           };
         }),
       };

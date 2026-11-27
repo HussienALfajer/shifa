@@ -13,6 +13,7 @@ import { type Principal, SessionExpiredError } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { SHIFA_DB } from '../../platform/database.module.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { recordSignIn } from '../usage/index.ts';
 import { type ClinicChoice, clinicChoices, defaultBranch, needsBranch } from './clinic-choices.ts';
 import { MyInvitations } from './my-invitations.service.ts';
 import { AUTH_DB } from './tokens.ts';
@@ -88,6 +89,9 @@ export class SwitcherService {
             .returning({ id: session.id }),
         );
         if (moved.length === 0) throw new SessionExpiredError();
+        // A session that signed in without a clinic counts its sign-in in the first one chosen
+        // (A-02 criterion 17); a switch between clinics is no new sign-in.
+        if (principal.tenantId === null) await recordSignIn(tx, now, principal.userId);
       },
     );
     return active;
