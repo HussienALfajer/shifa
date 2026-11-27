@@ -137,9 +137,11 @@ export function RecordList({
   };
 
   const showRows = !loading && items.length > 0;
+  const emptyShown = !loading && items.length === 0 && empty !== undefined;
   return (
     <div
-      role="list"
+      // Empty, it holds the EmptyState's heading, which a list may not: a named group then.
+      role={emptyShown ? 'group' : 'list'}
       aria-label={props['aria-label']}
       aria-busy={loading || undefined}
       data-slot="record-list"
@@ -199,7 +201,7 @@ export function RecordList({
           ))}
         </div>
       )}
-      {!loading && items.length === 0 && empty !== undefined && (
+      {emptyShown && (
         <EmptyState
           title={empty.title}
           {...(empty.description === undefined ? {} : { description: empty.description })}

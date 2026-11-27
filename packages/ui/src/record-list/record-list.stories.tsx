@@ -7,6 +7,9 @@ import type { Meta, StoryObj } from '@storybook/react-vite';
 import { expect, userEvent, within } from 'storybook/test';
 import { storyStates } from '../../.storybook/story-states.tsx';
 import { DOCTORS, nationalPhone, people, phones } from '../../test/fixtures.ts';
+import { DensityProvider } from '../density/density-provider.tsx';
+import { DirectionProvider } from '../providers/direction-provider.tsx';
+import { ThemeProvider } from '../providers/theme-provider.tsx';
 import { RecordList, type RecordListColumn, type RecordListItem } from './record-list.tsx';
 
 const NAMES = people(6, { seed: 31 }).map((p) => p.name);
@@ -69,9 +72,40 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-/** Search results: table, matched words, a current, a merged and an archived row, a footer. */
+/** Search results: matched words, a current, a merged and an archived row, a footer (two lines in a matrix cell). */
 export const Table: Story = {
   args: { footer: '4 نتائج، الأقرب أولًا · ↑ ↓ للتنقل، Enter لفتح الملف' },
+};
+
+/**
+ * The table at full width (the matrix's half-width cells are under 640 px, where it shows as two
+ * lines): Arabic light comfortable, then English dark compact.
+ */
+export const TableWide: Story = {
+  parameters: { matrix: false },
+  render: (args) => (
+    <div className="flex flex-col gap-4">
+      <RecordList {...args} footer="4 نتائج، الأقرب أولًا · ↑ ↓ للتنقل، Enter لفتح الملف" />
+      <DirectionProvider dir="ltr">
+        <ThemeProvider theme="dark">
+          <DensityProvider density="compact">
+            <div className="rounded-surface bg-bg-app p-4 text-text-default">
+              <RecordList
+                aria-label="Search results"
+                titleHeader="Patient"
+                columns={[
+                  { header: 'File no.', weight: 0.7 },
+                  { header: 'Sex and age' },
+                  { header: 'Contact phone', weight: 1.5 },
+                ]}
+                items={SEARCH.slice(0, 3)}
+              />
+            </div>
+          </DensityProvider>
+        </ThemeProvider>
+      </DirectionProvider>
+    </div>
+  ),
 };
 
 /** A family and duplicate candidates in two lines, sm: links; a button and a hidden row. */

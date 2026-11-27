@@ -176,7 +176,8 @@ function Lead({ item, ctx }: { item: RecordListItem; ctx: RowContext }) {
     );
   }
   return (
-    <span aria-hidden="true" className={cn('inline-flex shrink-0', item.dim && 'opacity-60')}>
+    // Dim: grey, not faded. The sheet's 60 % opacity left the initials under 4.5 : 1 (axe).
+    <span aria-hidden="true" className={cn('inline-flex shrink-0', item.dim && 'grayscale')}>
       <Avatar
         name={item.avatarName ?? item.title}
         {...(item.avatarSrc === undefined ? {} : { src: item.avatarSrc })}
