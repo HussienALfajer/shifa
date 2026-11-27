@@ -18,6 +18,7 @@ import {
 } from './controls.ts';
 import { FORM_REG, ICONS, MENU_GROUPS, MENU_ITEMS, SETUP, WA } from './data.ts';
 import { FORM_CLEAN } from './playground-data.ts';
+import { A02_PLAYGROUNDS } from './playground-a02.ts';
 import { MORE_PLAYGROUNDS } from './playground-more.ts';
 import { PICKER_PLAYGROUNDS } from './playground-pickers.ts';
 
@@ -331,4 +332,5 @@ export const PLAYGROUNDS: Record<string, Playground> = {
     ],
   },
   ...MORE_PLAYGROUNDS,
+  ...A02_PLAYGROUNDS,
 };

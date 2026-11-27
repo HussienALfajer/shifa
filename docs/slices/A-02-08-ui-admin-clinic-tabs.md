@@ -18,7 +18,7 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 ## Plan
 ### Checkpoint 1 — contract check and components
 - **Contract check:** every contract row of these screens against the built API (OpenAPI and a real call each): fields, errors, statuses. A mismatch is fixed in the API on this branch (its own commit, T0 review if it touches access or schema) and never worked around in the client. Any design-system release since A-02-01 is applied to the drawings and noted.
-- **Components:** the components approved in A-02-01 that these screens need (UsageChart and the DataTable wrapping column) are built with `/ui-component` from their sheets and synced to the Shifa Design System before the screens use them. Each is its own PR if the line budget needs it (ADR-0032).
+- **Components: delivered** ahead of this slice by the component PR (branch `feat/A-02-components`, 2026-11-27, owner's request): UsageChart and the DataTable wrapping column, built with `/ui-component` from their sheets, synced to the Shifa Design System (version `1795740724-780a`) and drawn on "Shifa Components". This checkpoint is now the contract check alone; see "Components (delivered ahead)" below.
 ### Checkpoint 2 — subscription and limits tab, settings tab
 - Override dialog (value by key type, reason, expiry), remove confirmation, type change with its preview.
 - Settings list with source labels, set value, lock and unlock.
@@ -35,14 +35,19 @@ The rows of the [A-02 screen contract](../specs/platform/A-02-screen-contract.md
 - Screenshots, light and dark, compared with the approved drawings (every difference fixed or explained); axe clean; `reviewer` agent; `security-reviewer` on the hand-off URL handling in the client.
 
 Tests written first: component tests per state in the drawings; the five journeys; screenshot comparisons.
-Estimated hand-written lines: ~4,370 (UsageChart ~600, DataTable wrap ~200, subscription and history ~950, settings ~420, support ~620, usage, chart figures and list ~610, i18n ~320, journeys ~650). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27).
+Estimated hand-written lines: ~3,570 without the components (subscription and history ~950, settings ~420, support ~620, usage, chart figures and list ~610, i18n ~320, journeys ~650). Re-estimated at A-02-01 checkpoint 3 (owner, 2026-11-27: ~4,370 with UsageChart ~600 and DataTable wrap ~200, which the component PR delivered).
 
 ## From A-02-01 (re-plan approved by the owner, 2026-11-27)
 The [screen contract](../specs/platform/A-02-screen-contract.md) is the reference: where this file's earlier plan names a route or field differently, the contract wins. Rows owned by this slice:
 Names in the earlier plan above that the contract replaces: the routes are the contract's; the settings tab only locks with a value and unlocks (criterion 9).
 - Screens: `A02Clinic` (tabs «الاشتراك والحدود» with the override history drawer, «الإعدادات», «دخول الدعم», «الاستخدام» with the series switch and the dashboard chart) and `A02Clinics` (usage columns, «بلا نشاط منذ 7 أيام»), on "Shifa Screens · Admin web", page "Proposals"; improvements 5, 6, 7 (criteria 19, 20, 21).
-- Components built here first, with `/ui-component` from their approved sheets, then synced: **UsageChart** (`A02SheetUsageChart`) and the **DataTable wrapping column** (`A02SheetDataTableWrap`). The countdown named earlier is not a component (a Badge whose text the screen updates).
-- Budget: ~4,370 with the components, above the ~4,000 guide; the owner kept ten slices (2026-11-27). Checkpoint 1 (components synced) is its own commit series; if the build runs over, the components go in their own PR first (ADR-0032).
+- Components: **UsageChart** (`A02SheetUsageChart`) and the **DataTable wrapping column** (`A02SheetDataTableWrap`), delivered ahead by the component PR (`feat/A-02-components`); the screens import them from `@shifa/ui`. The countdown named earlier is not a component (a Badge whose text the screen updates).
+- Budget: ~3,570 without the components, under the ~4,000 guide (was ~4,370 with them; the owner kept ten slices, 2026-11-27, then had the components built ahead).
+
+## Components (delivered ahead, 2026-11-27)
+Built with `/ui-component` in the component PR (`feat/A-02-components`), synced to the Shifa Design System (`1795740724-780a`), each with its sheet on "Shifa Components"; the proposal sheets were removed from "Proposals". Compared with the approved sheets:
+- **DataTable `wrap: true`:** as the sheet: the whole text on as many lines as it needs, the row grows (each drawn row is measured), the other cells at its top, 48 px rows at least (32 compact), sorting, selection, the pinned column and the keyboard unchanged; a table with a wrapping column is as wide as its box and the wrapped text never widens it. Difference: the wrapping column takes three shares from a 128 px minimum and the other columns keep their minimum (128 px, the first 240 px unless `width` says otherwise), so in a box narrower than those minimums the table scrolls sideways and a date may be cut at its minimum; the sheet's narrow specimen shrank every column instead. On the support log, give «من» `width: 'md'`.
+- **UsageChart:** as the sheet: quarter axis of whole numbers (top = 4 × ⌈highest ÷ 4⌉), dashed gold average named at the oldest days, today gold, empty days a thin line, each bar the system's Tooltip («14 تسجيل دخول · 26/11»), one Tab stop, a summary for screen readers, the empty state «لا بيانات بعد» and a loading placeholder; the series switch and the figures stay on the screen. Differences: the x-axis labels sit under their own bars (every seventh day from the oldest, then «اليوم») rather than spread evenly; Left and Right follow the drawing (Left is the older day) in both directions, since time runs left to right.
 
 ## Stopped at
 Planned.
