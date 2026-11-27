@@ -16,6 +16,12 @@
   --container-pagination: 430px;
 }
 
+/* RecordList's own width below which its table layout shows as two lines (A-03-01): the title
+ * and three columns stop fitting on a phone or in a narrow panel. `@record-table:` is the variant. */
+@theme {
+  --container-record-table: 640px;
+}
+
 /* Looping animations (slice 0.4-07, OD-64). The spinner: the four jasmine petals of the logo light
  * in turn, 200 ms apart, an 800 ms cycle; each petal runs the same fade, started a quarter later.
  * The skeleton: a soft pulse of 1.2 s each way. Both stop under reduced motion (motion-reduce:). */

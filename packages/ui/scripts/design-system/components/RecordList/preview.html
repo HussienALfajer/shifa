@@ -1,0 +1,46 @@
+<!-- @dsCard group="Data display" height=760 subtitle="Table with matched words, a current and an archived row; two lines with a button and a hidden row · RTL light, LTR dark compact" -->
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body { margin: 0; font-family: var(--font-sans); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+  .board { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+  .panel { display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 12px; border: 1px solid var(--shifa-color-border-default); background: var(--shifa-color-bg-app); color: var(--shifa-color-text-default); }
+</style>
+</head>
+<body>
+<div class="board">
+  <section class="panel" data-theme="light" dir="rtl" lang="ar"><div class="a"></div><div class="b"></div></section>
+  <section class="panel" data-theme="dark" data-density="compact" dir="ltr" lang="en"><div class="a"></div></section>
+</div>
+<script>
+  var cols = [{ header: 'رقم الملف', weight: 0.7 }, { header: 'الجنس والعمر' }, { header: 'الفرع', weight: 1.2 }];
+  var row = function (id, title, extra) { return Object.assign({ id: id, title: title, href: '#' }, extra); };
+  var ar = document.querySelector('[lang="ar"]');
+  window.Shifa.mount(ar.querySelector('.a'), 'RecordList', {
+    'aria-label': 'نتائج البحث', titleHeader: 'المريض', columns: cols, footer: '3 نتائج، الأقرب أولًا · ↑ ↓ للتنقل، Enter لفتح الملف',
+    items: [
+      row('1043', 'خديجة المصري', { matches: [0], details: [{ text: 'الاسم' }], cells: [{ text: '1043', kind: 'number' }, { text: 'أنثى · 34 سنة' }, { text: 'فرع الشهباء' }], current: true }),
+      row('1187', 'أسماء البكري', { details: [{ text: 'الاسم بتهجئة قريبة' }, { text: 'ابنة صاحب الهاتف' }], cells: [{ text: '1187', kind: 'number' }, { text: 'أنثى · ~9 سنوات' }, { text: 'فرع الشهباء' }] }),
+      row('214', 'منى العمر', { details: [{ badge: 'مؤرشف', icon: 'archive' }, { text: 'أُرشف في 02/09/2026' }], cells: [{ text: '214', kind: 'number' }, { text: 'أنثى · 70 سنة' }, { text: 'فرع إعزاز' }], dim: true })
+    ]
+  });
+  window.Shifa.mount(ar.querySelector('.b'), 'RecordList', {
+    'aria-label': 'ملفات مشابهة', layout: 'stack', size: 'sm',
+    items: [
+      { id: '88', title: 'علي حمدان', details: [{ text: 'ملف 88' }, { text: 'ذكر · 45 سنة' }, { text: 'الهاتف نفسه واسم قريب' }], action: { label: 'فتح الملف' } },
+      { id: '1188', locked: true, title: 'ملف مشابه لدى طبيب آخر', details: [{ text: 'ملف 1188' }, { text: 'لا تظهر لك تفاصيله' }] }
+    ]
+  });
+  window.Shifa.mount(document.querySelector('[lang="en"] .a'), 'RecordList', {
+    'aria-label': 'Search results', titleHeader: 'Patient', columns: [{ header: 'File no.', weight: 0.7 }, { header: 'Sex and age' }, { header: 'Branch', weight: 1.2 }],
+    items: [
+      row('1043', 'Rami Al-Sheikh', { matches: [0], details: [{ text: 'Name' }], cells: [{ text: '1043', kind: 'number' }, { text: 'Male · 34' }, { text: 'Al-Shahba' }], current: true }),
+      row('1220', 'Nizar Attar', { details: [{ text: 'Name, a close spelling' }], cells: [{ text: '1220', kind: 'number' }, { text: 'Male · 27' }, { text: 'Azaz' }] })
+    ]
+  });
+</script>
+</body>
+</html>

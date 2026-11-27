@@ -211,7 +211,7 @@ The count and estimates are re-checked at A-03-01 checkpoint 3 with the contract
 | A-03-09 | UI code 1, reception: «المرضى» search, «مريض جديد» / edit, «ملف المريض» with archive and restore; contract check, screens on the A-03-12 components, four journeys ([slice](slices/A-03-09-ui-search-and-registration.md)); criteria 21–33 on screen; ~4,450 lines, above the budget by the owner's choice (re-planned at A-03-01) | T1 | Planned |
 | A-03-10 | UI code 2, owner tools: merge, «من فتح هذا الملف», «حقول ملف المريض», «مرضاي فقط»; contract check, screens on the A-03-12 components, four journeys ([slice](slices/A-03-10-ui-chart-merge-read-log.md)); criteria 34–41 on screen; ~4,440 lines, above the budget by the owner's choice (re-planned at A-03-01) | T1 | Planned |
 | A-03-11 | Folded into A-03-10 at the A-03-01 re-plan (owner, 2026-11-27); not built ([slice](slices/A-03-11-ui-fields-and-setting.md)) | T1 | Folded |
-| A-03-12 | Components: RecordList, RecordHeader, DescriptionList, EditableList and the Drawer «wide», from their approved sheets, synced to the design system; in its own worktree beside the API slices once A-03-01 is merged ([slice](slices/A-03-12-components.md)); ~1,370 lines | T1 | Planned |
+| A-03-12 | Components: RecordList, RecordHeader, DescriptionList, EditableList and the Drawer «wide», from their approved sheets, synced to the design system; in its own worktree beside the API slices once A-03-01 is merged ([slice](slices/A-03-12-components.md)); ~1,370 lines | T1 | In review: five components, 84 new component tests and every story with axe green, 34 new screenshot baselines; design-system sync and the "Shifa Components" sheets wait for the owner to start them; PR open |
 
 ## After Release 1 (candidates)
 

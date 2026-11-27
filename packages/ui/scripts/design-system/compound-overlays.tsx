@@ -150,6 +150,8 @@ export interface DrawerData {
   triggerLabel: string;
   triggerIcon?: IconName;
   side?: 'start' | 'end' | 'bottom';
+  /** `wide`: 550 px for a form with paired fields (A-03); 400 px by default. */
+  size?: 'default' | 'wide';
   title: string;
   description?: string;
   fields?: { label: string; value?: string }[];
@@ -163,6 +165,7 @@ export function Drawer({
   triggerLabel,
   triggerIcon,
   side,
+  size,
   title,
   description,
   fields = [],
@@ -174,6 +177,7 @@ export function Drawer({
   return (
     <CodeDrawer
       {...(side === undefined ? {} : { side })}
+      {...(size === undefined ? {} : { size })}
       {...(defaultOpen === undefined ? {} : { defaultOpen })}
     >
       <DrawerTrigger

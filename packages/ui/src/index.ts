@@ -87,6 +87,13 @@ export { DatePicker, type DatePickerProps } from './date-picker/date-picker.tsx'
 export { DensityProvider, useCoarsePointer, useDensity } from './density/density-provider.tsx';
 export { DENSITIES, type Density, resolveDensity } from './density/resolve.ts';
 export {
+  DescriptionList,
+  type DescriptionListProps,
+  type DescriptionListRow,
+  type DescriptionListSection,
+  type DescriptionListValueKind,
+} from './description-list/description-list.tsx';
+export {
   Dialog,
   DialogActions,
   DialogClose,
@@ -106,9 +113,16 @@ export {
   type DrawerContentProps,
   type DrawerProps,
   type DrawerSide,
+  type DrawerSize,
   DrawerTrigger,
   type DrawerTriggerProps,
 } from './drawer/drawer.tsx';
+export {
+  EditableList,
+  type EditableListItem,
+  type EditableListProps,
+  type EditableListWords,
+} from './editable-list/editable-list.tsx';
 export {
   EmptyState,
   type EmptyStateArt,
@@ -204,6 +218,23 @@ export {
   type RadioGroupProps,
   type RadioProps,
 } from './radio/radio.tsx';
+export {
+  RecordHeader,
+  type RecordHeaderBadge,
+  type RecordHeaderFact,
+  type RecordHeaderProps,
+} from './record-header/record-header.tsx';
+export {
+  RecordList,
+  type RecordListCell,
+  type RecordListColumn,
+  type RecordListDetail,
+  type RecordListItem,
+  type RecordListLayout,
+  type RecordListProps,
+  type RecordListSize,
+  type RecordListTool,
+} from './record-list/record-list.tsx';
 export {
   SegmentedControl,
   type SegmentedControlItem,

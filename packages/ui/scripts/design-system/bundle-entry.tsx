@@ -15,6 +15,7 @@ import {
   CopyField,
   CountBadge,
   DatePicker,
+  DescriptionList,
   Icon,
   IconButton,
   Input,
@@ -33,6 +34,7 @@ import {
 import './bundle.css';
 import { Dialog, Menu, Popover, Tabs } from './compound.tsx';
 import { PageBanner, UsageChart } from './compound-a02.tsx';
+import { EditableList, RecordHeader, RecordList } from './compound-a03.tsx';
 import { CommandPalette } from './compound-command.tsx';
 import {
   Avatar,
@@ -95,6 +97,10 @@ const COMPONENTS = {
   UsageChart,
   MultiCombobox,
   PageBanner,
+  RecordList,
+  RecordHeader,
+  DescriptionList,
+  EditableList,
 } as const;
 type Name = keyof typeof COMPONENTS;
 type Props = Record<string, unknown>;
