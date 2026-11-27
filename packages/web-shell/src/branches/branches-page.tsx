@@ -6,7 +6,10 @@
 // loading, no connection. A solo clinic has no branch screens: the address goes to the clinic's
 // settings, whose «الفروع» card adds the second branch (f) — unless archived branches wait for a
 // restore. Archiving down to one keeps the page (the last-branch state); the menu then drops it.
-import { Button, Card, IconButton, SkeletonGroup, SkeletonText } from '@shifa/ui';
+// A-02-10 (boards `A02cLimits`, `A02cBranchPlace`): each card's city and area; at the branches'
+// limit «إضافة فرع» is disabled with the Callout and a refused restore names the branch; a
+// support session draws every write disabled with «للقراءة فقط».
+import { Button, Callout, Card, IconButton, SkeletonGroup, SkeletonText } from '@shifa/ui';
 import { useQueryClient } from '@tanstack/react-query';
 import { Navigate, useNavigate } from '@tanstack/react-router';
 import { useId, useRef, useState } from 'react';
@@ -14,13 +17,17 @@ import { AppFrame } from '../account/app-frame.tsx';
 import { clinicsKey, isOwner, useActiveClinic, useSignedIn } from '../account/data.ts';
 import { LoadFailed } from '../account/load-failed.tsx';
 import { dayDate } from '../auth/dates.ts';
+import { BRANCHES, capabilitiesKey, isFull, limitReachedOf, useLimit } from '../capabilities.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
+import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { type Branch, branchesKey, teamKey, useBranchList } from '../team/data.ts';
+import { useLimitSentence } from '../team/limit-parts.tsx';
 import { useText } from '../text.ts';
 import { ArchiveDialog } from './archive-dialog.tsx';
 import { BranchDialog } from './branch-dialog.tsx';
 import { BranchNote, type PageNote } from './branch-note.tsx';
+import { BranchPlaceLine } from './place-fields.tsx';
 
 type Target =
   | { kind: 'add' }
@@ -35,6 +42,8 @@ export function useBranchesChanged(tenantId: string, userId: string) {
       queryClient.invalidateQueries({ queryKey: branchesKey(tenantId) }),
       queryClient.invalidateQueries({ queryKey: teamKey(tenantId) }),
       queryClient.invalidateQueries({ queryKey: clinicsKey(userId) }),
+      // The branches' use: a full limit frees up after an archive (A-02-10).
+      queryClient.invalidateQueries({ queryKey: capabilitiesKey(tenantId) }),
     ]);
 }
 
@@ -51,6 +60,7 @@ function BranchCard({
 }) {
   const text = useText();
   const navigate = useNavigate();
+  const readOnly = useReadOnly();
   const reasonId = useId();
   const titleId = useId();
   return (
@@ -64,8 +74,15 @@ function BranchCard({
           >
             {branch.name}
           </h2>
-          <IconButton icon="pencil" label={text('branchEdit')} variant="ghost" onClick={onEdit} />
+          <IconButton
+            icon="pencil"
+            label={text('branchEdit')}
+            variant="ghost"
+            disabled={readOnly}
+            onClick={onEdit}
+          />
         </div>
+        <BranchPlaceLine branch={branch} />
         <p className="m-0 text-data leading-body text-text-muted">
           {branch.address ?? text('branchNoAddress')}
         </p>
@@ -96,12 +113,13 @@ function BranchCard({
             size="sm"
             variant="ghost"
             startIcon="archive"
-            disabled={last}
+            disabled={readOnly || last}
             {...(last ? { 'aria-describedby': reasonId } : {})}
             onClick={onArchive}
           >
             {text('branchArchive')}
           </Button>
+          {readOnly && <ReadOnlyNote />}
         </div>
       </Card>
     </div>
@@ -116,6 +134,7 @@ function ArchivedRow({
   onRestore: (b: Branch) => Promise<void>;
 }) {
   const text = useText();
+  const readOnly = useReadOnly();
   const [busy, setBusy] = useState(false);
   return (
     <li
@@ -134,6 +153,7 @@ function ArchivedRow({
         size="sm"
         variant="secondary"
         loading={busy}
+        disabled={readOnly}
         onClick={() => {
           setBusy(true);
           void onRestore(branch).finally(() => {
@@ -164,6 +184,10 @@ function Branches({
   const [note, setNote] = useState<PageNote | null>(null);
   const active = data?.active ?? [];
   const archived = data?.archived ?? [];
+  const readOnly = useReadOnly();
+  const sentence = useLimitSentence();
+  const branchLimit = useLimit(tenantId, BRANCHES);
+  const full = isFull(branchLimit);
 
   const refused = (next: PageNote) => {
     setTarget(null);
@@ -181,6 +205,14 @@ function Branches({
         params: { path: { id: branch.id } },
       });
       if (back) return { tone: 'success', title: text('branchRestored', { name: back.name }) };
+      const reached = limitReachedOf(error);
+      if (reached) {
+        return {
+          tone: 'danger',
+          title: text('limitRestoreRefused', { name: branch.name }),
+          text: sentence(reached),
+        };
+      }
       if (errorFacts(error).code === 'branch_not_archived') {
         return {
           tone: 'warning',
@@ -206,16 +238,20 @@ function Branches({
   }
 
   const add = (
-    <Button
-      variant="primary"
-      startIcon="plus"
-      onClick={() => {
-        setNote(null);
-        setTarget({ kind: 'add' });
-      }}
-    >
-      {text('branchesAdd')}
-    </Button>
+    <span className="flex flex-col items-end gap-1">
+      <Button
+        variant="primary"
+        startIcon="plus"
+        disabled={readOnly || full}
+        onClick={() => {
+          setNote(null);
+          setTarget({ kind: 'add' });
+        }}
+      >
+        {text('branchesAdd')}
+      </Button>
+      {readOnly && <ReadOnlyNote />}
+    </span>
   );
   return (
     <AppFrame
@@ -233,6 +269,17 @@ function Branches({
         </p>
         {add}
       </div>
+      {full && (
+        <Callout
+          tone="info"
+          title={text('limitBranchesFullTitle', {
+            used: branchLimit.used,
+            limit: branchLimit.limit,
+          })}
+        >
+          {text('limitBranchesFullText')}
+        </Callout>
+      )}
       <BranchNote note={note} />
       {isError && !data ? (
         <LoadFailed retry={refetch} />
@@ -330,7 +377,11 @@ export function BranchesPage() {
     <Branches
       tenantId={session.tenantId}
       userId={session.userId}
-      {...(clinic ? { clinicName: clinic.name } : {})}
+      {...(clinic
+        ? { clinicName: clinic.name }
+        : session.support
+          ? { clinicName: session.support.clinicName }
+          : {})}
     />
   );
 }

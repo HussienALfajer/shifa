@@ -1,10 +1,13 @@
 // «الفروع» in a solo clinic's settings (slice A-01-08 checkpoint 4; improvement f, spec gap 1):
 // a clinic with one active branch has no branch screens, so its owner adds the second branch
 // here; added, the clinic reads its branches and clinics again and the page goes to «الفروع».
-// Archived branches waiting for a restore are linked to the branches page.
+// Archived branches waiting for a restore are linked to the branches page. A-02-10: absent when
+// the plan allows one branch; disabled at a full limit or in a support session.
 import { Button, Card } from '@shifa/ui';
 import { Link, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { BRANCHES, isFull, useLimit } from '../capabilities.ts';
+import { useReadOnly } from '../support/support-banner.tsx';
 import { useBranchList } from '../team/data.ts';
 import { useText } from '../text.ts';
 import { BranchDialog } from './branch-dialog.tsx';
@@ -28,7 +31,11 @@ export function SettingsBranchesCard({
   const [adding, setAdding] = useState(false);
   const [note, setNote] = useState<PageNote | null>(null);
   const archived = data?.archived.length ?? 0;
+  const readOnly = useReadOnly();
+  const limit = useLimit(tenantId, BRANCHES);
   if (!solo) return null;
+  // A plan of one branch has no second one to add: the card is absent, never disabled (A-02-10).
+  if (limit !== undefined && limit.limit <= 1) return null;
   return (
     <div data-testid="settings-branches" className="max-w-(--shifa-width-140)">
       <Card className="gap-4 p-(--shifa-card-padding)">
@@ -47,6 +54,7 @@ export function SettingsBranchesCard({
           <Button
             variant="secondary"
             startIcon="plus"
+            disabled={readOnly || isFull(limit)}
             onClick={() => {
               setNote(null);
               setAdding(true);

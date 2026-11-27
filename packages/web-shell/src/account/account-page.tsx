@@ -15,8 +15,10 @@ import {
   SkeletonGroup,
   SkeletonText,
 } from '@shifa/ui';
+import { Navigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { listOf, ROLE_TEXT, type Role } from '../chooser/chooser-text.ts';
+import { isSupport } from '../guard.ts';
 import { useText } from '../text.ts';
 import { AppFrame } from './app-frame.tsx';
 import { isOwner, useActiveClinic, useProfile, useSignedIn } from './data.ts';
@@ -104,6 +106,8 @@ function PasswordCard({ tell }: { tell: Tell }) {
 export function AccountPage() {
   const text = useText();
   const [note, setNote] = useState<Note | null>(null);
+  // A support session reads the clinic, never an account: home instead (A-02-10).
+  if (isSupport(useSignedIn())) return <Navigate to="/" replace />;
   return (
     <AppFrame current="account" title={text('accountTitle')} description={text('accountText')}>
       {note && (

@@ -3,7 +3,8 @@
 // scope and the sensitive toggles. «حفظ» waits for a change (improvement d) and sends only what
 // changed; removing every role is confirmed first (the person leaves this clinic). `last_owner`,
 // `owner_role_protected`, `branch_archived` and no connection keep the choices; a 404 says the
-// person left the team.
+// person left the team. A-02-10: the doctors' limit on the roles and a 409 `limit_reached`
+// named; in a support session «حفظ» is disabled with «للقراءة فقط».
 import type { CommonKey } from '@shifa/i18n';
 import {
   AlertDialog,
@@ -15,10 +16,14 @@ import {
   Input,
 } from '@shifa/ui';
 import { type ReactNode, useState } from 'react';
+import { useSignedIn } from '../account/data.ts';
+import { limitReachedOf } from '../capabilities.ts';
 import { errorFacts } from '../client.ts';
 import { useShell } from '../providers.tsx';
+import { ReadOnlyNote, useReadOnly } from '../support/support-banner.tsx';
 import { useText } from '../text.ts';
 import { type Branch, type MemberDetail, NAME_MAX } from './data.ts';
+import { LimitRefused, useDoctorLimit } from './limit-parts.tsx';
 import { GONE, type Note } from './member-account.tsx';
 import {
   defaultOf,
@@ -84,6 +89,9 @@ export function MemberForm({
   });
   const [busy, setBusy] = useState(false);
   const [confirmEmpty, setConfirmEmpty] = useState(false);
+  const [limitRefused, setLimitRefused] = useState<ReturnType<typeof limitReachedOf>>(null);
+  const readOnly = useReadOnly();
+  const doctorLimit = useDoctorLimit(useSignedIn()?.tenantId ?? '');
 
   const nameChanged = name.trim() !== member.name;
   const rolesChanged = !sameRoles(roles, saved);
@@ -114,6 +122,7 @@ export function MemberForm({
   async function send() {
     setBusy(true);
     onNote(null);
+    setLimitRefused(null);
     try {
       const { data, error, response } = await shell.api.PATCH('/team/members/{id}', {
         params: { path: { id: member.id } },
@@ -126,6 +135,11 @@ export function MemberForm({
       if (data) {
         onSaved(data);
         onNote({ tone: 'success', title: 'memberSaved', text: 'memberSavedText' });
+        return;
+      }
+      const reached = limitReachedOf(error);
+      if (reached) {
+        setLimitRefused(reached);
         return;
       }
       const { code } = errorFacts(error);
@@ -178,7 +192,12 @@ export function MemberForm({
         lockedOwner={member.isLastOwner}
         archivedNames={archivedNames}
         problem={problem.roles}
+        doctorLimit={doctorLimit}
+        heldDoctor={
+          member.status !== 'deactivated' && member.roles.some((r) => r.role === 'doctor')
+        }
       />
+      <LimitRefused reached={limitRefused} />
       <PermissionsField
         keys={member.permissions.map((p) => p.key)}
         catalogue={catalogue}
@@ -188,9 +207,10 @@ export function MemberForm({
       />
       {children}
       <DrawerActions>
-        <Button variant="primary" loading={busy} disabled={!changed} onClick={save}>
+        <Button variant="primary" loading={busy} disabled={readOnly || !changed} onClick={save}>
           {text('save')}
         </Button>
+        {readOnly && <ReadOnlyNote />}
       </DrawerActions>
       <AlertDialog open={confirmEmpty} onOpenChange={setConfirmEmpty}>
         {confirmEmpty && (

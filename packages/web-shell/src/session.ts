@@ -5,7 +5,8 @@ import type { Schemas } from '@shifa/api-client-ts';
 import { type QueryClient, queryOptions, useQuery } from '@tanstack/react-query';
 import { forgetRememberedPhone } from './auth/remembered-phone.ts';
 import { errorFacts, type ShellClient } from './client.ts';
-import type { SignInReason } from './guard.ts';
+import { isSupport, type SignInReason } from './guard.ts';
+import { rememberSupportEnd } from './support/state.ts';
 import { announceSignOut } from './tabs.ts';
 
 export type SessionView = Schemas['SessionView'];
@@ -94,6 +95,12 @@ export function signOutCount(): number {
   return signOuts;
 }
 
+/** True when the cached session is a support session (its sign-out ends the grant). */
+export function cachedSupport(queryClient: QueryClient): boolean {
+  const known = queryClient.getQueryData<SessionState>(sessionQueryKey);
+  return known?.kind === 'signed-in' && isSupport(known.session);
+}
+
 /**
  * Ends the session on the server and forgets everything cached for it. Never throws: true when
  * the server answered 204 or 401 (already ended), false when the request failed (network, 5xx,
@@ -110,8 +117,13 @@ export async function signOut(
   // The person is leaving this computer: the remembered phone goes before the request, whatever
   // the answer (checkpoint 5 security review L2).
   if (announce === 'signed_out') forgetRememberedPhone();
+  // A support session's one write is the end of its own grant: «خروج» ends it (A-02-10).
+  const support = cachedSupport(queryClient);
   try {
-    const { response } = await shell.api.POST('/auth/sign-out');
+    const { response } = support
+      ? await shell.api.POST('/auth/support/end')
+      : await shell.api.POST('/auth/sign-out');
+    if (support && response.ok) rememberSupportEnd({ kind: 'self', endedAt: Date.now() });
     // 401: the session had already ended on the server, which is what was asked.
     return response.ok || response.status === 401;
   } catch {

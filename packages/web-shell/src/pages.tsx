@@ -25,6 +25,8 @@ import { SessionEndsNotice } from './idle-dialog.tsx';
 import { useShell } from './providers.tsx';
 import type { ShellPages } from './router.tsx';
 import { type SessionView, useSession } from './session.ts';
+import { SupportEndedPage } from './support/ended-page.tsx';
+import { SupportHandoffPage } from './support/handoff-page.tsx';
 import { TeamPage } from './team/team-page.tsx';
 import { useText } from './text.ts';
 import { type ThemePreference, useThemePreference } from './theme.ts';
@@ -185,6 +187,8 @@ export const shellPages: ShellPages = {
   settings: SettingsPage,
   team: TeamPage,
   branches: BranchesPage,
+  supportHandoff: SupportHandoffPage,
+  supportEnded: SupportEndedPage,
   clinics: ClinicsPage,
   createClinic: CreateClinicPage,
   clinic: ClinicPage,

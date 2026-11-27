@@ -3,14 +3,20 @@
 // guard's same-origin rule hold), plus one `session-ended` event for every 401 that means the
 // session is gone (`unauthorized`, `session_expired`). Nothing retries.
 import { type ApiClient, createApiClient } from '@shifa/api-client-ts';
+import { rememberSupportEnd, supportEndOf } from './support/state.ts';
 
-/** `reason` is the server's `idle`, `absolute` or `ended` on a `session_expired` (A-01-09). */
+/**
+ * `reason` is the server's `idle`, `absolute`, `ended` or `support_ended` on a `session_expired`
+ * (A-01-09, A-02-10).
+ */
 export type SessionEndedListener = (code: string, reason?: string) => void;
 
 export interface ShellClient {
   api: ApiClient;
   /** Calls `listener` with the error code of each 401; returns the unsubscribe. */
   onSessionEnded(listener: SessionEndedListener): () => void;
+  /** Calls `listener` on each 403 `support_read_only` (a support session's write, A-02-10). */
+  onReadOnly(listener: () => void): () => void;
 }
 
 export interface ShellClientOptions {
@@ -32,7 +38,7 @@ const NOT_A_SESSION = new Set(['/auth/sign-in']);
 const SESSION_CODES = new Set(['unauthorized', 'session_expired']);
 
 /** Why the server ended a session: only these values pass, anything else is dropped. */
-const END_REASONS = new Set(['idle', 'absolute', 'ended']);
+const END_REASONS = new Set(['idle', 'absolute', 'ended', 'support_ended']);
 
 export interface ErrorFacts {
   code: string;
@@ -72,13 +78,29 @@ export function createShellClient(options: ShellClientOptions = {}): ShellClient
   const prefix = new URL(baseUrl).pathname.replace(/\/+$/, '');
   const api = createApiClient({ baseUrl, ...(options.fetch ? { fetch: options.fetch } : {}) });
   const listeners = new Set<SessionEndedListener>();
+  const readOnly = new Set<() => void>();
   api.use({
     async onResponse({ request, response }) {
+      if (response.status === 403) {
+        if ((await endOf(response)).code === 'support_read_only') {
+          for (const listener of readOnly) listener();
+        }
+        return undefined;
+      }
       if (response.status !== 401) return undefined;
       const path = new URL(request.url).pathname.slice(prefix.length);
       if (NOT_A_SESSION.has(path)) return undefined;
       const { code, reason } = await endOf(response);
       if (!SESSION_CODES.has(code)) return undefined;
+      // How a support grant ended, kept for the ended page before anyone is told (A-02-10).
+      if (reason === 'support_ended') {
+        try {
+          const end = supportEndOf(await response.clone().json());
+          if (end) rememberSupportEnd(end);
+        } catch {
+          // No body: the ended page says it plainly.
+        }
+      }
       for (const listener of listeners) listener(code, reason);
       return undefined;
     },
@@ -89,6 +111,12 @@ export function createShellClient(options: ShellClientOptions = {}): ShellClient
       listeners.add(listener);
       return () => {
         listeners.delete(listener);
+      };
+    },
+    onReadOnly(listener) {
+      readOnly.add(listener);
+      return () => {
+        readOnly.delete(listener);
       };
     },
   };
