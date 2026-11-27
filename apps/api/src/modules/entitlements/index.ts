@@ -17,7 +17,6 @@ export {
 } from './catalogue.ts';
 export { EntitlementsModule } from './entitlements.module.ts';
 export { ClinicLimits, type EnforcedLimit } from './limits.ts';
-export { type Usage, usageInClinic } from './usage-counts.ts';
 export {
   type AddonSource,
   type EntitlementSources,
@@ -25,3 +24,4 @@ export {
   resolveAll,
   resolveKey,
 } from './resolve.ts';
+export { type Usage, usageInClinic } from './usage-counts.ts';

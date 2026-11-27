@@ -19,6 +19,7 @@ import { ROLES, type Role } from '../../src/access/roles.ts';
 import { BetterAuthAdapter } from '../../src/modules/identity/index.ts';
 import { newLinkToken } from '../../src/modules/identity/links.ts';
 import { ContractCheck } from '../../src/platform/contract/contract-check.ts';
+import { GatedProbeController, TEST_ENTITLEMENTS, TEST_FLAGS } from '../access/gated-probe.ts';
 import {
   HeaderAuthAdapter,
   headersFor,
@@ -48,7 +49,6 @@ import {
   openLimitsAndTestFeature,
   totpState,
 } from './route-matrix.fixtures.ts';
-import { GatedProbeController, TEST_ENTITLEMENTS, TEST_FLAGS } from '../access/gated-probe.ts';
 
 const CALLERS: readonly Caller[] = ['anonymous', ...ROLES];
 

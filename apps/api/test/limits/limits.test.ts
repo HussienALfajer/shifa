@@ -10,8 +10,8 @@ import { superuserDb, workerDatabaseName } from '@shifa/db/testing';
 import { and, eq, isNull } from 'drizzle-orm';
 import type { LightMyRequestResponse } from 'fastify';
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { testClock } from '../identity/support.ts';
 import { put } from '../entitlements/support.ts';
+import { testClock } from '../identity/support.ts';
 import {
   addMember,
   type Clinic,

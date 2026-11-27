@@ -6,6 +6,7 @@ import { ClinicList } from '@shifa/contracts';
 import { syntheticPhones } from '@shifa/db/testing';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { get, testClock } from '../identity/support.ts';
+import type { TestApp } from '../support.ts';
 import {
   createClinicViaApi,
   platformApp,
@@ -13,7 +14,6 @@ import {
   type SignedInAdmin,
   signedInAdmin,
 } from './support.ts';
-import type { TestApp } from '../support.ts';
 
 const phones = syntheticPhones(2026_12_24, 6);
 let app: TestApp;

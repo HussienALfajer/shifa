@@ -25,9 +25,9 @@ import {
   ROLE_GRANTS,
   readAccess,
 } from './access-check.ts';
-import { findGates, type GatePort, NO_GATES } from './gates.ts';
 import { AUTH_PORT, type AuthPort } from './auth.port.ts';
 import { rememberPrincipal } from './decorators.ts';
+import { findGates, type GatePort, NO_GATES } from './gates.ts';
 import {
   PERMISSION_CATALOGUE,
   type PermissionCatalogue,

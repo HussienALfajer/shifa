@@ -14,13 +14,13 @@ import {
   PUBLIC_METADATA,
   SIGNED_IN_METADATA,
 } from './decorators.ts';
+import { findGates, type GatePort } from './gates.ts';
 import {
   assertGrantsKnown,
   PERMISSION_CATALOGUE,
   type PermissionCatalogue,
   UnknownPermissionError,
 } from './permissions.ts';
-import { findGates, type GatePort } from './gates.ts';
 import type { RoleGrants } from './roles.ts';
 
 /** Injection token of the role grants (production: PRODUCTION_GRANTS). */
