@@ -17,6 +17,12 @@ const NAV_ITEM = cn(
   'aria-[current=page]:bg-selection-default aria-[current=page]:font-semibold',
 );
 
+const ADMIN_NAV = [
+  { to: '/flags', icon: 'list', label: 'navFlags' },
+  { to: '/announcements', icon: 'bell', label: 'navAnnouncements' },
+  { to: '/places', icon: 'buildings', label: 'navPlaces' },
+] as const;
+
 export function AdminFrame({
   title,
   description,
@@ -64,6 +70,18 @@ export function AdminFrame({
             <Icon name="house" />
             {text('navClinics')}
           </Link>
+          {/* A-02-09: the drawn navigation of `A02Flags`, `A02Announcements`, `A02Cities`. */}
+          {ADMIN_NAV.map((item) => (
+            <Link
+              key={item.to}
+              to={item.to}
+              className={NAV_ITEM}
+              activeProps={{ 'aria-current': 'page' }}
+            >
+              <Icon name={item.icon} />
+              {text(item.label)}
+            </Link>
+          ))}
           <span className="flex-1" />
           <Button variant="ghost" startIcon="sign-out" className="justify-start" onClick={signOut}>
             {text('signOutShort')}

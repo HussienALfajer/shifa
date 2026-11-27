@@ -53,6 +53,10 @@ export interface ShellPages {
   clinics?: ComponentType;
   createClinic?: ComponentType;
   clinic?: ComponentType;
+  /** Admin web only: flags, announcements, cities and areas (A-02-09). */
+  flags?: ComponentType;
+  announcements?: ComponentType;
+  places?: ComponentType;
   notFound?: ComponentType;
 }
 
@@ -198,6 +202,13 @@ export function buildRouteTree(app: ShellApp, pages: ShellPages) {
   }
   if (app === 'admin' && pages.clinic) {
     children.push(route('/clinics/$id', 'signed-in', pages.clinic));
+  }
+  if (app === 'admin') {
+    if (pages.flags) children.push(route('/flags', 'signed-in', pages.flags));
+    if (pages.announcements) {
+      children.push(route('/announcements', 'signed-in', pages.announcements));
+    }
+    if (pages.places) children.push(route('/places', 'signed-in', pages.places));
   }
   return root.addChildren(children);
 }

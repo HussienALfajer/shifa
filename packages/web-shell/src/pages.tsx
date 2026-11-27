@@ -9,9 +9,12 @@ import type { ReactNode } from 'react';
 import { AccountPage } from './account/account-page.tsx';
 import { AppFrame } from './account/app-frame.tsx';
 import { SettingsPage } from './account/settings-page.tsx';
+import { AnnouncementsPage } from './admin/announcements/announcements-page.tsx';
 import { ClinicPage } from './admin/clinic-page.tsx';
 import { ClinicsPage } from './admin/clinics-page.tsx';
 import { CreateClinicPage } from './admin/create-clinic-page.tsx';
+import { FlagsPage } from './admin/flags/flags-page.tsx';
+import { PlacesPage } from './admin/places/places-page.tsx';
 import { CodesLeftNotice } from './auth/codes-left-notice.tsx';
 import { MfaPage } from './auth/mfa.tsx';
 import { SetupLinkPage } from './auth/setup-link.tsx';
@@ -185,5 +188,8 @@ export const shellPages: ShellPages = {
   clinics: ClinicsPage,
   createClinic: CreateClinicPage,
   clinic: ClinicPage,
+  flags: FlagsPage,
+  announcements: AnnouncementsPage,
+  places: PlacesPage,
   notFound: NotFoundPage,
 };

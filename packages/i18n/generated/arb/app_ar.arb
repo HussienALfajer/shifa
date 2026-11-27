@@ -131,6 +131,389 @@
   "@commonAdminWebTitle": {
     "description": "common.adminWebTitle"
   },
+  "commonAnnBody": "النص",
+  "@commonAnnBody": {
+    "description": "common.annBody"
+  },
+  "commonAnnBodyHint": "نص عادي حتى 280 حرفًا، بلا روابط أو تنسيق.",
+  "@commonAnnBodyHint": {
+    "description": "common.annBodyHint"
+  },
+  "commonAnnBodyLink": "لا يُقبل رابط في نص الإعلان. اكتب نصًا عاديًا.",
+  "@commonAnnBodyLink": {
+    "description": "common.annBodyLink"
+  },
+  "commonAnnBodyMissing": "اكتب نص الإعلان.",
+  "@commonAnnBodyMissing": {
+    "description": "common.annBodyMissing"
+  },
+  "commonAnnCancel": "إلغاء",
+  "@commonAnnCancel": {
+    "description": "common.annCancel"
+  },
+  "commonAnnCancelAction": "إلغاء الإعلان",
+  "@commonAnnCancelAction": {
+    "description": "common.annCancelAction"
+  },
+  "commonAnnCancelOf": "إلغاء الإعلان: {body}",
+  "@commonAnnCancelOf": {
+    "description": "common.annCancelOf",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnCancelText": "لن يظهر «{body}» لأحد، وينتقل إلى «المنتهية».",
+  "@commonAnnCancelText": {
+    "description": "common.annCancelText",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnCancelTitle": "إلغاء الإعلان المجدول؟",
+  "@commonAnnCancelTitle": {
+    "description": "common.annCancelTitle"
+  },
+  "commonAnnCreatedActive": "نُشر الإعلان",
+  "@commonAnnCreatedActive": {
+    "description": "common.annCreatedActive"
+  },
+  "commonAnnCreatedActiveText": "يظهر الآن لأعضاء العيادات المستهدفة حتى يغلقه كل منهم.",
+  "@commonAnnCreatedActiveText": {
+    "description": "common.annCreatedActiveText"
+  },
+  "commonAnnCreatedScheduled": "جُدول الإعلان",
+  "@commonAnnCreatedScheduled": {
+    "description": "common.annCreatedScheduled"
+  },
+  "commonAnnCreatedScheduledText": "يبدأ ظهوره {when}.",
+  "@commonAnnCreatedScheduledText": {
+    "description": "common.annCreatedScheduledText",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnEdit": "تعديل",
+  "@commonAnnEdit": {
+    "description": "common.annEdit"
+  },
+  "commonAnnEditOf": "تعديل الإعلان: {body}",
+  "@commonAnnEditOf": {
+    "description": "common.annEditOf",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnEmptyText": "أنشئ إعلانًا ليصل كل أعضاء العيادات التي تختارها.",
+  "@commonAnnEmptyText": {
+    "description": "common.annEmptyText"
+  },
+  "commonAnnEmptyTitle": "لا إعلانات بعد",
+  "@commonAnnEmptyTitle": {
+    "description": "common.annEmptyTitle"
+  },
+  "commonAnnEndBeforeStart": "اختر نهاية بعد البداية وبعد الآن.",
+  "@commonAnnEndBeforeStart": {
+    "description": "common.annEndBeforeStart"
+  },
+  "commonAnnEndDate": "ينتهي في",
+  "@commonAnnEndDate": {
+    "description": "common.annEndDate"
+  },
+  "commonAnnEndDateMissing": "اختر يوم الانتهاء، أو امسح ساعته.",
+  "@commonAnnEndDateMissing": {
+    "description": "common.annEndDateMissing"
+  },
+  "commonAnnEndNow": "إنهاء الآن",
+  "@commonAnnEndNow": {
+    "description": "common.annEndNow"
+  },
+  "commonAnnEndOf": "إنهاء الإعلان: {body}",
+  "@commonAnnEndOf": {
+    "description": "common.annEndOf",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnEndText": "يختفي «{body}» من العيادات فورًا، ويبقى في «المنتهية».",
+  "@commonAnnEndText": {
+    "description": "common.annEndText",
+    "placeholders": {
+      "body": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnEndTime": "ساعة الانتهاء",
+  "@commonAnnEndTime": {
+    "description": "common.annEndTime"
+  },
+  "commonAnnEndTitle": "إنهاء الإعلان الآن؟",
+  "@commonAnnEndTitle": {
+    "description": "common.annEndTitle"
+  },
+  "commonAnnEndedText": "اختفى من العيادات، وصار في «المنتهية».",
+  "@commonAnnEndedText": {
+    "description": "common.annEndedText"
+  },
+  "commonAnnEndedTitle": "انتهى الإعلان",
+  "@commonAnnEndedTitle": {
+    "description": "common.annEndedTitle"
+  },
+  "commonAnnFilter": "حالة الإعلان",
+  "@commonAnnFilter": {
+    "description": "common.annFilter"
+  },
+  "commonAnnFilterActive": "النشطة",
+  "@commonAnnFilterActive": {
+    "description": "common.annFilterActive"
+  },
+  "commonAnnFilterEnded": "المنتهية",
+  "@commonAnnFilterEnded": {
+    "description": "common.annFilterEnded"
+  },
+  "commonAnnFilterScheduled": "المجدولة",
+  "@commonAnnFilterScheduled": {
+    "description": "common.annFilterScheduled"
+  },
+  "commonAnnFormEdit": "تعديل الإعلان",
+  "@commonAnnFormEdit": {
+    "description": "common.annFormEdit"
+  },
+  "commonAnnFormNew": "إعلان جديد",
+  "@commonAnnFormNew": {
+    "description": "common.annFormNew"
+  },
+  "commonAnnGoneText": "حدّثنا القائمة: هو الآن في «المنتهية».",
+  "@commonAnnGoneText": {
+    "description": "common.annGoneText"
+  },
+  "commonAnnGoneTitle": "انتهى هذا الإعلان في الأثناء",
+  "@commonAnnGoneTitle": {
+    "description": "common.annGoneTitle"
+  },
+  "commonAnnLevel": "المستوى",
+  "@commonAnnLevel": {
+    "description": "common.annLevel"
+  },
+  "commonAnnLevelInfo": "معلومة",
+  "@commonAnnLevelInfo": {
+    "description": "common.annLevelInfo"
+  },
+  "commonAnnLevelInfoTitle": "معلومة:",
+  "@commonAnnLevelInfoTitle": {
+    "description": "common.annLevelInfoTitle"
+  },
+  "commonAnnLevelWarning": "تنبيه",
+  "@commonAnnLevelWarning": {
+    "description": "common.annLevelWarning"
+  },
+  "commonAnnLevelWarningTitle": "تنبيه:",
+  "@commonAnnLevelWarningTitle": {
+    "description": "common.annLevelWarningTitle"
+  },
+  "commonAnnMeta": "أنشأه {name} · {when}",
+  "@commonAnnMeta": {
+    "description": "common.annMeta",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnMetaUnknown": "حساب محذوف · {when}",
+  "@commonAnnMetaUnknown": {
+    "description": "common.annMetaUnknown",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnNew": "إعلان جديد",
+  "@commonAnnNew": {
+    "description": "common.annNew"
+  },
+  "commonAnnNoEnd": "دون نهاية",
+  "@commonAnnNoEnd": {
+    "description": "common.annNoEnd"
+  },
+  "commonAnnNoneActiveText": "الإعلان يظهر هنا من بدايته حتى نهايته.",
+  "@commonAnnNoneActiveText": {
+    "description": "common.annNoneActiveText"
+  },
+  "commonAnnNoneActiveTitle": "لا إعلانات نشطة",
+  "@commonAnnNoneActiveTitle": {
+    "description": "common.annNoneActiveTitle"
+  },
+  "commonAnnNoneEndedText": "الإعلان الذي انتهى أو أُنهي مبكرًا يبقى هنا.",
+  "@commonAnnNoneEndedText": {
+    "description": "common.annNoneEndedText"
+  },
+  "commonAnnNoneEndedTitle": "لا إعلانات منتهية",
+  "@commonAnnNoneEndedTitle": {
+    "description": "common.annNoneEndedTitle"
+  },
+  "commonAnnNoneScheduledText": "الإعلان الذي يبدأ لاحقًا يظهر هنا حتى يحين وقته.",
+  "@commonAnnNoneScheduledText": {
+    "description": "common.annNoneScheduledText"
+  },
+  "commonAnnNoneScheduledTitle": "لا إعلانات مجدولة",
+  "@commonAnnNoneScheduledTitle": {
+    "description": "common.annNoneScheduledTitle"
+  },
+  "commonAnnOptional": "اختياري",
+  "@commonAnnOptional": {
+    "description": "common.annOptional"
+  },
+  "commonAnnPeriod": "من {start} إلى {end}",
+  "@commonAnnPeriod": {
+    "description": "common.annPeriod",
+    "placeholders": {
+      "end": {
+        "type": "String"
+      },
+      "start": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnPickerHint": "مختارة: {count}. يصل الإعلان لكل أعضائها.",
+  "@commonAnnPickerHint": {
+    "description": "common.annPickerHint",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnPreview": "معاينة: كما يراه أعضاء العيادات أعلى عيادة الويب",
+  "@commonAnnPreview": {
+    "description": "common.annPreview"
+  },
+  "commonAnnPreviewWaiting": "تظهر المعاينة حين يُقبل النص.",
+  "@commonAnnPreviewWaiting": {
+    "description": "common.annPreviewWaiting"
+  },
+  "commonAnnPublish": "نشر الإعلان",
+  "@commonAnnPublish": {
+    "description": "common.annPublish"
+  },
+  "commonAnnSaveEdit": "حفظ التعديل",
+  "@commonAnnSaveEdit": {
+    "description": "common.annSaveEdit"
+  },
+  "commonAnnSavedText": "يظهر الإعلان من جديد لمن أغلقه إن تغيّر نصه أو مستواه.",
+  "@commonAnnSavedText": {
+    "description": "common.annSavedText"
+  },
+  "commonAnnSavedTitle": "حُفظ التعديل",
+  "@commonAnnSavedTitle": {
+    "description": "common.annSavedTitle"
+  },
+  "commonAnnSeen": "{count, plural, zero {لا أعضاء في العيادات المستهدفة} one {أغلقه {dismissed} من عضو واحد} two {أغلقه {dismissed} من عضوين} few {أغلقه {dismissed} من {count} أعضاء} many {أغلقه {dismissed} من {count} عضوًا} other {أغلقه {dismissed} من {count} عضو}}",
+  "@commonAnnSeen": {
+    "description": "common.annSeen",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      },
+      "dismissed": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnStartDate": "يبدأ في",
+  "@commonAnnStartDate": {
+    "description": "common.annStartDate"
+  },
+  "commonAnnStartMissing": "اختر يوم البدء.",
+  "@commonAnnStartMissing": {
+    "description": "common.annStartMissing"
+  },
+  "commonAnnStartTime": "ساعة البدء",
+  "@commonAnnStartTime": {
+    "description": "common.annStartTime"
+  },
+  "commonAnnStateActive": "نشط",
+  "@commonAnnStateActive": {
+    "description": "common.annStateActive"
+  },
+  "commonAnnStateEnded": "انتهى في وقته",
+  "@commonAnnStateEnded": {
+    "description": "common.annStateEnded"
+  },
+  "commonAnnStateEndedEarly": "أُنهي مبكرًا: {name}",
+  "@commonAnnStateEndedEarly": {
+    "description": "common.annStateEndedEarly",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonAnnStateEndedEarlyUnknown": "أُنهي مبكرًا",
+  "@commonAnnStateEndedEarlyUnknown": {
+    "description": "common.annStateEndedEarlyUnknown"
+  },
+  "commonAnnStateScheduled": "مجدول",
+  "@commonAnnStateScheduled": {
+    "description": "common.annStateScheduled"
+  },
+  "commonAnnTargetAll": "كل العيادات",
+  "@commonAnnTargetAll": {
+    "description": "common.annTargetAll"
+  },
+  "commonAnnTargetCount": "{count, plural, zero {لا عيادات} one {عيادة واحدة} two {عيادتان} few {{count} عيادات} many {{count} عيادة} other {{count} عيادة}}",
+  "@commonAnnTargetCount": {
+    "description": "common.annTargetCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonAnnTargetSome": "عيادات مختارة",
+  "@commonAnnTargetSome": {
+    "description": "common.annTargetSome"
+  },
+  "commonAnnTargets": "العيادات",
+  "@commonAnnTargets": {
+    "description": "common.annTargets"
+  },
+  "commonAnnText": "نص قصير يظهر شريطًا لكل أعضاء العيادات المستهدفة حتى يغلقه كل منهم. نص عادي، بلا روابط.",
+  "@commonAnnText": {
+    "description": "common.annText"
+  },
+  "commonAnnTimeMissing": "اكتب الساعة كاملة: الساعات والدقائق.",
+  "@commonAnnTimeMissing": {
+    "description": "common.annTimeMissing"
+  },
+  "commonAnnTitle": "الإعلانات",
+  "@commonAnnTitle": {
+    "description": "common.annTitle"
+  },
+  "commonAnnToday": "اليوم {time}",
+  "@commonAnnToday": {
+    "description": "common.annToday",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
   "commonAppName": "شفاء",
   "@commonAppName": {
     "description": "common.appName"
@@ -1353,6 +1736,223 @@
   "@commonFieldStatus": {
     "description": "common.fieldStatus"
   },
+  "commonFlagBy": "غيّرها {name} · {when}",
+  "@commonFlagBy": {
+    "description": "common.flagBy",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagByDefault": "الافتراضي",
+  "@commonFlagByDefault": {
+    "description": "common.flagByDefault"
+  },
+  "commonFlagByUnknown": "حساب محذوف · {when}",
+  "@commonFlagByUnknown": {
+    "description": "common.flagByUnknown",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagChange": "تغيير",
+  "@commonFlagChange": {
+    "description": "common.flagChange"
+  },
+  "commonFlagChangeOf": "تغيير {name}",
+  "@commonFlagChangeOf": {
+    "description": "common.flagChangeOf",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagConfirm": "تأكيد",
+  "@commonFlagConfirm": {
+    "description": "common.flagConfirm"
+  },
+  "commonFlagConfirmClinics": "العيادات: {names}.",
+  "@commonFlagConfirmClinics": {
+    "description": "common.flagConfirmClinics",
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagConfirmText": "«{name}»: من «{from}» إلى «{to}». السبب: {reason}",
+  "@commonFlagConfirmText": {
+    "description": "common.flagConfirmText",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      },
+      "reason": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagConfirmTitle": "تأكيد التغيير؟",
+  "@commonFlagConfirmTitle": {
+    "description": "common.flagConfirmTitle"
+  },
+  "commonFlagContinue": "متابعة",
+  "@commonFlagContinue": {
+    "description": "common.flagContinue"
+  },
+  "commonFlagDefault": "{description} · الافتراضي في الشيفرة: {value}",
+  "@commonFlagDefault": {
+    "description": "common.flagDefault",
+    "placeholders": {
+      "description": {
+        "type": "String"
+      },
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagDefaultOff": "مطفأة",
+  "@commonFlagDefaultOff": {
+    "description": "common.flagDefaultOff"
+  },
+  "commonFlagDefaultOn": "مفعّلة",
+  "@commonFlagDefaultOn": {
+    "description": "common.flagDefaultOn"
+  },
+  "commonFlagDialogTitle": "تغيير «{name}»",
+  "@commonFlagDialogTitle": {
+    "description": "common.flagDialogTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagGoneText": "حدّثنا القائمة.",
+  "@commonFlagGoneText": {
+    "description": "common.flagGoneText"
+  },
+  "commonFlagGoneTitle": "لم تعد هذه الميزة في الشيفرة",
+  "@commonFlagGoneTitle": {
+    "description": "common.flagGoneTitle"
+  },
+  "commonFlagKeptClinics": "{count, plural, zero {} one {كانت لعيادة واحدة} two {كانت لعيادتين} few {كانت لـ{count} عيادات} many {كانت لـ{count} عيادة} other {كانت لـ{count} عيادة}}",
+  "@commonFlagKeptClinics": {
+    "description": "common.flagKeptClinics",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonFlagMode": "الحالة",
+  "@commonFlagMode": {
+    "description": "common.flagMode"
+  },
+  "commonFlagModeOff": "مطفأة للجميع",
+  "@commonFlagModeOff": {
+    "description": "common.flagModeOff"
+  },
+  "commonFlagModeOffHint": "مفتاح الإيقاف: يعلو كل اختيار",
+  "@commonFlagModeOffHint": {
+    "description": "common.flagModeOffHint"
+  },
+  "commonFlagModeOn": "مفعّلة للجميع",
+  "@commonFlagModeOn": {
+    "description": "common.flagModeOn"
+  },
+  "commonFlagModeSelected": "لعيادات مختارة",
+  "@commonFlagModeSelected": {
+    "description": "common.flagModeSelected"
+  },
+  "commonFlagNeverChanged": "لم تُغيَّر بعد",
+  "@commonFlagNeverChanged": {
+    "description": "common.flagNeverChanged"
+  },
+  "commonFlagOffWarnText": "تتوقف الميزة في كل العيادات خلال دقيقة، حتى المختارة منها. تبقى قائمة العيادات المختارة محفوظة لتشغيلها لاحقًا.",
+  "@commonFlagOffWarnText": {
+    "description": "common.flagOffWarnText"
+  },
+  "commonFlagOffWarnTitle": "إيقاف فوري للجميع",
+  "@commonFlagOffWarnTitle": {
+    "description": "common.flagOffWarnTitle"
+  },
+  "commonFlagReason": "السبب",
+  "@commonFlagReason": {
+    "description": "common.flagReason"
+  },
+  "commonFlagReasonHint": "من 10 أحرف على الأقل. يُحفظ مع الميزة.",
+  "@commonFlagReasonHint": {
+    "description": "common.flagReasonHint"
+  },
+  "commonFlagReasonMissing": "اكتب سبب التغيير، من 10 أحرف على الأقل.",
+  "@commonFlagReasonMissing": {
+    "description": "common.flagReasonMissing"
+  },
+  "commonFlagSavedText": "{mode, select, off {مطفأة الآن للجميع.} on {مفعّلة الآن للجميع.} other {مفعّلة الآن للعيادات المختارة.}} يسري التغيير خلال دقيقة على كل الخوادم.",
+  "@commonFlagSavedText": {
+    "description": "common.flagSavedText",
+    "placeholders": {
+      "mode": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagSavedTitle": "تغيّرت «{name}»",
+  "@commonFlagSavedTitle": {
+    "description": "common.flagSavedTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonFlagsColFlag": "الميزة",
+  "@commonFlagsColFlag": {
+    "description": "common.flagsColFlag"
+  },
+  "commonFlagsColMode": "الحالة",
+  "@commonFlagsColMode": {
+    "description": "common.flagsColMode"
+  },
+  "commonFlagsColReason": "السبب وآخر تغيير",
+  "@commonFlagsColReason": {
+    "description": "common.flagsColReason"
+  },
+  "commonFlagsLoading": "جارٍ تحميل الميزات",
+  "@commonFlagsLoading": {
+    "description": "common.flagsLoading"
+  },
+  "commonFlagsNoneText": "تظهر هنا كل ميزة تجريبية تعرّفها الشيفرة، بوصفها وقيمتها الافتراضية.",
+  "@commonFlagsNoneText": {
+    "description": "common.flagsNoneText"
+  },
+  "commonFlagsNoneTitle": "لا ميزات تجريبية معرّفة",
+  "@commonFlagsNoneTitle": {
+    "description": "common.flagsNoneTitle"
+  },
+  "commonFlagsText": "مفاتيح هندسية قصيرة العمر، معرّفة في الشيفرة. «مطفأة للجميع» يوقف الميزة فورًا ويعلو كل اختيار.",
+  "@commonFlagsText": {
+    "description": "common.flagsText"
+  },
+  "commonFlagsTitle": "الميزات التجريبية",
+  "@commonFlagsTitle": {
+    "description": "common.flagsTitle"
+  },
   "commonHeaderCodesLeft": "{count, plural, zero {لا رموز استرداد} one {بقي رمز استرداد واحد} two {بقي رمزا استرداد} few {بقيت {count} رموز استرداد} many {بقي {count} رمز استرداد} other {بقي {count} رمز استرداد}}",
   "@commonHeaderCodesLeft": {
     "description": "common.headerCodesLeft",
@@ -2454,6 +3054,10 @@
   "@commonNavAccount": {
     "description": "common.navAccount"
   },
+  "commonNavAnnouncements": "الإعلانات",
+  "@commonNavAnnouncements": {
+    "description": "common.navAnnouncements"
+  },
   "commonNavBranches": "الفروع",
   "@commonNavBranches": {
     "description": "common.navBranches"
@@ -2466,6 +3070,10 @@
   "@commonNavClinics": {
     "description": "common.navClinics"
   },
+  "commonNavFlags": "الميزات التجريبية",
+  "@commonNavFlags": {
+    "description": "common.navFlags"
+  },
   "commonNavHome": "الرئيسية",
   "@commonNavHome": {
     "description": "common.navHome"
@@ -2477,6 +3085,10 @@
   "commonNavMenu": "القائمة",
   "@commonNavMenu": {
     "description": "common.navMenu"
+  },
+  "commonNavPlaces": "المدن والمناطق",
+  "@commonNavPlaces": {
+    "description": "common.navPlaces"
   },
   "commonNavTeam": "الفريق",
   "@commonNavTeam": {
@@ -2982,6 +3594,327 @@
   "commonPhoneInvalid": "رقم الهاتف غير صحيح. اكتبه مع رمز البلد.",
   "@commonPhoneInvalid": {
     "description": "common.phoneInvalid"
+  },
+  "commonPickerEmpty": "لا عيادة بهذا الاسم",
+  "@commonPickerEmpty": {
+    "description": "common.pickerEmpty"
+  },
+  "commonPickerError": "اختر عيادة واحدة على الأقل.",
+  "@commonPickerError": {
+    "description": "common.pickerError"
+  },
+  "commonPickerHintNone": "ابحث بالاسم واختر عيادة أو أكثر.",
+  "@commonPickerHintNone": {
+    "description": "common.pickerHintNone"
+  },
+  "commonPickerHintSome": "مختارة: {count}. ابحث بالاسم لإضافة غيرها.",
+  "@commonPickerHintSome": {
+    "description": "common.pickerHintSome",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPickerLabel": "العيادات المختارة",
+  "@commonPickerLabel": {
+    "description": "common.pickerLabel"
+  },
+  "commonPickerPlaceholder": "ابحث عن عيادة",
+  "@commonPickerPlaceholder": {
+    "description": "common.pickerPlaceholder"
+  },
+  "commonPlacesActions": "إجراءات {name}",
+  "@commonPlacesActions": {
+    "description": "common.placesActions",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesAdd": "إضافة",
+  "@commonPlacesAdd": {
+    "description": "common.placesAdd"
+  },
+  "commonPlacesAddCity": "إضافة المدينة",
+  "@commonPlacesAddCity": {
+    "description": "common.placesAddCity"
+  },
+  "commonPlacesAddedTitle": "أُضيفت «{name}»",
+  "@commonPlacesAddedTitle": {
+    "description": "common.placesAddedTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesArchive": "أرشفة",
+  "@commonPlacesArchive": {
+    "description": "common.placesArchive"
+  },
+  "commonPlacesArchiveNone": "لن يُعرض للفروع الجديدة. لا فرع يحمله الآن، ولا يُحذف شيء.",
+  "@commonPlacesArchiveNone": {
+    "description": "common.placesArchiveNone"
+  },
+  "commonPlacesArchiveText": "لن يُعرض للفروع الجديدة. يبقى على الفروع التي تحمله: {branches}، في {clinics}، ولا يُحذف شيء.",
+  "@commonPlacesArchiveText": {
+    "description": "common.placesArchiveText",
+    "placeholders": {
+      "branches": {
+        "type": "String"
+      },
+      "clinics": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesArchiveTitle": "أرشفة «{name}»؟",
+  "@commonPlacesArchiveTitle": {
+    "description": "common.placesArchiveTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesArchivedBadge": "مؤرشفة",
+  "@commonPlacesArchivedBadge": {
+    "description": "common.placesArchivedBadge"
+  },
+  "commonPlacesArchivedSince": "مؤرشفة منذ {date}",
+  "@commonPlacesArchivedSince": {
+    "description": "common.placesArchivedSince",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesArchivedText": "لم تعد تُعرض للفروع الجديدة، وتبقى على الفروع التي تحملها.",
+  "@commonPlacesArchivedText": {
+    "description": "common.placesArchivedText"
+  },
+  "commonPlacesArchivedTitle": "أُرشفت «{name}»",
+  "@commonPlacesArchivedTitle": {
+    "description": "common.placesArchivedTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesAreaCount": "{count, plural, zero {لا مناطق بعد} one {منطقة واحدة} two {منطقتان} few {{count} مناطق} many {{count} منطقة} other {{count} منطقة}}",
+  "@commonPlacesAreaCount": {
+    "description": "common.placesAreaCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesAreasEmptyText": "أضف أحياء المدينة. يبقى اختيار المنطقة في الفرع اختياريًا.",
+  "@commonPlacesAreasEmptyText": {
+    "description": "common.placesAreasEmptyText"
+  },
+  "commonPlacesAreasEmptyTitle": "لا مناطق بعد",
+  "@commonPlacesAreasEmptyTitle": {
+    "description": "common.placesAreasEmptyTitle"
+  },
+  "commonPlacesAreasOf": "مناطق {name}",
+  "@commonPlacesAreasOf": {
+    "description": "common.placesAreasOf",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesBranchCount": "{count, plural, zero {لا فروع} one {فرع واحد} two {فرعان} few {{count} فروع} many {{count} فرعًا} other {{count} فرع}}",
+  "@commonPlacesBranchCount": {
+    "description": "common.placesBranchCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesCities": "المدن",
+  "@commonPlacesCities": {
+    "description": "common.placesCities"
+  },
+  "commonPlacesCityName": "اسم المدينة",
+  "@commonPlacesCityName": {
+    "description": "common.placesCityName"
+  },
+  "commonPlacesClinicCount": "{count, plural, zero {لا عيادات} one {عيادة واحدة} two {عيادتان} few {{count} عيادات} many {{count} عيادة} other {{count} عيادة}}",
+  "@commonPlacesClinicCount": {
+    "description": "common.placesClinicCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesClinicCountIn": "{count, plural, zero {لا عيادات} one {عيادة واحدة} two {عيادتين} few {{count} عيادات} many {{count} عيادة} other {{count} عيادة}}",
+  "@commonPlacesClinicCountIn": {
+    "description": "common.placesClinicCountIn",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesDoctorCount": "{count, plural, zero {لا أطباء} one {طبيب واحد} two {طبيبان} few {{count} أطباء} many {{count} طبيبًا} other {{count} طبيب}}",
+  "@commonPlacesDoctorCount": {
+    "description": "common.placesDoctorCount",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "commonPlacesEmptyText": "أضف أول مدينة، ثم مناطقها.",
+  "@commonPlacesEmptyText": {
+    "description": "common.placesEmptyText"
+  },
+  "commonPlacesEmptyTitle": "لا مدن بعد",
+  "@commonPlacesEmptyTitle": {
+    "description": "common.placesEmptyTitle"
+  },
+  "commonPlacesName": "الاسم",
+  "@commonPlacesName": {
+    "description": "common.placesName"
+  },
+  "commonPlacesNameMissing": "اكتب الاسم.",
+  "@commonPlacesNameMissing": {
+    "description": "common.placesNameMissing"
+  },
+  "commonPlacesNewArea": "منطقة جديدة",
+  "@commonPlacesNewArea": {
+    "description": "common.placesNewArea"
+  },
+  "commonPlacesNewCity": "مدينة جديدة",
+  "@commonPlacesNewCity": {
+    "description": "common.placesNewCity"
+  },
+  "commonPlacesNoMatchText": "جرّب جزءًا آخر من الاسم. البحث لا يفرّق بين أشكال الألف والتاء المربوطة.",
+  "@commonPlacesNoMatchText": {
+    "description": "common.placesNoMatchText"
+  },
+  "commonPlacesNoMatchTitle": "لا مدينة ولا منطقة بهذا الاسم",
+  "@commonPlacesNoMatchTitle": {
+    "description": "common.placesNoMatchTitle"
+  },
+  "commonPlacesRename": "إعادة التسمية",
+  "@commonPlacesRename": {
+    "description": "common.placesRename"
+  },
+  "commonPlacesRenameNone": "لا فرع يحمل هذا المكان الآن.",
+  "@commonPlacesRenameNone": {
+    "description": "common.placesRenameNone"
+  },
+  "commonPlacesRenameNote": "الاسم الجديد يظهر فورًا على الفروع التي تحمله: {branches}، في {clinics}.",
+  "@commonPlacesRenameNote": {
+    "description": "common.placesRenameNote",
+    "placeholders": {
+      "branches": {
+        "type": "String"
+      },
+      "clinics": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesRenameTitle": "إعادة تسمية «{name}»",
+  "@commonPlacesRenameTitle": {
+    "description": "common.placesRenameTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesRenamedTitle": "حُفظ الاسم «{name}»",
+  "@commonPlacesRenamedTitle": {
+    "description": "common.placesRenamedTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesRestore": "استعادة",
+  "@commonPlacesRestore": {
+    "description": "common.placesRestore"
+  },
+  "commonPlacesRestoreOf": "استعادة {name}",
+  "@commonPlacesRestoreOf": {
+    "description": "common.placesRestoreOf",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesRestoredText": "صارت تُعرض للفروع الجديدة من جديد. يُسجَّل ذلك في سجل التدقيق.",
+  "@commonPlacesRestoredText": {
+    "description": "common.placesRestoredText"
+  },
+  "commonPlacesRestoredTitle": "استُعيدت «{name}»",
+  "@commonPlacesRestoredTitle": {
+    "description": "common.placesRestoredTitle",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesSearch": "ابحث عن مدينة أو منطقة",
+  "@commonPlacesSearch": {
+    "description": "common.placesSearch"
+  },
+  "commonPlacesShowArchived": "عرض المؤرشفة",
+  "@commonPlacesShowArchived": {
+    "description": "common.placesShowArchived"
+  },
+  "commonPlacesStaleText": "حدّثناها. راجعها ثم أعد المحاولة إن لزم.",
+  "@commonPlacesStaleText": {
+    "description": "common.placesStaleText"
+  },
+  "commonPlacesStaleTitle": "تغيّرت القائمة في الأثناء",
+  "@commonPlacesStaleTitle": {
+    "description": "common.placesStaleTitle"
+  },
+  "commonPlacesTakenArea": "«{name}» موجودة في {city}.",
+  "@commonPlacesTakenArea": {
+    "description": "common.placesTakenArea",
+    "placeholders": {
+      "city": {
+        "type": "String"
+      },
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesTakenCity": "«{name}» موجودة من قبل.",
+  "@commonPlacesTakenCity": {
+    "description": "common.placesTakenCity",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "commonPlacesText": "تختار العيادة منها مدينة الفرع ومنطقته. لا يُحذف شيء: يؤرشف، ويبقى على الفروع التي تحمله.",
+  "@commonPlacesText": {
+    "description": "common.placesText"
+  },
+  "commonPlacesTitle": "المدن والمناطق",
+  "@commonPlacesTitle": {
+    "description": "common.placesTitle"
   },
   "commonPlanText": "خطة العيادة من نوعها: {plan}. بلا أسعار في هذا الإصدار.",
   "@commonPlanText": {
