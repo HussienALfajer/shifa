@@ -88,3 +88,6 @@ for (const name of ['localStorage', 'sessionStorage'] as const) {
   });
 }
 Object.defineProperty(globalThis, 'BroadcastChannel', { configurable: true, value: BoardChannel });
+// The canvas's frames allow no new tab: a new window is refused, as a browser blocking pop-ups does
+// (the support hand-off then says so), and no board ever opens a real address.
+window.open = () => null;

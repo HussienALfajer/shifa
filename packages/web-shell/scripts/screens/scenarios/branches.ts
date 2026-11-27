@@ -1,9 +1,21 @@
 // The owner's branches (/branches, A-01-08 checkpoint 4): src/branches/ — the cards of active and
 // archived branches, the branch dialog (add, edit), archiving with what it ends, restoring.
+
+import { placeBranches } from '../routes-a02-clinic.ts';
 import type { Answer, Scenario, Sheet, Step, World } from '../scenario.ts';
 import { fail } from '../server.ts';
 import { B_OLD } from '../world.ts';
+import { branchLimits } from './a02-limits.ts';
+import { branchPlaces } from './a02-places.ts';
 
+/** Every state's branches carry the city and area their addresses read (A-02-10). */
+const placed = (s: Scenario): Scenario => ({
+  ...s,
+  world: (w: World) => {
+    placeBranches(w);
+    s.world?.(w);
+  },
+});
 const branches = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/branches', ...s });
 const addDialog: Step[] = [{ press: 'branchesAdd' }, { until: 'branchAddTitle' }];
 /** The archive of the n-th active card: 0 the main branch (its assistant works there only). */
@@ -33,12 +45,13 @@ export const branchesSheet: Sheet = {
   id: 'Branches',
   title: 'الفروع',
   route: '/branches',
-  note: 'The owner’s branches: active cards (address, phone, members, the team of a branch) and archived ones; loading; the branch dialog to add or edit with its refusals; archiving, which first reads whose sessions end, and its failures; the last active branch; restoring; the notes after each action.',
+  note: 'The owner’s branches: active cards (address, phone, members, the team of a branch) and archived ones; loading; the branch dialog to add or edit with its refusals; archiving, which first reads whose sessions end, and its failures; the last active branch; restoring; the notes after each action. A-02-10: each card’s city and area («حلب · الفرقان», an archived area’s badge, «لم تُحدَّد المدينة»); the dialog’s city and area (searched with the Arabic fold, the area after its city, a city without areas, an archived area the branch holds kept with its note, saved, refused as a field error); the branches’ limit full («إضافة فرع» disabled with its Callout) and an add or a restore refused with `limit_reached`.',
   code: [
     'branches/branches-page.tsx',
     'branches/branch-dialog.tsx',
     'branches/archive-dialog.tsx',
     'branches/branch-note.tsx',
+    'branches/place-fields.tsx',
   ],
   scenarios: [
     branches({ id: 'List', title: 'الفروع الفعّالة والمؤرشفة' }),
@@ -258,5 +271,7 @@ export const branchesSheet: Sheet = {
       answers: { 'POST /branches/:id/restore': [fail(409, 'branch_not_archived')] },
       steps: [{ press: 'branchRestore' }],
     }),
-  ],
+    ...branchLimits,
+    ...branchPlaces,
+  ].map(placed),
 };

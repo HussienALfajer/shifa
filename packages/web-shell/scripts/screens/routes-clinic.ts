@@ -2,6 +2,7 @@
 // branches, the clinic's idle setting. Owner-only routes refuse anyone else (403), as the API does.
 import type { Branch, MemberDetail, MemberRole } from '@shifa/contracts';
 import { normalisePhone } from '@shifa/contracts';
+import { placeBranch } from './routes-a02-clinic.ts';
 import { fail, ok, type Reply, type Request, type RouteTable } from './server.ts';
 import type { World } from './state.ts';
 import { at, id, NOTES_KEY, NOTES_ROLES, SETUP_TOKEN } from './world.ts';
@@ -209,18 +210,18 @@ export const clinicRoutes: RouteTable = {
         phone: null,
         archivedAt: null,
         memberCount: 0,
-        // A-02-06: the dialog's city and area come with A-02-10.
         city: null,
         area: null,
       };
-      const refused = branchUpdate(b, body);
+      // A-02-10: the dialog's city and area (routes-a02-clinic.ts).
+      const refused = branchUpdate(b, body) ?? placeBranch(world, b, body);
       if (refused) return refused;
       world.branches.push(b);
       return ok(b, 201);
     }),
-  'PATCH /branches/:id': branchAction((b, _w, { body }) => {
+  'PATCH /branches/:id': branchAction((b, world, { body }) => {
     if (b.archivedAt !== null) return fail(409, 'branch_archived');
-    return branchUpdate(b, body) ?? ok(b);
+    return branchUpdate(b, body) ?? placeBranch(world, b, body) ?? ok(b);
   }),
   'GET /branches/:id/archive-preview': branchAction((b, world) =>
     ok({

@@ -7,6 +7,7 @@ import { CODES_BADGE_BUG } from '../scenario.ts';
 import { fail, lockFor } from '../server.ts';
 import { PLAY_CODE, PLAY_PASSWORD } from '../state.ts';
 import { B_MAIN, B_OLD } from '../world.ts';
+import { settingsA02 } from './a02-settings.ts';
 import { accountMore, pw, staff } from './account-more.ts';
 
 const account = (s: Omit<Scenario, 'path'>): Scenario => ({ path: '/account', ...s });
@@ -214,8 +215,12 @@ export const settingsSheet: Sheet = {
   id: 'Settings',
   title: 'إعدادات العيادة',
   route: '/settings',
-  note: 'The owner’s clinic settings: the idle limit (15, 30 or 60 minutes; super admins keep 15), saving it and its failure; the branches card (or the solo clinic’s line); loading.',
-  code: ['account/settings-page.tsx', 'branches/settings-branches.tsx'],
+  note: 'The owner’s clinic settings: the idle limit (15, 30 or 60 minutes; super admins keep 15), saving it and its failure; the branches card (or the solo clinic’s line); loading. A-02-10: «الاشتراك» (plan, status, end, each limit’s use with a meter; full limits; the end within 14 days; loading, failed) and the idle limit’s source and the super admin’s lock (a lock set meanwhile refuses the save); «سجل دخول الدعم» is on the OwnerSupport sheet.',
+  code: [
+    'account/settings-page.tsx',
+    'branches/settings-branches.tsx',
+    'account/subscription-card.tsx',
+  ],
   scenarios: [
     settings({ id: 'Settings', title: 'مهلة عدم النشاط' }),
     settings({
@@ -257,5 +262,6 @@ export const settingsSheet: Sheet = {
       steps: [{ press: 'branchesAdd' }, { until: 'branchAddTitle' }],
       overlay: true,
     }),
+    ...settingsA02,
   ],
 };

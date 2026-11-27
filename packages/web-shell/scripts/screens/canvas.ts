@@ -148,10 +148,20 @@ interface Page {
   name: string;
 }
 
-/** Each app's canvas: its screens page, its title, and pages it drops (old drawings) or adds. */
+/**
+ * Drawings on "Proposals" whose screens are now coded and on the screens page (ADR-0049): their
+ * boards and notes are removed, and what stays on that page moves up into the space they held.
+ */
+export interface Retired {
+  page: string;
+  boards: RegExp;
+  notes: RegExp;
+}
+
+/** Each app's canvas: its screens page, its title, pages it drops or adds, drawings it retires. */
 export const CANVASES: Record<
   ScreensApp,
-  { page: Page; title: string; intro: string; drop: string[]; add: Page[] }
+  { page: Page; title: string; intro: string; drop: string[]; add: Page[]; retire: Retired[] }
 > = {
   clinic: {
     page: { id: 'screens', name: 'Clinic Web Screens' },
@@ -159,6 +169,8 @@ export const CANVASES: Record<
     intro: intro('Clinic Web Screens', 'clinic web'),
     drop: [],
     add: [],
+    // A-02-01's clinic web drawings, coded by A-02-10 (owner, 2026-11-27); A-03's stay.
+    retire: [{ page: 'proposals', boards: /^A02c/, notes: /^a02c-/ }],
   },
   admin: {
     page: { id: 'admin-screens', name: 'Admin Web Screens' },
@@ -167,8 +179,64 @@ export const CANVASES: Record<
     // The A-01-10 prototype, replaced by the coded screens (owner, 2026-11-26).
     drop: ['a0110'],
     add: [{ id: 'proposals', name: 'Proposals' }],
+    // A-02-01's admin web drawings, coded by A-02-08 and A-02-09 (owner, 2026-11-27).
+    retire: [{ page: 'proposals', boards: /^A02/, notes: /^a02-/ }],
   },
 };
+
+interface Placed {
+  page?: string;
+  y?: number;
+}
+
+/**
+ * Removes the retired boards and notes; the rest of their page moves up by the height they held
+ * above it, so the page starts where the first retired drawing did.
+ */
+export function retire(index: CanvasIndex, rules: Retired[]): CanvasIndex {
+  let out = index;
+  for (const rule of rules) {
+    const on = (v: unknown) => (v as Placed).page === rule.page;
+    const gone = (record: Record<string, unknown>, re: RegExp) =>
+      Object.keys(record).filter((k) => on(record[k]) && re.test(k));
+    const goneBoards = new Set(gone(out.boards, rule.boards));
+    const goneNotes = new Set(gone(out.notes, rule.notes));
+    const ys = (record: Record<string, unknown>, keys: (k: string) => boolean) =>
+      Object.entries(record)
+        .filter(([k, v]) => on(v) && keys(k))
+        .map(([, v]) => (v as Placed).y ?? 0);
+    const removedYs = [
+      ...ys(out.boards, (k) => goneBoards.has(k)),
+      ...ys(out.notes, (k) => goneNotes.has(k)),
+    ];
+    const keptYs = [
+      ...ys(out.boards, (k) => !goneBoards.has(k)),
+      ...ys(out.notes, (k) => !goneNotes.has(k)),
+    ];
+    const top = Math.min(...removedYs);
+    const keptTop = Math.min(...keptYs);
+    const shift = removedYs.length > 0 && keptYs.length > 0 && top < keptTop ? keptTop - top : 0;
+    const keep = (record: Record<string, unknown>, goneKeys: Set<string>) =>
+      Object.fromEntries(
+        Object.entries(record)
+          .filter(([k]) => !goneKeys.has(k))
+          .map(([k, v]) =>
+            on(v) && shift > 0
+              ? [k, { ...(v as object), y: ((v as Placed).y ?? 0) - shift }]
+              : [k, v],
+          ),
+      );
+    out = {
+      ...out,
+      boards: keep(out.boards, goneBoards),
+      notes: keep(out.notes, goneNotes),
+      order: out.order.filter((f) => !goneBoards.has(f)),
+    };
+    const noteOrder = out['noteOrder'] as string[] | undefined;
+    if (noteOrder) out['noteOrder'] = noteOrder.filter((k) => !goneNotes.has(k));
+  }
+  return out;
+}
 
 const pageOf = (entry: unknown) => (entry as { page?: string } | undefined)?.page;
 
@@ -179,12 +247,13 @@ export function removedFiles(before: CanvasIndex, after: CanvasIndex): string[] 
 
 export function writeCanvas(
   project: string,
-  current: CanvasIndex,
+  read: CanvasIndex,
   heights: Record<string, number>,
   saved: (file: string) => Saved = () => ({}),
   app: ScreensApp = 'clinic',
 ) {
-  const { page: PAGE, title, intro: INTRO, drop, add } = CANVASES[app];
+  const { page: PAGE, title, intro: INTRO, drop, add, retire: retired } = CANVASES[app];
+  const current = retire(read, retired);
   const SHEETS = SHEETS_OF[app];
   const onPage = (entry: unknown) => pageOf(entry) === PAGE.id;
   const gone = (entry: unknown) => onPage(entry) || drop.includes(pageOf(entry) ?? '');
