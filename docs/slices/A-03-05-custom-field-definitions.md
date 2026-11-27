@@ -1,7 +1,7 @@
 # A-03-05 Custom field definitions and their limit
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-05-custom-field-definitions`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 14, 15, 17 (definitions, archive, restore, purge), 20 (field events) · Requirements: PLT-13, PLT-30 to PLT-36 (definitions; print stored) · Decisions: ADR-0008, OD-144
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 14, 15, 17 (definitions, archive, restore, purge), 20 (field events); from A-03-01: criteria 37, 38, 39 · Requirements: PLT-13, PLT-30 to PLT-36 (definitions; print stored) · Decisions: ADR-0008, OD-144
 
 Fourth API slice of A-03, after A-03-04.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -26,6 +26,7 @@ Tests written first: every type with its validation rules and defaults; type fix
 Estimated hand-written lines: ~3,300 (contracts and validator ~700, database ~400, API ~1,000, purge ~200, tests ~1,000).
 
 ## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded names: `/clinic/patient-fields[/:id]` → `/patients/fields` (the member's view), `/patients/fields/definitions` (the owner's view) and `/patients/fields/:key`; `field_type_fixed` → 400 `type_fixed`; 400 `sensitive_not_searchable` → 400 `validation_failed` on `body.searchable`; `printable` → `print`; the order route takes `expectedUpdatedAt` and refuses a move across sections.
 - Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `GET /patients/fields` (the member's view for the form); `GET /patients/fields/definitions` (the owner's view with `limits`); `POST /patients/fields`, `PATCH /patients/fields/:key` (`type_fixed`, `expectedUpdatedAt`), `PUT /patients/fields/order`, archive and restore; the `limits.custom_fields` use for the settings link.
 - Criteria added: 37, 38, 39.
 - Components: none (API slice).

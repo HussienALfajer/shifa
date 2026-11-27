@@ -1,19 +1,19 @@
 # A-03-01 Design slice: every A-03 screen and the screen-to-API contract
 
-Status: Done (checkpoints 1, 2 and 3 approved by the owner 2026-11-27) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
+Status: Done (checkpoints 1, 2 and 3 approved by the owner 2026-11-27) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract` (built in a cloud session on its assigned branch, `docs/process/cloud-sessions.md` §4)
 Spec: [A-03](../specs/patients/A-03-patients.md), section "Screens" (all of it), criteria 1–20 as seen on screen · Requirements: CLN-01, CLN-27, CLN-39 to CLN-45, PLT-07, PLT-08, PLT-13, PLT-30 to PLT-36, PLT-44, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, ADR-0049, OD-80
 
 First slice of A-03 (ADR-0047): nothing of A-03 is built before its drawings, contract and improvements are approved. It may run beside the A-02 UI code slices (A-02-08 to A-02-10): it writes no product code.
 
 ## Goal
-The owner tests every A-03 screen in Play, decides each proposed improvement knowing its cost, and approves a written screen-to-API contract. The seven API slices then build and test against it, and the three UI code slices build the screens on top of it.
+The owner tests every A-03 screen in Play, decides each proposed improvement knowing its cost, and approves a written screen-to-API contract. The seven API slices then build and test against it, the component slice A-03-12 builds the approved components, and the two UI code slices (A-03-09, A-03-10) build the screens on top of them.
 
 ## Plan
 Every board, as in A-02-01: Shifa Design System found by name and README read first (canvas copy refreshed), Shifa Guide rules, real bundle components, `--shifa-*` tokens and type styles only; clinic web's frame; Arabic RTL, light and dark; desktop 1440, tablet 1024 (reception), phone 390; synthetic data from `@shifa/testing` only; every state reachable by its action or a state panel outside the frame; checked for literal colours, unknown tokens and hand-drawn copies before showing, result written here. Page "Proposals" of "Shifa Screens · Clinic web" (ADR-0049).
 
 ### Checkpoint 1 — reception and charts (owner approval)
 - `A03Search` «المرضى»: one box, results (name, file number, age with «~», sex, phone, family size), the owner's «المؤرشفة» filter, «مريض جديد»; a merged number leading to its chart («مدموج»); states: no patients («سجّل أول مريض»), no results (register with the typed name), loading, error, accountant without «مريض جديد», "my patients only" on.
-- `A03Register` «مريض جديد» / edit (Drawer on desktop and tablet, full page on phone): name parts, phone with the family on it and the relation, sex, date of birth or age, second phone, previous number, treating doctors, custom fields by section (with the note that they are not for clinical data); states: duplicate candidates panel (open one, register anyway; archived marked), candidates hidden by "my patients only", validation, previous number taken, saving, offline, saved (file number, «فتح الملف», «تسجيل آخر»), archived chart asked again («اطلب من المالك»).
+- `A03Register` «مريض جديد» / edit (Drawer on desktop and tablet, full page on phone): name parts, phone with the family on it and the relation, sex, date of birth or age, second phone, previous number, treating doctors, custom fields by section (with the note that they are not for clinical data); states: duplicate candidates panel (open one, register anyway; archived marked), candidates hidden by "my patients only", validation, previous number taken, saving, offline, saved (file number, «فتح الملف», «تسجيل آخر»), archived candidate (registered anyway after the acknowledgement, criterion 27).
 - `A03Chart` «ملف المريض»: identity header, family card with «إضافة فرد من العائلة», treating doctors («غير نشط» marked), custom fields by section, the owner's read-log card; actions edit, archive or restore, merge; states: archived, merged (leads to the kept chart), not found or hidden (one page for both), loading, error, support read-only.
 ### Checkpoint 2 — owner tools and settings (owner approval)
 - `A03Merge`: pick the second chart (search), both side by side, a choice per identity field, custom fields filled, doctors joined, confirmation naming both file numbers; states: chart not active, done.
@@ -69,7 +69,7 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 | 2 | «فتحتها مؤخرًا»: the last 8 charts this member opened, under the empty search box | `GET /patients/recent` from the member's own `patient.chart_viewed` rows, visibility applied · none · search page | ~220 | A-03-07, A-03-09 |
 | 3 | «فرد آخر من العائلة» after saving: a new form with the same phone | none · none · saved state | ~40 | A-03-09 |
 | 4 | Keyboard on the results: ↑ ↓ to move, Enter to open | none · none · search page | ~80 | A-03-09 |
-| 5 | A wide form panel (550 px) so name parts sit two by two (component change 1, sheet `A03SheetDrawerWide`) | none · Drawer `size="wide"` · form | ~120 | A-03-09 |
+| 5 | A wide form panel (550 px) so name parts sit two by two (component change 1, sheet `A03SheetDrawerWide`) | none · Drawer `size="wide"` · form | ~120 | A-03-12, A-03-09 |
 
 ### Owner review, search (2026-11-27)
 - Spec gaps 1 (term lengths), 2 (`truncated`), 3 (`GET /patients/count`) and 9 (`permissions[]` in the session, `allowed` on the chart) accepted as drawn; written into the spec with the other checkpoint 1 answers.
@@ -89,12 +89,12 @@ In Play the results and family rows open the chart, the crumbs go back to «ال
 - Checkpoint 1 approved (2026-11-27); its answers are criteria 21–33 of the spec.
 
 ### Component changes (proposed)
-1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-09.
+1. **Drawer: a wide size** (improvement 5; sheet `A03SheetDrawerWide`). `size="wide"`: `shifa-size-drawer` plus `shifa-width-37-5` (550 px), never wider than the screen; the default stays 400 px; on a phone the form is a page, not a drawer. Approved with the screens (ADR-0046), then built with `/ui-component` in A-03-12.
 
 ### Missing components (proposed; each on its sheet, every state, light and dark, Arabic RTL and English LTR, both densities, a 358 px width)
-1. **RecordList** «قائمة السجلات» (sheet `A03SheetRecordList`, source `A03RecordList`): rows of people or records; avatar, title with the matched words in a heavier weight, a second line of badges and short texts, optional columns, and at the end a chevron (the row is a link), a button or a badge; three layouts (table, two lines, tiles), sizes md and sm; a locked row (no name, no avatar) for a chart hidden by "my patients only"; dim (archived), current; loading and empty. One Tab stop, arrows and Enter (code). Used by search, recently opened, family (form and chart), duplicate candidates, treating doctors. Estimate ~450 lines (component, stories, tests, screenshots) in A-03-09.
-2. **RecordHeader** «رأس السجل» (sheet `A03SheetRecordHeader`, source `A03RecordHeader`): a record's identity at the top of its page: avatar, title, the record number in a gold tag, badges (one with a Tooltip for an estimated age), facts, a meta line, actions (buttons and one menu) or «للقراءة فقط»; muted for archived or merged; compact in a panel (the saved file); loading. Estimate ~300 lines in A-03-10.
-3. **DescriptionList** «قائمة الوصف» (sheet `A03SheetDescriptionList`, source `A03DescriptionList`): labels and values by section, «—» for an empty value, one badge per value («حساس»), latin values isolated, one or two columns; loading. Estimate ~200 lines in A-03-10.
+1. **RecordList** «قائمة السجلات» (sheet `A03SheetRecordList`, source `A03RecordList`): rows of people or records; avatar, title with the matched words in a heavier weight, a second line of badges and short texts, optional columns, and at the end a chevron (the row is a link), a button or a badge; three layouts (table, two lines, tiles), sizes md and sm; a locked row (no name, no avatar) for a chart hidden by "my patients only"; dim (archived), current; loading and empty. One Tab stop, arrows and Enter (code). Used by search, recently opened, family (form and chart), duplicate candidates, treating doctors. Estimate ~450 lines (component, stories, tests, screenshots) in A-03-12.
+2. **RecordHeader** «رأس السجل» (sheet `A03SheetRecordHeader`, source `A03RecordHeader`): a record's identity at the top of its page: avatar, title, the record number in a gold tag, badges (one with a Tooltip for an estimated age), facts, a meta line, actions (buttons and one menu) or «للقراءة فقط»; muted for archived or merged; compact in a panel (the saved file); loading. Estimate ~300 lines in A-03-12.
+3. **DescriptionList** «قائمة الوصف» (sheet `A03SheetDescriptionList`, source `A03DescriptionList`): labels and values by section, «—» for an empty value, one badge per value («حساس»), latin values isolated, one or two columns; loading. Estimate ~200 lines in A-03-12.
 - Not new components: age or date of birth with «~» (SegmentedControl, DatePicker, NumberInput, Select), the phone with its family (Input, Callout, RecordList, Select), the duplicate box (Callout, RecordList, Checkbox).
 - The merge chooser and the field-type builder are drawn at checkpoint 2.
 
@@ -126,11 +126,11 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 | # | Improvement | Adds (API · component · screens) | Lines | Slices |
 |---|---|---|---|---|
 | 6 | «الدعم الفني» filter on the full read log, with counts | `support=only`, `supportTotal` · SegmentedControl · read log | ~120 | A-03-07, A-03-10 |
-| 7 | The impact of «مرضاي فقط» before and after turning it on (doctors affected, owner-doctors, charts without a doctor) | `GET /patients/my-patients/impact`, numbers only · DescriptionList · settings | ~150 | A-03-07, A-03-11 |
-| 8 | How many charts hold each field and choice («في 41 ملفًا»), named in the archive question | `chartCount` on fields and options · none · fields list, EditableList, archive question | ~150 | A-03-06, A-03-11 |
+| 7 | The impact of «مرضاي فقط» before and after turning it on (doctors affected, owner-doctors, charts without a doctor) | `GET /patients/my-patients/impact`, numbers only · DescriptionList · settings | ~150 | A-03-07, A-03-10 |
+| 8 | How many charts hold each field and choice («في 41 ملفًا»), named in the archive question | `chartCount` on fields and options · none · fields list, EditableList, archive question | ~150 | A-03-06, A-03-10 |
 
 ### Missing components (checkpoint 2)
-4. **EditableList** «قائمة قابلة للتحرير» (sheet `A03SheetEditableList`, source `A03EditableList`): a short list edited in place (a choice field's choices): numbered rows, rename in place with its error, up and down, archive (never delete) and restore, how many charts hold each, an add line with its error, the count against the maximum; empty, full, duplicate, read-only, compact, dark, English LTR, narrow. Estimate ~300 lines in A-03-11.
+4. **EditableList** «قائمة قابلة للتحرير» (sheet `A03SheetEditableList`, source `A03EditableList`): a short list edited in place (a choice field's choices): numbered rows, rename in place with its error, up and down, archive (never delete) and restore, how many charts hold each, an add line with its error, the count against the maximum; empty, full, duplicate, read-only, compact, dark, English LTR, narrow. Estimate ~300 lines in A-03-12.
 - Not new components: the merge chooser (RecordHeader cards and one RadioGroup per field), the meters (A-02's subscription card), RecordList gained a type icon and small tool buttons in a row (fields list), drawn on its sheet's source.
 
 ### Owner review, merge (2026-11-27)
@@ -146,6 +146,7 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 ### Owner review, clinic settings «المرضى» (2026-11-27)
 - Improvement 7 (the impact of «مرضاي فقط») accepted. No spec gap; the source and lock follow A-02.
 - Checkpoint 2 approved (2026-11-27); its answers are spec criteria 34–41.
+- Review fix (reviewer B3, 2026-11-27): criterion 41 says numbers only, so the impact names no doctor; the drawing's line «3 من 4 (د. لينا العلي مالكة أيضًا…)» became «3 من 4؛ طبيب واحد مالك أيضًا فيرى كل الملفات», and the route returns `ownerDoctors` as a count.
 
 ## Checkpoint 3 (re-plan)
 Each of A-03-02 to A-03-10 gained a section "From A-03-01" with its contract rows, the criteria it carries, its components and its new estimate. API slices: A-03-02 ~3,990, A-03-03 ~4,130, A-03-04 ~3,500, A-03-05 ~3,940, A-03-06 ~3,300, A-03-07 ~3,510, A-03-08 ~2,990. To keep A-03-02 inside the budget, `permissions[]` and `allowed` move to A-03-07, which owns visibility; the merge picker's search parameters belong to A-03-08. A-03-03 is ~130 over the budget and may split its PR (ADR-0032).
@@ -154,7 +155,7 @@ The owner asked whether the count could fall and what could run in parallel (202
 
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
-- Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
+- Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2, 0 literal colours, 0 unknown tokens on the four boards (all sizes), EditableList and its sheet (2026-11-27)
 - Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 2026-11-27 (merge, read log, fields, «مرضاي فقط», the EditableList sheet); re-plan 2026-11-27 (component slice A-03-12, two UI slices above the budget, A-03-11 folded)
 - Improvements accepted / declined: 1–8 accepted (2026-11-27); none declined
 

@@ -2,7 +2,7 @@
 
 Status: Folded into [A-03-10](A-03-10-ui-chart-merge-read-log.md) at the A-03-01 re-plan (owner, 2026-11-27: two UI slices above the budget instead of three, components moved to [A-03-12](A-03-12-components.md)). Not built as a slice; kept so the ID is not reused. The original plan follows for the record.
 
-Status: Planned · Tier: T1 · Branch: `feat/A-03-11-ui-fields-and-setting`
+Original status: Planned · Tier: T1 · Branch: `feat/A-03-11-ui-fields-and-setting`
 Spec: [A-03](../specs/patients/A-03-patients.md) screens «حقول ملف المريض» and «مرضاي فقط»; criteria 11, 14, 15, 17 as seen on screen · Requirements: PLT-13, PLT-30 to PLT-36, PLT-44 · Decisions: ADR-0008, ADR-0040, ADR-0046, ADR-0047
 
 Third UI code slice of A-03. It touches only clinic settings, so it may run beside A-03-10 in its own worktree after A-03-09 is merged.
@@ -23,11 +23,7 @@ Tests written first: the journey; component tests from the sheets; the Drawer pe
 Estimated hand-written lines: ~3,000 (components ~500, fields page and Drawer ~1,600, setting ~200, journeys and tests ~700). Re-estimated at A-03-01 checkpoint 3.
 
 ## From A-03-01 (re-plan, 2026-11-27)
-- Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): every row of `A03Fields` and `A03MyPatients`.
-- Criteria added on screen: 37–41.
-- Component first: EditableList (`A03SheetEditableList`); RecordList and the Drawer «wide» come from A-03-09, DescriptionList from A-03-10.
-- Drawings: `A03Fields`, `A03MyPatients` (approved 2026-11-27).
-- New estimate: ~2,960 (component ~300: EditableList; fields page and panel ~1,710 with presets and improvement 8; setting ~250 with improvement 7; journeys and tests ~700).
+- Folded into A-03-10; its components come from A-03-12.
 
 ## Stopped at
 Planned.

@@ -1,7 +1,7 @@
 # A-03-04 Duplicates, family and treating doctors
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-04-duplicates-family-doctors`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 7, 9, 10, 20 (duplicate registered anyway, treating doctors changed) · Requirements: CLN-41 (warning part), CLN-42, CLN-43 · Decisions: OD-138, OD-139, OD-140
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 7, 9, 10, 20 (duplicate registered anyway, treating doctors changed); from A-03-01: criteria 27, 29 · Requirements: CLN-41 (warning part), CLN-42, CLN-43 · Decisions: OD-138, OD-139, OD-140
 
 Third API slice of A-03, after A-03-03.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -27,6 +27,7 @@ Tests written first: each candidate rule and the near misses (twins with differe
 Estimated hand-written lines: ~3,300 (contracts ~300, database ~300, duplicates ~600, family ~350, doctors ~500, tests ~1,250).
 
 ## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded names: `GET /patients/doctor-choices` → `GET /patients/doctors`; `GET /patients/:id/family` → `POST /patients/family` (phone in the body) plus `family` in the summary; `PUT /patients/:id/doctors` → `treatingDoctorIds` in `PATCH /patients/:id`; `acknowledgedCandidates` → `acknowledgedCandidateIds`; `DuplicateCandidate.archived` → `visible`, `state` and `reason`.
 - Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `POST /patients/duplicates` (visible and hidden candidate shapes, archived candidates registered anyway, gap 6 option a); `POST /patients/family` (holder, members, relation asked only with a holder); `GET /patients/doctors` (names and `active`, `patients.manage`); `familySize` and `relation` in search results; `family` and `treatingDoctors` in the summary.
 - Criteria added: 27, 29.
 - Components: none (API slice).

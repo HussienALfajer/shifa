@@ -1,7 +1,7 @@
 # A-03-08 Merge of two charts and the chart foreign-key registry
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-08-merge`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 8, 4 (merged number leads to the kept chart), 20 (merged) · Requirements: CLN-41 (merge part) · Decisions: OD-139
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 8, 4 (merged number leads to the kept chart), 20 (merged); from A-03-01: criteria 34, 35 · Requirements: CLN-41 (merge part) · Decisions: OD-139
 
 Last API slice of A-03, after A-03-07: it needs every table that refers to a chart.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -24,6 +24,7 @@ Tests written first: field choice with the kept chart's value by default; custom
 Estimated hand-written lines: ~2,800 (contracts ~250, database ~150, registry and check ~400, merge ~800, tests ~1,200).
 
 ## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins. Superseded names: `POST /patients/merge` → `POST /patients/:keepId/merge`; `merge-preview?other=` gains `keep`; no typed-back file number: the confirmation is the question naming both file numbers, so `merge_confirmation_mismatch` and its test are dropped. The picker's `forMerge: true` never returns merged charts and returns archived ones only on an exact file number. This slice also owns the merged summary row (`mergedInto`, every `allowed` false).
 - Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `excludeId` and `activeOnly` in `POST /patients/search` (the merge picker); `GET /patients/:id/merge-preview` (older chart kept by default, differences only, filled fields, joined doctors); `POST /patients/:keepId/merge` (`choices`, `expectedUpdatedAt` for both, 409 `stale` and `patient_not_active`, the other phone as second phone); the merged number in search (`mergedFileNumber`).
 - Criteria added: 34, 35.
 - Components: none (API slice).

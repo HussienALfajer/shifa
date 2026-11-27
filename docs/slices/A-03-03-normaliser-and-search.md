@@ -1,7 +1,7 @@
 # A-03-03 Name normaliser and patient search
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-03-normaliser-and-search`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 4–6 · Requirements: CLN-40 · Decisions: ADR-0030, ADR-0034, OD-40, OD-42, OD-145
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 4–6; from A-03-01: criteria 21, 24 · Requirements: CLN-40 · Decisions: ADR-0030, ADR-0034, OD-40, OD-42, OD-145
 
 Second API slice of A-03, after A-03-02. Three checkpoints: normaliser, search, benchmark and ADR.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047).
@@ -26,6 +26,7 @@ Tests written first: vectors on TypeScript and Dart, the new gap cases (6); one 
 Estimated hand-written lines: ~3,900 (normaliser and Dart port ~600, vectors ~150, database ~450, search service and route ~900, benchmark ~350, ADR ~120, tests ~1,330).
 
 ## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins.
 - Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `POST /patients/search` (results, `truncated`, term lengths, 429 `rate_limited`, `includeArchived` for the owner) with `matchedBy` and `matchedParts` (improvement 1).
 - Criteria added: 21, 24.
 - Components: none (API slice).

@@ -1,7 +1,7 @@
 # A-03-02 Chart core: registration, file number, edit, archive
 
 Status: Planned · Tier: T0 · Branch: `feat/A-03-02-chart-core`
-Spec: [A-03](../specs/patients/A-03-patients.md) criteria 1–3, 12 (identity part), 13, 20 (created, edited, archived, restored) · Requirements: CLN-01 (identity), CLN-39, CLN-44, PLT-07, PLT-08 (per-clinic chart) · Decisions: ADR-0006, ADR-0031, OD-136, OD-137, OD-143
+Spec: [A-03](../specs/patients/A-03-patients.md) criteria 1–3, 12 (identity part), 13, 20 (created, edited, archived, restored); from A-03-01: criteria 22, 28, 32 · Requirements: CLN-01 (identity), CLN-39, CLN-44, PLT-07, PLT-08 (per-clinic chart) · Decisions: ADR-0006, ADR-0031, OD-136, OD-137, OD-143
 
 First API slice of A-03, after the design slice [A-03-01](A-03-01-design-and-screen-contract.md) (approved). Schema changes of A-03 are serialised: A-03-02 → 03 → 04 → 05 → 06 → 07 → 08.
 Contract: delivers the rows of the A-03 screen contract that name this slice, each proven by a contract test (ADR-0047); a change forced during the build updates the row and its drawing and is reported to the owner.
@@ -27,6 +27,7 @@ Tests written first: name part rules and display name (1); both phone countries 
 Estimated hand-written lines: ~3,700 (contracts ~350, database ~500, generator ~200, API ~1,150, tests ~1,500).
 
 ## From A-03-01 (re-plan, 2026-11-27)
+- Where this file's earlier plan names a route, field or code differently, the [contract](../specs/patients/A-03-screen-contract.md) wins; also `archivedAt` and `archivedByName` on the summary, `archived` in `GET /patients/count`, and `expectedUpdatedAt` with 409 `stale` on edit, archive and restore. `GET /patients/:id` has no read audit until A-03-07; no screen reads a chart before A-03-09, which comes after A-03-07, so no unaudited read reaches a person (`.claude/rules/patient-data.md`).
 - Contract rows ([contract](../specs/patients/A-03-screen-contract.md)): `GET /patients/count` (page line, first patient); `POST /patients` (create, replay, `previous_file_number_taken`, `failed` retry with the same id); `GET /patients/:id` identity part with `registeredBranch`, `createdAt`, `createdByName`, `updatedAt`, `updatedByName`; `PATCH /patients/:id` with `expectedUpdatedAt` and 409 `stale`; `POST /patients/:id/archive` and `/restore` with `expectedUpdatedAt`.
 - Criteria added: 22, 28 (edit and archive), 32.
 - Components: none (API slice).
