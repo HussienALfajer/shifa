@@ -3,7 +3,7 @@
 // edited override asks a new reason; the quiet-clinics switch combines with the status filter;
 // the open grant's time left goes down each minute; every failed hand-off closes its empty tab.
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { ACTIVE, adminApi, ENDING, openAdmin, PENDING, type Summary } from './admin-support.ts';
+import { ACTIVE, adminApi, ENDING, openAdmin, PENDING } from './admin-support.ts';
 import { control, dialog, openTab, rowOf, text, typeIn } from './admin-tabs-helpers.ts';
 import { base, GRANTS, GRANTS_OPEN, MINE, openClinic, tabsApi } from './admin-tabs-support.ts';
 import { button, click, flush, type Rendered } from './render.tsx';
@@ -108,7 +108,7 @@ describe('A-02-08 review fixes', () => {
       { ...ACTIVE, lastActivityAt: null, signIns7d: 0 },
       { ...PENDING, lastActivityAt: null, signIns7d: 0 },
       { ...ENDING, lastActivityAt: null, signIns7d: 4 },
-    ] as Summary[];
+    ];
     shown = await openAdmin(adminApi(clinics), '/');
     await flush(40);
     for (const label of document.querySelectorAll('label, [role="radio"]')) {
