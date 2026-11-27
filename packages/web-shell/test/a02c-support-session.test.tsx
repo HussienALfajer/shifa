@@ -7,6 +7,7 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   ADMIN_NAME,
+  ADMIN_PHONE,
   banner,
   dismissPath,
   OWNER_NAME,
@@ -33,7 +34,7 @@ const HANDOFF = '/api/auth/support/session';
 function supportApi() {
   const api = withA02(teamApi({ session: SUPPORT_SESSION }));
   api.answers['/api/me'] = () =>
-    json(200, { userId: SUPPORT_SESSION.userId, name: ADMIN_NAME, phone: '+963900000000' });
+    json(200, { userId: SUPPORT_SESSION.userId, name: ADMIN_NAME, phone: ADMIN_PHONE });
   return api;
 }
 

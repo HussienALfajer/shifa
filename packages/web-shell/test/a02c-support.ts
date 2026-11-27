@@ -3,7 +3,7 @@
 // Clinic web"): a support session's view, the owner's support grants, announcements, what the
 // plan allows, the subscription and the places a branch may take. Synthetic names only.
 import type { SessionView } from '@shifa/contracts';
-import { createRandom, generatePersonName } from '@shifa/testing';
+import { createRandom, generatePersonName, generatePhone } from '@shifa/testing';
 import type { FakeApi } from './support.ts';
 import { json } from './support.ts';
 import { ID, OWNER_SESSION, TENANT } from './team-support.ts';
@@ -15,6 +15,7 @@ const person = (sex: 'male' | 'female') => {
 };
 
 export const ADMIN_NAME = person('female');
+export const ADMIN_PHONE = generatePhone(random, 'SY');
 export const OTHER_ADMIN = person('male');
 export const OWNER_NAME = person('male');
 export const REASON = 'مشكلة في الفروع لا تظهر للمالك';

@@ -43,7 +43,13 @@ function useColumns(
   const who = (g: SupportGrant) =>
     viewer === 'owner' ? text('ownerLogWho', { name: g.adminName }) : g.adminName;
   return [
-    { id: 'who', header: text('supportColWho'), width: 'md', value: who },
+    // «… · فريق شفاء» is longer than a name alone: the owner's column is wider, so it shows whole.
+    {
+      id: 'who',
+      header: text('supportColWho'),
+      width: viewer === 'owner' ? 'lg' : 'md',
+      value: who,
+    },
     { id: 'reason', header: text('supportColReason'), wrap: true, value: (g) => g.reason },
     {
       id: 'start',
