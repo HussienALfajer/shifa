@@ -64,6 +64,16 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       clinicWebUrl: urls.clinicWebUrl,
     });
     const teamToken = new URL(team.setupUrl).hash.slice(1);
+    // The A-02-08 journeys' super admin: the clinic page tabs on a clinic of their own.
+    const tabsPhone = generatePhone(random, 'SY');
+    const tabs = await seedSuperAdmin({
+      authDb,
+      platformDb,
+      phone: tabsPhone,
+      name: person(),
+      clinicWebUrl: urls.clinicWebUrl,
+    });
+    const tabsToken = new URL(tabs.setupUrl).hash.slice(1);
     // The A-02-09 journeys' super admin: flags, announcements, cities and areas on admin web.
     const consolePhone = generatePhone(random, 'SY');
     const consoleAdmin = await seedSuperAdmin({
@@ -109,6 +119,7 @@ export async function seed(urls: SeedUrls): Promise<Seeded> {
       journeyAdmin: { phone: journeyPhone, token: journeyToken },
       accountAdmin: { phone: accountPhone, token: accountToken },
       teamAdmin: { phone: teamPhone, token: teamToken },
+      tabsAdmin: { phone: tabsPhone, token: tabsToken },
       consoleAdmin: { phone: consolePhone, token: consoleToken },
       clinics,
     };

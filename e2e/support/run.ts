@@ -15,7 +15,9 @@ export interface Seeded {
   accountAdmin: SeededPerson;
   /** A fourth super admin, for the A-01-08 team journeys: creates their clinics through the API. */
   teamAdmin: SeededPerson;
-  /** A fifth super admin, for the A-02-09 journeys: flags, announcements, cities and areas. */
+  /** A fifth super admin, for the A-02-08 clinic page tabs: creates a clinic through the API. */
+  tabsAdmin: SeededPerson;
+  /** A sixth super admin, for the A-02-09 journeys: flags, announcements, cities and areas. */
   consoleAdmin: SeededPerson;
   clinics: { tenantId: string; owner: SeededPerson }[];
 }
