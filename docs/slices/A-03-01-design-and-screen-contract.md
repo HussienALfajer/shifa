@@ -1,6 +1,6 @@
 # A-03-01 Design slice: every A-03 screen and the screen-to-API contract
 
-Status: In progress (checkpoints 1 and 2 approved 2026-11-27; checkpoint 3, re-plan, next) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
+Status: Done (checkpoints 1, 2 and 3 approved by the owner 2026-11-27) · Tier: T1 (it fixes the API contract; no product code) · Branch: `docs/A-03-01-design-and-screen-contract`
 Spec: [A-03](../specs/patients/A-03-patients.md), section "Screens" (all of it), criteria 1–20 as seen on screen · Requirements: CLN-01, CLN-27, CLN-39 to CLN-45, PLT-07, PLT-08, PLT-13, PLT-30 to PLT-36, PLT-44, PLT-47 · Decisions: ADR-0040, ADR-0046, ADR-0047, ADR-0049, OD-80
 
 First slice of A-03 (ADR-0047): nothing of A-03 is built before its drawings, contract and improvements are approved. It may run beside the A-02 UI code slices (A-02-08 to A-02-10): it writes no product code.
@@ -34,7 +34,7 @@ Tests written first: none (no code). The proof is the owner's approval of both c
 Estimated hand-written lines: ~1,000 in the repository (contract ~650, spec amendments ~150, slice and roadmap updates ~200); the drawings are in the design project.
 
 ## Stopped at
-Checkpoint 1 approved by the owner (2026-11-27): the three screens, their contract rows, spec gaps 1–9 (gap 6 option a), improvements 1–5, the components RecordList, RecordHeader, DescriptionList and the Drawer «wide» change; the answers are spec criteria 21–33. Checkpoint 2 approved the same day: `A03Merge`, `A03ReadLog`, `A03Fields`, `A03MyPatients`, gaps 10–18, improvements 6–8, EditableList; spec criteria 34–41. Next: checkpoint 3, the re-plan of A-03-02 to A-03-11.
+Done (2026-11-27): both checkpoints approved, the re-plan approved (A-03-12 components beside the API slices, two UI slices, A-03-11 folded); reviewer run and PR opened.
 
 ## Checkpoint 1 (reception and charts)
 ### What is drawn
@@ -148,12 +148,14 @@ Same page, below checkpoint 1, same rules; every board on desktop, tablet and ph
 - Checkpoint 2 approved (2026-11-27); its answers are spec criteria 34–41.
 
 ## Checkpoint 3 (re-plan)
-Each of A-03-02 to A-03-11 gained a section "From A-03-01" with its contract rows, the criteria it carries, its components and its new estimate. Estimates: A-03-02 ~3,990, A-03-03 ~4,130, A-03-04 ~3,500, A-03-05 ~3,940, A-03-06 ~3,300, A-03-07 ~3,510, A-03-08 ~2,990, A-03-09 ~3,750, A-03-10 ~3,550, A-03-11 ~2,960; total ~35,600 (was ~34,500). To keep A-03-02 inside the budget, `permissions[]` and `allowed` move to A-03-07, which owns visibility; the merge picker's search parameters belong to A-03-08. A-03-03 is ~130 over the ~4,000 budget and may split its PR (ADR-0032). Ten slices kept; waiting for the owner's approval of the count.
+Each of A-03-02 to A-03-10 gained a section "From A-03-01" with its contract rows, the criteria it carries, its components and its new estimate. API slices: A-03-02 ~3,990, A-03-03 ~4,130, A-03-04 ~3,500, A-03-05 ~3,940, A-03-06 ~3,300, A-03-07 ~3,510, A-03-08 ~2,990. To keep A-03-02 inside the budget, `permissions[]` and `allowed` move to A-03-07, which owns visibility; the merge picker's search parameters belong to A-03-08. A-03-03 is ~130 over the budget and may split its PR (ADR-0032).
+
+The owner asked whether the count could fall and what could run in parallel (2026-11-27). Decision (owner): on the A-02 model, a component slice **A-03-12** (~1,370: RecordList, RecordHeader, DescriptionList, EditableList, the Drawer «wide») built ahead in its own worktree beside the API slices once A-03-01 is merged; and **two UI slices above the budget** instead of three: A-03-09 reception (search, registration, chart summary, ~4,450) and A-03-10 owner tools (merge, read log, patient fields, «مرضاي فقط», ~4,440); A-03-11 folded into A-03-10, its file kept so the ID is not reused. The API slices stay serial (each has a migration); A-03-10 follows A-03-09. Ten slices after A-03-01, total ~35,600. Re-plan approved by the owner 2026-11-27.
 
 ## Evidence
 - Browser check after checkpoint 2 (2026-11-27): all seven A-03 boards, 85 states × light and dark × three sizes = 510 renders, 0 page errors, 0 unfilled values, nothing wider than its window except the owner's «المزيد» menu on tablet and phone (the Menu's bottom sheet, a portal over the board).
 - Token and component check of the artboards: checkpoint 1, 0 literal colours, 0 unknown tokens on the three screens (all sizes), the three proposed components, the four sheets and both stylesheets; 288 browser renders with 0 errors (2026-11-27); checkpoint 2: <pending>
-- Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 2026-11-27 (merge, read log, fields, «مرضاي فقط», the EditableList sheet); re-plan <pending>
+- Owner approvals (dates): checkpoint 1 2026-11-27 (search, registration, chart, the four component sheets); checkpoint 2 2026-11-27 (merge, read log, fields, «مرضاي فقط», the EditableList sheet); re-plan 2026-11-27 (component slice A-03-12, two UI slices above the budget, A-03-11 folded)
 - Improvements accepted / declined: 1–8 accepted (2026-11-27); none declined
 
 ## Notes for the next session

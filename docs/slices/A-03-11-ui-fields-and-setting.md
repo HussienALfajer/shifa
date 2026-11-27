@@ -1,4 +1,6 @@
-# A-03-11 UI code 3: «حقول ملف المريض» and «مرضاي فقط»
+# A-03-11 UI code 3: «حقول ملف المريض» and «مرضاي فقط» (folded into A-03-10)
+
+Status: Folded into [A-03-10](A-03-10-ui-chart-merge-read-log.md) at the A-03-01 re-plan (owner, 2026-11-27: two UI slices above the budget instead of three, components moved to [A-03-12](A-03-12-components.md)). Not built as a slice; kept so the ID is not reused. The original plan follows for the record.
 
 Status: Planned · Tier: T1 · Branch: `feat/A-03-11-ui-fields-and-setting`
 Spec: [A-03](../specs/patients/A-03-patients.md) screens «حقول ملف المريض» and «مرضاي فقط»; criteria 11, 14, 15, 17 as seen on screen · Requirements: PLT-13, PLT-30 to PLT-36, PLT-44 · Decisions: ADR-0008, ADR-0040, ADR-0046, ADR-0047

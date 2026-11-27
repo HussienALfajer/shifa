@@ -20,7 +20,7 @@ Reception registers a chart with its identity, gets the clinic's next file numbe
    - `POST /patients` (create; a replay with the same `id` and body returns the stored chart, another body with that id 409), `GET /patients/:id` (identity summary; no read audit yet, A-03-07), `PATCH /patients/:id` (same checks; refused on an archived or merged chart 409 `patient_archived`), `POST /patients/:id/archive` and `/restore` (owner).
    - Age to estimated birth date on an injected `Clock` (Damascus day); an exact date later clears the flag.
    - Audit: `patient.created`, `patient.edited` (changed field keys only), `patient.archived`, `patient.restored`; no name, phone, date or previous number in audit, logs, spans or errors.
-4. **Web, Flutter** — none (UI code slices A-03-09 to A-03-11).
+4. **Web, Flutter** — none (UI code slices A-03-09 and A-03-10).
 5. **End-to-end** — none; API tests only.
 
 Tests written first: name part rules and display name (1); both phone countries and the second phone (1); age in years and months to an estimated date, exact date clears the flag (1); 20 concurrent creates give 20 distinct consecutive numbers, a failed save uses none, the counter is per clinic (2); previous number unique after trimming, 409 (2); replayed create returns the stored chart, a different body 409 (3); edit and its audit keys, edit refused on archived (12, 13); archive and restore owner only, never deleted (13); route matrix for the six permissions by role, support read-only; isolation cases for both tables; leak test (no name or phone in logs, spans, errors, audit).
