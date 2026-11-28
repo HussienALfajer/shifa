@@ -1,6 +1,6 @@
 # A-03-05 Custom field definitions and their limit
 
-Status: Built, in review · Tier: T0 · Branch: `feat/A-03-05-custom-field-definitions`
+Status: Done (PR open) · Tier: T0 · Branch: `feat/A-03-05-custom-field-definitions`
 Spec: [A-03](../specs/patients/A-03-patients.md) criteria 14, 15, 17 (definitions, archive, restore, purge), 20 (field events); from A-03-01: criteria 37, 38, 39 · Requirements: PLT-13, PLT-30 to PLT-36 (definitions; print stored) · Decisions: ADR-0008, OD-144
 
 Fourth API slice of A-03, after A-03-04.
@@ -58,11 +58,13 @@ Branch: `claude/gracious-goodall-a54lwz` (the cloud session's branch, in place o
 - To `docs/backlog.md`: N5 section order after a move or a purge, N6 gaps in the owner's `order` while archived fields stay, N9 a label race test, N10 a section respelled by an edit is kept, a per-member limit on field writes (H1 option 5); N8 and L3 (purge without a worker, suspended clinics) are in "Purge without a worker" and in the A-03-06 slice notes.
 
 ## Stopped at
-Built, reviewed, review fixes in; PR next.
+Built, reviewed, review fixes in; PR open.
 
 ## Evidence
-- `verify` (full): <summary line>
-- Reviewer and security-reviewer findings fixed: <list>
+- Red phase: the three locked suites failed for the right reason (the contract module missing; 26 of 26 API tests answered 404 on the missing routes).
+- `pnpm verify` on the final tree: `all green` (format, instructions, lint-root, scripts-test, file-length, pub-get, drift, typecheck+lint+test 309.5 s, e2e 162.0 s); `node scripts/check-drift.mjs --full`: every check CLEAN (the Dart client included). Docker-backed suites ran in this cloud session (OD-83).
+- Targeted runs: `fields-definitions`, `fields-limits`, `fields-contract` 31 of 31; route matrix and support matrix 12 of 12; db `patient-fields`, privileges, isolation (direct and PgBouncer), architecture 135 of 135; contracts `patient-fields` and `patient-field-pattern-cost` 20 of 20; Dart client fixtures 157 of 157.
+- Reviewer and security-reviewer findings fixed: B1, B2, N3, N4, N7, H1, L1, L2 (see Review); the rest in `docs/backlog.md`.
 
 ## Notes for the next session
 - <only what is needed to resume>
