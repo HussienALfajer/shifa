@@ -42,4 +42,5 @@ Planned.
 - Reviewer and security-reviewer findings fixed: <list>
 
 ## Notes for the next session
-- <only what is needed to resume>
+- From A-03-05 (reviews N8, L3): archived fields are purged only inside the clinic's own requests (`purgeExpired` in `modules/patients/fields/field-store.ts`); a suspended or idle clinic never purges. Every value read must apply the cutoff (`isLive`), `purgeExpired` must also delete the purged fields' values, and chart writes should call it; criterion 17 ("values are removed") needs a worker or another purge path before values are stored for long (backlog "Purge without a worker").
+- From A-03-05 (L1): view and edit roles of a value follow `rolesInScope` (tenant-wide roles and the active branch's), as the member's view does.

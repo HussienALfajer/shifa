@@ -84,25 +84,51 @@ const DIGITS = /^[0-9٠-٩۰-۹]+$/u;
 const LETTERS = /^[\p{L}\p{M}' -]+$/u;
 const DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
-const compiled = new Map<string, RE2JS | null>();
+/**
+ * What a pattern may cost (A-03-05 security review H1): RE2 runs in linear time, but a short
+ * expression can still compile to a huge program (`(a?…){1000}`), which costs memory to keep and
+ * seconds to match. Repeat counts above the longest value are refused before compiling, and the
+ * compiled program is capped; real shapes are far below (`[A-Z]{2}-[0-9]{4}` is 9,
+ * `[\p{Arabic} ]{1,200}` 401).
+ */
+const MAX_REPEAT = PATIENT_FIELD_RULES.textMax;
+const MAX_PROGRAM = 1000;
+const REPEAT = /\{\s*(\d+)\s*(?:,\s*(\d*)\s*)?\}/g;
+const CACHE_MAX = 50;
 
-/** The expression compiled by RE2, or null when RE2 refuses it; at most 200 kept. */
+/** Accepted patterns only, at most 50. */
+const compiled = new Map<string, RE2JS>();
+
+function repeatsFit(expression: string): boolean {
+  for (const [, low, high] of expression.matchAll(REPEAT)) {
+    if (Number(low) > MAX_REPEAT || (high !== undefined && Number(high) > MAX_REPEAT)) return false;
+  }
+  return true;
+}
+
+/** The expression compiled by RE2 when it is an acceptable pattern; else null. */
 function compile(expression: string): RE2JS | null {
-  if (compiled.has(expression)) return compiled.get(expression) ?? null;
-  let pattern: RE2JS | null;
+  const cached = compiled.get(expression);
+  if (cached) return cached;
+  if (expression.length === 0 || expression.length > PATIENT_FIELD_RULES.patternMax) return null;
+  if (!repeatsFit(expression)) return null;
+  let pattern: RE2JS;
   try {
     pattern = RE2JS.compile(expression);
   } catch {
-    pattern = null;
+    return null;
   }
-  if (compiled.size >= 200) compiled.clear();
+  if (pattern.programSize() > MAX_PROGRAM) return null;
+  if (compiled.size >= CACHE_MAX) compiled.clear();
   compiled.set(expression, pattern);
   return pattern;
 }
 
-/** True for a custom pattern RE2 runs, of 1 to 100 characters (criterion 39, spec gap 18). */
+/**
+ * True for a custom pattern RE2 runs, of 1 to 100 characters, with repeats of at most 200 and a
+ * small compiled program (criterion 39, spec gap 18; security review H1).
+ */
 export function checkPatientFieldPattern(expression: string): boolean {
-  if (expression.length === 0 || expression.length > PATIENT_FIELD_RULES.patternMax) return false;
   return compile(expression) !== null;
 }
 

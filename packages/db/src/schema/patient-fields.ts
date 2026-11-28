@@ -111,7 +111,7 @@ export const patientField = pgTable(
     check('patient_field_type_check', sql`${t.type} in (${sql.raw(quoted(PATIENT_FIELD_TYPES))})`),
     check(
       'patient_field_rules_check',
-      sql`jsonb_typeof(${t.rules}) = 'object' and jsonb_typeof(${t.rules} -> 'validation') = 'object' and ${t.rules} ? 'default' and octet_length(${t.rules}::text) <= 8192`,
+      sql`jsonb_typeof(${t.rules}) = 'object' and jsonb_typeof(${t.rules} -> 'validation') = 'object' and ${t.rules} ? 'default' and octet_length(${t.rules}::text) <= 16384`,
     ),
     check(
       'patient_field_section_check',

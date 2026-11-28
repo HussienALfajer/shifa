@@ -70,6 +70,10 @@ final _decoders = <String, Object Function(_Json)>{
   'FamilyMember': (json) => FamilyMember.fromJson(json).toJson(),
   'PatientDoctors': (json) => PatientDoctors.fromJson(json).toJson(),
   'TreatingDoctor': (json) => TreatingDoctor.fromJson(json).toJson(),
+  // A-03-05: custom field definitions (the owner's view) and the form's fields.
+  'PatientFieldDefinitions': (json) =>
+      PatientFieldDefinitions.fromJson(json).toJson(),
+  'PatientFormFields': (json) => PatientFormFields.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

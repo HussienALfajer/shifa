@@ -29,6 +29,21 @@ import { Contract } from '../../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../../platform/request-meta.ts';
 import { PatientFieldsService } from './fields.service.ts';
 
+/**
+ * The member's roles where the guard checked them (security review L1): tenant-wide ones and the
+ * active branch's, as `hasPermission` counts them; a role in another branch shows no field here.
+ */
+export function rolesInScope(principal: Principal, scope: RequestScope): string[] {
+  return principal.roles
+    .filter(
+      (r) =>
+        r.role !== 'platform_admin' &&
+        r.tenantId === scope.tenantId &&
+        (r.branchId === null || r.branchId === scope.branchId),
+    )
+    .map((r) => r.role);
+}
+
 @Controller('patients/fields')
 export class PatientFieldsController {
   constructor(@Inject(PatientFieldsService) private readonly fields: PatientFieldsService) {}
@@ -42,8 +57,7 @@ export class PatientFieldsController {
     @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
   ): Promise<PatientFormFields> {
-    const roles = principal.roles.map((r) => r.role);
-    return this.fields.form(scope, roles, request.requestId);
+    return this.fields.form(scope, rolesInScope(principal, scope), request.requestId);
   }
 
   @RequirePermission('patients.fields.manage')

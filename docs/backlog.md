@@ -1,10 +1,12 @@
 # Backlog
 
-Status: Living · Last updated: 2026-11-27 · Owner: product owner
+Status: Living · Last updated: 2026-11-28 · Owner: product owner
 
 Non-blocking findings from reviews and small follow-ups. Each item names its source; remove it when done.
 
 - **Purge without a worker** (A-03-05 build): archived custom fields are purged inside the clinic's own requests (every field write and every fields read outside a support session); every read and count already treats them as gone after 30 days. A clinic that never opens its fields keeps the tombstone-to-be rows, and from A-03-06 their values, past day 30. Run `purgeExpired` from the workers app (pg-boss) once it exists, per clinic, under the clinic's own context.
+- **Custom field order loose ends** (A-03-05 review N5, N6, N10): a section's place is its oldest live field's creation, so moving the clinic's oldest field into a new section, or purging a section's oldest field, reorders sections (confirm with the owner whether "creation order" is the section's); archived fields keep their positions, so the owner's `order` can show gaps among active fields until the next reorder; an edit to a section title that folds to the same text keeps the old spelling (renaming sections is not in A-03).
+- **Custom field write limits and tests** (A-03-05 security review H1 option 5, review N9): no per-member rate limit on field writes (search has one); no test races two creates with the same label (the limits lock serialises them).
 - **Screen fixtures show custom field use as null** (A-03-05 build): `packages/web-shell/scripts/screens/world-a02-*.ts` still draws `limits.custom_fields` with `used: null`; the API reports a number since A-03-05. Refresh the fixtures with A-03-11 (the fields screen and setting).
 
 - **Duplicate rules to settle with the pilot** (A-03-04 review N1; owner question in the slice report): rule 2 needs every typed word to be a whole word of the stored name, so «رامي فؤاد القصاب» does not find a stored «رامي القصاب» (a father's name missing from an old paper record); "similar given name" is the same normalised key, not a spelling distance. Consider matching on at least two words (or all words of the shorter name) and a typo tolerance once reception's misses are known.

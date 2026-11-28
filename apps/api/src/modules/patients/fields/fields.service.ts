@@ -308,7 +308,8 @@ function placeIn(live: readonly LoadedField[], title: string): { title: string; 
   if (same.length === 0) return { title, position: 0 };
   return {
     title: same[0]?.row.section ?? title,
-    position: Math.max(...same.map(({ row }) => row.position)) + 1,
+    // Capped at the column's 999 (review N4): ties then sort by number, still after the others.
+    position: Math.min(Math.max(...same.map(({ row }) => row.position)) + 1, 999),
   };
 }
 

@@ -58,7 +58,7 @@ export async function tenantCustomFieldCount(
 ): Promise<number> {
   assertUuid('tenantId', tenantId);
   const { rows } = await tx.execute<{ custom_fields: number }>(
-    sql`select custom_fields from tenant_custom_field_count(${tenantId}::uuid, ${Math.floor(archivedAfter.getTime() / 1000)}::bigint)`,
+    sql`select custom_fields from tenant_custom_field_count(${tenantId}::uuid, ${archivedAfter.getTime()}::bigint)`,
   );
   return rows[0]?.custom_fields ?? 0;
 }

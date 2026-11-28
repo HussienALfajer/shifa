@@ -230,6 +230,18 @@ export function checkedDraft(
   return { ...draft, rules: { ...draft.rules, default: stored as StoredFieldRules['default'] } };
 }
 
+/** The validation as a list in a fixed order, whatever the order of its keys. */
+function rulesKey(v: StoredFieldRules['validation']): unknown[] {
+  return [
+    v.minLength,
+    v.maxLength,
+    v.min,
+    v.max,
+    v.pattern?.preset ?? null,
+    v.pattern?.expression ?? null,
+  ];
+}
+
 /** The keys an edit changed, in the contract's order (audit `patient_field.edited`). */
 export function changedKeys(before: FieldDraft, after: FieldDraft): string[] {
   const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
@@ -238,9 +250,14 @@ export function changedKeys(before: FieldDraft, after: FieldDraft): string[] {
     ['labelEn', before.labelEn, after.labelEn],
     ['section', folded(before.section), folded(after.section)],
     ['required', before.required, after.required],
-    ['validation', before.rules.validation, after.rules.validation],
+    // Rule by rule: jsonb gives the stored object's keys back in its own order (review B1).
+    ['validation', rulesKey(before.rules.validation), rulesKey(after.rules.validation)],
     ['default', before.rules.default, after.rules.default],
-    ['options', before.options, after.options],
+    [
+      'options',
+      before.options.map((o) => [o.id, o.label, o.archived]),
+      after.options.map((o) => [o.id, o.label, o.archived]),
+    ],
     ['viewRoles', before.viewRoles, after.viewRoles],
     ['editRoles', before.editRoles, after.editRoles],
     ['sensitive', before.sensitive, after.sensitive],

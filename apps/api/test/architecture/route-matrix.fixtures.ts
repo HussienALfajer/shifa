@@ -24,7 +24,7 @@ import {
   testPlatformDb,
   workerDatabaseName,
 } from '@shifa/db/testing';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { newLinkToken } from '../../src/modules/identity/links.ts';
 import { sealSecret } from '../../src/modules/identity/secret-box.ts';
 import { base32Encode } from '../../src/modules/identity/totp.ts';
@@ -153,21 +153,24 @@ export async function chartOf(
   return { id: row.id, updatedAt: row.updatedAt.toISOString() };
 }
 
-let fixtureFields = 0;
-
 /**
- * A fresh custom field of `tenantId` written as the superuser (A-03-05), archived for a restore;
- * numbers from 1000 so they never meet the ones the create sample takes. Each is written
- * outside the limit, so the create sample makes room first (`fieldRoomOf`).
+ * A fresh custom field of `tenantId` written as the superuser (A-03-05), archived for a restore,
+ * with the clinic's next number (as the create takes it). The clinic's earlier fields are purged
+ * first, so it is the only live one (the order names it alone) and creates stay within
+ * `limits.custom_fields`.
  */
 export async function fieldOf(
   tenantId: string,
   state: 'active' | 'archived' = 'active',
 ): Promise<{ key: string; updatedAt: string }> {
-  fixtureFields += 1;
+  await purgeFieldsOf(tenantId);
   const at = new Date();
   const actor = fixtureId('matrix field owner');
-  const number = 1000 + fixtureFields;
+  const [last] = await superuserDb(workerDatabaseName())
+    .select({ number: sql<number>`coalesce(max(${patientField.number}), 0)::int` })
+    .from(patientField)
+    .where(eq(patientField.tenantId, tenantId));
+  const number = (last?.number ?? 0) + 1;
   const [row] = await superuserDb(workerDatabaseName())
     .insert(patientField)
     .values({
@@ -181,7 +184,7 @@ export async function fieldOf(
         default: null,
       },
       section: 'المصفوفة',
-      position: fixtureFields % 1000,
+      position: 0,
       viewRoles: ['owner'],
       editRoles: ['owner'],
       state,
@@ -196,8 +199,8 @@ export async function fieldOf(
   return { key: row.key, updatedAt: row.updatedAt.toISOString() };
 }
 
-/** Purges every field of `tenantId` (tombstones), so a create stays within the limit. */
-export async function fieldRoomOf(tenantId: string): Promise<void> {
+/** Purges every field of `tenantId` (tombstones). */
+async function purgeFieldsOf(tenantId: string): Promise<void> {
   const at = new Date();
   await superuserDb(workerDatabaseName())
     .update(patientField)

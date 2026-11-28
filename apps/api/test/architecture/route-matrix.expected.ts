@@ -108,10 +108,11 @@ export interface SampleContext {
   announcementId(): Promise<string>;
   /** A fresh chart of the callers' clinic, active or archived, with its updatedAt (A-03-02). */
   chart(state?: 'active' | 'archived'): Promise<{ id: string; updatedAt: string }>;
-  /** A fresh custom field of the callers' clinic, active or archived (A-03-05). */
+  /**
+   * A fresh custom field of the callers' clinic, active or archived, its only live field: the
+   * earlier ones are purged, so creates stay within `limits.custom_fields` (A-03-05).
+   */
   field(state?: 'active' | 'archived'): Promise<{ key: string; updatedAt: string }>;
-  /** Purges the callers' clinic's fields, so a create stays within `limits.custom_fields`. */
-  fieldRoom(): Promise<void>;
 }
 
 export interface SampleRequest {

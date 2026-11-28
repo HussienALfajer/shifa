@@ -88,9 +88,9 @@ export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
     const chart = await ctx.chart('archived');
     return { url: `/patients/${chart.id}/restore`, body: { expectedUpdatedAt: chart.updatedAt } };
   },
-  // A-03-05: custom fields (a fresh field per call; the create makes room under the limit)
+  // A-03-05: custom fields (a fresh field per call, the clinic's only live one: room under the limit)
   'POST /patients/fields': async (ctx) => {
-    await ctx.fieldRoom();
+    await ctx.field();
     return {
       body: {
         label: `حقل ${String(Math.random()).slice(2, 10)}`,
@@ -109,7 +109,6 @@ export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
   },
   'PUT /patients/fields/order': async (ctx) => {
     // Only the new field is live: the order names it alone.
-    await ctx.fieldRoom();
     const field = await ctx.field();
     return {
       body: {

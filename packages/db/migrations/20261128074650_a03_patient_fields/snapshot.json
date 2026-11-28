@@ -2,7 +2,7 @@
   "type": "diff",
   "version": "9",
   "dialect": "postgres",
-  "id": "a25e6b9c-d656-4cb8-9931-3bf798e557a4",
+  "id": "082dd512-71e0-4e4c-aad9-9c3e8a31394c",
   "prevIds": [
     "57795c9e-2e49-4f7b-a250-f99d66e82380"
   ],
@@ -928,7 +928,7 @@
         "schema": "public",
         "table": "patient_field",
         "name": "patient_field_rules_check",
-        "value": "jsonb_typeof(\"rules\") = 'object' and jsonb_typeof(\"rules\" -> 'validation') = 'object' and \"rules\" ? 'default' and octet_length(\"rules\"::text) <= 8192",
+        "value": "jsonb_typeof(\"rules\") = 'object' and jsonb_typeof(\"rules\" -> 'validation') = 'object' and \"rules\" ? 'default' and octet_length(\"rules\"::text) <= 16384",
         "entityType": "checks"
       }
     },

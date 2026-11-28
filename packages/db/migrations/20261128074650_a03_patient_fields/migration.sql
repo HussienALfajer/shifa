@@ -30,7 +30,7 @@ CREATE TABLE "patient_field" (
 	CONSTRAINT "patient_field_label_check" CHECK (char_length("label") between 1 and 60 and "label" = btrim("label")),
 	CONSTRAINT "patient_field_label_en_check" CHECK (char_length("label_en") between 1 and 60 and "label_en" = btrim("label_en")),
 	CONSTRAINT "patient_field_type_check" CHECK ("type" in ('text', 'long_text', 'number', 'date', 'single_choice', 'multi_choice', 'yes_no', 'phone')),
-	CONSTRAINT "patient_field_rules_check" CHECK (jsonb_typeof("rules") = 'object' and jsonb_typeof("rules" -> 'validation') = 'object' and "rules" ? 'default' and octet_length("rules"::text) <= 8192),
+	CONSTRAINT "patient_field_rules_check" CHECK (jsonb_typeof("rules") = 'object' and jsonb_typeof("rules" -> 'validation') = 'object' and "rules" ? 'default' and octet_length("rules"::text) <= 16384),
 	CONSTRAINT "patient_field_section_check" CHECK (char_length("section") between 1 and 40 and "section" = btrim("section")),
 	CONSTRAINT "patient_field_position_check" CHECK ("position" between 0 and 999),
 	CONSTRAINT "patient_field_roles_check" CHECK (cardinality("view_roles") between 1 and 5 and "view_roles" <@ array['owner', 'doctor', 'receptionist', 'assistant', 'accountant']::text[] and "edit_roles" <@ "view_roles"),
