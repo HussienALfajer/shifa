@@ -39,7 +39,7 @@ Reception fills the clinic's fields on registration and edit; each member sees a
 4. **Web, Flutter** — none (A-03-09 and A-03-10 draw on these rows).
 5. **End-to-end** — none (API slice; the journeys are A-03-09's).
 
-## Open points for the owner (proposed answers; recorded in `docs/open-decisions.md` once approved)
+## Decided with the owner (OD-146, 2026-11-28)
 1. **Required and roles:** a required field is enforced only for members who may edit it; a reception member never fails registration because of a doctor-only required field.
 2. **Required on edit:** an older chart that lacks a value of a field made required later can still be edited; only clearing a required value is refused.
 3. **Searchable types:** text, long text, number, date and phone can be searchable by their value; choices and yes/no cannot (a field of those types may keep `searchable` off; A-03-05 then refuses `searchable` on them, ~30 lines).
@@ -58,7 +58,7 @@ Reception fills the clinic's fields on registration and edit; each member sees a
 Estimated hand-written lines: ~3,200 (contracts ~270, database ~250, values and stripping ~950, search ~350, chart counts ~100, tests ~1,280). Under the budget; checkpoint after the database and writes (~1,500) if the session runs long.
 
 ## Stopped at
-Planned (plan refined 2026-11-28 after A-03-05 merged; awaiting the owner's approval of the open points).
+Planned; plan refined after A-03-05 and approved by the owner 2026-11-28 (OD-146; second-session critique waived).
 
 ## Evidence
 - `verify` (full): <summary line>
