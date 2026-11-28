@@ -104,10 +104,11 @@ const identityFields = {
    * A-03-04 (criterion 10): membership ids of doctor members (400 `doctor_not_member`); a doctor
    * who registers is added. On an edit, the whole list (an inactive doctor already on it may stay).
    */
-  treatingDoctorIds: z.array(z.uuid()).max(50).optional(),
+  treatingDoctorIds: z.array(z.uuid()).max(20).optional(),
   /**
    * A-03-04 (criterion 7): the candidates the member checked; a candidate not listed answers 409
-   * `possible_duplicate`. On an edit, checked only when a name part, the phone or the birth changes.
+   * `possible_duplicate`. On an edit, checked only when a name part or the phone changes (contract
+   * row "Edit").
    */
   acknowledgedCandidateIds: z.array(z.uuid()).max(5).optional(),
 };
@@ -284,7 +285,7 @@ export const patientsUpdate = defineContract({
   summary: 'Edit a chart’s identity',
   request: { params: PatientIdParams, body: UpdatePatientRequest },
   // 400 as for the create; 409 `stale` (with `stale`), `patient_archived`, `patient_merged`,
-  // `previous_file_number_taken`, `possible_duplicate` (a name, the phone or the birth changed).
+  // `previous_file_number_taken`, `possible_duplicate` (a name part or the phone changed).
   responses: { 200: PatientChart, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 

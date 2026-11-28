@@ -19,6 +19,7 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, E164_CHECK, SHA256_HEX_CHECK, updatedAt } from './columns.ts';
@@ -154,6 +155,10 @@ export const patient = pgTable(
     index('patient_tenant_id_name_key_version_idx').on(t.tenantId, t.nameKeyVersion),
     // A-03-04: a family is the charts on one contact phone; the duplicate check's phone rule.
     index('patient_tenant_id_contact_phone_idx').on(t.tenantId, t.contactPhone),
+    // A-03-04 review (B2): one active holder per phone; the API decides it under a phone lock.
+    uniqueIndex('patient_tenant_id_contact_phone_holder_key')
+      .on(t.tenantId, t.contactPhone)
+      .where(sql`${t.relation} = 'holder' and ${t.state} = 'active'`),
   ],
 );
 

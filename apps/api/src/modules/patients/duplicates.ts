@@ -75,14 +75,25 @@ export interface Candidate {
 const notExcluded = (excludeId: string | null): SQL | undefined =>
   excludeId === null ? undefined : ne(patient.id, excludeId);
 
-/** Rule 1: charts on the phone whose given name has the same key. */
+/**
+ * Rule 1: charts on the phone whose given name has the same key. The given name's first word, a
+ * whole token of part 0, narrows the phone's charts in SQL before the keys are compared, so a
+ * phone holding many charts (a clinic's own number) still finds the duplicate (reviewer N2).
+ */
 async function onPhone(tx: Tx, q: DuplicateQuery): Promise<ChartRow[]> {
-  if (q.phone === null || q.givenKey === null) return [];
+  const [first] = q.givenKey === null ? [] : keyWords(q.givenKey);
+  if (q.phone === null || q.givenKey === null || first === undefined) return [];
   const rows = await tx
     .select()
     .from(patient)
     .where(
-      and(eq(patient.contactPhone, q.phone), ne(patient.state, 'merged'), notExcluded(q.excludeId)),
+      and(
+        eq(patient.contactPhone, q.phone),
+        ne(patient.state, 'merged'),
+        notExcluded(q.excludeId),
+        sql`exists (select 1 from patient_name_token t where t.patient_id = ${patient.id}
+          and t.part = 0 and t.word = 0 and t.whole and t.token = ${lookupToken(first)})`,
+      ),
     )
     .orderBy(asc(patient.fileNumber))
     .limit(ON_PHONE);

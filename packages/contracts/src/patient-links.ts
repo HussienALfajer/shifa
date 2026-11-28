@@ -66,7 +66,8 @@ export const patientsDuplicates = defineContract({
   path: '/patients/duplicates',
   summary: 'Charts that may be the patient being registered',
   request: { body: DuplicateCheckRequest },
-  responses: { 200: DuplicateCandidates, 400: ErrorEnvelope },
+  // 429 `rate_limited`: duplicate checks and family previews share a per-member budget.
+  responses: { 200: DuplicateCandidates, 400: ErrorEnvelope, 429: ErrorEnvelope },
 });
 
 export const patientsFamily = defineContract({
@@ -75,8 +76,8 @@ export const patientsFamily = defineContract({
   path: '/patients/family',
   summary: 'The family on a contact phone',
   request: { body: PatientFamilyRequest },
-  // 400 `validation_failed` on `body.phone` until the number is complete.
-  responses: { 200: PatientFamily, 400: ErrorEnvelope },
+  // 400 `validation_failed` on `body.phone` until the number is complete; 429 `rate_limited`.
+  responses: { 200: PatientFamily, 400: ErrorEnvelope, 429: ErrorEnvelope },
 });
 
 export const patientsDoctors = defineContract({

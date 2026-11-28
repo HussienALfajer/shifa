@@ -36,9 +36,9 @@ import {
   takeFileNumber,
   violates,
 } from './charts.ts';
-import { registeringDoctor, setTreatingDoctors } from './doctors.ts';
+import { doctorRows, registeringDoctor, setTreatingDoctors } from './doctors.ts';
 import { acknowledgedCandidates, duplicateQuery } from './duplicates.ts';
-import { relationOn } from './family.ts';
+import { relationOn, restoredRelation } from './family.ts';
 import { namesChanged, writeNameKey } from './name-keys.ts';
 
 /** The identity fields an edit may change; the audit names the ones that did. */
@@ -55,13 +55,15 @@ const EDITABLE = [
   'relation',
 ] as const;
 type Editable = (typeof EDITABLE)[number];
-/** The fields whose change re-checks duplicates (criterion 7). */
+/**
+ * The fields whose change re-checks duplicates (criterion 7; contract row "Edit": the ids are sent
+ * only when the name or phone changed, so a birth correction alone is not re-checked).
+ */
 const DUPLICATE_KEYS: readonly Editable[] = [
   'givenName',
   'fatherName',
   'familyName',
   'contactPhone',
-  'birthDate',
 ];
 
 const previousTaken = () => new ApiError(409, 'previous_file_number_taken');
@@ -238,13 +240,13 @@ export class PatientsService {
               next.birthDateEstimated !== undefined &&
               next.birthDateEstimated !== current.birthDateEstimated),
         );
-        if (changed.some((key) => DUPLICATE_KEYS.includes(key))) {
-          await acknowledgedCandidates(
-            tx,
-            savedQuery({ ...current, ...next, id }),
-            input.acknowledgedCandidateIds,
-          );
-        }
+        const anyway = changed.some((key) => DUPLICATE_KEYS.includes(key))
+          ? await acknowledgedCandidates(
+              tx,
+              savedQuery({ ...current, ...next, id }),
+              input.acknowledgedCandidateIds,
+            )
+          : [];
         const doctors =
           input.treatingDoctorIds === undefined
             ? { added: [], removed: [] }
@@ -272,8 +274,14 @@ export class PatientsService {
             Object.fromEntries(changed.map((key) => [key, true])),
           );
         }
-        if (doctorsChanged) {
-          await audit(tx, scope, 'patient.doctors_changed', id, requestId, { ...doctors });
+        if (anyway.length > 0) {
+          await audit(tx, scope, 'patient.duplicate_registered', id, requestId, {
+            candidateIds: anyway,
+          });
+        }
+        // At most DOCTOR_IDS_PER_ROW ids a row, so the row stays within the 1 kB audit limit.
+        for (const part of doctorRows(doctors)) {
+          await audit(tx, scope, 'patient.doctors_changed', id, requestId, { ...part });
         }
         return chartView(tx, row);
       });
@@ -324,9 +332,11 @@ export class PatientsService {
       if (Date.parse(expectedUpdatedAt) !== current.updatedAt.getTime()) {
         throw await staleError(tx, current);
       }
+      const relation = await restoredRelation(tx, scope.tenantId, current);
       const [row] = await tx
         .update(patient)
         .set({
+          relation,
           state: 'active',
           archivedAt: null,
           archivedBy: null,
@@ -336,7 +346,14 @@ export class PatientsService {
         .where(eq(patient.id, id))
         .returning();
       if (!row) throw new NotFoundException();
-      await audit(tx, scope, 'patient.restored', id, requestId);
+      await audit(
+        tx,
+        scope,
+        'patient.restored',
+        id,
+        requestId,
+        relation === current.relation ? {} : { relation: true },
+      );
       return chartView(tx, row);
     });
   }

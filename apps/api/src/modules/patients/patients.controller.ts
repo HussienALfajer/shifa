@@ -47,6 +47,14 @@ import { PatientLinksService } from './links.service.ts';
 import { PatientsService } from './patients.service.ts';
 import { PatientSearchService } from './search.service.ts';
 
+/** A member past a limit is logged by ids (a scraper can be named; never what they typed). */
+const limitedLog = (scope: RequestScope, request: RequestMeta) => () => {
+  request.logInfo(
+    { tenantId: scope.tenantId, userId: scope.userId },
+    'patient lookup rate limited',
+  );
+};
+
 @Controller('patients')
 export class PatientsController {
   constructor(
@@ -99,8 +107,9 @@ export class PatientsController {
   duplicates(
     @Body() body: RequestBody<typeof patientsDuplicates>,
     @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
   ): Promise<DuplicateCandidates> {
-    return this.links.duplicates(scope, body);
+    return this.links.duplicates(scope, body, limitedLog(scope, request));
   }
 
   /** Criteria 9, 29 (A-03-04): a read by POST, so the phone stays out of the URL. */
@@ -112,8 +121,9 @@ export class PatientsController {
   family(
     @Body() body: RequestBody<typeof patientsFamily>,
     @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
   ): Promise<PatientFamily> {
-    return this.links.family(scope, body);
+    return this.links.family(scope, body, limitedLog(scope, request));
   }
 
   /** Criterion 10 (A-03-04): names and `active` only, for those who register. */

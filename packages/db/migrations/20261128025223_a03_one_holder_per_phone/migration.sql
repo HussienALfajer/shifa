@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX "patient_tenant_id_contact_phone_holder_key" ON "patient" ("tenant_id","contact_phone") WHERE "relation" = 'holder' and "state" = 'active';

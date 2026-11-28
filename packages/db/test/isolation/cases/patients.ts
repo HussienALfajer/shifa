@@ -152,7 +152,7 @@ export const patientTreatingDoctorCase = defineIsolationCase({
         .select()
         .from(patientTreatingDoctor)
         .where(eq(patientTreatingDoctor.patientId, chartId(0))),
-    'a doctor’s charts (my patients, A-03-07)': (tx) =>
+    'rows by who added them (the same actor id in both clinics)': (tx) =>
       tx.select().from(patientTreatingDoctor).where(eq(patientTreatingDoctor.addedBy, ACTOR)),
   },
 });

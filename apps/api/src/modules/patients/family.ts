@@ -51,6 +51,28 @@ export async function familySizes(tx: Tx, phones: readonly string[]): Promise<Ma
   return new Map(rows.map((r) => [r.phone, r.count]));
 }
 
+/** Serialises every save that decides a relation on this clinic's phone, until commit. */
+async function lockPhone(tx: Tx, tenantId: string, phone: string): Promise<void> {
+  await tx.execute(
+    sql`select pg_advisory_xact_lock(hashtextextended(${`patient-family:${tenantId}:${phone}`}, 0))`,
+  );
+}
+
+/**
+ * The relation a restored chart keeps (reviewer B2): a holder that comes back to a phone where
+ * another active chart became the holder meanwhile loses the mark (one holder per phone).
+ */
+export async function restoredRelation(
+  tx: Tx,
+  tenantId: string,
+  row: ChartRow,
+): Promise<PatientRelation | null> {
+  if (row.relation !== 'holder') return row.relation;
+  await lockPhone(tx, tenantId, row.contactPhone);
+  const others = await chartsOn(tx, row.contactPhone, row.id);
+  return others.some((c) => c.relation === 'holder') ? null : 'holder';
+}
+
 const relationRefused = () =>
   new RequestValidationError([{ path: 'body.relation', code: 'invalid_value' }]);
 
@@ -76,9 +98,7 @@ export async function relationOn(
   selfId: string,
   choice: RelationChoice,
 ): Promise<PatientRelation | null> {
-  await tx.execute(
-    sql`select pg_advisory_xact_lock(hashtextextended(${`patient-family:${tenantId}:${phone}`}, 0))`,
-  );
+  await lockPhone(tx, tenantId, phone);
   const others = await chartsOn(tx, phone, selfId);
   const { requested } = choice;
   if (others.length === 0) {

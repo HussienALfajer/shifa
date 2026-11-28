@@ -41,11 +41,16 @@ Branch: `claude/youthful-pasteur-0helm2` (the cloud session's branch, in place o
 - **Decisions in the build** (reported to the owner): "similar given name" is the same normalised key (ADR-0034), not a trigram score, so twins «حسن» and «حسين» do not warn; rule 2 needs two words; family lists hold active charts only; `familySize` counts the active charts on the phone (an archived result counts itself); `GET /patients/doctors` lists deactivated doctors too, `active: false`; the candidate shape is one object with a nullable `card` (contract row updated).
 
 ## Stopped at
-API layer built and green locally; reviewer and security-reviewer next, then the PR.
+Built, reviewed, review fixes in; PR open.
 
 ## Evidence
-- `verify` (full): <summary line>
-- Reviewer and security-reviewer findings fixed: <list>
+- Red phase: the three locked suites (`duplicates`, `family`, `doctors`) failed on the missing routes and fields (31 of 32). One locked assertion was wrong (it read the daughter's family from her registration answer, before the third chart existed); fixed with the owner's consent (re-read with `GET /patients/:id`, same expectation).
+- `pnpm verify` on the first commit: `all green` (drift, typecheck+lint+test, e2e). A first run hit the 90 s setup hook of `route-matrix.test.ts` while the 100,000-chart benchmark ran beside it; alone it passes in 27 s, and the rerun was green.
+- Benchmark (`search-bench.test.ts`, 50,000 charts × two clinics behind PgBouncer, p95 limit 150 ms): duplicate check, same phone and given name p95 8.3 ms; full name ±2 years p95 13.1 ms; every field p95 12.2 ms; 400 of 400 found, no foreign rows. Search paths unchanged (p95 5.5–91.4 ms).
+- Reviewer, blocking, fixed: B1 doctor changes could pass the 1 kB audit row (500): at most 20 ids a save, and `patient.doctors_changed` rows of at most 20 ids; B2 a restore could make a second holder: the restored holder loses the mark under the phone lock, and the expand migration `20261128025223_a03_one_holder_per_phone` adds a partial unique index (one active holder per phone; rollback: drop the index); B3 a birth correction alone no longer re-checks duplicates (contract row "Edit": ids only when the name or phone changed).
+- Reviewer, non-blocking, fixed: N2 the phone rule narrows by the given name's first token in SQL (no 50-chart cut); N3 a doctor role in an archived branch does not count; N4 an edit saved over acknowledged candidates writes `patient.duplicate_registered`; N6 the duplicate check writes a batch of stale name tokens first; N7 a never-accepted invitation is not a doctor choice; N9 tests for the lock, the restore, the cap.
+- Security reviewer, blocking, fixed: M1 the duplicate check and the family preview now share a per-member budget (60 a minute, `MemberLimit`, also used by search), answer 429 `rate_limited` past it with a log line of ids only, and run under a 2 s statement timeout. Covered by `links-review.test.ts`.
+- Non-blocking, to `docs/backlog.md`: N1 rule 2 word matching, N5 a family without a holder, L1 unbounded family lists, L2 support sessions and the form's reads, L3b doctors at registration not audited, L5 cards in the 409 envelope, I2 and I4 to I5 (A-03-07 and A-03-08 notes, leak tests), N9 `registered()` acknowledging candidates.
 
 ## Notes for the next session
 - From A-03-03: build the candidate query on `patient_name_token` (`name-search.ts`: intersected index-only scans, the trigram check per word) and the phone-tail columns. The A-03-03 benchmark timed only the duplicate check's lookups as search terms (full name, contact phone); add this slice's own query shape ("similar given name", "similar full name with birth year ±2") to `apps/api/test/patients/search-bench.test.ts` and keep p95 ≤ 150 ms. `familySize` and `relation` on search results are this slice's (contract row `POST /patients/search`).

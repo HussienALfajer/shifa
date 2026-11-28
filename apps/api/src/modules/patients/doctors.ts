@@ -1,28 +1,54 @@
 // Treating doctors (spec A-03 criterion 10; OD-140; slice A-03-04): doctor members of the clinic,
-// by membership id. A member is a doctor while they hold the doctor role in any branch; an active
-// doctor is also an active member. A deactivated doctor stays on charts, marked inactive, and is
+// by membership id. A member is a doctor while they hold the doctor role clinic-wide or in a
+// branch that is not archived; an active doctor is also an active member. A deactivated doctor stays on charts, marked inactive, and is
 // not offered or added anew. Read and written in the transaction TenantDb opened (RLS).
 import type { TreatingDoctor } from '@shifa/contracts';
-import { membership, patientTreatingDoctor, roleAssignment, type Tx } from '@shifa/db';
-import { and, asc, eq, exists, inArray, ne } from 'drizzle-orm';
+import { branch, membership, patientTreatingDoctor, roleAssignment, type Tx } from '@shifa/db';
+import { and, asc, eq, exists, inArray, isNotNull, isNull, ne } from 'drizzle-orm';
 import { ApiError } from '../../platform/errors.ts';
 
+/** The member holds the doctor role clinic-wide or in a branch that is not archived. */
 const holdsDoctor = (tx: Tx) =>
   exists(
     tx
       .select({ id: roleAssignment.id })
       .from(roleAssignment)
+      .leftJoin(branch, eq(branch.id, roleAssignment.branchId))
       .where(
-        and(eq(roleAssignment.membershipId, membership.id), eq(roleAssignment.role, 'doctor')),
+        and(
+          eq(roleAssignment.membershipId, membership.id),
+          eq(roleAssignment.role, 'doctor'),
+          isNull(branch.archivedAt),
+        ),
       ),
   );
 
-/** The clinic's doctor members who were ever bound (not pending), active ones first. */
+/** Member ids a `patient.doctors_changed` row holds at most (the audit row's 1 kB limit). */
+export const DOCTOR_IDS_PER_ROW = 20;
+
+/** A change as audit rows of at most DOCTOR_IDS_PER_ROW ids each; none when nothing changed. */
+export function doctorRows(change: DoctorChange): DoctorChange[] {
+  const ids = [
+    ...change.added.map((id) => ['added', id] as const),
+    ...change.removed.map((id) => ['removed', id] as const),
+  ];
+  const rows: DoctorChange[] = [];
+  for (let i = 0; i < ids.length; i += DOCTOR_IDS_PER_ROW) {
+    const part = ids.slice(i, i + DOCTOR_IDS_PER_ROW);
+    rows.push({
+      added: part.filter(([k]) => k === 'added').map(([, id]) => id),
+      removed: part.filter(([k]) => k === 'removed').map(([, id]) => id),
+    });
+  }
+  return rows;
+}
+
+/** The clinic's doctor members who were ever bound (a person, not an invitation), active first. */
 export async function doctorChoices(tx: Tx): Promise<TreatingDoctor[]> {
   const rows = await tx
     .select({ memberId: membership.id, name: membership.displayName, status: membership.status })
     .from(membership)
-    .where(and(ne(membership.status, 'pending'), holdsDoctor(tx)))
+    .where(and(ne(membership.status, 'pending'), isNotNull(membership.userId), holdsDoctor(tx)))
     .orderBy(asc(membership.displayName), asc(membership.id));
   return rows
     .map((r) => ({ memberId: r.memberId, name: r.name, active: r.status === 'active' }))
