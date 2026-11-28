@@ -56,6 +56,9 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
     'patientFileCounter',
     'patientNameToken',
     'patientTreatingDoctor',
+    // A-03-05: custom field definitions and their choices
+    'patientField',
+    'patientFieldOption',
     'auditEvent',
   ],
 };

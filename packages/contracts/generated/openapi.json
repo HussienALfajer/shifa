@@ -1160,6 +1160,108 @@
         ],
         "type": "object"
       },
+      "CreatePatientFieldRequest": {
+        "properties": {
+          "default": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    "maxItems": 250,
+                    "type": "array"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
+          "label": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "labelEn": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldOptionInput"
+            },
+            "maxItems": 250,
+            "type": "array"
+          },
+          "print": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "searchable": {
+            "type": "boolean"
+          },
+          "section": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PatientFieldType"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/PatientFieldValidationInput"
+          },
+          "viewRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "label",
+          "section",
+          "viewRoles",
+          "type"
+        ],
+        "type": "object"
+      },
       "CreatePatientRequest": {
         "properties": {
           "acknowledgedCandidateIds": {
@@ -1671,7 +1773,9 @@
           "stale",
           "rate_limited",
           "possible_duplicate",
-          "doctor_not_member"
+          "doctor_not_member",
+          "searchable_limit",
+          "type_fixed"
         ],
         "type": "string"
       },
@@ -3056,6 +3160,604 @@
         },
         "required": [
           "phone"
+        ],
+        "type": "object"
+      },
+      "PatientFieldDefinition": {
+        "properties": {
+          "archivedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "createdAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "default": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    "maxItems": 250,
+                    "type": "array"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "type": "array"
+          },
+          "key": {
+            "$ref": "#/components/schemas/PatientFieldKey"
+          },
+          "label": {
+            "type": "string"
+          },
+          "labelEn": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldOption"
+            },
+            "type": "array"
+          },
+          "order": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "print": {
+            "type": "boolean"
+          },
+          "purgeAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "searchable": {
+            "type": "boolean"
+          },
+          "section": {
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PatientFieldState"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PatientFieldType"
+          },
+          "updatedAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/PatientFieldValidation"
+          },
+          "viewRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "labelEn",
+          "type",
+          "required",
+          "validation",
+          "default",
+          "options",
+          "viewRoles",
+          "editRoles",
+          "section",
+          "order",
+          "sensitive",
+          "searchable",
+          "print",
+          "state",
+          "archivedAt",
+          "purgeAt",
+          "createdAt",
+          "updatedAt"
+        ],
+        "type": "object"
+      },
+      "PatientFieldDefinitions": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldDefinition"
+            },
+            "type": "array"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/PatientFieldLimits"
+          },
+          "listUpdatedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "fields",
+          "limits",
+          "listUpdatedAt"
+        ],
+        "type": "object"
+      },
+      "PatientFieldKey": {
+        "pattern": "^cf_[0-9]{1,6}$",
+        "type": "string"
+      },
+      "PatientFieldLimits": {
+        "properties": {
+          "max": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "searchableMax": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "searchableUsed": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "used": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "used",
+          "max",
+          "searchableUsed",
+          "searchableMax"
+        ],
+        "type": "object"
+      },
+      "PatientFieldOption": {
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          },
+          "order": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "archived",
+          "order"
+        ],
+        "type": "object"
+      },
+      "PatientFieldOptionInput": {
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "label"
+        ],
+        "type": "object"
+      },
+      "PatientFieldOrderRequest": {
+        "properties": {
+          "expectedUpdatedAt": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sections": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldOrderSection"
+            },
+            "maxItems": 50,
+            "type": "array"
+          }
+        },
+        "required": [
+          "sections",
+          "expectedUpdatedAt"
+        ],
+        "type": "object"
+      },
+      "PatientFieldOrderSection": {
+        "properties": {
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldKey"
+            },
+            "maxItems": 50,
+            "type": "array"
+          },
+          "title": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "title",
+          "keys"
+        ],
+        "type": "object"
+      },
+      "PatientFieldPattern": {
+        "properties": {
+          "expression": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "preset": {
+            "$ref": "#/components/schemas/PatientFieldPatternPreset"
+          }
+        },
+        "required": [
+          "preset",
+          "expression"
+        ],
+        "type": "object"
+      },
+      "PatientFieldPatternPreset": {
+        "enum": [
+          "any",
+          "digits",
+          "letters",
+          "custom"
+        ],
+        "type": "string"
+      },
+      "PatientFieldState": {
+        "enum": [
+          "active",
+          "archived"
+        ],
+        "type": "string"
+      },
+      "PatientFieldType": {
+        "enum": [
+          "text",
+          "long_text",
+          "number",
+          "date",
+          "single_choice",
+          "multi_choice",
+          "yes_no",
+          "phone"
+        ],
+        "type": "string"
+      },
+      "PatientFieldValidation": {
+        "properties": {
+          "max": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "maxLength": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "minLength": {
+            "anyOf": [
+              {
+                "maximum": 9007199254740991,
+                "minimum": -9007199254740991,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientFieldPattern"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "minLength",
+          "maxLength",
+          "min",
+          "max",
+          "pattern"
+        ],
+        "type": "object"
+      },
+      "PatientFieldValidationInput": {
+        "properties": {
+          "max": {
+            "anyOf": [
+              {
+                "maximum": 1000000000000000,
+                "minimum": -1000000000000000,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "maxLength": {
+            "anyOf": [
+              {
+                "maximum": 2000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "min": {
+            "anyOf": [
+              {
+                "maximum": 1000000000000000,
+                "minimum": -1000000000000000,
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "minLength": {
+            "anyOf": [
+              {
+                "maximum": 2000,
+                "minimum": 0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pattern": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientFieldPattern"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object"
+      },
+      "PatientFormField": {
+        "properties": {
+          "default": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    "maxItems": 250,
+                    "type": "array"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editable": {
+            "type": "boolean"
+          },
+          "key": {
+            "$ref": "#/components/schemas/PatientFieldKey"
+          },
+          "label": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFormFieldOption"
+            },
+            "type": "array"
+          },
+          "order": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "section": {
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PatientFieldType"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/PatientFieldValidation"
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "type",
+          "required",
+          "validation",
+          "default",
+          "options",
+          "section",
+          "order",
+          "editable",
+          "sensitive"
+        ],
+        "type": "object"
+      },
+      "PatientFormFieldOption": {
+        "properties": {
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "type": "object"
+      },
+      "PatientFormFields": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFormField"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "fields"
         ],
         "type": "object"
       },
@@ -4504,6 +5206,110 @@
             "type": "array"
           }
         },
+        "type": "object"
+      },
+      "UpdatePatientFieldRequest": {
+        "properties": {
+          "default": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "maxLength": 60,
+                      "type": "string"
+                    },
+                    "maxItems": 250,
+                    "type": "array"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "editRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
+          "expectedUpdatedAt": {
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+            "type": "string"
+          },
+          "label": {
+            "maxLength": 60,
+            "minLength": 1,
+            "type": "string"
+          },
+          "labelEn": {
+            "anyOf": [
+              {
+                "maxLength": 60,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PatientFieldOptionInput"
+            },
+            "maxItems": 250,
+            "type": "array"
+          },
+          "print": {
+            "type": "boolean"
+          },
+          "required": {
+            "type": "boolean"
+          },
+          "searchable": {
+            "type": "boolean"
+          },
+          "section": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PatientFieldType"
+          },
+          "validation": {
+            "$ref": "#/components/schemas/PatientFieldValidationInput"
+          },
+          "viewRoles": {
+            "items": {
+              "$ref": "#/components/schemas/SessionRole"
+            },
+            "maxItems": 5,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "expectedUpdatedAt"
+        ],
         "type": "object"
       },
       "UpdatePatientRequest": {
@@ -7267,6 +8073,457 @@
         },
         "summary": "The family on a contact phone",
         "x-permission": "patients.manage"
+      }
+    },
+    "/patients/fields": {
+      "get": {
+        "operationId": "patientFieldsForm",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFormFields"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The clinic’s fields this member may view, for the registration form",
+        "x-permission": "patients.view"
+      },
+      "post": {
+        "operationId": "patientFieldsCreate",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePatientFieldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinition"
+                }
+              }
+            },
+            "description": "Created"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Adds a field to the clinic’s charts",
+        "x-permission": "patients.fields.manage"
+      }
+    },
+    "/patients/fields/definitions": {
+      "get": {
+        "operationId": "patientFieldsDefinitions",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinitions"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The clinic’s field definitions with the limits (owner)",
+        "x-permission": "patients.fields.manage"
+      }
+    },
+    "/patients/fields/order": {
+      "put": {
+        "operationId": "patientFieldsOrder",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientFieldOrderRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinitions"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Orders the fields within their sections",
+        "x-permission": "patients.fields.manage"
+      }
+    },
+    "/patients/fields/{key}": {
+      "patch": {
+        "operationId": "patientFieldsUpdate",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PatientFieldKey"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePatientFieldRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinition"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Edits a field (its type is fixed)",
+        "x-permission": "patients.fields.manage"
+      }
+    },
+    "/patients/fields/{key}/archive": {
+      "post": {
+        "operationId": "patientFieldsArchive",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PatientFieldKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinition"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          }
+        },
+        "summary": "Archives a field: hidden, not required, purged with its values after 30 days",
+        "x-permission": "patients.fields.manage"
+      }
+    },
+    "/patients/fields/{key}/restore": {
+      "post": {
+        "operationId": "patientFieldsRestore",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "key",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/PatientFieldKey"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFieldDefinition"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Not found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Conflict"
+          }
+        },
+        "summary": "Restores a field archived within 30 days",
+        "x-permission": "patients.fields.manage"
       }
     },
     "/patients/search": {

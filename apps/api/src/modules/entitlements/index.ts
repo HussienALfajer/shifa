@@ -24,4 +24,4 @@ export {
   resolveAll,
   resolveKey,
 } from './resolve.ts';
-export { type Usage, usageInClinic } from './usage-counts.ts';
+export { CUSTOM_FIELD_PURGE_DAYS, customFieldCutoff, type Usage } from './usage-counts.ts';

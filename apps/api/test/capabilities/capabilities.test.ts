@@ -63,7 +63,7 @@ describe('GET /clinic/capabilities (criterion 5)', () => {
         limits: [
           { key: 'limits.practitioners', limit: 10, used: 1 },
           { key: 'limits.branches', limit: 1, used: 1 },
-          { key: 'limits.custom_fields', limit: 20, used: null },
+          { key: 'limits.custom_fields', limit: 20, used: 0 },
         ],
         flags: { 'test.flag_on': true, 'test.flag_off': false },
       });
@@ -105,7 +105,7 @@ describe('GET /clinic/subscription (criterion 6)', () => {
       limits: [
         { key: 'limits.practitioners', limit: 10, used: 0 },
         { key: 'limits.branches', limit: 1, used: 1 },
-        { key: 'limits.custom_fields', limit: 20, used: null },
+        { key: 'limits.custom_fields', limit: 20, used: 0 },
       ],
       features: [],
     });

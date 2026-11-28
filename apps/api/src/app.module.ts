@@ -99,7 +99,7 @@ export class AppModule {
         }),
         BranchesModule.register({ identity, entitlements }),
         PlacesModule.register({ platformDb, identity }),
-        PatientsModule.register({ identity }),
+        PatientsModule.register({ identity, entitlements }),
         AnnouncementsModule.register({ platformDb, identity }),
         UsageModule.register({ platformDb, identity }),
         SupportModule.register({

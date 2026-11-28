@@ -115,6 +115,12 @@ export const TENANT_EVENTS = [
   // A-03-04: registered anyway (the candidate chart ids), treating doctors changed (member ids)
   'patient.duplicate_registered',
   'patient.doctors_changed',
+  // A-03-05: custom field definitions (criterion 20); the field id and key, an edit's changed keys
+  'patient_field.created',
+  'patient_field.edited',
+  'patient_field.archived',
+  'patient_field.restored',
+  'patient_field.purged',
 ] as const;
 
 export type AuditEventName =

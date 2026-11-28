@@ -1,0 +1,1026 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "082dd512-71e0-4e4c-aad9-9c3e8a31394c",
+  "prevIds": [
+    "57795c9e-2e49-4f7b-a250-f99d66e82380"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field"
+      ],
+      "writes": [
+        "s|tbl|public.patient_field",
+        "n|tbl|public.patient_field",
+        "e|tbl|public.patient_field",
+        "n|rel|public.patient_field",
+        "n|type|public.patient_field",
+        "n|rel|public.patient_field_pkey",
+        "n|rel|public.patient_field_tenant_id_id_key",
+        "n|rel|public.patient_field_tenant_id_key_key",
+        "n|rel|public.patient_field_tenant_id_number_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_option"
+      ],
+      "writes": [
+        "s|tbl|public.patient_field_option",
+        "n|tbl|public.patient_field_option",
+        "e|tbl|public.patient_field_option",
+        "n|rel|public.patient_field_option",
+        "n|type|public.patient_field_option",
+        "n|rel|public.patient_field_option_pkey",
+        "n|rel|public.patient_field_option_tenant_id_id_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient_field",
+        "patient_field_tenant_id_state_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_field_tenant_id_state_idx",
+        "n|idx|public.patient_field_tenant_id_state_idx",
+        "e|idx|public.patient_field_tenant_id_state_idx",
+        "n|rel|public.patient_field_tenant_id_state_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field",
+        "n|sch|public",
+        "n|col|public.patient_field.tenant_id",
+        "n|col|public.patient_field.state"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient_field_option",
+        "patient_field_option_tenant_id_field_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_field_option_tenant_id_field_id_idx",
+        "n|idx|public.patient_field_option_tenant_id_field_id_idx",
+        "e|idx|public.patient_field_option_tenant_id_field_id_idx",
+        "n|rel|public.patient_field_option_tenant_id_field_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_option",
+        "n|sch|public",
+        "n|col|public.patient_field_option.tenant_id",
+        "n|col|public.patient_field_option.field_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field"
+      ],
+      "writes": [
+        "s|fk|public.patient_field.patient_field_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient_field.patient_field_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient_field.patient_field_tenant_id_tenant_id_fkey",
+        "n|con|public.patient_field.patient_field_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient_field.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_option"
+      ],
+      "writes": [
+        "s|fk|public.patient_field_option.patient_field_option_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient_field_option.patient_field_option_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient_field_option.patient_field_option_tenant_id_tenant_id_fkey",
+        "n|con|public.patient_field_option.patient_field_option_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_option",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient_field_option.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_option"
+      ],
+      "writes": [
+        "s|fk|public.patient_field_option.patient_field_option_field_fk",
+        "n|fk|public.patient_field_option.patient_field_option_field_fk",
+        "e|fk|public.patient_field_option.patient_field_option_field_fk",
+        "n|con|public.patient_field_option.patient_field_option_field_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_option",
+        "n|sch|public",
+        "n|tbl|public.patient_field",
+        "n|sch|public",
+        "n|col|public.patient_field_option.tenant_id",
+        "n|col|public.patient_field_option.field_id",
+        "n|col|public.patient_field.tenant_id",
+        "n|col|public.patient_field.id",
+        "e|uniqueness|public.patient_field.id.tenant_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient_field",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient_field_option",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "number",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "label",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "label_en",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "type",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "required",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "rules",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "section",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "view_roles",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "edit_roles",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 1,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "sensitive",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "searchable",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "print",
+        "type": "boolean",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "false",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "state",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "'active'",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "purged_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "created_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "updated_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "field_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "label",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "position",
+        "type": "integer",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "archived_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "created_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_tenant_id_state_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "state",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_tenant_id_field_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "field_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_field_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "field_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "patient_field",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_tenant_id_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_tenant_id_key_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "key"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_tenant_id_number_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "number"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_tenant_id_id_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_number_check",
+        "value": "\"number\" between 1 and 999999",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_key_check",
+        "value": "\"key\" = 'cf_' || \"number\"::text",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_label_check",
+        "value": "char_length(\"label\") between 1 and 60 and \"label\" = btrim(\"label\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_label_en_check",
+        "value": "char_length(\"label_en\") between 1 and 60 and \"label_en\" = btrim(\"label_en\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_type_check",
+        "value": "\"type\" in ('text', 'long_text', 'number', 'date', 'single_choice', 'multi_choice', 'yes_no', 'phone')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_rules_check",
+        "value": "jsonb_typeof(\"rules\") = 'object' and jsonb_typeof(\"rules\" -> 'validation') = 'object' and \"rules\" ? 'default' and octet_length(\"rules\"::text) <= 16384",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_section_check",
+        "value": "char_length(\"section\") between 1 and 40 and \"section\" = btrim(\"section\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_position_check",
+        "value": "\"position\" between 0 and 999",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_roles_check",
+        "value": "cardinality(\"view_roles\") between 1 and 5 and \"view_roles\" <@ array['owner', 'doctor', 'receptionist', 'assistant', 'accountant']::text[] and \"edit_roles\" <@ \"view_roles\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_sensitive_check",
+        "value": "not (\"sensitive\" and \"searchable\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_state_check",
+        "value": "\"state\" in ('active', 'archived', 'purged')",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_archived_check",
+        "value": "(\"state\" = 'active') = (\"archived_at\" is null) and (\"state\" = 'purged') = (\"purged_at\" is not null)",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field",
+        "name": "patient_field_updated_at_check",
+        "value": "\"updated_at\" >= \"created_at\"",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_label_check",
+        "value": "char_length(\"label\") between 1 and 60 and \"label\" = btrim(\"label\")",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_option",
+        "name": "patient_field_option_position_check",
+        "value": "\"position\" between 0 and 999",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

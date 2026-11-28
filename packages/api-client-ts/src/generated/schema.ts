@@ -754,6 +754,109 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/patients/fields": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The clinic’s fields this member may view, for the registration form */
+        get: operations["patientFieldsForm"];
+        put?: never;
+        /** Adds a field to the clinic’s charts */
+        post: operations["patientFieldsCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/fields/definitions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** The clinic’s field definitions with the limits (owner) */
+        get: operations["patientFieldsDefinitions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/fields/order": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Orders the fields within their sections */
+        put: operations["patientFieldsOrder"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/fields/{key}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /** Edits a field (its type is fixed) */
+        patch: operations["patientFieldsUpdate"];
+        trace?: never;
+    };
+    "/patients/fields/{key}/archive": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Archives a field: hidden, not required, purged with its values after 30 days */
+        post: operations["patientFieldsArchive"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/patients/fields/{key}/restore": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Restores a field archived within 30 days */
+        post: operations["patientFieldsRestore"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/patients/search": {
         parameters: {
             query?: never;
@@ -1695,6 +1798,21 @@ export interface components {
             subscriptionEnd?: string | null;
             type: components["schemas"]["ClinicType"];
         };
+        CreatePatientFieldRequest: {
+            default?: (string | number | boolean | string[]) | null;
+            editRoles?: components["schemas"]["SessionRole"][];
+            label: string;
+            labelEn?: string | null;
+            options?: components["schemas"]["PatientFieldOptionInput"][];
+            print?: boolean;
+            required?: boolean;
+            searchable?: boolean;
+            section: string;
+            sensitive?: boolean;
+            type: components["schemas"]["PatientFieldType"];
+            validation?: components["schemas"]["PatientFieldValidationInput"];
+            viewRoles: components["schemas"]["SessionRole"][];
+        };
         CreatePatientRequest: {
             acknowledgedCandidateIds?: string[];
             age?: components["schemas"]["PatientAge"];
@@ -1774,7 +1892,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended" | "previous_file_number_taken" | "patient_id_taken" | "patient_archived" | "patient_not_archived" | "patient_merged" | "stale" | "rate_limited" | "possible_duplicate" | "doctor_not_member";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended" | "previous_file_number_taken" | "patient_id_taken" | "patient_archived" | "patient_not_archived" | "patient_merged" | "stale" | "rate_limited" | "possible_duplicate" | "doctor_not_member" | "searchable_limit" | "type_fixed";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -2060,6 +2178,108 @@ export interface components {
         PatientFamilyRequest: {
             excludeId?: string | null;
             phone: string;
+        };
+        PatientFieldDefinition: {
+            archivedAt: string | null;
+            /** Format: date-time */
+            createdAt: string;
+            default: (string | number | boolean | string[]) | null;
+            editRoles: components["schemas"]["SessionRole"][];
+            key: components["schemas"]["PatientFieldKey"];
+            label: string;
+            labelEn: string | null;
+            options: components["schemas"]["PatientFieldOption"][];
+            order: number;
+            print: boolean;
+            purgeAt: string | null;
+            required: boolean;
+            searchable: boolean;
+            section: string;
+            sensitive: boolean;
+            state: components["schemas"]["PatientFieldState"];
+            type: components["schemas"]["PatientFieldType"];
+            /** Format: date-time */
+            updatedAt: string;
+            validation: components["schemas"]["PatientFieldValidation"];
+            viewRoles: components["schemas"]["SessionRole"][];
+        };
+        PatientFieldDefinitions: {
+            fields: components["schemas"]["PatientFieldDefinition"][];
+            limits: components["schemas"]["PatientFieldLimits"];
+            listUpdatedAt: string | null;
+        };
+        PatientFieldKey: string;
+        PatientFieldLimits: {
+            max: number;
+            searchableMax: number;
+            searchableUsed: number;
+            used: number;
+        };
+        PatientFieldOption: {
+            archived: boolean;
+            /** Format: uuid */
+            id: string;
+            label: string;
+            order: number;
+        };
+        PatientFieldOptionInput: {
+            archived?: boolean;
+            /** Format: uuid */
+            id?: string;
+            label: string;
+        };
+        PatientFieldOrderRequest: {
+            expectedUpdatedAt: string | null;
+            sections: components["schemas"]["PatientFieldOrderSection"][];
+        };
+        PatientFieldOrderSection: {
+            keys: components["schemas"]["PatientFieldKey"][];
+            title: string;
+        };
+        PatientFieldPattern: {
+            expression: string | null;
+            preset: components["schemas"]["PatientFieldPatternPreset"];
+        };
+        /** @enum {string} */
+        PatientFieldPatternPreset: "any" | "digits" | "letters" | "custom";
+        /** @enum {string} */
+        PatientFieldState: "active" | "archived";
+        /** @enum {string} */
+        PatientFieldType: "text" | "long_text" | "number" | "date" | "single_choice" | "multi_choice" | "yes_no" | "phone";
+        PatientFieldValidation: {
+            max: number | null;
+            maxLength: number | null;
+            min: number | null;
+            minLength: number | null;
+            pattern: components["schemas"]["PatientFieldPattern"] | null;
+        };
+        PatientFieldValidationInput: {
+            max?: number | null;
+            maxLength?: number | null;
+            min?: number | null;
+            minLength?: number | null;
+            pattern?: components["schemas"]["PatientFieldPattern"] | null;
+        };
+        PatientFormField: {
+            default: (string | number | boolean | string[]) | null;
+            editable: boolean;
+            key: components["schemas"]["PatientFieldKey"];
+            label: string;
+            options: components["schemas"]["PatientFormFieldOption"][];
+            order: number;
+            required: boolean;
+            section: string;
+            sensitive: boolean;
+            type: components["schemas"]["PatientFieldType"];
+            validation: components["schemas"]["PatientFieldValidation"];
+        };
+        PatientFormFieldOption: {
+            /** Format: uuid */
+            id: string;
+            label: string;
+        };
+        PatientFormFields: {
+            fields: components["schemas"]["PatientFormField"][];
         };
         /** @enum {string} */
         PatientMatchKind: "name" | "name_variant" | "name_order" | "phone" | "phone_tail" | "file_number" | "previous_file_number" | "custom_field";
@@ -2365,6 +2585,23 @@ export interface components {
             name?: string;
             permissions?: components["schemas"]["PermissionSwitch"][];
             roles?: components["schemas"]["RoleScopeInput"][];
+        };
+        UpdatePatientFieldRequest: {
+            default?: (string | number | boolean | string[]) | null;
+            editRoles?: components["schemas"]["SessionRole"][];
+            /** Format: date-time */
+            expectedUpdatedAt: string;
+            label?: string;
+            labelEn?: string | null;
+            options?: components["schemas"]["PatientFieldOptionInput"][];
+            print?: boolean;
+            required?: boolean;
+            searchable?: boolean;
+            section?: string;
+            sensitive?: boolean;
+            type?: components["schemas"]["PatientFieldType"];
+            validation?: components["schemas"]["PatientFieldValidationInput"];
+            viewRoles?: components["schemas"]["SessionRole"][];
         };
         UpdatePatientRequest: {
             acknowledgedCandidateIds?: string[];
@@ -4670,6 +4907,398 @@ export interface operations {
             };
             /** @description Too many requests */
             429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsForm: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFormFields"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePatientFieldRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinition"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsDefinitions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinitions"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PatientFieldOrderRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinitions"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: components["schemas"]["PatientFieldKey"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePatientFieldRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinition"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsArchive: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: components["schemas"]["PatientFieldKey"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinition"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+        };
+    };
+    patientFieldsRestore: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                key: components["schemas"]["PatientFieldKey"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PatientFieldDefinition"];
+                };
+            };
+            /** @description Bad request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ErrorEnvelope"];
+                };
+            };
+            /** @description Conflict */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };

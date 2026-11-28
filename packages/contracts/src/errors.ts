@@ -97,6 +97,9 @@ export const ErrorCode = z
     // duplicates, treating doctors (A-03-04)
     'possible_duplicate',
     'doctor_not_member',
+    // custom field definitions (A-03-05)
+    'searchable_limit',
+    'type_fixed',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;

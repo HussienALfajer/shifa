@@ -1689,6 +1689,26 @@
       }
     },
     {
+      "name": "a sixth searchable custom field",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "searchable_limit",
+          "message": "The clinic has reached its searchable fields"
+        }
+      }
+    },
+    {
+      "name": "a custom field's type sent on an edit",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "type_fixed",
+          "message": "A field's type is fixed after creation"
+        }
+      }
+    },
+    {
       "name": "the family on a phone: its holder and a member",
       "schema": "PatientFamily",
       "body": {
@@ -1837,6 +1857,112 @@
       "schema": "ErrorEnvelope",
       "body": {
         "error": { "code": "rate_limited", "message": "Too many searches in a short time" }
+      }
+    },
+    {
+      "name": "the owner's custom fields: a choice field, an archived text field, the limits",
+      "schema": "PatientFieldDefinitions",
+      "body": {
+        "fields": [
+          {
+            "key": "cf_1",
+            "label": "طريقة الدفع",
+            "labelEn": null,
+            "type": "single_choice",
+            "required": true,
+            "validation": {
+              "minLength": null,
+              "maxLength": null,
+              "min": null,
+              "max": null,
+              "pattern": null
+            },
+            "default": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+            "options": [
+              {
+                "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+                "label": "نقدي",
+                "archived": false,
+                "order": 0
+              },
+              {
+                "id": "1b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7b",
+                "label": "تأمين",
+                "archived": true,
+                "order": 1
+              }
+            ],
+            "viewRoles": ["owner", "receptionist"],
+            "editRoles": ["owner"],
+            "section": "معلومات إدارية",
+            "order": 0,
+            "sensitive": false,
+            "searchable": true,
+            "print": false,
+            "state": "active",
+            "archivedAt": null,
+            "purgeAt": null,
+            "createdAt": "2026-11-28T08:00:00.000Z",
+            "updatedAt": "2026-11-28T08:10:00.000Z"
+          },
+          {
+            "key": "cf_2",
+            "label": "رقم البطاقة",
+            "labelEn": "Card number",
+            "type": "text",
+            "required": false,
+            "validation": {
+              "minLength": 4,
+              "maxLength": 12,
+              "min": null,
+              "max": null,
+              "pattern": { "preset": "digits", "expression": null }
+            },
+            "default": null,
+            "options": [],
+            "viewRoles": ["owner"],
+            "editRoles": [],
+            "section": "معلومات إدارية",
+            "order": 1,
+            "sensitive": true,
+            "searchable": false,
+            "print": true,
+            "state": "archived",
+            "archivedAt": "2026-11-28T09:00:00.000Z",
+            "purgeAt": "2026-12-28T09:00:00.000Z",
+            "createdAt": "2026-11-28T08:05:00.000Z",
+            "updatedAt": "2026-11-28T09:00:00.000Z"
+          }
+        ],
+        "limits": { "used": 2, "max": 20, "searchableUsed": 1, "searchableMax": 5 },
+        "listUpdatedAt": "2026-11-28T09:00:00.000Z"
+      }
+    },
+    {
+      "name": "the form's custom fields: a read-only yes/no field",
+      "schema": "PatientFormFields",
+      "body": {
+        "fields": [
+          {
+            "key": "cf_3",
+            "label": "يحتاج مرافقًا",
+            "type": "yes_no",
+            "required": false,
+            "validation": {
+              "minLength": null,
+              "maxLength": null,
+              "min": null,
+              "max": null,
+              "pattern": null
+            },
+            "default": false,
+            "options": [],
+            "section": "معلومات إدارية",
+            "order": 0,
+            "editable": false,
+            "sensitive": false
+          }
+        ]
       }
     }
   ],

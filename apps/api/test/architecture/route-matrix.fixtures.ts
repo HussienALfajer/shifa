@@ -9,6 +9,7 @@ import {
   createClinic,
   membership,
   patient,
+  patientField,
   platformAdmin,
   settingValue,
   supportAccessGrant,
@@ -23,7 +24,7 @@ import {
   testPlatformDb,
   workerDatabaseName,
 } from '@shifa/db/testing';
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { newLinkToken } from '../../src/modules/identity/links.ts';
 import { sealSecret } from '../../src/modules/identity/secret-box.ts';
 import { base32Encode } from '../../src/modules/identity/totp.ts';
@@ -150,6 +151,61 @@ export async function chartOf(
     .returning({ id: patient.id, updatedAt: patient.updatedAt });
   if (!row) throw new Error('chart not written');
   return { id: row.id, updatedAt: row.updatedAt.toISOString() };
+}
+
+/**
+ * A fresh custom field of `tenantId` written as the superuser (A-03-05), archived for a restore,
+ * with the clinic's next number (as the create takes it). The clinic's earlier fields are purged
+ * first, so it is the only live one (the order names it alone) and creates stay within
+ * `limits.custom_fields`.
+ */
+export async function fieldOf(
+  tenantId: string,
+  state: 'active' | 'archived' = 'active',
+): Promise<{ key: string; updatedAt: string }> {
+  await purgeFieldsOf(tenantId);
+  const at = new Date();
+  const actor = fixtureId('matrix field owner');
+  const [last] = await superuserDb(workerDatabaseName())
+    .select({ number: sql<number>`coalesce(max(${patientField.number}), 0)::int` })
+    .from(patientField)
+    .where(eq(patientField.tenantId, tenantId));
+  const number = (last?.number ?? 0) + 1;
+  const [row] = await superuserDb(workerDatabaseName())
+    .insert(patientField)
+    .values({
+      tenantId,
+      number,
+      key: `cf_${String(number)}`,
+      label: `حقل المصفوفة ${String(number)}`,
+      type: 'text',
+      rules: {
+        validation: { minLength: null, maxLength: null, min: null, max: null, pattern: null },
+        default: null,
+      },
+      section: 'المصفوفة',
+      position: 0,
+      viewRoles: ['owner'],
+      editRoles: ['owner'],
+      state,
+      archivedAt: state === 'archived' ? at : null,
+      createdBy: actor,
+      updatedBy: actor,
+      createdAt: at,
+      updatedAt: at,
+    })
+    .returning({ key: patientField.key, updatedAt: patientField.updatedAt });
+  if (!row) throw new Error('field not written');
+  return { key: row.key, updatedAt: row.updatedAt.toISOString() };
+}
+
+/** Purges every field of `tenantId` (tombstones). */
+async function purgeFieldsOf(tenantId: string): Promise<void> {
+  const at = new Date();
+  await superuserDb(workerDatabaseName())
+    .update(patientField)
+    .set({ state: 'purged', archivedAt: at, purgedAt: at, updatedAt: at })
+    .where(eq(patientField.tenantId, tenantId));
 }
 
 /**

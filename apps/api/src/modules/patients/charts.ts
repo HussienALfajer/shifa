@@ -81,7 +81,10 @@ async function namesOf(tx: Tx, userIds: readonly string[]): Promise<Map<string, 
 }
 
 /** Who saved the chart last and when (409 `stale`). */
-export async function staleChange(tx: Tx, row: ChartRow): Promise<StaleChange> {
+export async function staleChange(
+  tx: Tx,
+  row: Pick<ChartRow, 'updatedAt' | 'updatedBy'>,
+): Promise<StaleChange> {
   const names = await namesOf(tx, [row.updatedBy]);
   return {
     updatedAt: row.updatedAt.toISOString(),

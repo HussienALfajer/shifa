@@ -6103,6 +6103,10 @@
   "@errorsRequestTimeout": {
     "description": "errors.request_timeout"
   },
+  "errorsSearchableLimit": "بلغت العيادة الحدّ الأعلى للحقول القابلة للبحث. أوقف البحث في حقل آخر أولًا.",
+  "@errorsSearchableLimit": {
+    "description": "errors.searchable_limit"
+  },
   "errorsSelfAction": "لا يمكنك تنفيذ هذا الإجراء على حسابك أنت.",
   "@errorsSelfAction": {
     "description": "errors.self_action"
@@ -6142,6 +6146,10 @@
   "errorsTooManyRequests": "طلبات كثيرة في وقت قصير. انتظر قليلًا ثم حاول مرة أخرى.",
   "@errorsTooManyRequests": {
     "description": "errors.too_many_requests"
+  },
+  "errorsTypeFixed": "لا يتغيّر نوع الحقل بعد إنشائه.",
+  "@errorsTypeFixed": {
+    "description": "errors.type_fixed"
   },
   "errorsUnauthorized": "انتهت الجلسة أو لم تسجّل الدخول. سجّل الدخول للمتابعة.",
   "@errorsUnauthorized": {
