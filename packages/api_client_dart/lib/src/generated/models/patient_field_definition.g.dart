@@ -12,6 +12,7 @@ PatientFieldDefinition _$PatientFieldDefinitionFromJson(
   archivedAt: json['archivedAt'] == null
       ? null
       : DateTime.parse(json['archivedAt'] as String),
+  chartCount: (json['chartCount'] as num).toInt(),
   createdAt: DateTime.parse(json['createdAt'] as String),
   defaultValue: json['default'],
   editRoles: (json['editRoles'] as List<dynamic>)
@@ -47,6 +48,7 @@ Map<String, dynamic> _$PatientFieldDefinitionToJson(
   PatientFieldDefinition instance,
 ) => <String, dynamic>{
   'archivedAt': instance.archivedAt?.toIso8601String(),
+  'chartCount': instance.chartCount,
   'createdAt': instance.createdAt.toIso8601String(),
   'default': instance.defaultValue,
   'editRoles': instance.editRoles,

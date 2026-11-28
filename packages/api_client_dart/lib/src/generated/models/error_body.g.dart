@@ -15,6 +15,9 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
   details: (json['details'] as List<dynamic>?)
       ?.map((e) => ValidationIssue.fromJson(e as Map<String, dynamic>))
       .toList(),
+  fieldKeys: (json['fieldKeys'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
   limitReached: json['limitReached'] == null
       ? null
       : LimitReached.fromJson(json['limitReached'] as Map<String, dynamic>),
@@ -33,6 +36,7 @@ Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
   'candidates': ?instance.candidates,
   'code': instance.code,
   'details': ?instance.details,
+  'fieldKeys': ?instance.fieldKeys,
   'limitReached': ?instance.limitReached,
   'message': instance.message,
   'place': ?instance.place,
@@ -120,6 +124,7 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.doctorNotMember: 'doctor_not_member',
   ErrorCode.searchableLimit: 'searchable_limit',
   ErrorCode.typeFixed: 'type_fixed',
+  ErrorCode.fieldNotEditable: 'field_not_editable',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};

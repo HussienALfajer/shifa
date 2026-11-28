@@ -22,6 +22,9 @@ PatientChart _$PatientChartFromJson(Map<String, dynamic> json) => PatientChart(
       .toList(),
   familyName: json['familyName'] as String?,
   fatherName: json['fatherName'] as String?,
+  fields: (json['fields'] as List<dynamic>)
+      .map((e) => PatientChartField.fromJson(e as Map<String, dynamic>))
+      .toList(),
   fileNumber: (json['fileNumber'] as num).toInt(),
   givenName: json['givenName'] as String,
   id: json['id'] as String,
@@ -59,6 +62,7 @@ Map<String, dynamic> _$PatientChartToJson(PatientChart instance) =>
       'family': instance.family,
       'familyName': instance.familyName,
       'fatherName': instance.fatherName,
+      'fields': instance.fields,
       'fileNumber': instance.fileNumber,
       'givenName': instance.givenName,
       'id': instance.id,

@@ -9,9 +9,16 @@ import type {
   SessionRole,
 } from '@shifa/contracts';
 import { foldArabic } from '@shifa/contracts';
-import { auditEvent, patientField, patientFieldOption, type Tx } from '@shifa/db';
+import {
+  auditEvent,
+  patientField,
+  patientFieldOption,
+  patientFieldValue,
+  type Tx,
+} from '@shifa/db';
 import { and, asc, eq, inArray, lte, ne, sql } from 'drizzle-orm';
 import { CUSTOM_FIELD_PURGE_DAYS, customFieldCutoff } from '../../entitlements/index.ts';
+import { type ChartCounts, chartCounts } from './field-counts.ts';
 
 export type FieldRow = typeof patientField.$inferSelect;
 export type OptionRow = typeof patientFieldOption.$inferSelect;
@@ -87,7 +94,7 @@ export function rulesOf(field: LoadedField): PatientFieldRules {
 }
 
 /** The place of each field within its section, from 0, in the listed order. */
-function ordersOf(fields: readonly LoadedField[]): Map<string, number> {
+export function ordersOf(fields: readonly LoadedField[]): Map<string, number> {
   const next = new Map<string, number>();
   const orders = new Map<string, number>();
   for (const { row } of fields) {
@@ -101,8 +108,11 @@ function ordersOf(fields: readonly LoadedField[]): Map<string, number> {
 
 const iso = (at: Date | null) => (at === null ? null : at.toISOString());
 
-/** The owner's view of each field (contract row "List"). */
-export function definitionViews(fields: readonly LoadedField[]): PatientFieldDefinition[] {
+/** The owner's view of each field (contract row "List"), with its chart counts (A-03-06). */
+export function definitionViews(
+  fields: readonly LoadedField[],
+  counts: ChartCounts,
+): PatientFieldDefinition[] {
   const orders = ordersOf(fields);
   return fields.map(({ row, options }) => ({
     key: row.key,
@@ -117,6 +127,7 @@ export function definitionViews(fields: readonly LoadedField[]): PatientFieldDef
       label: o.label,
       archived: o.archivedAt !== null,
       order,
+      chartCount: counts.options.get(o.id) ?? 0,
     })),
     viewRoles: row.viewRoles as SessionRole[],
     editRoles: row.editRoles as SessionRole[],
@@ -125,6 +136,7 @@ export function definitionViews(fields: readonly LoadedField[]): PatientFieldDef
     sensitive: row.sensitive,
     searchable: row.searchable,
     print: row.print,
+    chartCount: counts.fields.get(row.id) ?? 0,
     state: row.state === 'active' ? 'active' : 'archived',
     archivedAt: iso(row.archivedAt),
     purgeAt: iso(
@@ -143,7 +155,11 @@ export async function definitionOf(
   key: string,
   now: Date,
 ): Promise<PatientFieldDefinition> {
-  const view = definitionViews(await loadFields(tx, now)).find((f) => f.key === key);
+  const fields = await loadFields(tx, now);
+  const id = fields.find(({ row }) => row.key === key)?.row.id;
+  const counts = await chartCounts(tx, id);
+  const view =
+    id === undefined ? undefined : definitionViews(fields, counts).find((f) => f.key === key);
   if (!view) throw new Error('the field written is not live');
   return view;
 }
@@ -189,7 +205,8 @@ export function listStamp(fields: readonly LoadedField[]): FieldRow | null {
 /**
  * Criterion 17: fields archived 30 days ago or more become tombstones (`purged`): they stop
  * counting and their keys stay taken. One `patient_field.purged` row each, with no actor (the
- * clock decided). A-03-06 removes their values here too. Never in a read-only (support) scope.
+ * clock decided). Their values on charts are deleted in the same transaction (A-03-06). Chart
+ * writes and field writes call it first. Never in a read-only (support) scope.
  */
 export async function purgeExpired(tx: Tx, tenantId: string, now: Date, requestId: string) {
   const purged = await tx
@@ -204,6 +221,12 @@ export async function purgeExpired(tx: Tx, tenantId: string, now: Date, requestI
     )
     .returning({ id: patientField.id, key: patientField.key });
   if (purged.length === 0) return;
+  await tx.delete(patientFieldValue).where(
+    inArray(
+      patientFieldValue.fieldId,
+      purged.map((field) => field.id),
+    ),
+  );
   await tx.insert(auditEvent).values(
     purged.map((field) => ({
       tenantId,

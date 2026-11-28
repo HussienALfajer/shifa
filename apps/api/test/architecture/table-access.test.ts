@@ -59,6 +59,8 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
     // A-03-05: custom field definitions and their choices
     'patientField',
     'patientFieldOption',
+    // A-03-06: a chart's custom field values
+    'patientFieldValue',
     'auditEvent',
   ],
 };

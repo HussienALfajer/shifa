@@ -215,6 +215,9 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   // field stays as a tombstone, a choice is archived), so shifa_app holds no DELETE on either.
   patient_field: { kind: 'tenant' },
   patient_field_option: { kind: 'tenant' },
+  // A-03-06: a chart's custom field values and their search keys (criteria 4, 16, 17); personal
+  // data. A cleared value and a purged field's values are deleted.
+  patient_field_value: { kind: 'tenant' },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

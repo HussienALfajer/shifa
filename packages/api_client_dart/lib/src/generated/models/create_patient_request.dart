@@ -5,6 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'patient_age.dart';
+import 'patient_field_values.dart';
 import 'patient_relation.dart';
 import 'sex.dart';
 
@@ -22,6 +23,7 @@ class CreatePatientRequest {
     this.birthDate,
     this.familyName,
     this.fatherName,
+    this.fields,
     this.motherName,
     this.previousFileNumber,
     this.relation,
@@ -43,6 +45,8 @@ class CreatePatientRequest {
   final String? familyName;
   @JsonKey(includeIfNull: false)
   final String? fatherName;
+  @JsonKey(includeIfNull: false)
+  final PatientFieldValues? fields;
   final String givenName;
   final String id;
   @JsonKey(includeIfNull: false)

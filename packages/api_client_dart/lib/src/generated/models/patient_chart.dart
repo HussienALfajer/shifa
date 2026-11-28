@@ -6,6 +6,7 @@ import 'package:json_annotation/json_annotation.dart';
 
 import 'family_member.dart';
 import 'patient_branch.dart';
+import 'patient_chart_field.dart';
 import 'patient_merged_into.dart';
 import 'patient_relation.dart';
 import 'patient_state.dart';
@@ -28,6 +29,7 @@ class PatientChart {
     required this.family,
     required this.familyName,
     required this.fatherName,
+    required this.fields,
     required this.fileNumber,
     required this.givenName,
     required this.id,
@@ -63,6 +65,7 @@ class PatientChart {
   final String? familyName;
   @JsonKey(includeIfNull: true)
   final String? fatherName;
+  final List<PatientChartField> fields;
   final int fileNumber;
   final String givenName;
   final String id;

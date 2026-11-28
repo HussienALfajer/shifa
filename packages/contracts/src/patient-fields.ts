@@ -17,9 +17,11 @@ export {
   checkPatientFieldPattern,
   checkPatientFieldValue,
   PATIENT_FIELD_RULES,
+  PATIENT_FIELD_SEARCHABLE_TYPES,
   type PatientFieldRuleProblem,
   type PatientFieldRules,
   patientFieldRuleProblems,
+  searchKeyOfPatientFieldValue,
   storedPatientFieldValue,
 } from './patient-field-rules.ts';
 
@@ -142,13 +144,20 @@ export const PatientFieldKeyParams = z
   .meta({ id: 'PatientFieldKeyParams' });
 
 export const PatientFieldOption = z
-  .object({ id: z.uuid(), label: z.string(), archived: z.boolean(), order: z.number().int() })
+  .object({
+    id: z.uuid(),
+    label: z.string(),
+    archived: z.boolean(),
+    order: z.number().int(),
+    /** Live charts (active, archived) holding this choice (A-03-06, improvement 8). */
+    chartCount: z.number().int(),
+  })
   .meta({ id: 'PatientFieldOption' });
 export type PatientFieldOption = z.infer<typeof PatientFieldOption>;
 
 export const PatientFieldState = z.enum(['active', 'archived']).meta({ id: 'PatientFieldState' });
 
-/** The owner's view of a definition (contract row "List"; `chartCount` comes with A-03-06). */
+/** The owner's view of a definition (contract row "List"; `chartCount` from A-03-06). */
 export const PatientFieldDefinition = z
   .object({
     key: PatientFieldKey,
@@ -167,6 +176,8 @@ export const PatientFieldDefinition = z
     sensitive: z.boolean(),
     searchable: z.boolean(),
     print: z.boolean(),
+    /** Live charts (active, archived; not merged) holding a value (A-03-06, improvement 8). */
+    chartCount: z.number().int(),
     state: PatientFieldState,
     archivedAt: z.iso.datetime().nullable(),
     /** When an archived field and its values are removed (30 days after `archivedAt`). */
@@ -199,6 +210,55 @@ export const PatientFieldDefinitions = z
   })
   .meta({ id: 'PatientFieldDefinitions' });
 export type PatientFieldDefinitions = z.infer<typeof PatientFieldDefinitions>;
+
+/**
+ * A value as stored (A-03-06; criterion 16): text (trimmed), a number, a date `YYYY-MM-DD`, a
+ * choice's option id, several option ids, yes/no, a phone in E.164. Inline, not a component (as
+ * the default value).
+ */
+const PatientFieldValueShape = z.union([
+  z.string().max(PATIENT_FIELD_RULES.longTextMax),
+  z.number(),
+  z.boolean(),
+  z.array(z.string().max(64)).max(PATIENT_FIELD_RULES.optionsMax),
+]);
+
+/**
+ * A chart's values in a registration or an edit (contract rows "Save new", "Edit"): by field
+ * key, at most 20; `null` clears. 400 `validation_failed` at `body.fields.<key>` (a misfit, an
+ * unknown or archived key, a required field left empty); 403 `field_not_editable` (with
+ * `fieldKeys`) for a key the member's roles may not edit.
+ */
+export const PatientFieldValues = z
+  .record(PatientFieldKey, PatientFieldValueShape.nullable())
+  .refine((values) => Object.keys(values).length <= 20, { message: 'at most 20 fields' })
+  .meta({ id: 'PatientFieldValues' });
+export type PatientFieldValues = z.infer<typeof PatientFieldValues>;
+
+/** A choice a chart field shows: the active ones and any archived one the chart holds. */
+export const PatientChartFieldOption = z
+  .object({ id: z.uuid(), label: z.string(), archived: z.boolean() })
+  .meta({ id: 'PatientChartFieldOption' });
+
+/**
+ * A field on the summary (contract row "Summary"; criterion 16): an active field the member's
+ * roles may view, with the chart's value (null when empty). `options`: for a choice field, its
+ * active choices and the archived ones the chart holds (criterion 17); empty for other types.
+ */
+export const PatientChartField = z
+  .object({
+    key: PatientFieldKey,
+    label: z.string(),
+    section: z.string(),
+    /** The place within its section among the fields shown, from 0. */
+    order: z.number().int(),
+    type: PatientFieldType,
+    value: PatientFieldValueShape.nullable(),
+    sensitive: z.boolean(),
+    options: z.array(PatientChartFieldOption),
+  })
+  .meta({ id: 'PatientChartField' });
+export type PatientChartField = z.infer<typeof PatientChartField>;
 
 export const PatientFormFieldOption = z
   .object({ id: z.uuid(), label: z.string() })

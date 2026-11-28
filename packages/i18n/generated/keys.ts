@@ -1156,6 +1156,7 @@ export type ErrorsKey =
   | 'conflict'
   | 'doctor_not_member'
   | 'feature_unavailable'
+  | 'field_not_editable'
   | 'forbidden'
   | 'internal_error'
   | 'invalid_code'

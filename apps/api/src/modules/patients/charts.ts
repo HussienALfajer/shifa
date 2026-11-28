@@ -10,6 +10,8 @@ import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { ApiError } from '../../platform/errors.ts';
 import { treatingDoctorsOf } from './doctors.ts';
 import { familyOf } from './family.ts';
+import { loadFields } from './fields/field-store.ts';
+import { chartFieldsOf } from './fields/field-values.ts';
 
 export type ChartRow = typeof patient.$inferSelect;
 
@@ -54,12 +56,21 @@ export async function registeringBranch(
   return rows.length === 1 ? (rows[0]?.id ?? null) : null;
 }
 
-/** SHA-256 of the registration as parsed, keys sorted: the same body hashes the same. */
+/**
+ * SHA-256 of the registration as parsed, keys sorted (and the keys of `fields`, A-03-06): the
+ * same body hashes the same, whatever order a retry sends its field keys in.
+ */
 export function requestHash(input: Readonly<Record<string, unknown>>): string {
+  const sorted = (value: unknown) =>
+    value && typeof value === 'object' && !Array.isArray(value)
+      ? Object.keys(value)
+          .sort()
+          .map((key) => [key, (value as Record<string, unknown>)[key]])
+      : value;
   const entries = Object.keys(input)
     .sort()
     .filter((key) => input[key] !== undefined)
-    .map((key) => [key, input[key]]);
+    .map((key) => [key, key === 'fields' ? sorted(input[key]) : input[key]]);
   return createHash('sha256').update(JSON.stringify(entries)).digest('hex');
 }
 
@@ -96,8 +107,14 @@ export async function staleError(tx: Tx, row: ChartRow): Promise<ApiError> {
   return ApiError.stale(await staleChange(tx, row));
 }
 
-/** The chart's summary, identity part, read in `tx`. */
-export async function chartView(tx: Tx, row: ChartRow): Promise<PatientChart> {
+/** Who reads a summary: the member's roles in the scope, and the clock's now (A-03-06). */
+export interface ChartReader {
+  roles: readonly string[];
+  now: Date;
+}
+
+/** The chart's summary, read in `tx`: the custom fields `reader`'s roles may view (A-03-06). */
+export async function chartView(tx: Tx, row: ChartRow, reader: ChartReader): Promise<PatientChart> {
   const names = await namesOf(
     tx,
     [row.createdBy, row.updatedBy, row.archivedBy].filter((id): id is string => id !== null),
@@ -140,6 +157,7 @@ export async function chartView(tx: Tx, row: ChartRow): Promise<PatientChart> {
     relation: row.relation,
     family: await familyOf(tx, row),
     treatingDoctors: await treatingDoctorsOf(tx, row.id),
+    fields: await chartFieldsOf(tx, row.id, await loadFields(tx, reader.now), reader.roles),
   };
 }
 

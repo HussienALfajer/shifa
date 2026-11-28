@@ -44,4 +44,5 @@ Planned.
 - Reviewer and security-reviewer findings fixed: <list>
 
 ## Notes for the next session
-- <only what is needed to resume>
+- From A-03-06 (security review, informational): every `PatientChart` answer now carries custom field values, sensitive ones included, with no `patient.chart_viewed` row yet. Derive `sensitiveIncluded` from what `chartFieldsOf` returned, and decide whether the create, edit, archive and restore answers count as reads.
+- From A-03-06: the custom field search path (`byFieldValue` in `modules/patients/fields/field-values.ts`) must apply "my patients only" as the other search paths do.

@@ -160,7 +160,9 @@ enum ErrorCode {
   @JsonValue('searchable_limit')
   searchableLimit('searchable_limit'),
   @JsonValue('type_fixed')
-  typeFixed('type_fixed');
+  typeFixed('type_fixed'),
+  @JsonValue('field_not_editable')
+  fieldNotEditable('field_not_editable');
 
   const ErrorCode(this.json);
 

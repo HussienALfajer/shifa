@@ -43,6 +43,7 @@ import {
 } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { rolesInScope } from './fields/fields.controller.ts';
 import { PatientLinksService } from './links.service.ts';
 import { PatientsService } from './patients.service.ts';
 import { PatientSearchService } from './search.service.ts';
@@ -90,7 +91,7 @@ export class PatientsController {
       throw new ForbiddenException();
     }
     // A member past the limit is logged by ids (a scraper can be named; never the term).
-    return this.searches.search(scope, body, () => {
+    return this.searches.search(scope, rolesInScope(principal, scope), body, () => {
       request.logInfo(
         { tenantId: scope.tenantId, userId: scope.userId },
         'patient search rate limited',
@@ -140,9 +141,10 @@ export class PatientsController {
   create(
     @Body() body: RequestBody<typeof patientsCreate>,
     @CurrentScope() scope: RequestScope,
+    @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
   ): Promise<PatientChart> {
-    return this.patients.create(scope, body, request.requestId);
+    return this.patients.create(scope, rolesInScope(principal, scope), body, request.requestId);
   }
 
   @RequirePermission('patients.view')
@@ -151,8 +153,9 @@ export class PatientsController {
   get(
     @Param() params: RequestParams<typeof patientsGet>,
     @CurrentScope() scope: RequestScope,
+    @CurrentPrincipal() principal: Principal,
   ): Promise<PatientChart> {
-    return this.patients.get(scope, params.id);
+    return this.patients.get(scope, rolesInScope(principal, scope), params.id);
   }
 
   @RequirePermission('patients.manage')
@@ -162,9 +165,11 @@ export class PatientsController {
     @Param() params: RequestParams<typeof patientsUpdate>,
     @Body() body: RequestBody<typeof patientsUpdate>,
     @CurrentScope() scope: RequestScope,
+    @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
   ): Promise<PatientChart> {
-    return this.patients.update(scope, params.id, body, request.requestId);
+    const roles = rolesInScope(principal, scope);
+    return this.patients.update(scope, roles, params.id, body, request.requestId);
   }
 
   @RequirePermission('patients.archive')
@@ -175,9 +180,17 @@ export class PatientsController {
     @Param() params: RequestParams<typeof patientsArchive>,
     @Body() body: RequestBody<typeof patientsArchive>,
     @CurrentScope() scope: RequestScope,
+    @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
   ): Promise<PatientChart> {
-    return this.patients.archive(scope, params.id, body.expectedUpdatedAt, request.requestId);
+    const roles = rolesInScope(principal, scope);
+    return this.patients.archive(
+      scope,
+      roles,
+      params.id,
+      body.expectedUpdatedAt,
+      request.requestId,
+    );
   }
 
   @RequirePermission('patients.archive')
@@ -188,8 +201,16 @@ export class PatientsController {
     @Param() params: RequestParams<typeof patientsRestore>,
     @Body() body: RequestBody<typeof patientsRestore>,
     @CurrentScope() scope: RequestScope,
+    @CurrentPrincipal() principal: Principal,
     @ClientRequest() request: RequestMeta,
   ): Promise<PatientChart> {
-    return this.patients.restore(scope, params.id, body.expectedUpdatedAt, request.requestId);
+    const roles = rolesInScope(principal, scope);
+    return this.patients.restore(
+      scope,
+      roles,
+      params.id,
+      body.expectedUpdatedAt,
+      request.requestId,
+    );
   }
 }

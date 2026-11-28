@@ -22,6 +22,7 @@ import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { familySizes } from './family.ts';
+import { byFieldValue } from './fields/field-values.ts';
 import { MemberLimit } from './member-limit.ts';
 import { backfillNameKeys } from './name-keys.ts';
 import { byName, bySimilarName, type NameHit, type NameHits } from './name-search.ts';
@@ -33,6 +34,7 @@ import {
   byPreviousNumber,
   type ChartRow,
   displayNameOf,
+  PER_PATH,
 } from './search.ts';
 
 /** Searches a member may make per window (spec: a per-member rate limit). */
@@ -163,8 +165,15 @@ async function names(tx: Tx, q: SearchQuery): Promise<NameHits> {
   return bySimilarName(tx, q.unjoined ?? q.words, q.key, q.states);
 }
 
-/** Every path's hits in answer order: numbers, phones, names (exported for the benchmark). */
-export async function findHits(tx: Tx, q: SearchQuery): Promise<{ hits: Hit[]; capped: boolean }> {
+/**
+ * Every path's hits in answer order: numbers, phones, names, then custom field values the
+ * member's `roles` may view (A-03-06; exported for the benchmark).
+ */
+export async function findHits(
+  tx: Tx,
+  q: SearchQuery,
+  roles: readonly string[],
+): Promise<{ hits: Hit[]; capped: boolean }> {
   const hits: Hit[] = [];
   let capped = false;
   const add = (row: ChartRow, matchedBy: PatientMatchKind, more: Partial<Hit> = {}) =>
@@ -193,6 +202,9 @@ export async function findHits(tx: Tx, q: SearchQuery): Promise<{ hits: Hit[]; c
       });
     }
   }
+  for (const row of await byFieldValue(tx, q.term, roles, q.states, PER_PATH)) {
+    add(row, 'custom_field');
+  }
   return { hits, capped };
 }
 
@@ -211,6 +223,7 @@ export class PatientSearchService {
   /** `onLimited` is told (ids only) when the member is past the limit, before the 429. */
   async search(
     scope: RequestScope,
+    roles: readonly string[],
     input: PatientSearchRequest,
     onLimited: () => void,
   ): Promise<PatientSearchResults> {
@@ -229,7 +242,7 @@ export class PatientSearchService {
       await tx.execute(
         sql`select set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
       );
-      return answer(tx, await findHits(tx, query));
+      return answer(tx, await findHits(tx, query, roles));
     });
   }
 }

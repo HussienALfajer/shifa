@@ -1820,6 +1820,7 @@ export interface components {
             contactPhone: string;
             familyName?: string | null;
             fatherName?: string | null;
+            fields?: components["schemas"]["PatientFieldValues"];
             givenName: string;
             /** Format: uuid */
             id: string;
@@ -1879,6 +1880,7 @@ export interface components {
             candidates?: components["schemas"]["DuplicateCandidate"][];
             code: components["schemas"]["ErrorCode"];
             details?: components["schemas"]["ValidationIssue"][];
+            fieldKeys?: string[];
             limitReached?: components["schemas"]["LimitReached"];
             message: string;
             place?: components["schemas"]["PlaceKind"];
@@ -1892,7 +1894,7 @@ export interface components {
          * @description Stable machine-readable error code.
          * @enum {string}
          */
-        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended" | "previous_file_number_taken" | "patient_id_taken" | "patient_archived" | "patient_not_archived" | "patient_merged" | "stale" | "rate_limited" | "possible_duplicate" | "doctor_not_member" | "searchable_limit" | "type_fixed";
+        ErrorCode: "bad_request" | "validation_failed" | "unauthorized" | "forbidden" | "not_found" | "method_not_allowed" | "not_acceptable" | "request_timeout" | "conflict" | "payload_too_large" | "uri_too_long" | "unsupported_media_type" | "unprocessable_entity" | "too_many_requests" | "internal_error" | "service_unavailable" | "invalid_credentials" | "phone_locked" | "ip_blocked" | "session_expired" | "link_invalid" | "password_too_short" | "password_common" | "password_contains_phone" | "mfa_enrolment_required" | "mfa_challenge_required" | "mfa_locked" | "invalid_code" | "clock_skew" | "owner_setup_pending" | "last_owner" | "phone_in_team" | "account_shared" | "permission_not_sensitive" | "last_branch" | "branch_archived" | "clinic_suspended" | "no_clinic" | "branch_not_held" | "password_unchanged" | "branch_required" | "owner_mfa_platform" | "mfa_already_enrolled" | "mfa_not_started" | "mfa_not_owed" | "mfa_not_enrolled" | "owner_role_protected" | "owner_account_exists" | "member_deactivated" | "member_not_deactivated" | "member_account_exists" | "self_action" | "invitation_other_phone" | "branch_not_archived" | "limit_reached" | "feature_unavailable" | "setting_locked" | "setting_not_lockable" | "support_active" | "support_ended" | "support_read_only" | "place_name_taken" | "place_archived" | "place_not_archived" | "announcement_link" | "announcement_ended" | "previous_file_number_taken" | "patient_id_taken" | "patient_archived" | "patient_not_archived" | "patient_merged" | "stale" | "rate_limited" | "possible_duplicate" | "doctor_not_member" | "searchable_limit" | "type_fixed" | "field_not_editable";
         ErrorEnvelope: {
             error: components["schemas"]["ErrorBody"];
         };
@@ -2147,6 +2149,7 @@ export interface components {
             family: components["schemas"]["FamilyMember"][];
             familyName: string | null;
             fatherName: string | null;
+            fields: components["schemas"]["PatientChartField"][];
             fileNumber: number;
             givenName: string;
             /** Format: uuid */
@@ -2163,6 +2166,22 @@ export interface components {
             /** Format: date-time */
             updatedAt: string;
             updatedByName: string | null;
+        };
+        PatientChartField: {
+            key: components["schemas"]["PatientFieldKey"];
+            label: string;
+            options: components["schemas"]["PatientChartFieldOption"][];
+            order: number;
+            section: string;
+            sensitive: boolean;
+            type: components["schemas"]["PatientFieldType"];
+            value: (string | number | boolean | string[]) | null;
+        };
+        PatientChartFieldOption: {
+            archived: boolean;
+            /** Format: uuid */
+            id: string;
+            label: string;
         };
         PatientCount: {
             active: number;
@@ -2181,6 +2200,7 @@ export interface components {
         };
         PatientFieldDefinition: {
             archivedAt: string | null;
+            chartCount: number;
             /** Format: date-time */
             createdAt: string;
             default: (string | number | boolean | string[]) | null;
@@ -2217,6 +2237,7 @@ export interface components {
         };
         PatientFieldOption: {
             archived: boolean;
+            chartCount: number;
             /** Format: uuid */
             id: string;
             label: string;
@@ -2259,6 +2280,9 @@ export interface components {
             min?: number | null;
             minLength?: number | null;
             pattern?: components["schemas"]["PatientFieldPattern"] | null;
+        };
+        PatientFieldValues: {
+            [key: string]: (string | number | boolean | string[]) | null;
         };
         PatientFormField: {
             default: (string | number | boolean | string[]) | null;
@@ -2612,6 +2636,7 @@ export interface components {
             expectedUpdatedAt: string;
             familyName?: string | null;
             fatherName?: string | null;
+            fields?: components["schemas"]["PatientFieldValues"];
             givenName?: string;
             motherName?: string | null;
             previousFileNumber?: string | null;

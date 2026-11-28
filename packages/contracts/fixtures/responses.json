@@ -1628,6 +1628,31 @@
             "name": "د. هالة",
             "active": false
           }
+        ],
+        "fields": [
+          {
+            "key": "cf_1",
+            "label": "طريقة الدفع",
+            "section": "معلومات إدارية",
+            "order": 0,
+            "type": "single_choice",
+            "value": "1b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7b",
+            "sensitive": false,
+            "options": [
+              { "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a", "label": "نقدي", "archived": false },
+              { "id": "1b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7b", "label": "تأمين", "archived": true }
+            ]
+          },
+          {
+            "key": "cf_4",
+            "label": "عدد الزيارات السابقة",
+            "section": "معلومات إدارية",
+            "order": 1,
+            "type": "number",
+            "value": null,
+            "sensitive": false,
+            "options": []
+          }
         ]
       }
     },
@@ -1658,6 +1683,17 @@
             "card": null
           }
         ]
+      }
+    },
+    {
+      "name": "a custom field the member may not edit, refused with its key",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "field_not_editable",
+          "message": "Your roles may not edit one of these clinic fields",
+          "fieldKeys": ["cf_3"]
+        }
       }
     },
     {
@@ -1883,13 +1919,15 @@
                 "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
                 "label": "نقدي",
                 "archived": false,
-                "order": 0
+                "order": 0,
+                "chartCount": 41
               },
               {
                 "id": "1b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7b",
                 "label": "تأمين",
                 "archived": true,
-                "order": 1
+                "order": 1,
+                "chartCount": 11
               }
             ],
             "viewRoles": ["owner", "receptionist"],
@@ -1897,8 +1935,9 @@
             "section": "معلومات إدارية",
             "order": 0,
             "sensitive": false,
-            "searchable": true,
+            "searchable": false,
             "print": false,
+            "chartCount": 52,
             "state": "active",
             "archivedAt": null,
             "purgeAt": null,
@@ -1927,6 +1966,7 @@
             "sensitive": true,
             "searchable": false,
             "print": true,
+            "chartCount": 0,
             "state": "archived",
             "archivedAt": "2026-11-28T09:00:00.000Z",
             "purgeAt": "2026-12-28T09:00:00.000Z",
@@ -1934,7 +1974,7 @@
             "updatedAt": "2026-11-28T09:00:00.000Z"
           }
         ],
-        "limits": { "used": 2, "max": 20, "searchableUsed": 1, "searchableMax": 5 },
+        "limits": { "used": 2, "max": 20, "searchableUsed": 0, "searchableMax": 5 },
         "listUpdatedAt": "2026-11-28T09:00:00.000Z"
       }
     },

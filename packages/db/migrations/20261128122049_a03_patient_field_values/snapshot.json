@@ -1,0 +1,468 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "3f294bd4-0c85-4a05-9574-d15fb6b2d2bc",
+  "prevIds": [
+    "8a44c8ff-36a1-4d1c-a03a-13f655e78fdf"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_value"
+      ],
+      "writes": [
+        "s|tbl|public.patient_field_value",
+        "n|tbl|public.patient_field_value",
+        "e|tbl|public.patient_field_value",
+        "n|rel|public.patient_field_value",
+        "n|type|public.patient_field_value",
+        "n|rel|public.patient_field_value_pkey",
+        "n|rel|public.patient_field_value_chart_field_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient_field_value",
+        "patient_field_value_tenant_id_search_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_field_value_tenant_id_search_idx",
+        "n|idx|public.patient_field_value_tenant_id_search_idx",
+        "e|idx|public.patient_field_value_tenant_id_search_idx",
+        "n|rel|public.patient_field_value_tenant_id_search_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_value",
+        "n|sch|public",
+        "n|col|public.patient_field_value.tenant_id",
+        "n|col|public.patient_field_value.field_id",
+        "n|col|public.patient_field_value.search_key"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient_field_value",
+        "patient_field_value_tenant_id_field_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_field_value_tenant_id_field_id_idx",
+        "n|idx|public.patient_field_value_tenant_id_field_id_idx",
+        "e|idx|public.patient_field_value_tenant_id_field_id_idx",
+        "n|rel|public.patient_field_value_tenant_id_field_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_value",
+        "n|sch|public",
+        "n|col|public.patient_field_value.tenant_id",
+        "n|col|public.patient_field_value.field_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_value"
+      ],
+      "writes": [
+        "s|fk|public.patient_field_value.patient_field_value_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient_field_value.patient_field_value_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient_field_value.patient_field_value_tenant_id_tenant_id_fkey",
+        "n|con|public.patient_field_value.patient_field_value_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_value",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient_field_value.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_value"
+      ],
+      "writes": [
+        "s|fk|public.patient_field_value.patient_field_value_patient_fk",
+        "n|fk|public.patient_field_value.patient_field_value_patient_fk",
+        "e|fk|public.patient_field_value.patient_field_value_patient_fk",
+        "n|con|public.patient_field_value.patient_field_value_patient_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_value",
+        "n|sch|public",
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient_field_value.tenant_id",
+        "n|col|public.patient_field_value.patient_id",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.id",
+        "e|uniqueness|public.patient.id.tenant_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_field_value"
+      ],
+      "writes": [
+        "s|fk|public.patient_field_value.patient_field_value_field_fk",
+        "n|fk|public.patient_field_value.patient_field_value_field_fk",
+        "e|fk|public.patient_field_value.patient_field_value_field_fk",
+        "n|con|public.patient_field_value.patient_field_value_field_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient_field_value",
+        "n|sch|public",
+        "n|tbl|public.patient_field",
+        "n|sch|public",
+        "n|col|public.patient_field_value.tenant_id",
+        "n|col|public.patient_field_value.field_id",
+        "n|col|public.patient_field.tenant_id",
+        "n|col|public.patient_field.id",
+        "e|uniqueness|public.patient_field.id.tenant_id"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient_field_value",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "field_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "value",
+        "type": "jsonb",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "search_key",
+        "type": "text",
+        "typeSchema": null,
+        "notNull": false,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "updated_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "updated_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_tenant_id_search_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "field_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "search_key",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": "\"search_key\" is not null",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_tenant_id_field_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "field_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_patient_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "patient_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "patient",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_field_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "field_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "patient_field",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_chart_field_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "patient_id",
+          "field_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_value_check",
+        "value": "jsonb_typeof(\"value\") in ('string', 'number', 'boolean', 'array') and pg_column_size(\"value\") <= 16384",
+        "entityType": "checks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_field_value",
+        "name": "patient_field_value_search_key_check",
+        "value": "char_length(\"search_key\") between 1 and 100",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

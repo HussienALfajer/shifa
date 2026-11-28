@@ -5,6 +5,7 @@
 // it is capped at 100 characters and matched against the whole value.
 import { RE2JS } from 're2js';
 import type { ValidationIssueCode } from './errors.ts';
+import { foldArabic } from './fold-arabic.ts';
 import { normalisePhone } from './phone.ts';
 
 export const PATIENT_FIELD_TYPES = [
@@ -250,6 +251,61 @@ export function checkPatientFieldValue(
       if (typeof value !== 'string') return 'invalid_type';
       return normalisePhone(value).ok ? null : 'invalid_format';
   }
+}
+
+/** The types a field can be searchable by (OD-146 point 3): not choices, not yes/no. */
+export const PATIENT_FIELD_SEARCHABLE_TYPES: readonly PatientFieldTypeKey[] = [
+  'text',
+  'long_text',
+  'number',
+  'date',
+  'phone',
+];
+
+/** The longest search term (`PatientSearchRequest.term`): a longer key could never be typed. */
+const SEARCH_TERM_MAX = 100;
+const NUMBER = /^-?[0-9]+(?:\.[0-9]+)?$/;
+
+/**
+ * The search key of a value of a field of this type (A-03-06; criterion 4, OD-146 points 3, 4), or
+ * null when it has none: text and long text folded (foldArabic) with spaces as one; a number in
+ * its canonical digits; a real date as ISO; a phone in E.164. Choices and yes/no have none, nor
+ * does an empty value or one longer than a search term. The same function keys a stored value and
+ * a search term, so the term finds the value by equality.
+ */
+export function searchKeyOfPatientFieldValue(
+  rules: Pick<PatientFieldRules, 'type'>,
+  value: unknown,
+): string | null {
+  if (isEmpty(value)) return null;
+  const text = typeof value === 'string' ? value.trim() : null;
+  let key: string | null = null;
+  switch (rules.type) {
+    case 'text':
+    case 'long_text':
+      key = text === null ? null : foldArabic(text.replace(/\s+/gu, ' '));
+      break;
+    case 'number': {
+      const digits = text === null ? null : foldArabic(text);
+      const n =
+        typeof value === 'number' ? value : digits && NUMBER.test(digits) ? Number(digits) : NaN;
+      key = Number.isFinite(n) ? String(n) : null;
+      break;
+    }
+    case 'date':
+      key = text !== null && validDate(text) ? text : null;
+      break;
+    case 'phone': {
+      const phone = text === null ? null : normalisePhone(text);
+      key = phone?.ok ? phone.e164 : null;
+      break;
+    }
+    case 'single_choice':
+    case 'multi_choice':
+    case 'yes_no':
+      return null;
+  }
+  return key !== null && key.length > 0 && Array.from(key).length <= SEARCH_TERM_MAX ? key : null;
 }
 
 /** A value that fits, as stored: text trimmed, a phone in E.164, empty as null. */

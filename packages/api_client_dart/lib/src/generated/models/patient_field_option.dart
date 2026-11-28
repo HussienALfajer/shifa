@@ -10,6 +10,7 @@ part 'patient_field_option.g.dart';
 class PatientFieldOption {
   const PatientFieldOption({
     required this.archived,
+    required this.chartCount,
     required this.id,
     required this.label,
     required this.order,
@@ -19,6 +20,7 @@ class PatientFieldOption {
       _$PatientFieldOptionFromJson(json);
 
   final bool archived;
+  final int chartCount;
   final String id;
   final String label;
   final int order;
