@@ -156,7 +156,11 @@ enum ErrorCode {
   @JsonValue('possible_duplicate')
   possibleDuplicate('possible_duplicate'),
   @JsonValue('doctor_not_member')
-  doctorNotMember('doctor_not_member');
+  doctorNotMember('doctor_not_member'),
+  @JsonValue('searchable_limit')
+  searchableLimit('searchable_limit'),
+  @JsonValue('type_fixed')
+  typeFixed('type_fixed');
 
   const ErrorCode(this.json);
 

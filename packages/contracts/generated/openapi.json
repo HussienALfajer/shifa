@@ -1671,7 +1671,9 @@
           "stale",
           "rate_limited",
           "possible_duplicate",
-          "doctor_not_member"
+          "doctor_not_member",
+          "searchable_limit",
+          "type_fixed"
         ],
         "type": "string"
       },

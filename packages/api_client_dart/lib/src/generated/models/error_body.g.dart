@@ -118,6 +118,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.rateLimited: 'rate_limited',
   ErrorCode.possibleDuplicate: 'possible_duplicate',
   ErrorCode.doctorNotMember: 'doctor_not_member',
+  ErrorCode.searchableLimit: 'searchable_limit',
+  ErrorCode.typeFixed: 'type_fixed',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};
