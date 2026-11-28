@@ -31,6 +31,7 @@ import '../models/clinic_usage.dart';
 import '../models/create_announcement_request.dart';
 import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
+import '../models/create_patient_field_request.dart';
 import '../models/create_patient_request.dart';
 import '../models/dismiss_announcement_request.dart';
 import '../models/duplicate_candidates.dart';
@@ -63,6 +64,11 @@ import '../models/patient_count.dart';
 import '../models/patient_doctors.dart';
 import '../models/patient_family.dart';
 import '../models/patient_family_request.dart';
+import '../models/patient_field_definition.dart';
+import '../models/patient_field_definitions.dart';
+import '../models/patient_field_key.dart';
+import '../models/patient_field_order_request.dart';
+import '../models/patient_form_fields.dart';
 import '../models/patient_search_request.dart';
 import '../models/patient_search_results.dart';
 import '../models/patient_state_change_request.dart';
@@ -97,6 +103,7 @@ import '../models/update_branch_request.dart';
 import '../models/update_clinic_request.dart';
 import '../models/update_clinic_settings_request.dart';
 import '../models/update_member_request.dart';
+import '../models/update_patient_field_request.dart';
 import '../models/update_patient_request.dart';
 
 part 'core_client.g.dart';
@@ -323,6 +330,45 @@ abstract class CoreClient {
   @POST('/patients/family')
   Future<PatientFamily> patientsFamily({
     @Body() required PatientFamilyRequest body,
+  });
+
+  /// The clinic’s fields this member may view, for the registration form
+  @GET('/patients/fields')
+  Future<PatientFormFields> patientFieldsForm();
+
+  /// Adds a field to the clinic’s charts
+  @POST('/patients/fields')
+  Future<PatientFieldDefinition> patientFieldsCreate({
+    @Body() required CreatePatientFieldRequest body,
+  });
+
+  /// The clinic’s field definitions with the limits (owner)
+  @GET('/patients/fields/definitions')
+  Future<PatientFieldDefinitions> patientFieldsDefinitions();
+
+  /// Orders the fields within their sections
+  @PUT('/patients/fields/order')
+  Future<PatientFieldDefinitions> patientFieldsOrder({
+    @Body() required PatientFieldOrderRequest body,
+  });
+
+  /// Edits a field (its type is fixed)
+  @PATCH('/patients/fields/{key}')
+  Future<PatientFieldDefinition> patientFieldsUpdate({
+    @Path('key') required PatientFieldKey key,
+    @Body() required UpdatePatientFieldRequest body,
+  });
+
+  /// Archives a field: hidden, not required, purged with its values after 30 days
+  @POST('/patients/fields/{key}/archive')
+  Future<PatientFieldDefinition> patientFieldsArchive({
+    @Path('key') required PatientFieldKey key,
+  });
+
+  /// Restores a field archived within 30 days
+  @POST('/patients/fields/{key}/restore')
+  Future<PatientFieldDefinition> patientFieldsRestore({
+    @Path('key') required PatientFieldKey key,
   });
 
   /// Find charts by name, phone, file number or previous file number

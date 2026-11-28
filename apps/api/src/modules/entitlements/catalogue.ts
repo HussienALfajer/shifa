@@ -21,7 +21,7 @@ export const PRODUCTION_ENTITLEMENTS = [
   {
     key: 'limits.custom_fields',
     kind: 'limit',
-    description: 'Custom fields (counted and enforced from A-03)',
+    description: 'Custom fields: active ones and those archived within 30 days (A-03-05)',
   },
 ] as const satisfies readonly EntitlementDefinition[];
 

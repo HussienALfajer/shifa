@@ -9,6 +9,7 @@ import {
   createClinic,
   membership,
   patient,
+  patientField,
   platformAdmin,
   settingValue,
   supportAccessGrant,
@@ -150,6 +151,58 @@ export async function chartOf(
     .returning({ id: patient.id, updatedAt: patient.updatedAt });
   if (!row) throw new Error('chart not written');
   return { id: row.id, updatedAt: row.updatedAt.toISOString() };
+}
+
+let fixtureFields = 0;
+
+/**
+ * A fresh custom field of `tenantId` written as the superuser (A-03-05), archived for a restore;
+ * numbers from 1000 so they never meet the ones the create sample takes. Each is written
+ * outside the limit, so the create sample makes room first (`fieldRoomOf`).
+ */
+export async function fieldOf(
+  tenantId: string,
+  state: 'active' | 'archived' = 'active',
+): Promise<{ key: string; updatedAt: string }> {
+  fixtureFields += 1;
+  const at = new Date();
+  const actor = fixtureId('matrix field owner');
+  const number = 1000 + fixtureFields;
+  const [row] = await superuserDb(workerDatabaseName())
+    .insert(patientField)
+    .values({
+      tenantId,
+      number,
+      key: `cf_${String(number)}`,
+      label: `حقل المصفوفة ${String(number)}`,
+      type: 'text',
+      rules: {
+        validation: { minLength: null, maxLength: null, min: null, max: null, pattern: null },
+        default: null,
+      },
+      section: 'المصفوفة',
+      position: fixtureFields % 1000,
+      viewRoles: ['owner'],
+      editRoles: ['owner'],
+      state,
+      archivedAt: state === 'archived' ? at : null,
+      createdBy: actor,
+      updatedBy: actor,
+      createdAt: at,
+      updatedAt: at,
+    })
+    .returning({ key: patientField.key, updatedAt: patientField.updatedAt });
+  if (!row) throw new Error('field not written');
+  return { key: row.key, updatedAt: row.updatedAt.toISOString() };
+}
+
+/** Purges every field of `tenantId` (tombstones), so a create stays within the limit. */
+export async function fieldRoomOf(tenantId: string): Promise<void> {
+  const at = new Date();
+  await superuserDb(workerDatabaseName())
+    .update(patientField)
+    .set({ state: 'purged', archivedAt: at, purgedAt: at, updatedAt: at })
+    .where(eq(patientField.tenantId, tenantId));
 }
 
 /**

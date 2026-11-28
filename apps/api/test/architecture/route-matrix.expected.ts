@@ -108,6 +108,10 @@ export interface SampleContext {
   announcementId(): Promise<string>;
   /** A fresh chart of the callers' clinic, active or archived, with its updatedAt (A-03-02). */
   chart(state?: 'active' | 'archived'): Promise<{ id: string; updatedAt: string }>;
+  /** A fresh custom field of the callers' clinic, active or archived (A-03-05). */
+  field(state?: 'active' | 'archived'): Promise<{ key: string; updatedAt: string }>;
+  /** Purges the callers' clinic's fields, so a create stays within `limits.custom_fields`. */
+  fieldRoom(): Promise<void>;
 }
 
 export interface SampleRequest {
@@ -447,6 +451,15 @@ export const EXPECTED_MATRIX: Matrix = {
   'POST /patients/duplicates': patientManagers,
   'POST /patients/family': patientManagers,
   'GET /patients/doctors': patientManagers,
+  // A-03-05: custom fields. The member's view for every clinic role (patients.view); the
+  // definitions and their changes for the owner (patients.fields.manage)
+  'GET /patients/fields': clinicMember,
+  'GET /patients/fields/definitions': ownerOnly,
+  'POST /patients/fields': ownerOnly,
+  'PATCH /patients/fields/:key': ownerOnly,
+  'PUT /patients/fields/order': ownerOnly,
+  'POST /patients/fields/:key/archive': ownerOnly,
+  'POST /patients/fields/:key/restore': ownerOnly,
   // invitations (A-01-04): the token is the credential to view; answering needs a session
   'POST /invitations/view': everyone,
   'POST /invitations/accept': signedIn,

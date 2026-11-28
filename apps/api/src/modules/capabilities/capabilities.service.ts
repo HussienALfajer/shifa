@@ -8,12 +8,12 @@ import { tenant } from '@shifa/db';
 import { eq } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
 import {
+  ClinicLimits,
   ENTITLEMENT_CATALOGUE,
   ENTITLEMENTS,
   type EntitlementCatalogue,
   type EntitlementsPort,
   type Usage,
-  usageInClinic,
 } from '../entitlements/index.ts';
 import { FLAGS, type FlagClient } from '../flags/index.ts';
 
@@ -24,11 +24,12 @@ export class CapabilitiesService {
     @Inject(ENTITLEMENTS) private readonly entitlements: EntitlementsPort,
     @Inject(ENTITLEMENT_CATALOGUE) private readonly catalogue: EntitlementCatalogue,
     @Inject(FLAGS) private readonly flags: FlagClient,
+    @Inject(ClinicLimits) private readonly limits: ClinicLimits,
   ) {}
 
   async capabilities(scope: RequestScope): Promise<Capabilities> {
     const values = await this.entitlements.all(scope);
-    const used = await this.tenants.run(scope, (tx) => usageInClinic(tx));
+    const used = await this.tenants.run(scope, (tx) => this.limits.usage(tx));
     return {
       entitlements: Object.fromEntries(
         this.#keys('feature').map((key) => [key, values.get(key) === true]),
@@ -50,7 +51,7 @@ export class CapabilitiesService {
         .from(tenant)
         .where(eq(tenant.id, scope.tenantId));
       if (!row) throw new Error('the scope’s clinic has no tenant row');
-      return { own: row, used: await usageInClinic(tx) };
+      return { own: row, used: await this.limits.usage(tx) };
     });
     return {
       plan: own.type,

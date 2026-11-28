@@ -1689,6 +1689,26 @@
       }
     },
     {
+      "name": "a sixth searchable custom field",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "searchable_limit",
+          "message": "The clinic has reached its searchable fields"
+        }
+      }
+    },
+    {
+      "name": "a custom field's type sent on an edit",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "type_fixed",
+          "message": "A field's type is fixed after creation"
+        }
+      }
+    },
+    {
       "name": "the family on a phone: its holder and a member",
       "schema": "PatientFamily",
       "body": {

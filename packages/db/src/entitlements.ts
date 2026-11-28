@@ -46,6 +46,33 @@ export async function clinicUsageCounts(tx: Tx): Promise<UsageCounts> {
   return { practitioners: row?.practitioners ?? 0, branches: row?.branches ?? 0 };
 }
 
+/**
+ * A-03-05 (criterion 15): the clinic's custom fields that count against `limits.custom_fields` —
+ * active ones and those archived after `archivedAfter` (the API's clock less 30 days), as an
+ * integer only (tenant_custom_field_count(), SECURITY DEFINER), on the platform path.
+ */
+export async function tenantCustomFieldCount(
+  tx: PlatformTx,
+  tenantId: string,
+  archivedAfter: Date,
+): Promise<number> {
+  assertUuid('tenantId', tenantId);
+  const { rows } = await tx.execute<{ custom_fields: number }>(
+    sql`select custom_fields from tenant_custom_field_count(${tenantId}::uuid, ${Math.floor(archivedAfter.getTime() / 1000)}::bigint)`,
+  );
+  return rows[0]?.custom_fields ?? 0;
+}
+
+/** The same count in the clinic's own context (limit enforcement, capabilities, the fields list). */
+export async function clinicCustomFieldCount(tx: Tx, archivedAfter: Date): Promise<number> {
+  const { rows } = await tx.execute<{ custom_fields: number }>(sql`
+    select count(*)::integer as custom_fields from patient_field f
+     where f.tenant_id = current_tenant_id()
+       and (f.state = 'active'
+            or (f.state = 'archived' and f.archived_at > ${archivedAfter.toISOString()}::timestamptz))`);
+  return rows[0]?.custom_fields ?? 0;
+}
+
 /** Every key the plans and add-ons hold (global tables, read with no context set). */
 export async function entitlementKeysInUse(db: ShifaDb): Promise<string[]> {
   const { rows } = await withoutContext(db, (tx) =>

@@ -32,9 +32,11 @@ export {
   registerPlatformAdmin,
 } from './clinic.ts';
 export {
+  clinicCustomFieldCount,
   clinicUsageCounts,
   entitlementKeysInUse,
   settingKeysInUse,
+  tenantCustomFieldCount,
   tenantUsageCounts,
   type UsageCounts,
 } from './entitlements.ts';

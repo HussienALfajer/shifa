@@ -69,7 +69,7 @@ export class EntitlementsAdmin {
     }));
     const names = await this.owners.displayNames(overrides.map((o) => o.setBy));
     // Integers only (A-02-03: `used` beside each limit; null for a key not counted yet).
-    const used = await usageOf(tx, id);
+    const used = await usageOf(tx, id, now);
     return {
       plan: type,
       items: this.catalogue.definitions().map((d) => {
@@ -239,7 +239,7 @@ export class EntitlementsAdmin {
         sources: await loadSources(sp, current),
         next: await loadSources(sp, type),
       }));
-      const used = await usageOf(tx, id);
+      const used = await usageOf(tx, id, now);
       const limits = this.catalogue
         .definitions()
         .filter((d) => d.kind === 'limit')

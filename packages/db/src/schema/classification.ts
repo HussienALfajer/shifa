@@ -68,6 +68,8 @@ export const COUNT_FUNCTIONS: Readonly<Record<string, string>> = {
     'branches, clinics and doctors on each city and area across clinics, by the place’s position in the array (A-02 criterion 24; A-02-06)',
   'announcement_counts(uuid[],integer[],boolean[],uuid[])':
     'targeted members and their dismissals of each announcement across its clinics, by the announcement’s position in the array (A-02 criterion 22; A-02-07)',
+  'tenant_custom_field_count(uuid,bigint)':
+    'a clinic’s custom fields (active, and archived after the cutoff) beside its limits and in a type preview (A-03 criterion 15; A-03-05)',
   'clinic_member_counts(uuid)':
     'a clinic’s members, active members and branches beside its usage (A-02 criterion 17; A-02-07)',
 };
@@ -209,6 +211,10 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   patient_name_token: { kind: 'tenant' },
   // A-03-04: a chart's treating doctors (criterion 10), membership ids; replaced by delete and add.
   patient_treating_doctor: { kind: 'tenant' },
+  // A-03-05: custom field definitions and their choices (criteria 14–17); never deleted (a purged
+  // field stays as a tombstone, a choice is archived), so shifa_app holds no DELETE on either.
+  patient_field: { kind: 'tenant' },
+  patient_field_option: { kind: 'tenant' },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

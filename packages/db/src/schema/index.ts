@@ -34,6 +34,14 @@ export {
   verification,
 } from './identity.ts';
 export {
+  PATIENT_FIELD_ROLES,
+  PATIENT_FIELD_STATES,
+  PATIENT_FIELD_TYPES,
+  patientField,
+  patientFieldOption,
+  type StoredFieldRules,
+} from './patient-fields.ts';
+export {
   PATIENT_RELATIONS,
   PATIENT_SEXES,
   PATIENT_STATES,

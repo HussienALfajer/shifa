@@ -14,7 +14,7 @@ export const LimitUse = z
     key: z.string(),
     /** The effective limit (plan, add-ons and override). */
     limit: z.number().int(),
-    /** Use now; null while the key is not counted (`limits.custom_fields` until A-03). */
+    /** Use now; null for a key not counted (every limit is counted since A-03-05). */
     used: z.number().int().nullable(),
   })
   .meta({ id: 'LimitUse' });

@@ -63,6 +63,9 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-03-03: name tokens, rewritten (deleted and written again) on every name change
     patient_name_token: ['SELECT', 'INSERT', 'DELETE'],
     patient_treating_doctor: ['SELECT', 'INSERT', 'DELETE'],
+    // A-03-05: field definitions and choices, never deleted (tombstones, archived choices)
+    patient_field: ['SELECT', 'INSERT', 'UPDATE'],
+    patient_field_option: ['SELECT', 'INSERT', 'UPDATE'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {

@@ -88,4 +88,40 @@ export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
     const chart = await ctx.chart('archived');
     return { url: `/patients/${chart.id}/restore`, body: { expectedUpdatedAt: chart.updatedAt } };
   },
+  // A-03-05: custom fields (a fresh field per call; the create makes room under the limit)
+  'POST /patients/fields': async (ctx) => {
+    await ctx.fieldRoom();
+    return {
+      body: {
+        label: `حقل ${String(Math.random()).slice(2, 10)}`,
+        type: 'text',
+        section: 'المصفوفة',
+        viewRoles: ['owner'],
+      },
+    };
+  },
+  'PATCH /patients/fields/:key': async (ctx) => {
+    const field = await ctx.field();
+    return {
+      url: `/patients/fields/${field.key}`,
+      body: { expectedUpdatedAt: field.updatedAt, required: true },
+    };
+  },
+  'PUT /patients/fields/order': async (ctx) => {
+    // Only the new field is live: the order names it alone.
+    await ctx.fieldRoom();
+    const field = await ctx.field();
+    return {
+      body: {
+        expectedUpdatedAt: field.updatedAt,
+        sections: [{ title: 'المصفوفة', keys: [field.key] }],
+      },
+    };
+  },
+  'POST /patients/fields/:key/archive': async (ctx) => ({
+    url: `/patients/fields/${(await ctx.field()).key}/archive`,
+  }),
+  'POST /patients/fields/:key/restore': async (ctx) => ({
+    url: `/patients/fields/${(await ctx.field('archived')).key}/restore`,
+  }),
 };

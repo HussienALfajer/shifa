@@ -61,7 +61,7 @@ describe('a clinic’s entitlements (criterion 1, row `sub`)', () => {
           planValue: 10,
           override: null,
           effective: 10,
-          // A-02-03: use beside each limit; custom fields are not counted until A-03.
+          // A-02-03: use beside each limit (custom fields counted since A-03-05).
           used: 0,
         },
         {
@@ -78,7 +78,8 @@ describe('a clinic’s entitlements (criterion 1, row `sub`)', () => {
           planValue: 20,
           override: null,
           effective: 20,
-          used: null,
+          // Counted from A-03-05 (spec A-03 criterion 15).
+          used: 0,
         },
       ],
     });

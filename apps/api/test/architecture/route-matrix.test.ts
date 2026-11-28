@@ -48,6 +48,8 @@ import {
   clinicWithLink,
   clinicWithLock,
   clinicWithOverride,
+  fieldOf,
+  fieldRoomOf,
   nextPhone,
   openLimitsAndTestFeature,
   openSupportGrant,
@@ -252,6 +254,8 @@ async function observe(app: TestApp): Promise<Observed> {
         placeId: (kind, state) => placeOf(kind, state),
         announcementId: () => announcementOf(),
         chart: (state) => chartOf(TENANT_A, state),
+        field: (state) => fieldOf(TENANT_A, state),
+        fieldRoom: () => fieldRoomOf(TENANT_A),
       };
       const sample = (await SAMPLE_REQUESTS[route]?.(ctx)) ?? {};
       const headers =
