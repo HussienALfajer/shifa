@@ -442,6 +442,11 @@ export const EXPECTED_MATRIX: Matrix = {
   'PATCH /patients/:id': patientManagers,
   'POST /patients/:id/archive': ownerOnly,
   'POST /patients/:id/restore': ownerOnly,
+  // A-03-04: the duplicate check and the family preview (reads by POST) and the doctors to pick,
+  // all for those who register (patients.manage)
+  'POST /patients/duplicates': patientManagers,
+  'POST /patients/family': patientManagers,
+  'GET /patients/doctors': patientManagers,
   // invitations (A-01-04): the token is the credential to view; answering needs a session
   'POST /invitations/view': everyone,
   'POST /invitations/accept': signedIn,

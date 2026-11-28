@@ -4,10 +4,15 @@
 // criterion 13), so the runner expects every DELETE refused by privileges.
 import { createRandom, generatePatientCharts } from '@shifa/testing';
 import { and, eq } from 'drizzle-orm';
-import { patient, patientFileCounter, patientNameToken } from '../../../src/index.ts';
+import {
+  patient,
+  patientFileCounter,
+  patientNameToken,
+  patientTreatingDoctor,
+} from '../../../src/index.ts';
 import { fixtureId } from '../../../test-harness/index.ts';
 import { defineIsolationCase, type PrepareContext } from '../define.ts';
-import { parentsOf, prepareBranches } from './parents.ts';
+import { parentsOf, prepareBranches, prepareMemberships } from './parents.ts';
 
 const CHARTS = generatePatientCharts({
   random: createRandom(2026_11_27),
@@ -116,6 +121,39 @@ export const patientNameTokenCase = defineIsolationCase({
         .select()
         .from(patientNameToken)
         .where(eq(patientNameToken.patientId, chartId(0))),
+  },
+});
+
+/** A-03-04: a chart and a member in each clinic, the same ids in both. */
+async function prepareChartsAndMembers(ctx: PrepareContext): Promise<void> {
+  await prepareCharts(ctx);
+  await prepareMemberships(ctx);
+}
+
+/**
+ * A-03-04: the treating doctors of a chart (spec A-03 criterion 10). The list is replaced by
+ * deleting and adding rows, never by an update.
+ */
+export const patientTreatingDoctorCase = defineIsolationCase({
+  table: 'patient_treating_doctor',
+  prepare: prepareChartsAndMembers,
+  withoutPrivilege: ['update'],
+  seed: async (tx, tenantId) => {
+    await tx.insert(patientTreatingDoctor).values({
+      tenantId,
+      patientId: chartId(0),
+      memberId: parentsOf(tenantId).membership,
+      addedBy: ACTOR,
+    });
+  },
+  paths: {
+    'a chart’s doctors (summary, edit)': (tx) =>
+      tx
+        .select()
+        .from(patientTreatingDoctor)
+        .where(eq(patientTreatingDoctor.patientId, chartId(0))),
+    'a doctor’s charts (my patients, A-03-07)': (tx) =>
+      tx.select().from(patientTreatingDoctor).where(eq(patientTreatingDoctor.addedBy, ACTOR)),
   },
 });
 

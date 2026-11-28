@@ -17,9 +17,12 @@ export const auditEvent = pgTable(
     event: text('event').notNull(),
     at: timestamp('at', { withTimezone: true }).notNull().defaultNow(),
     requestId: text('request_id'),
-    /** Small allowlisted details (ids, enum values); at most 1 kB. */
+    /**
+     * Small allowlisted details (ids, enum values; A-03-04: lists of ids, such as the candidate
+     * charts registered anyway); at most 1 kB.
+     */
     data: jsonb('data')
-      .$type<Record<string, string | number | boolean | null>>()
+      .$type<Record<string, string | number | boolean | null | readonly string[]>>()
       .notNull()
       .default({}),
   },

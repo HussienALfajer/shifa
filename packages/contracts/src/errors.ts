@@ -1,6 +1,7 @@
 // The one error envelope and the central error-code catalogue (ADR-0013), shared by the API,
 // the web apps and the patient app. Codes are stable: clients translate them, never `message`.
 import { z } from 'zod';
+import { DuplicateCandidate } from './patient-card.ts';
 
 /** Every error code the API answers with. Add codes; never rename or reuse one. */
 export const ErrorCode = z
@@ -93,6 +94,9 @@ export const ErrorCode = z
     'stale',
     // patient search (A-03-03)
     'rate_limited',
+    // duplicates, treating doctors (A-03-04)
+    'possible_duplicate',
+    'doctor_not_member',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -197,6 +201,8 @@ export const ErrorBody = z
     place: PlaceKind.optional(),
     /** Who saved since the form was filled, and when: only with `stale` (A-03-02). */
     stale: StaleChange.optional(),
+    /** The charts not acknowledged: only with `possible_duplicate` (A-03-04). */
+    candidates: z.array(DuplicateCandidate).optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -283,6 +289,8 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   patient_merged: 'This chart was merged into another',
   stale: 'Someone else saved this record since you opened it',
   rate_limited: 'Too many searches in a short time',
+  possible_duplicate: 'Charts like this one exist; acknowledge them to register anyway',
+  doctor_not_member: 'A treating doctor must be a doctor member of this clinic',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

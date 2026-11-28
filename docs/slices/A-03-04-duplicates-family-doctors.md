@@ -1,6 +1,6 @@
 # A-03-04 Duplicates, family and treating doctors
 
-Status: Planned · Tier: T0 · Branch: `feat/A-03-04-duplicates-family-doctors`
+Status: Built, in review · Tier: T0 · Branch: `feat/A-03-04-duplicates-family-doctors`
 Spec: [A-03](../specs/patients/A-03-patients.md) criteria 7, 9, 10, 20 (duplicate registered anyway, treating doctors changed); from A-03-01: criteria 27, 29 · Requirements: CLN-41 (warning part), CLN-42, CLN-43 · Decisions: OD-138, OD-139, OD-140
 
 Third API slice of A-03, after A-03-03.
@@ -33,8 +33,15 @@ Estimated hand-written lines: ~3,300 (contracts ~300, database ~300, duplicates 
 - Components: none (API slice).
 - New estimate: ~3,500 (contracts ~340, database ~300, duplicates ~620, family ~380, doctors ~600, tests ~1,260).
 
+## Built (2026-11-28)
+Branch: `claude/youthful-pasteur-0helm2` (the cloud session's branch, in place of `feat/A-03-04-duplicates-family-doctors`).
+- **Contracts**: `patient-card.ts` (`PatientCard`, `PatientRelation` (ten keys), `FamilyMember`, `TreatingDoctor`, `DuplicateReason`, `DuplicateCandidate`; apart from patients.ts because the 409 envelope uses it), `patient-input.ts` (the identity input schemas, internal), `patient-links.ts` (`DuplicateCheckRequest`, `DuplicateCandidates`, `PatientFamilyRequest`, `PatientFamily`, `PatientDoctors` and the three routes). `PatientChart` gains `relation`, `family`, `treatingDoctors`; search results `familySize`, `relation`; create and edit `relation`, `treatingDoctorIds`, `acknowledgedCandidateIds`. Codes: 409 `possible_duplicate` (with `candidates` in the envelope), 400 `doctor_not_member`; Arabic messages in `@shifa/i18n`.
+- **Database** (expand only): `20261128020206_a03_treating_doctors` (table `patient_treating_doctor`, index `patient_tenant_id_contact_phone_idx`, check `patient_relation_value_check`) and `20261128020211_a03_treating_doctor_policies` (ENABLE + FORCE RLS, tenant policy, `shifa_app` SELECT, INSERT, DELETE). Rollback: drop the policy and grants; the table, index and check go with a contract migration. The index is built without `CONCURRENTLY`: `patient` holds no production rows yet. Classification, privileges pin and isolation case added. Audit `data` may now hold lists of ids (type only; the 1 kB check is unchanged).
+- **API** (`modules/patients`): `duplicates.ts` (rule 1: same contact phone and the same given-name key; rule 2: two or more typed words each a whole token of the chart's name, any order, birth year ±2; merged never, archived marked; ≤ 5, phone matches first), `family.ts` (holder = the chart marked `holder`; a phone new to the clinic makes the chart its holder; `holder` refused while the phone has one, a relation refused on a new phone, both 400 on `body.relation`; a transaction lock on the clinic's phone serialises the choice; a phone change moves the chart, its relation then the one sent, else none, holder on a new phone), `doctors.ts` (doctor = holds the doctor role; active = member active and doctor; new ids must be active doctors, ids already on the chart may stay; list replaced by delete and add), `links.service.ts` (the three reads). The create and an edit that changes a name part, the phone or the birth re-check duplicates; an edit re-checks only those fields. Audit: `patient.duplicate_registered` (`candidateIds`), `patient.doctors_changed` (`added`, `removed` member ids), `patient.edited` names `relation` when it changed.
+- **Decisions in the build** (reported to the owner): "similar given name" is the same normalised key (ADR-0034), not a trigram score, so twins «حسن» and «حسين» do not warn; rule 2 needs two words; family lists hold active charts only; `familySize` counts the active charts on the phone (an archived result counts itself); `GET /patients/doctors` lists deactivated doctors too, `active: false`; the candidate shape is one object with a nullable `card` (contract row updated).
+
 ## Stopped at
-Planned.
+API layer built and green locally; reviewer and security-reviewer next, then the PR.
 
 ## Evidence
 - `verify` (full): <summary line>

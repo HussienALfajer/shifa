@@ -48,8 +48,12 @@ const ALLOWED_WRITE = 'POST /auth/support/end';
 /** Owner reads a support session may not make: subscription card, support log (A-02 Permissions). */
 const NOT_IN_SUPPORT = new Set(['GET /clinic/subscription', 'GET /clinic/support-grants']);
 const READS = new Set(['GET', 'HEAD']);
-/** Reads whose input is personal data, so it travels in a POST body (A-03-03). */
-const READS_IN_BODY = new Set(['POST /patients/search']);
+/** Reads whose input is personal data, so it travels in a POST body (A-03-03, A-03-04). */
+const READS_IN_BODY = new Map<string, Record<string, unknown>>([
+  ['POST /patients/search', { term: 'مريض' }],
+  ['POST /patients/duplicates', { givenName: 'مريض', contactPhone: '+963930000001' }],
+  ['POST /patients/family', { phone: '+963930000001' }],
+]);
 const ANY_ID = '00000000-0000-4000-8000-0000000000ff';
 
 let world: World;
@@ -116,7 +120,7 @@ describe('every route in a support session (criterion 12)', () => {
       const want = expected(route);
       if (!want) continue;
       const [method = 'GET'] = route.split(' ');
-      const body = READS_IN_BODY.has(route) ? { term: 'مريض' } : undefined;
+      const body = READS_IN_BODY.get(route);
       const res = await request(world, method as 'GET', urlOf(route), tab, body);
       called += 1;
       const status = res.statusCode >= 200 && res.statusCode < 300 ? 200 : res.statusCode;

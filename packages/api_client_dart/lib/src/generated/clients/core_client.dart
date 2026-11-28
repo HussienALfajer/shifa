@@ -33,6 +33,8 @@ import '../models/create_branch_request.dart';
 import '../models/create_clinic_request.dart';
 import '../models/create_patient_request.dart';
 import '../models/dismiss_announcement_request.dart';
+import '../models/duplicate_candidates.dart';
+import '../models/duplicate_check_request.dart';
 import '../models/ended_sessions.dart';
 import '../models/entitlement_item.dart';
 import '../models/flag_list.dart';
@@ -58,6 +60,9 @@ import '../models/override_history.dart';
 import '../models/owner_phone_request.dart';
 import '../models/patient_chart.dart';
 import '../models/patient_count.dart';
+import '../models/patient_doctors.dart';
+import '../models/patient_family.dart';
+import '../models/patient_family_request.dart';
 import '../models/patient_search_request.dart';
 import '../models/patient_search_results.dart';
 import '../models/patient_state_change_request.dart';
@@ -303,6 +308,22 @@ abstract class CoreClient {
   /// How many active and archived charts the clinic holds
   @GET('/patients/count')
   Future<PatientCount> patientsCount();
+
+  /// The clinic’s doctors, to pick as treating doctors
+  @GET('/patients/doctors')
+  Future<PatientDoctors> patientsDoctors();
+
+  /// Charts that may be the patient being registered
+  @POST('/patients/duplicates')
+  Future<DuplicateCandidates> patientsDuplicates({
+    @Body() required DuplicateCheckRequest body,
+  });
+
+  /// The family on a contact phone
+  @POST('/patients/family')
+  Future<PatientFamily> patientsFamily({
+    @Body() required PatientFamilyRequest body,
+  });
 
   /// Find charts by name, phone, file number or previous file number
   @POST('/patients/search')

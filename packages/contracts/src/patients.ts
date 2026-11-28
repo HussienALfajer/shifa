@@ -1,104 +1,37 @@
 // Patients (spec A-03; slice A-03-02): a clinic's chart and its identity. Reception registers a
 // chart (the id is the client's, so a retry or A-05's offline registration needs no new id),
 // gets the clinic's next file number, opens and edits it; the owner archives and restores it.
-// Later A-03 slices add the relation, treating doctors, custom fields, search and the read audit.
+// A-03-03 adds search; A-03-04 the relation, the family and treating doctors (their own routes in
+// patient-links.ts). Later A-03 slices add custom fields and the read audit.
 // Privacy (spec, "Money, abuse and privacy"): names, phones, dates of birth and previous numbers
 // travel in bodies only; paths carry chart ids.
 import { z } from 'zod';
 import { defineContract } from './define.ts';
 import { ErrorEnvelope } from './errors.ts';
+import {
+  FamilyMember,
+  PatientRelation,
+  PatientState,
+  Sex,
+  TreatingDoctor,
+} from './patient-card.ts';
+import {
+  BirthDateInput,
+  CalendarDate,
+  NamePart,
+  PatientAge,
+  PhoneInput,
+  PreviousFileNumber,
+} from './patient-input.ts';
 
-const LETTER = /^[\p{L}\p{M}]$/u;
-const SCRIPT = /^[\p{sc=Arabic}\p{sc=Latin}\p{sc=Inherited}]$/u;
-const IS_LETTER = /^\p{L}$/u;
-const SEPARATORS = new Set([' ', '-', "'", '’']);
-/** Control, format, unassigned and line or paragraph separator characters (NUL, bidi, zero-width). */
-const HIDDEN = /[\p{C}\p{Zl}\p{Zp}]/u;
-
-/**
- * One part of a patient's name (criterion 1): Arabic or Latin letters (with their marks), spaces,
- * hyphens and apostrophes, with at least one letter. The 1–40 length is the schema's. Shared by
- * the browser and the server.
- */
-export function isPatientNamePart(value: string): boolean {
-  let letters = 0;
-  for (const char of value) {
-    if (SEPARATORS.has(char)) continue;
-    if (!LETTER.test(char) || !SCRIPT.test(char)) return false;
-    if (IS_LETTER.test(char)) letters += 1;
-  }
-  return letters > 0;
-}
-
-/** A name part as stored: trimmed, runs of spaces as one. */
-export function cleanPatientNamePart(value: string): string {
-  return value.trim().replace(/ {2,}/g, ' ');
-}
-
-/** The display name (criterion 1): given, father, family; empty parts left out. */
-export function patientDisplayName(parts: {
-  givenName: string;
-  fatherName: string | null;
-  familyName: string | null;
-}): string {
-  return [parts.givenName, parts.fatherName, parts.familyName]
-    .filter((p): p is string => p !== null)
-    .map(cleanPatientNamePart)
-    .filter((p) => p !== '')
-    .join(' ');
-}
-
-const NamePart = z.string().min(1).max(40).refine(isPatientNamePart);
-
-/**
- * A calendar date, `YYYY-MM-DD`, kept a string on the wire (as in platform.ts: generated clients
- * would turn `format: date` into a timestamp).
- */
-const CalendarDate = z.string().regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/);
-
-/** A date that exists (no 30 February). */
-function isRealDate(day: string): boolean {
-  const [y = 0, m = 0, d = 0] = day.split('-').map(Number);
-  const at = new Date(Date.UTC(y, m - 1, d));
-  return at.getUTCFullYear() === y && at.getUTCMonth() === m - 1 && at.getUTCDate() === d;
-}
-const BirthDateInput = z
-  .string()
-  .regex(/^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/, { abort: true })
-  .refine(isRealDate);
-/** As typed; normalised to E.164 by the server (400 on its path when invalid; +963 and +90). */
-const PhoneInput = z.string().min(1).max(32);
-/**
- * The paper file number as typed: 1–40 characters, not only spaces; kept trimmed. No hidden
- * characters: they reach the database as errors or make two numbers look alike (security review
- * L1).
- */
-const PreviousFileNumber = z
-  .string()
-  .max(40)
-  .regex(/\S/)
-  .refine((v) => !HIDDEN.test(v));
-
-export const Sex = z.enum(['male', 'female']).meta({ id: 'Sex' });
-export type Sex = z.infer<typeof Sex>;
-
-export const AgeUnit = z.enum(['years', 'months']).meta({ id: 'AgeUnit' });
-export type AgeUnit = z.infer<typeof AgeUnit>;
-
-/** An age as typed (criterion 1): 2–130 years, or 0–23 months under 2. */
-export const PatientAge = z
-  .object({ value: z.int(), unit: AgeUnit })
-  .refine(
-    (a) => (a.unit === 'years' ? a.value >= 2 && a.value <= 130 : a.value >= 0 && a.value <= 23),
-    {
-      path: ['value'],
-    },
-  )
-  .meta({ id: 'PatientAge' });
-export type PatientAge = z.infer<typeof PatientAge>;
-
-export const PatientState = z.enum(['active', 'archived', 'merged']).meta({ id: 'PatientState' });
-export type PatientState = z.infer<typeof PatientState>;
+export * from './patient-card.ts';
+export {
+  AgeUnit,
+  cleanPatientNamePart,
+  isPatientNamePart,
+  PatientAge,
+  patientDisplayName,
+} from './patient-input.ts';
 
 export const PatientBranch = z
   .object({ id: z.uuid(), name: z.string() })
@@ -143,6 +76,12 @@ export const PatientChart = z
     archivedAt: z.iso.datetime().nullable(),
     archivedByName: z.string().nullable(),
     mergedInto: PatientMergedInto.nullable(),
+    /** The relation to the phone's holder (A-03-04; criterion 9). */
+    relation: PatientRelation.nullable(),
+    /** The other active charts on the contact phone, holder first (A-03-04). */
+    family: z.array(FamilyMember),
+    /** By name (A-03-04; criterion 10); inactive ones marked. */
+    treatingDoctors: z.array(TreatingDoctor),
   })
   .meta({ id: 'PatientChart' });
 export type PatientChart = z.infer<typeof PatientChart>;
@@ -155,6 +94,22 @@ const identityFields = {
   birthDate: BirthDateInput.optional(),
   age: PatientAge.optional(),
   previousFileNumber: PreviousFileNumber.nullable().optional(),
+  /**
+   * A-03-04 (criteria 9, 29): asked only when the phone has a holder (`holder` then refused); a
+   * phone new to the clinic makes the chart its holder (any other value refused). 400 on
+   * `body.relation`.
+   */
+  relation: PatientRelation.nullable().optional(),
+  /**
+   * A-03-04 (criterion 10): membership ids of doctor members (400 `doctor_not_member`); a doctor
+   * who registers is added. On an edit, the whole list (an inactive doctor already on it may stay).
+   */
+  treatingDoctorIds: z.array(z.uuid()).max(50).optional(),
+  /**
+   * A-03-04 (criterion 7): the candidates the member checked; a candidate not listed answers 409
+   * `possible_duplicate`. On an edit, checked only when a name part, the phone or the birth changes.
+   */
+  acknowledgedCandidateIds: z.array(z.uuid()).max(5).optional(),
 };
 
 /** Registration (criteria 1–3; contract `POST /patients`): a date of birth or an age, not both. */
@@ -247,8 +202,7 @@ export type PatientMatchKind = z.infer<typeof PatientMatchKind>;
  * One search result (criteria 4, 24): the chart's card with its name parts, why it matched, and
  * which parts matched (0 `givenName`, 1 `fatherName`, 2 `familyName`; empty for a number, a phone
  * or a typo match), so the screen marks those parts' words in the display name. `mergedFileNumber`:
- * the merged chart's number that led here (A-03-08), else null. `familySize` and `relation`
- * come with A-03-04.
+ * the merged chart's number that led here (A-03-08), else null.
  */
 export const PatientSearchResult = z
   .object({
@@ -269,6 +223,10 @@ export const PatientSearchResult = z
     matchedBy: PatientMatchKind,
     matchedParts: z.array(z.int().min(0).max(2)),
     mergedFileNumber: z.int().min(1).nullable(),
+    /** A-03-04: active charts on the contact phone, this one included («العائلة»). */
+    familySize: z.int().min(1),
+    /** A-03-04: the relation to the phone's holder. */
+    relation: PatientRelation.nullable(),
   })
   .meta({ id: 'PatientSearchResult' });
 export type PatientSearchResult = z.infer<typeof PatientSearchResult>;
@@ -304,8 +262,9 @@ export const patientsCreate = defineContract({
   path: '/patients',
   summary: 'Register a chart; the same id and body again returns the stored chart',
   request: { body: CreatePatientRequest },
-  // 400 `validation_failed` (a name part, a phone, the birth); 409 `previous_file_number_taken`
-  // or `patient_id_taken` (the id holds another chart of this clinic).
+  // 400 `validation_failed` (a name part, a phone, the birth, the relation) or
+  // `doctor_not_member`; 409 `previous_file_number_taken`, `patient_id_taken` (the id holds another
+  // chart of this clinic) or `possible_duplicate` (with `candidates`; nothing saved).
   responses: { 201: PatientChart, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
 
@@ -324,7 +283,8 @@ export const patientsUpdate = defineContract({
   path: '/patients/:id',
   summary: 'Edit a chart’s identity',
   request: { params: PatientIdParams, body: UpdatePatientRequest },
-  // 409 `stale` (with `stale`), `patient_archived`, `patient_merged`, `previous_file_number_taken`.
+  // 400 as for the create; 409 `stale` (with `stale`), `patient_archived`, `patient_merged`,
+  // `previous_file_number_taken`, `possible_duplicate` (a name, the phone or the birth changed).
   responses: { 200: PatientChart, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });
 

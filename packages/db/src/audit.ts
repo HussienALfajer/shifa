@@ -112,6 +112,9 @@ export const TENANT_EVENTS = [
   'patient.edited',
   'patient.archived',
   'patient.restored',
+  // A-03-04: registered anyway (the candidate chart ids), treating doctors changed (member ids)
+  'patient.duplicate_registered',
+  'patient.doctors_changed',
 ] as const;
 
 export type AuditEventName =

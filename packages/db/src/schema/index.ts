@@ -34,11 +34,13 @@ export {
   verification,
 } from './identity.ts';
 export {
+  PATIENT_RELATIONS,
   PATIENT_SEXES,
   PATIENT_STATES,
   patient,
   patientFileCounter,
   patientNameToken,
+  patientTreatingDoctor,
 } from './patients.ts';
 export { area, city } from './places.ts';
 export {

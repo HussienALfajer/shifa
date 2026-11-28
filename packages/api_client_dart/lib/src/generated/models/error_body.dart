@@ -4,6 +4,7 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'duplicate_candidate.dart';
 import 'error_code.dart';
 import 'limit_reached.dart';
 import 'place_kind.dart';
@@ -19,6 +20,7 @@ class ErrorBody {
   const ErrorBody({
     required this.code,
     required this.message,
+    this.candidates,
     this.details,
     this.limitReached,
     this.place,
@@ -31,6 +33,8 @@ class ErrorBody {
   factory ErrorBody.fromJson(Map<String, Object?> json) =>
       _$ErrorBodyFromJson(json);
 
+  @JsonKey(includeIfNull: false)
+  final List<DuplicateCandidate>? candidates;
   final ErrorCode code;
   @JsonKey(includeIfNull: false)
   final List<ValidationIssue>? details;

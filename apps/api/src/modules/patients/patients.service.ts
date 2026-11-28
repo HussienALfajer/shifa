@@ -1,25 +1,28 @@
-// Charts (spec A-03 criteria 1–3, 12, 13, 20, 22, 28, 32; slice A-03-02). Every call runs in the
-// scope the guard checked (TenantDb) and writes its audit row in the same transaction. Audit data
-// holds no name, phone, date or previous number: a chart's id, and for an edit the changed keys.
+// Charts (spec A-03 criteria 1–3, 7, 9, 10, 12, 13, 20, 22, 27–29, 32; slices A-03-02, A-03-04).
+// Every call runs in the scope the guard checked (TenantDb) and writes its audit row in the same
+// transaction. Audit data holds no name, phone, date or previous number: a chart's id, an edit's
+// changed keys, the candidate ids of a chart registered anyway, the member ids of a doctor change.
 // No read audit yet: `GET /patients/:id` gains its `patient.chart_viewed` row in A-03-07, before
 // any screen reads a chart (A-03-09). Every save that sets a name part rewrites the chart's name
-// key and tokens in the same transaction (A-03-03, ADR-0052).
+// key and tokens in the same transaction (A-03-03, ADR-0052). A save that sets the phone decides
+// the relation under a lock on that phone (family.ts); a save that sets a name, the phone or the
+// birth re-checks duplicates (duplicates.ts); treating doctors are set in doctors.ts.
 import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import {
   type CreatePatientRequest,
   cleanPatientNamePart,
-  normalisePhone,
   type PatientChart,
   type PatientCount,
   type UpdatePatientRequest,
 } from '@shifa/contracts';
-import { type AuditEventName, auditEvent, patient, type Tx } from '@shifa/db';
+import { patient, type Tx } from '@shifa/db';
 import { eq, sql } from 'drizzle-orm';
 import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
 import { birthOf, damascusToday } from './birth.ts';
+import { audit, optionalPart, optionalPhone, phoneAt, previousOf } from './chart-input.ts';
 import {
   CHART_KEY,
   type ChartRow,
@@ -33,6 +36,9 @@ import {
   takeFileNumber,
   violates,
 } from './charts.ts';
+import { registeringDoctor, setTreatingDoctors } from './doctors.ts';
+import { acknowledgedCandidates, duplicateQuery } from './duplicates.ts';
+import { relationOn } from './family.ts';
 import { namesChanged, writeNameKey } from './name-keys.ts';
 
 /** The identity fields an edit may change; the audit names the ones that did. */
@@ -46,30 +52,39 @@ const EDITABLE = [
   'sex',
   'birthDate',
   'previousFileNumber',
+  'relation',
 ] as const;
 type Editable = (typeof EDITABLE)[number];
-
-/** E.164 for a required phone; 400 on its path when invalid. */
-function phoneAt(input: string, path: string): string {
-  const phone = normalisePhone(input);
-  if (!phone.ok) throw new RequestValidationError([{ path, code: 'invalid_format' }]);
-  return phone.e164;
-}
-
-/** `undefined`: not given; `null`: cleared; else E.164. */
-function optionalPhone(input: string | null | undefined, path: string): string | null | undefined {
-  return input === undefined || input === null ? input : phoneAt(input, path);
-}
-
-/** `undefined`: not given; `null`: cleared; else trimmed. */
-function optionalPart(input: string | null | undefined): string | null | undefined {
-  return input === undefined || input === null ? input : cleanPatientNamePart(input);
-}
-
-const previousOf = (input: string | null | undefined) =>
-  input === undefined || input === null ? input : input.trim();
+/** The fields whose change re-checks duplicates (criterion 7). */
+const DUPLICATE_KEYS: readonly Editable[] = [
+  'givenName',
+  'fatherName',
+  'familyName',
+  'contactPhone',
+  'birthDate',
+];
 
 const previousTaken = () => new ApiError(409, 'previous_file_number_taken');
+
+/** The duplicate check of a chart's identity as it will be saved. */
+function savedQuery(
+  chart: Pick<
+    ChartRow,
+    'id' | 'givenName' | 'fatherName' | 'familyName' | 'contactPhone' | 'birthDate'
+  >,
+) {
+  return duplicateQuery(
+    {
+      givenName: chart.givenName,
+      fatherName: chart.fatherName,
+      familyName: chart.familyName,
+      contactPhone: chart.contactPhone,
+      birthDate: chart.birthDate,
+      excludeId: chart.id,
+    },
+    chart.birthDate,
+  );
+}
 
 @Injectable()
 export class PatientsService {
@@ -91,7 +106,8 @@ export class PatientsService {
   }
 
   /**
-   * Criteria 1–3: the chart with the clinic's next file number. The same id and body again
+   * Criteria 1–3, 7, 9, 10: the chart with the clinic's next file number, its relation on the
+   * phone and its treating doctors (a doctor who registers is added). The same id and body again
    * returns the stored chart and takes no number; another body with that id answers 409.
    */
   async create(
@@ -108,28 +124,41 @@ export class PatientsService {
       if (row.createHash !== hash) throw new ApiError(409, 'patient_id_taken');
       return chartView(tx, row);
     };
+    const identity = {
+      id: input.id,
+      givenName: cleanPatientNamePart(input.givenName),
+      fatherName: optionalPart(input.fatherName) ?? null,
+      familyName: optionalPart(input.familyName) ?? null,
+      contactPhone,
+      birthDate: birth.birthDate,
+    };
     try {
       return await this.tenants.run(scope, async (tx) => {
         const existing = await findChart(tx, input.id);
         if (existing) return replay(tx, existing);
+        const relation = await relationOn(tx, scope.tenantId, contactPhone, input.id, {
+          requested: input.relation,
+          samePhone: false,
+        });
+        const anyway = await acknowledgedCandidates(
+          tx,
+          savedQuery(identity),
+          input.acknowledgedCandidateIds,
+        );
         const fileNumber = await takeFileNumber(tx, scope.tenantId);
         const at = nextStamp(this.clock.now());
         const [row] = await tx
           .insert(patient)
           .values({
+            ...identity,
             tenantId: scope.tenantId,
-            id: input.id,
             fileNumber,
             previousFileNumber: previousOf(input.previousFileNumber) ?? null,
-            givenName: cleanPatientNamePart(input.givenName),
-            fatherName: optionalPart(input.fatherName) ?? null,
-            familyName: optionalPart(input.familyName) ?? null,
             motherName: optionalPart(input.motherName) ?? null,
-            contactPhone,
             secondPhone,
             sex: input.sex,
-            birthDate: birth.birthDate,
             birthDateEstimated: birth.estimated,
+            relation,
             registeredBranchId: await registeringBranch(tx, scope.branchId),
             createHash: hash,
             createdBy: scope.userId,
@@ -140,7 +169,17 @@ export class PatientsService {
           .returning();
         if (!row) throw new Error('chart not written');
         await writeNameKey(tx, row);
+        const doctor = await registeringDoctor(tx, scope.userId);
+        await setTreatingDoctors(tx, scope, row.id, [
+          ...(input.treatingDoctorIds ?? []),
+          ...(doctor ? [doctor] : []),
+        ]);
         await audit(tx, scope, 'patient.created', row.id, requestId);
+        if (anyway.length > 0) {
+          await audit(tx, scope, 'patient.duplicate_registered', row.id, requestId, {
+            candidateIds: anyway,
+          });
+        }
         return chartView(tx, row);
       });
     } catch (err) {
@@ -157,7 +196,7 @@ export class PatientsService {
     }
   }
 
-  /** Criterion 12: the identity part of the summary (A-03-07 adds the read audit). */
+  /** Criterion 12: the summary (A-03-07 adds the read audit). */
   get(scope: RequestScope, id: string): Promise<PatientChart> {
     return this.tenants.run(scope, async (tx) => {
       const row = await findChart(tx, id);
@@ -166,43 +205,32 @@ export class PatientsService {
     });
   }
 
-  /** Criteria 12, 28: the fields given, with the registration's checks; 409 on a stale save. */
+  /**
+   * Criteria 7, 9, 10, 12, 28: the fields given, with the registration's checks; 409 on a stale
+   * save. A new phone moves the chart to that family; `treatingDoctorIds` replaces the list.
+   */
   async update(
     scope: RequestScope,
     id: string,
     input: UpdatePatientRequest,
     requestId: string,
   ): Promise<PatientChart> {
-    const next: Partial<Pick<ChartRow, Editable | 'birthDateEstimated'>> = {
-      ...(input.givenName === undefined
-        ? {}
-        : { givenName: cleanPatientNamePart(input.givenName) }),
-      ...(input.fatherName === undefined
-        ? {}
-        : { fatherName: optionalPart(input.fatherName) ?? null }),
-      ...(input.familyName === undefined
-        ? {}
-        : { familyName: optionalPart(input.familyName) ?? null }),
-      ...(input.motherName === undefined
-        ? {}
-        : { motherName: optionalPart(input.motherName) ?? null }),
-      ...(input.contactPhone === undefined
-        ? {}
-        : { contactPhone: phoneAt(input.contactPhone, 'body.contactPhone') }),
-      ...(input.secondPhone === undefined
-        ? {}
-        : { secondPhone: optionalPhone(input.secondPhone, 'body.secondPhone') ?? null }),
-      ...(input.sex === undefined ? {} : { sex: input.sex }),
-      ...(input.previousFileNumber === undefined
-        ? {}
-        : { previousFileNumber: previousOf(input.previousFileNumber) ?? null }),
-    };
+    const next = editOf(input);
     const birth = birthOf(input, damascusToday(this.clock));
     if (birth)
       Object.assign(next, { birthDate: birth.birthDate, birthDateEstimated: birth.estimated });
     try {
       return await this.tenants.run(scope, async (tx) => {
         const current = await this.#writable(tx, id, input.expectedUpdatedAt);
+        const phone = next.contactPhone ?? current.contactPhone;
+        const moved = phone !== current.contactPhone;
+        if (moved || input.relation !== undefined) {
+          next.relation = await relationOn(tx, scope.tenantId, phone, id, {
+            requested: input.relation,
+            current: current.relation,
+            samePhone: !moved,
+          });
+        }
         const changed = EDITABLE.filter(
           (key) =>
             (key in next && next[key] !== current[key]) ||
@@ -210,11 +238,23 @@ export class PatientsService {
               next.birthDateEstimated !== undefined &&
               next.birthDateEstimated !== current.birthDateEstimated),
         );
-        if (changed.length === 0) return chartView(tx, current);
+        if (changed.some((key) => DUPLICATE_KEYS.includes(key))) {
+          await acknowledgedCandidates(
+            tx,
+            savedQuery({ ...current, ...next, id }),
+            input.acknowledgedCandidateIds,
+          );
+        }
+        const doctors =
+          input.treatingDoctorIds === undefined
+            ? { added: [], removed: [] }
+            : await setTreatingDoctors(tx, scope, id, input.treatingDoctorIds);
+        const doctorsChanged = doctors.added.length + doctors.removed.length > 0;
+        if (changed.length === 0 && !doctorsChanged) return chartView(tx, current);
         const [row] = await tx
           .update(patient)
           .set({
-            ...next,
+            ...(changed.length > 0 ? next : {}),
             updatedBy: scope.userId,
             updatedAt: nextStamp(this.clock.now(), current.updatedAt),
           })
@@ -222,14 +262,19 @@ export class PatientsService {
           .returning();
         if (!row) throw new NotFoundException();
         if (namesChanged(current, next)) await writeNameKey(tx, row);
-        await audit(
-          tx,
-          scope,
-          'patient.edited',
-          id,
-          requestId,
-          Object.fromEntries(changed.map((key) => [key, true])),
-        );
+        if (changed.length > 0) {
+          await audit(
+            tx,
+            scope,
+            'patient.edited',
+            id,
+            requestId,
+            Object.fromEntries(changed.map((key) => [key, true])),
+          );
+        }
+        if (doctorsChanged) {
+          await audit(tx, scope, 'patient.doctors_changed', id, requestId, { ...doctors });
+        }
         return chartView(tx, row);
       });
     } catch (err) {
@@ -309,21 +354,30 @@ export class PatientsService {
   }
 }
 
-/** One row in the clinic: actor, chart, request; `data` only the changed keys of an edit. */
-async function audit(
-  tx: Tx,
-  scope: RequestScope,
-  event: AuditEventName,
-  targetId: string,
-  requestId: string,
-  data: Record<string, boolean> = {},
-): Promise<void> {
-  await tx.insert(auditEvent).values({
-    tenantId: scope.tenantId,
-    actorId: scope.userId,
-    targetId,
-    event,
-    requestId,
-    data,
-  });
+/** The identity fields an edit sets, as stored (the birth and relation are added by the caller). */
+function editOf(
+  input: UpdatePatientRequest,
+): Partial<Pick<ChartRow, Editable | 'birthDateEstimated'>> {
+  return {
+    ...(input.givenName === undefined ? {} : { givenName: cleanPatientNamePart(input.givenName) }),
+    ...(input.fatherName === undefined
+      ? {}
+      : { fatherName: optionalPart(input.fatherName) ?? null }),
+    ...(input.familyName === undefined
+      ? {}
+      : { familyName: optionalPart(input.familyName) ?? null }),
+    ...(input.motherName === undefined
+      ? {}
+      : { motherName: optionalPart(input.motherName) ?? null }),
+    ...(input.contactPhone === undefined
+      ? {}
+      : { contactPhone: phoneAt(input.contactPhone, 'body.contactPhone') }),
+    ...(input.secondPhone === undefined
+      ? {}
+      : { secondPhone: optionalPhone(input.secondPhone, 'body.secondPhone') ?? null }),
+    ...(input.sex === undefined ? {} : { sex: input.sex }),
+    ...(input.previousFileNumber === undefined
+      ? {}
+      : { previousFileNumber: previousOf(input.previousFileNumber) ?? null }),
+  };
 }

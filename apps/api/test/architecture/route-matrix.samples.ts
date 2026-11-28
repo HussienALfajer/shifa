@@ -60,14 +60,18 @@ export const A03_PATIENT_SAMPLES: Readonly<Record<string, Sample>> = {
   'POST /patients': (ctx) => ({
     body: {
       id: randomUUID(),
+      // One name word on a fresh phone: never a duplicate of the last role's chart (A-03-04).
       givenName: 'مريض',
-      familyName: 'المصفوفة',
       contactPhone: ctx.nextPhone(),
       sex: 'female',
       age: { value: 30, unit: 'years' },
     },
   }),
   'POST /patients/search': () => ({ body: { term: 'مريض' } }),
+  'POST /patients/duplicates': (ctx) => ({
+    body: { givenName: 'مريض', contactPhone: ctx.nextPhone() },
+  }),
+  'POST /patients/family': (ctx) => ({ body: { phone: ctx.nextPhone() } }),
   'GET /patients/:id': async (ctx) => ({ url: `/patients/${(await ctx.chart()).id}` }),
   'PATCH /patients/:id': async (ctx) => {
     const chart = await ctx.chart();

@@ -1,0 +1,437 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "c6693916-9b91-4345-bd67-96463702a445",
+  "prevIds": [
+    "7af742c2-fc02-47f5-95a7-a890a92d5ed6"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_table",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_treating_doctor"
+      ],
+      "writes": [
+        "s|tbl|public.patient_treating_doctor",
+        "n|tbl|public.patient_treating_doctor",
+        "e|tbl|public.patient_treating_doctor",
+        "n|rel|public.patient_treating_doctor",
+        "n|type|public.patient_treating_doctor",
+        "n|rel|public.patient_treating_doctor_pkey",
+        "n|rel|public.patient_treating_doctor_chart_member_key"
+      ],
+      "reads": [
+        "n|sch|public"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient",
+        "patient_tenant_id_contact_phone_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_tenant_id_contact_phone_idx",
+        "n|idx|public.patient_tenant_id_contact_phone_idx",
+        "e|idx|public.patient_tenant_id_contact_phone_idx",
+        "n|rel|public.patient_tenant_id_contact_phone_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.contact_phone"
+      ]
+    },
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient_treating_doctor",
+        "patient_treating_doctor_tenant_id_member_id_idx"
+      ],
+      "writes": [
+        "s|idx|public.patient_treating_doctor_tenant_id_member_id_idx",
+        "n|idx|public.patient_treating_doctor_tenant_id_member_id_idx",
+        "e|idx|public.patient_treating_doctor_tenant_id_member_id_idx",
+        "n|rel|public.patient_treating_doctor_tenant_id_member_id_idx"
+      ],
+      "reads": [
+        "n|tbl|public.patient_treating_doctor",
+        "n|sch|public",
+        "n|col|public.patient_treating_doctor.tenant_id",
+        "n|col|public.patient_treating_doctor.member_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_treating_doctor"
+      ],
+      "writes": [
+        "s|fk|public.patient_treating_doctor.patient_treating_doctor_tenant_id_tenant_id_fkey",
+        "n|fk|public.patient_treating_doctor.patient_treating_doctor_tenant_id_tenant_id_fkey",
+        "e|fk|public.patient_treating_doctor.patient_treating_doctor_tenant_id_tenant_id_fkey",
+        "n|con|public.patient_treating_doctor.patient_treating_doctor_tenant_id_tenant_id_fkey"
+      ],
+      "reads": [
+        "n|tbl|public.patient_treating_doctor",
+        "n|sch|public",
+        "n|tbl|public.tenant",
+        "n|sch|public",
+        "n|col|public.patient_treating_doctor.tenant_id",
+        "n|col|public.tenant.id",
+        "e|uniqueness|public.tenant.id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_treating_doctor"
+      ],
+      "writes": [
+        "s|fk|public.patient_treating_doctor.patient_treating_doctor_patient_fk",
+        "n|fk|public.patient_treating_doctor.patient_treating_doctor_patient_fk",
+        "e|fk|public.patient_treating_doctor.patient_treating_doctor_patient_fk",
+        "n|con|public.patient_treating_doctor.patient_treating_doctor_patient_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient_treating_doctor",
+        "n|sch|public",
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient_treating_doctor.tenant_id",
+        "n|col|public.patient_treating_doctor.patient_id",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.id",
+        "e|uniqueness|public.patient.id.tenant_id"
+      ]
+    },
+    {
+      "statementType": "create_fk",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient_treating_doctor"
+      ],
+      "writes": [
+        "s|fk|public.patient_treating_doctor.patient_treating_doctor_member_fk",
+        "n|fk|public.patient_treating_doctor.patient_treating_doctor_member_fk",
+        "e|fk|public.patient_treating_doctor.patient_treating_doctor_member_fk",
+        "n|con|public.patient_treating_doctor.patient_treating_doctor_member_fk"
+      ],
+      "reads": [
+        "n|tbl|public.patient_treating_doctor",
+        "n|sch|public",
+        "n|tbl|public.membership",
+        "n|sch|public",
+        "n|col|public.patient_treating_doctor.tenant_id",
+        "n|col|public.patient_treating_doctor.member_id",
+        "n|col|public.membership.tenant_id",
+        "n|col|public.membership.id",
+        "e|uniqueness|public.membership.id.tenant_id"
+      ]
+    },
+    {
+      "statementType": "add_check",
+      "statementTarget": [
+        "table",
+        "public",
+        "patient"
+      ],
+      "writes": [
+        "s|ck|public.patient.patient_relation_value_check",
+        "n|ck|public.patient.patient_relation_value_check",
+        "e|ck|public.patient.patient_relation_value_check",
+        "n|con|public.patient.patient_relation_value_check"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient.relation"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "name": "patient_treating_doctor",
+        "isRlsEnabled": false,
+        "entityType": "tables"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "gen_random_uuid()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "tenant_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "member_id",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "added_by",
+        "type": "uuid",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": null,
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "added_at",
+        "type": "timestamp with time zone",
+        "typeSchema": null,
+        "notNull": true,
+        "dimensions": 0,
+        "default": "now()",
+        "generated": null,
+        "identity": null,
+        "entityType": "columns"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_tenant_id_contact_phone_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "contact_phone",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_tenant_id_member_id_idx",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "member_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": false,
+        "where": null,
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_tenant_id_tenant_id_fkey",
+        "nameExplicit": false,
+        "columns": [
+          "tenant_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "tenant",
+        "columnsTo": [
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_patient_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "patient_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "patient",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_member_fk",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "member_id"
+        ],
+        "schemaTo": "public",
+        "tableTo": "membership",
+        "columnsTo": [
+          "tenant_id",
+          "id"
+        ],
+        "onUpdate": "NO ACTION",
+        "onDelete": "NO ACTION",
+        "entityType": "fks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_pkey",
+        "columns": [
+          "id"
+        ],
+        "nameExplicit": false,
+        "entityType": "pks"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient_treating_doctor",
+        "name": "patient_treating_doctor_chart_member_key",
+        "nameExplicit": true,
+        "columns": [
+          "tenant_id",
+          "patient_id",
+          "member_id"
+        ],
+        "nullsNotDistinct": false,
+        "entityType": "uniques"
+      }
+    },
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_relation_value_check",
+        "value": "\"relation\" in ('holder', 'son', 'daughter', 'husband', 'wife', 'father', 'mother', 'brother', 'sister', 'other')",
+        "entityType": "checks"
+      }
+    }
+  ]
+}

@@ -63,6 +63,13 @@ final _decoders = <String, Object Function(_Json)>{
   'PatientSearchResults': (json) =>
       PatientSearchResults.fromJson(json).toJson(),
   'PatientSearchResult': (json) => PatientSearchResult.fromJson(json).toJson(),
+  // A-03-04: duplicates, family and treating doctors.
+  'DuplicateCandidates': (json) => DuplicateCandidates.fromJson(json).toJson(),
+  'DuplicateCandidate': (json) => DuplicateCandidate.fromJson(json).toJson(),
+  'PatientFamily': (json) => PatientFamily.fromJson(json).toJson(),
+  'FamilyMember': (json) => FamilyMember.fromJson(json).toJson(),
+  'PatientDoctors': (json) => PatientDoctors.fromJson(json).toJson(),
+  'TreatingDoctor': (json) => TreatingDoctor.fromJson(json).toJson(),
 };
 
 _Json _readFixtures() {

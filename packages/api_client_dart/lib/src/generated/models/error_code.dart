@@ -152,7 +152,11 @@ enum ErrorCode {
   @JsonValue('stale')
   stale('stale'),
   @JsonValue('rate_limited')
-  rateLimited('rate_limited');
+  rateLimited('rate_limited'),
+  @JsonValue('possible_duplicate')
+  possibleDuplicate('possible_duplicate'),
+  @JsonValue('doctor_not_member')
+  doctorNotMember('doctor_not_member');
 
   const ErrorCode(this.json);
 

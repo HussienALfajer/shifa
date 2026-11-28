@@ -5,6 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'patient_match_kind.dart';
+import 'patient_relation.dart';
 import 'patient_state.dart';
 import 'sex.dart';
 
@@ -19,6 +20,7 @@ class PatientSearchResult {
     required this.contactPhone,
     required this.displayName,
     required this.familyName,
+    required this.familySize,
     required this.fatherName,
     required this.fileNumber,
     required this.givenName,
@@ -26,6 +28,7 @@ class PatientSearchResult {
     required this.matchedBy,
     required this.matchedParts,
     required this.mergedFileNumber,
+    required this.relation,
     required this.sex,
     required this.state,
   });
@@ -41,6 +44,7 @@ class PatientSearchResult {
   final String displayName;
   @JsonKey(includeIfNull: true)
   final String? familyName;
+  final int familySize;
   @JsonKey(includeIfNull: true)
   final String? fatherName;
   final int fileNumber;
@@ -50,6 +54,8 @@ class PatientSearchResult {
   final List<int> matchedParts;
   @JsonKey(includeIfNull: true)
   final int? mergedFileNumber;
+  @JsonKey(includeIfNull: true)
+  final PatientRelation? relation;
   final Sex sex;
   final PatientState state;
 

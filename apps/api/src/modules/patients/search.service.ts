@@ -21,6 +21,7 @@ import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { familySizes } from './family.ts';
 import { backfillNameKeys } from './name-keys.ts';
 import { byName, bySimilarName, type NameHit, type NameHits } from './name-search.ts';
 import {
@@ -84,8 +85,10 @@ export interface Hit {
   mergedFileNumber: number | null;
 }
 
-function resultOf(hit: Hit): PatientSearchResult {
+/** `sizes`: active charts per contact phone; an archived result counts itself too. */
+function resultOf(hit: Hit, sizes: ReadonlyMap<string, number>): PatientSearchResult {
   const { row } = hit;
+  const active = sizes.get(row.contactPhone) ?? 0;
   return {
     id: row.id,
     displayName: displayNameOf(row),
@@ -102,6 +105,8 @@ function resultOf(hit: Hit): PatientSearchResult {
     matchedBy: hit.matchedBy,
     matchedParts: hit.matchedParts,
     mergedFileNumber: hit.mergedFileNumber,
+    familySize: Math.max(1, row.state === 'active' ? active : active + 1),
+    relation: row.relation,
   };
 }
 
@@ -221,7 +226,7 @@ export class PatientSearchService {
       await tx.execute(
         sql`select set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
       );
-      return answer(await findHits(tx, query));
+      return answer(tx, await findHits(tx, query));
     });
   }
 
@@ -246,12 +251,23 @@ export class PatientSearchService {
   }
 }
 
-/** The first hit of each chart, in path order; at most 20, `truncated` when more matched. */
-function answer({ hits, capped }: { hits: readonly Hit[]; capped: boolean }): PatientSearchResults {
+/**
+ * The first hit of each chart, in path order; at most 20, `truncated` when more matched; each
+ * with its family size (A-03-04).
+ */
+async function answer(
+  tx: Tx,
+  { hits, capped }: { hits: readonly Hit[]; capped: boolean },
+): Promise<PatientSearchResults> {
   const seen = new Set<string>();
   const unique = hits.filter((h) => !seen.has(h.row.id) && seen.add(h.row.id));
+  const shown = unique.slice(0, SHOWN);
+  const sizes = await familySizes(
+    tx,
+    shown.map((h) => h.row.contactPhone),
+  );
   return {
-    results: unique.slice(0, SHOWN).map(resultOf),
+    results: shown.map((h) => resultOf(h, sizes)),
     truncated: capped || unique.length > SHOWN,
   };
 }

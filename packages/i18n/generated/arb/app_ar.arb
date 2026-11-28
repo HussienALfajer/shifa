@@ -5907,6 +5907,10 @@
   "@errorsConflict": {
     "description": "errors.conflict"
   },
+  "errorsDoctorNotMember": "اختر الأطباء المعالجين من أطباء العيادة النشطين.",
+  "@errorsDoctorNotMember": {
+    "description": "errors.doctor_not_member"
+  },
   "errorsFeatureUnavailable": "هذه الميزة غير متاحة في خطة عيادتك.",
   "@errorsFeatureUnavailable": {
     "description": "errors.feature_unavailable"
@@ -6082,6 +6086,10 @@
   "errorsPlaceNotArchived": "هذا المكان غير مؤرشف.",
   "@errorsPlaceNotArchived": {
     "description": "errors.place_not_archived"
+  },
+  "errorsPossibleDuplicate": "يوجد ملف مشابه. تحقق من الملفات المشابهة قبل الحفظ.",
+  "@errorsPossibleDuplicate": {
+    "description": "errors.possible_duplicate"
   },
   "errorsPreviousFileNumberTaken": "رقم الملف السابق هذا مسجّل لمريض آخر في العيادة.",
   "@errorsPreviousFileNumberTaken": {
