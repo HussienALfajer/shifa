@@ -21,6 +21,8 @@ import { type RequestScope, TenantDb } from '../../access/index.ts';
 import { CLOCK, type Clock } from '../../platform/clock.ts';
 import { RequestValidationError } from '../../platform/contract/index.ts';
 import { ApiError } from '../../platform/errors.ts';
+import { familySizes } from './family.ts';
+import { MemberLimit } from './member-limit.ts';
 import { backfillNameKeys } from './name-keys.ts';
 import { byName, bySimilarName, type NameHit, type NameHits } from './name-search.ts';
 import {
@@ -84,8 +86,10 @@ export interface Hit {
   mergedFileNumber: number | null;
 }
 
-function resultOf(hit: Hit): PatientSearchResult {
+/** `sizes`: active charts per contact phone; an archived result counts itself too. */
+function resultOf(hit: Hit, sizes: ReadonlyMap<string, number>): PatientSearchResult {
   const { row } = hit;
+  const active = sizes.get(row.contactPhone) ?? 0;
   return {
     id: row.id,
     displayName: displayNameOf(row),
@@ -102,6 +106,8 @@ function resultOf(hit: Hit): PatientSearchResult {
     matchedBy: hit.matchedBy,
     matchedParts: hit.matchedParts,
     mergedFileNumber: hit.mergedFileNumber,
+    familySize: Math.max(1, row.state === 'active' ? active : active + 1),
+    relation: row.relation,
   };
 }
 
@@ -193,12 +199,14 @@ export async function findHits(tx: Tx, q: SearchQuery): Promise<{ hits: Hit[]; c
 @Injectable()
 export class PatientSearchService {
   /** Searches per member in the current window (one process; ADR-0052). */
-  readonly #windows = new Map<string, { start: number; count: number }>();
+  readonly #limit: MemberLimit;
 
   constructor(
     @Inject(TenantDb) private readonly tenants: TenantDb,
-    @Inject(CLOCK) private readonly clock: Clock,
-  ) {}
+    @Inject(CLOCK) clock: Clock,
+  ) {
+    this.#limit = new MemberLimit(SEARCH_LIMIT, clock);
+  }
 
   /** `onLimited` is told (ids only) when the member is past the limit, before the 429. */
   async search(
@@ -207,7 +215,7 @@ export class PatientSearchService {
     onLimited: () => void,
   ): Promise<PatientSearchResults> {
     const query = parseSearch(input);
-    if (!this.#count(scope)) {
+    if (!this.#limit.take(scope)) {
       onLimited();
       throw new ApiError(429, 'rate_limited');
     }
@@ -221,37 +229,28 @@ export class PatientSearchService {
       await tx.execute(
         sql`select set_config('statement_timeout', ${String(STATEMENT_TIMEOUT_MS)}, true)`,
       );
-      return answer(await findHits(tx, query));
+      return answer(tx, await findHits(tx, query));
     });
-  }
-
-  /** False past SEARCH_LIMIT searches in a window, per member of a clinic. */
-  #count(scope: RequestScope): boolean {
-    const now = this.clock.now().getTime();
-    const id = `${scope.tenantId}:${scope.userId}`;
-    const window = this.#windows.get(id);
-    if (!window || now - window.start >= SEARCH_LIMIT.windowMs) {
-      if (this.#windows.size > 10_000) this.#prune(now);
-      this.#windows.set(id, { start: now, count: 1 });
-      return true;
-    }
-    window.count += 1;
-    return window.count <= SEARCH_LIMIT.max;
-  }
-
-  #prune(now: number): void {
-    for (const [id, w] of this.#windows) {
-      if (now - w.start >= SEARCH_LIMIT.windowMs) this.#windows.delete(id);
-    }
   }
 }
 
-/** The first hit of each chart, in path order; at most 20, `truncated` when more matched. */
-function answer({ hits, capped }: { hits: readonly Hit[]; capped: boolean }): PatientSearchResults {
+/**
+ * The first hit of each chart, in path order; at most 20, `truncated` when more matched; each
+ * with its family size (A-03-04).
+ */
+async function answer(
+  tx: Tx,
+  { hits, capped }: { hits: readonly Hit[]; capped: boolean },
+): Promise<PatientSearchResults> {
   const seen = new Set<string>();
   const unique = hits.filter((h) => !seen.has(h.row.id) && seen.add(h.row.id));
+  const shown = unique.slice(0, SHOWN);
+  const sizes = await familySizes(
+    tx,
+    shown.map((h) => h.row.contactPhone),
+  );
   return {
-    results: unique.slice(0, SHOWN).map(resultOf),
+    results: shown.map((h) => resultOf(h, sizes)),
     truncated: capped || unique.length > SHOWN,
   };
 }

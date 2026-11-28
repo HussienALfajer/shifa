@@ -1162,6 +1162,15 @@
       },
       "CreatePatientRequest": {
         "properties": {
+          "acknowledgedCandidateIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
           "age": {
             "$ref": "#/components/schemas/PatientAge"
           },
@@ -1232,6 +1241,16 @@
               }
             ]
           },
+          "relation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "secondPhone": {
             "anyOf": [
               {
@@ -1246,6 +1265,15 @@
           },
           "sex": {
             "$ref": "#/components/schemas/Sex"
+          },
+          "treatingDoctorIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
           }
         },
         "required": [
@@ -1268,6 +1296,118 @@
           "version"
         ],
         "type": "object"
+      },
+      "DuplicateCandidate": {
+        "properties": {
+          "card": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientCard"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fileNumber": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "reason": {
+            "$ref": "#/components/schemas/DuplicateReason"
+          },
+          "visible": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "visible",
+          "fileNumber",
+          "reason",
+          "card"
+        ],
+        "type": "object"
+      },
+      "DuplicateCandidates": {
+        "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateCandidate"
+            },
+            "maxItems": 5,
+            "type": "array"
+          }
+        },
+        "required": [
+          "candidates"
+        ],
+        "type": "object"
+      },
+      "DuplicateCheckRequest": {
+        "properties": {
+          "age": {
+            "$ref": "#/components/schemas/PatientAge"
+          },
+          "birthDate": {
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "type": "string"
+          },
+          "contactPhone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          },
+          "excludeId": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "familyName": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fatherName": {
+            "anyOf": [
+              {
+                "maxLength": 40,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "givenName": {
+            "maxLength": 40,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "DuplicateReason": {
+        "enum": [
+          "same_phone_similar_name",
+          "similar_name_near_birth_year"
+        ],
+        "type": "string"
       },
       "EndedSessions": {
         "properties": {
@@ -1409,6 +1549,12 @@
       },
       "ErrorBody": {
         "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/DuplicateCandidate"
+            },
+            "type": "array"
+          },
           "code": {
             "$ref": "#/components/schemas/ErrorCode"
           },
@@ -1523,7 +1669,9 @@
           "patient_not_archived",
           "patient_merged",
           "stale",
-          "rate_limited"
+          "rate_limited",
+          "possible_duplicate",
+          "doctor_not_member"
         ],
         "type": "string"
       },
@@ -1535,6 +1683,61 @@
         },
         "required": [
           "error"
+        ],
+        "type": "object"
+      },
+      "FamilyMember": {
+        "properties": {
+          "birthDate": {
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "type": "string"
+          },
+          "birthDateEstimated": {
+            "type": "boolean"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "fileNumber": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "relation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "sex": {
+            "$ref": "#/components/schemas/Sex"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PatientState"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "fileNumber",
+          "sex",
+          "birthDate",
+          "birthDateEstimated",
+          "contactPhone",
+          "state",
+          "relation"
         ],
         "type": "object"
       },
@@ -2553,6 +2756,50 @@
         ],
         "type": "object"
       },
+      "PatientCard": {
+        "properties": {
+          "birthDate": {
+            "pattern": "^\\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[12]\\d|3[01])$",
+            "type": "string"
+          },
+          "birthDateEstimated": {
+            "type": "boolean"
+          },
+          "contactPhone": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "fileNumber": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "sex": {
+            "$ref": "#/components/schemas/Sex"
+          },
+          "state": {
+            "$ref": "#/components/schemas/PatientState"
+          }
+        },
+        "required": [
+          "id",
+          "displayName",
+          "fileNumber",
+          "sex",
+          "birthDate",
+          "birthDateEstimated",
+          "contactPhone",
+          "state"
+        ],
+        "type": "object"
+      },
       "PatientChart": {
         "properties": {
           "archivedAt": {
@@ -2596,6 +2843,12 @@
           },
           "displayName": {
             "type": "string"
+          },
+          "family": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMember"
+            },
+            "type": "array"
           },
           "familyName": {
             "type": [
@@ -2654,6 +2907,16 @@
               }
             ]
           },
+          "relation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "secondPhone": {
             "type": [
               "string",
@@ -2665,6 +2928,12 @@
           },
           "state": {
             "$ref": "#/components/schemas/PatientState"
+          },
+          "treatingDoctors": {
+            "items": {
+              "$ref": "#/components/schemas/TreatingDoctor"
+            },
+            "type": "array"
           },
           "updatedAt": {
             "format": "date-time",
@@ -2700,7 +2969,10 @@
           "updatedByName",
           "archivedAt",
           "archivedByName",
-          "mergedInto"
+          "mergedInto",
+          "relation",
+          "family",
+          "treatingDoctors"
         ],
         "type": "object"
       },
@@ -2720,6 +2992,70 @@
         "required": [
           "active",
           "archived"
+        ],
+        "type": "object"
+      },
+      "PatientDoctors": {
+        "properties": {
+          "doctors": {
+            "items": {
+              "$ref": "#/components/schemas/TreatingDoctor"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "doctors"
+        ],
+        "type": "object"
+      },
+      "PatientFamily": {
+        "properties": {
+          "holder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FamilyMember"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "members": {
+            "items": {
+              "$ref": "#/components/schemas/FamilyMember"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "holder",
+          "members"
+        ],
+        "type": "object"
+      },
+      "PatientFamilyRequest": {
+        "properties": {
+          "excludeId": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "phone": {
+            "maxLength": 32,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "phone"
         ],
         "type": "object"
       },
@@ -2754,6 +3090,21 @@
           "fileNumber"
         ],
         "type": "object"
+      },
+      "PatientRelation": {
+        "enum": [
+          "holder",
+          "son",
+          "daughter",
+          "husband",
+          "wife",
+          "father",
+          "mother",
+          "brother",
+          "sister",
+          "other"
+        ],
+        "type": "string"
       },
       "PatientSearchRequest": {
         "properties": {
@@ -2804,6 +3155,11 @@
               "null"
             ]
           },
+          "familySize": {
+            "maximum": 9007199254740991,
+            "minimum": 1,
+            "type": "integer"
+          },
           "fatherName": {
             "type": [
               "string",
@@ -2846,6 +3202,16 @@
               }
             ]
           },
+          "relation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "sex": {
             "$ref": "#/components/schemas/Sex"
           },
@@ -2868,7 +3234,9 @@
           "archivedAt",
           "matchedBy",
           "matchedParts",
-          "mergedFileNumber"
+          "mergedFileNumber",
+          "familySize",
+          "relation"
         ],
         "type": "object"
       },
@@ -3915,6 +4283,27 @@
         ],
         "type": "object"
       },
+      "TreatingDoctor": {
+        "properties": {
+          "active": {
+            "type": "boolean"
+          },
+          "memberId": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "memberId",
+          "name",
+          "active"
+        ],
+        "type": "object"
+      },
       "TypePreview": {
         "properties": {
           "limits": {
@@ -4119,6 +4508,15 @@
       },
       "UpdatePatientRequest": {
         "properties": {
+          "acknowledgedCandidateIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 5,
+            "type": "array"
+          },
           "age": {
             "$ref": "#/components/schemas/PatientAge"
           },
@@ -4189,6 +4587,16 @@
               }
             ]
           },
+          "relation": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PatientRelation"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "secondPhone": {
             "anyOf": [
               {
@@ -4203,6 +4611,15 @@
           },
           "sex": {
             "$ref": "#/components/schemas/Sex"
+          },
+          "treatingDoctorIds": {
+            "items": {
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+              "type": "string"
+            },
+            "maxItems": 20,
+            "type": "array"
           }
         },
         "required": [
@@ -6673,6 +7090,183 @@
         },
         "summary": "How many active and archived charts the clinic holds",
         "x-permission": "patients.view"
+      }
+    },
+    "/patients/doctors": {
+      "get": {
+        "operationId": "patientsDoctors",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientDoctors"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          }
+        },
+        "summary": "The clinic’s doctors, to pick as treating doctors",
+        "x-permission": "patients.manage"
+      }
+    },
+    "/patients/duplicates": {
+      "post": {
+        "operationId": "patientsDuplicates",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DuplicateCheckRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DuplicateCandidates"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "Charts that may be the patient being registered",
+        "x-permission": "patients.manage"
+      }
+    },
+    "/patients/family": {
+      "post": {
+        "operationId": "patientsFamily",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PatientFamilyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PatientFamily"
+                }
+              }
+            },
+            "description": "OK"
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Bad request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "description": "Too many requests"
+          }
+        },
+        "summary": "The family on a contact phone",
+        "x-permission": "patients.manage"
       }
     },
     "/patients/search": {

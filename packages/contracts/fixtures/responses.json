@@ -1602,7 +1602,135 @@
         "updatedByName": "موظف تجريبي",
         "archivedAt": null,
         "archivedByName": null,
-        "mergedInto": null
+        "mergedInto": null,
+        "relation": "daughter",
+        "family": [
+          {
+            "id": "2d8b4a6f-7f9c-4e3a-9c5d-4b3a2f1e0d9c",
+            "displayName": "أحمد سمير الحلبي",
+            "fileNumber": 1001,
+            "sex": "male",
+            "birthDate": "1965-04-02",
+            "birthDateEstimated": false,
+            "contactPhone": "+963930012345",
+            "state": "active",
+            "relation": "holder"
+          }
+        ],
+        "treatingDoctors": [
+          {
+            "memberId": "3e9c5b7a-8a0d-4f4b-8d6e-5c4b3a2f1e0d",
+            "name": "د. سامر",
+            "active": true
+          },
+          {
+            "memberId": "4fad6c8b-9b1e-4a5c-9e7f-6d5c4b3a2f1e",
+            "name": "د. هالة",
+            "active": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "duplicate candidates: a visible archived chart and one hidden by my patients only",
+      "schema": "DuplicateCandidates",
+      "body": {
+        "candidates": [
+          {
+            "visible": true,
+            "fileNumber": 1043,
+            "reason": "same_phone_similar_name",
+            "card": {
+              "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+              "displayName": "ريم أحمد الحلبي",
+              "fileNumber": 1043,
+              "sex": "female",
+              "birthDate": "1996-11-27",
+              "birthDateEstimated": true,
+              "contactPhone": "+963930012345",
+              "state": "archived"
+            }
+          },
+          {
+            "visible": false,
+            "fileNumber": 1188,
+            "reason": "similar_name_near_birth_year",
+            "card": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "a possible duplicate refused, with its candidate",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "possible_duplicate",
+          "message": "Charts like this one exist; acknowledge them to register anyway",
+          "candidates": [
+            {
+              "visible": false,
+              "fileNumber": 1188,
+              "reason": "same_phone_similar_name",
+              "card": null
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "a treating doctor who is not a doctor member",
+      "schema": "ErrorEnvelope",
+      "body": {
+        "error": {
+          "code": "doctor_not_member",
+          "message": "A treating doctor must be a doctor member of this clinic"
+        }
+      }
+    },
+    {
+      "name": "the family on a phone: its holder and a member",
+      "schema": "PatientFamily",
+      "body": {
+        "holder": {
+          "id": "2d8b4a6f-7f9c-4e3a-9c5d-4b3a2f1e0d9c",
+          "displayName": "أحمد سمير الحلبي",
+          "fileNumber": 1001,
+          "sex": "male",
+          "birthDate": "1965-04-02",
+          "birthDateEstimated": false,
+          "contactPhone": "+963930012345",
+          "state": "active",
+          "relation": "holder"
+        },
+        "members": [
+          {
+            "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+            "displayName": "ريم أحمد الحلبي",
+            "fileNumber": 1043,
+            "sex": "female",
+            "birthDate": "1996-11-27",
+            "birthDateEstimated": true,
+            "contactPhone": "+963930012345",
+            "state": "active",
+            "relation": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "a phone new to the clinic",
+      "schema": "PatientFamily",
+      "body": { "holder": null, "members": [] }
+    },
+    {
+      "name": "the doctors to pick, one inactive",
+      "schema": "PatientDoctors",
+      "body": {
+        "doctors": [
+          { "memberId": "3e9c5b7a-8a0d-4f4b-8d6e-5c4b3a2f1e0d", "name": "د. سامر", "active": true },
+          { "memberId": "4fad6c8b-9b1e-4a5c-9e7f-6d5c4b3a2f1e", "name": "د. هالة", "active": false }
+        ]
       }
     },
     {
@@ -1677,7 +1805,9 @@
             "archivedAt": null,
             "matchedBy": "name_variant",
             "matchedParts": [0, 1],
-            "mergedFileNumber": null
+            "mergedFileNumber": null,
+            "familySize": 3,
+            "relation": "daughter"
           },
           {
             "id": "1c7a3f5e-6e8b-4d2f-8b4c-3a2f1e0d9c8b",
@@ -1694,7 +1824,9 @@
             "archivedAt": null,
             "matchedBy": "file_number",
             "matchedParts": [],
-            "mergedFileNumber": 1077
+            "mergedFileNumber": 1077,
+            "familySize": 1,
+            "relation": "holder"
           }
         ],
         "truncated": false
@@ -1733,6 +1865,31 @@
       "name": "chart counts without the archived count",
       "schema": "PatientCount",
       "body": { "active": 3 }
+    },
+    {
+      "name": "a duplicate candidate with an unknown reason",
+      "schema": "DuplicateCandidate",
+      "body": { "visible": false, "fileNumber": 1188, "reason": "same_name", "card": null }
+    },
+    {
+      "name": "a family member with a relation outside the ten",
+      "schema": "FamilyMember",
+      "body": {
+        "id": "0b6f2f4e-5d7a-4c1e-9a3b-2f1e0d9c8b7a",
+        "displayName": "ريم أحمد الحلبي",
+        "fileNumber": 1043,
+        "sex": "female",
+        "birthDate": "1996-11-27",
+        "birthDateEstimated": true,
+        "contactPhone": "+963930012345",
+        "state": "active",
+        "relation": "cousin"
+      }
+    },
+    {
+      "name": "a treating doctor without whether they are active",
+      "schema": "TreatingDoctor",
+      "body": { "memberId": "3e9c5b7a-8a0d-4f4b-8d6e-5c4b3a2f1e0d", "name": "د. سامر" }
     },
     {
       "name": "city without its name",

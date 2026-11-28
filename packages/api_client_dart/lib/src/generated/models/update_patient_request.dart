@@ -5,6 +5,7 @@
 import 'package:json_annotation/json_annotation.dart';
 
 import 'patient_age.dart';
+import 'patient_relation.dart';
 import 'sex.dart';
 
 part 'update_patient_request.g.dart';
@@ -13,6 +14,7 @@ part 'update_patient_request.g.dart';
 class UpdatePatientRequest {
   const UpdatePatientRequest({
     required this.expectedUpdatedAt,
+    this.acknowledgedCandidateIds,
     this.age,
     this.birthDate,
     this.contactPhone,
@@ -21,13 +23,17 @@ class UpdatePatientRequest {
     this.givenName,
     this.motherName,
     this.previousFileNumber,
+    this.relation,
     this.secondPhone,
     this.sex,
+    this.treatingDoctorIds,
   });
 
   factory UpdatePatientRequest.fromJson(Map<String, Object?> json) =>
       _$UpdatePatientRequestFromJson(json);
 
+  @JsonKey(includeIfNull: false)
+  final List<String>? acknowledgedCandidateIds;
   @JsonKey(includeIfNull: false)
   final PatientAge? age;
   @JsonKey(includeIfNull: false)
@@ -46,9 +52,13 @@ class UpdatePatientRequest {
   @JsonKey(includeIfNull: false)
   final String? previousFileNumber;
   @JsonKey(includeIfNull: false)
+  final PatientRelation? relation;
+  @JsonKey(includeIfNull: false)
   final String? secondPhone;
   @JsonKey(includeIfNull: false)
   final Sex? sex;
+  @JsonKey(includeIfNull: false)
+  final List<String>? treatingDoctorIds;
 
   Map<String, Object?> toJson() => _$UpdatePatientRequestToJson(this);
 }

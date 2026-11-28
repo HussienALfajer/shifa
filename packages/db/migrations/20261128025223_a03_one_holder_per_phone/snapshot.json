@@ -1,0 +1,65 @@
+{
+  "type": "diff",
+  "version": "9",
+  "dialect": "postgres",
+  "id": "57795c9e-2e49-4f7b-a250-f99d66e82380",
+  "prevIds": [
+    "1d6a0b55-2b10-4bf8-b098-cad5c933ad2e"
+  ],
+  "footprints": [
+    {
+      "statementType": "create_index",
+      "statementTarget": [
+        "index",
+        "public",
+        "patient",
+        "patient_tenant_id_contact_phone_holder_key"
+      ],
+      "writes": [
+        "s|idx|public.patient_tenant_id_contact_phone_holder_key",
+        "n|idx|public.patient_tenant_id_contact_phone_holder_key",
+        "e|idx|public.patient_tenant_id_contact_phone_holder_key",
+        "n|rel|public.patient_tenant_id_contact_phone_holder_key"
+      ],
+      "reads": [
+        "n|tbl|public.patient",
+        "n|sch|public",
+        "n|col|public.patient.tenant_id",
+        "n|col|public.patient.contact_phone"
+      ]
+    }
+  ],
+  "deltas": [
+    {
+      "op": "create",
+      "row": {
+        "schema": "public",
+        "table": "patient",
+        "name": "patient_tenant_id_contact_phone_holder_key",
+        "nameExplicit": true,
+        "columns": [
+          {
+            "value": "tenant_id",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          },
+          {
+            "value": "contact_phone",
+            "isExpression": false,
+            "asc": true,
+            "nullsFirst": false,
+            "opclass": null
+          }
+        ],
+        "isUnique": true,
+        "where": "\"relation\" = 'holder' and \"state\" = 'active'",
+        "with": "",
+        "method": "btree",
+        "concurrently": false,
+        "entityType": "indexes"
+      }
+    }
+  ]
+}

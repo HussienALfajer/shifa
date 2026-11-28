@@ -13,12 +13,18 @@ import {
   Post,
 } from '@nestjs/common';
 import {
+  type DuplicateCandidates,
   type PatientChart,
   type PatientCount,
+  type PatientDoctors,
+  type PatientFamily,
   type PatientSearchResults,
   patientsArchive,
   patientsCount,
   patientsCreate,
+  patientsDoctors,
+  patientsDuplicates,
+  patientsFamily,
   patientsGet,
   patientsRestore,
   patientsSearch,
@@ -37,8 +43,17 @@ import {
 } from '../../access/index.ts';
 import { Contract } from '../../platform/contract/index.ts';
 import { ClientRequest, type RequestMeta } from '../../platform/request-meta.ts';
+import { PatientLinksService } from './links.service.ts';
 import { PatientsService } from './patients.service.ts';
 import { PatientSearchService } from './search.service.ts';
+
+/** A member past a limit is logged by ids (a scraper can be named; never what they typed). */
+const limitedLog = (scope: RequestScope, request: RequestMeta) => () => {
+  request.logInfo(
+    { tenantId: scope.tenantId, userId: scope.userId },
+    'patient lookup rate limited',
+  );
+};
 
 @Controller('patients')
 export class PatientsController {
@@ -46,6 +61,7 @@ export class PatientsController {
     @Inject(PatientsService) private readonly patients: PatientsService,
     @Inject(PermissionCheck) private readonly permissions: PermissionCheck,
     @Inject(PatientSearchService) private readonly searches: PatientSearchService,
+    @Inject(PatientLinksService) private readonly links: PatientLinksService,
   ) {}
 
   @RequirePermission('patients.view')
@@ -80,6 +96,42 @@ export class PatientsController {
         'patient search rate limited',
       );
     });
+  }
+
+  /** Criterion 7 (A-03-04): a read by POST, so names and phones stay out of the URL. */
+  @RequirePermission('patients.manage')
+  @ReadInBody()
+  @Contract(patientsDuplicates)
+  @HttpCode(200)
+  @Post('duplicates')
+  duplicates(
+    @Body() body: RequestBody<typeof patientsDuplicates>,
+    @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<DuplicateCandidates> {
+    return this.links.duplicates(scope, body, limitedLog(scope, request));
+  }
+
+  /** Criteria 9, 29 (A-03-04): a read by POST, so the phone stays out of the URL. */
+  @RequirePermission('patients.manage')
+  @ReadInBody()
+  @Contract(patientsFamily)
+  @HttpCode(200)
+  @Post('family')
+  family(
+    @Body() body: RequestBody<typeof patientsFamily>,
+    @CurrentScope() scope: RequestScope,
+    @ClientRequest() request: RequestMeta,
+  ): Promise<PatientFamily> {
+    return this.links.family(scope, body, limitedLog(scope, request));
+  }
+
+  /** Criterion 10 (A-03-04): names and `active` only, for those who register. */
+  @RequirePermission('patients.manage')
+  @Contract(patientsDoctors)
+  @Get('doctors')
+  doctors(@CurrentScope() scope: RequestScope): Promise<PatientDoctors> {
+    return this.links.doctors(scope);
   }
 
   @RequirePermission('patients.manage')

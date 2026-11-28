@@ -4,6 +4,7 @@
 import { type ArgumentsHost, Catch, type ExceptionFilter, HttpException } from '@nestjs/common';
 import {
   CODE_MESSAGES,
+  type DuplicateCandidate,
   type ErrorCode,
   type ErrorEnvelope,
   envelopeFor,
@@ -43,6 +44,8 @@ export class ApiError extends HttpException {
     readonly place?: PlaceKind,
     /** Who saved since the form was filled, and when: only with `stale` (A-03-02). */
     readonly stale?: StaleChange,
+    /** The charts not acknowledged: only with `possible_duplicate` (A-03-04). */
+    readonly candidates?: readonly DuplicateCandidate[],
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
   }
@@ -51,6 +54,23 @@ export class ApiError extends HttpException {
   static stale(change: StaleChange): ApiError {
     const none = undefined;
     return new ApiError(409, 'stale', none, none, none, none, none, none, change);
+  }
+
+  /** 409 `possible_duplicate` with the candidates (A-03 criterion 7); nothing was saved. */
+  static possibleDuplicate(candidates: readonly DuplicateCandidate[]): ApiError {
+    const none = undefined;
+    return new ApiError(
+      409,
+      'possible_duplicate',
+      none,
+      none,
+      none,
+      none,
+      none,
+      none,
+      none,
+      candidates,
+    );
   }
 }
 
@@ -67,6 +87,9 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         ...(exception.supportEnded ? { supportEnded: { ...exception.supportEnded } } : {}),
         ...(exception.place ? { place: exception.place } : {}),
         ...(exception.stale ? { stale: { ...exception.stale } } : {}),
+        ...(exception.candidates
+          ? { candidates: exception.candidates.map((c) => ({ ...c })) }
+          : {}),
       },
     };
   }

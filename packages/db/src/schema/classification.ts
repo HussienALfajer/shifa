@@ -207,6 +207,8 @@ export const TABLE_CLASSIFICATION: TableClassification = {
   patient_file_counter: { kind: 'tenant' },
   // A-03-03: the name tokens of a clinic's charts (criterion 5, ADR-0052); parts of names.
   patient_name_token: { kind: 'tenant' },
+  // A-03-04: a chart's treating doctors (criterion 10), membership ids; replaced by delete and add.
+  patient_treating_doctor: { kind: 'tenant' },
   // A-02-03: feature flags (criterion 7, OD-114)
   feature_flag: {
     kind: 'global',

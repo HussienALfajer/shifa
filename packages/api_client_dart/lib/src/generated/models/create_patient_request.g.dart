@@ -13,6 +13,9 @@ CreatePatientRequest _$CreatePatientRequestFromJson(
   givenName: json['givenName'] as String,
   id: json['id'] as String,
   sex: $enumDecode(_$SexEnumMap, json['sex']),
+  acknowledgedCandidateIds: (json['acknowledgedCandidateIds'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
   age: json['age'] == null
       ? null
       : PatientAge.fromJson(json['age'] as Map<String, dynamic>),
@@ -21,12 +24,17 @@ CreatePatientRequest _$CreatePatientRequestFromJson(
   fatherName: json['fatherName'] as String?,
   motherName: json['motherName'] as String?,
   previousFileNumber: json['previousFileNumber'] as String?,
+  relation: $enumDecodeNullable(_$PatientRelationEnumMap, json['relation']),
   secondPhone: json['secondPhone'] as String?,
+  treatingDoctorIds: (json['treatingDoctorIds'] as List<dynamic>?)
+      ?.map((e) => e as String)
+      .toList(),
 );
 
 Map<String, dynamic> _$CreatePatientRequestToJson(
   CreatePatientRequest instance,
 ) => <String, dynamic>{
+  'acknowledgedCandidateIds': ?instance.acknowledgedCandidateIds,
   'age': ?instance.age,
   'birthDate': ?instance.birthDate,
   'contactPhone': instance.contactPhone,
@@ -36,8 +44,23 @@ Map<String, dynamic> _$CreatePatientRequestToJson(
   'id': instance.id,
   'motherName': ?instance.motherName,
   'previousFileNumber': ?instance.previousFileNumber,
+  'relation': ?instance.relation,
   'secondPhone': ?instance.secondPhone,
   'sex': instance.sex,
+  'treatingDoctorIds': ?instance.treatingDoctorIds,
 };
 
 const _$SexEnumMap = {Sex.male: 'male', Sex.female: 'female'};
+
+const _$PatientRelationEnumMap = {
+  PatientRelation.holder: 'holder',
+  PatientRelation.son: 'son',
+  PatientRelation.daughter: 'daughter',
+  PatientRelation.husband: 'husband',
+  PatientRelation.wife: 'wife',
+  PatientRelation.father: 'father',
+  PatientRelation.mother: 'mother',
+  PatientRelation.brother: 'brother',
+  PatientRelation.sister: 'sister',
+  PatientRelation.other: 'other',
+};

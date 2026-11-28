@@ -19,14 +19,28 @@ import {
   text,
   timestamp,
   unique,
+  uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, E164_CHECK, SHA256_HEX_CHECK, updatedAt } from './columns.ts';
 import { tenant } from './platform.ts';
-import { branch } from './tenancy.ts';
+import { branch, membership } from './tenancy.ts';
 
 export const PATIENT_SEXES = ['male', 'female'] as const;
 export const PATIENT_STATES = ['active', 'archived', 'merged'] as const;
+/** A-03-04: the relation to the phone's holder (as `PatientRelation` in @shifa/contracts). */
+export const PATIENT_RELATIONS = [
+  'holder',
+  'son',
+  'daughter',
+  'husband',
+  'wife',
+  'father',
+  'mother',
+  'brother',
+  'sister',
+  'other',
+] as const;
 
 /** A name part as stored: 1–40 characters, trimmed (the API checks the letters). */
 const namePart = (name: string, column: AnyPgColumn) =>
@@ -63,8 +77,8 @@ export const patient = pgTable(
     state: text('state').$type<(typeof PATIENT_STATES)[number]>().notNull().default('active'),
     /** The chart a merged chart leads to (A-03-08). */
     mergedIntoId: uuid('merged_into_id'),
-    /** The relation to the phone's holder (A-03-04). */
-    relation: text('relation'),
+    /** The relation to the phone's holder (A-03-04); null: not given. */
+    relation: text('relation').$type<(typeof PATIENT_RELATIONS)[number]>(),
     archivedAt: timestamp('archived_at', { withTimezone: true }),
     archivedBy: uuid('archived_by'),
     /**
@@ -123,6 +137,11 @@ export const patient = pgTable(
       sql`(${t.state} = 'archived') = (${t.archivedAt} is not null) and (${t.archivedAt} is null) = (${t.archivedBy} is null)`,
     ),
     check('patient_relation_check', sql`${t.relation} ~ '^[a-z][a-z_]{0,31}$'`),
+    // A-03-04 (criterion 9): one of the ten relations to the phone's holder.
+    check(
+      'patient_relation_value_check',
+      sql`${t.relation} in (${sql.raw(PATIENT_RELATIONS.map((r) => `'${r}'`).join(', '))})`,
+    ),
     check('patient_create_hash_check', sql`${t.createHash} ~ ${sql.raw(SHA256_HEX_CHECK)}`),
     check('patient_updated_at_check', sql`${t.updatedAt} >= ${t.createdAt}`),
     check(
@@ -134,6 +153,48 @@ export const patient = pgTable(
     index('patient_tenant_id_contact_phone_tail_idx').on(t.tenantId, t.contactPhoneTail),
     index('patient_tenant_id_second_phone_tail_idx').on(t.tenantId, t.secondPhoneTail),
     index('patient_tenant_id_name_key_version_idx').on(t.tenantId, t.nameKeyVersion),
+    // A-03-04: a family is the charts on one contact phone; the duplicate check's phone rule.
+    index('patient_tenant_id_contact_phone_idx').on(t.tenantId, t.contactPhone),
+    // A-03-04 review (B2): one active holder per phone; the API decides it under a phone lock.
+    uniqueIndex('patient_tenant_id_contact_phone_holder_key')
+      .on(t.tenantId, t.contactPhone)
+      .where(sql`${t.relation} = 'holder' and ${t.state} = 'active'`),
+  ],
+);
+
+/**
+ * The treating doctors of a chart (spec A-03 criterion 10; OD-140): doctor members of the clinic,
+ * by membership id, so a deactivated doctor stays on the list. The list is replaced by deleting
+ * and adding rows (shifa_app holds no UPDATE). A chart foreign key: A-03-08's merge joins the
+ * lists. `added_by` is the user who added the doctor (an audit actor; no foreign key).
+ */
+export const patientTreatingDoctor = pgTable(
+  'patient_treating_doctor',
+  {
+    /** Row key (every table's primary key is a uuid; schema-keys test). */
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    patientId: uuid('patient_id').notNull(),
+    memberId: uuid('member_id').notNull(),
+    addedBy: uuid('added_by').notNull(),
+    addedAt: timestamp('added_at', { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    unique('patient_treating_doctor_chart_member_key').on(t.tenantId, t.patientId, t.memberId),
+    foreignKey({
+      name: 'patient_treating_doctor_patient_fk',
+      columns: [t.tenantId, t.patientId],
+      foreignColumns: [patient.tenantId, patient.id],
+    }),
+    foreignKey({
+      name: 'patient_treating_doctor_member_fk',
+      columns: [t.tenantId, t.memberId],
+      foreignColumns: [membership.tenantId, membership.id],
+    }),
+    // "My patients only" (A-03-07): a doctor's charts.
+    index('patient_treating_doctor_tenant_id_member_id_idx').on(t.tenantId, t.memberId),
   ],
 );
 

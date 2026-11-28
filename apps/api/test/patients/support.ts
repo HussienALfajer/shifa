@@ -31,6 +31,23 @@ export interface ChartBody {
   archivedAt: string | null;
   archivedByName: string | null;
   mergedInto: { id: string; fileNumber: number } | null;
+  /** A-03-04: the relation to the phone's holder, the family on the phone, treating doctors. */
+  relation: string | null;
+  family: FamilyCard[];
+  treatingDoctors: { memberId: string; name: string; active: boolean }[];
+}
+
+/** A chart in an answer (`PatientCard`), with its relation in a family list (A-03-04). */
+export interface FamilyCard {
+  id: string;
+  displayName: string;
+  fileNumber: number;
+  sex: 'male' | 'female';
+  birthDate: string;
+  birthDateEstimated: boolean;
+  contactPhone: string;
+  state: 'active' | 'archived' | 'merged';
+  relation: string | null;
 }
 
 let drawn = 0;
@@ -60,15 +77,60 @@ export function register(world: TeamWorld, cookie: string, body: Record<string, 
   return post(world.app, '/patients', body, cookie);
 }
 
-/** Registers a chart as `cookie` and returns it (201 expected). */
+/**
+ * Registers a chart as `cookie` and returns it (201 expected). A possible duplicate (A-03-04) is
+ * acknowledged and registered anyway: tests that are about duplicates call `register` instead.
+ */
 export async function registered(
   world: TeamWorld,
   cookie: string,
   extra: Record<string, unknown> = {},
 ): Promise<ChartBody> {
-  const res = await register(world, cookie, chartInput(world.phone(), extra));
+  const input = chartInput(world.phone(), extra);
+  let res = await register(world, cookie, input);
+  if (res.statusCode === 409 && codeOf(res) === 'possible_duplicate') {
+    const ids = candidatesOf(res).map((c) => c.card?.id ?? '');
+    res = await register(world, cookie, { ...input, acknowledgedCandidateIds: ids });
+  }
   if (res.statusCode !== 201) throw new Error(`register: ${String(res.statusCode)} ${res.body}`);
   return res.json<ChartBody>();
+}
+
+/** One duplicate candidate (A-03-04; contract `POST /patients/duplicates`). */
+export interface Candidate {
+  visible: boolean;
+  fileNumber: number;
+  reason: 'same_phone_similar_name' | 'similar_name_near_birth_year';
+  /** The chart's card when `visible`; null when hidden by "my patients only" (A-03-07). */
+  card: Omit<FamilyCard, 'relation'> | null;
+}
+
+/** The candidates of a 409 `possible_duplicate`. */
+export function candidatesOf(res: LightMyRequestResponse): Candidate[] {
+  return res.json<{ error?: { candidates?: Candidate[] } }>().error?.candidates ?? [];
+}
+
+export function duplicates(world: TeamWorld, cookie: string, body: Record<string, unknown>) {
+  return post(world.app, '/patients/duplicates', body, cookie);
+}
+
+/** The candidates of a duplicate check (200 expected). */
+export async function candidates(
+  world: TeamWorld,
+  cookie: string,
+  body: Record<string, unknown>,
+): Promise<Candidate[]> {
+  const res = await duplicates(world, cookie, body);
+  if (res.statusCode !== 200) throw new Error(`duplicates: ${String(res.statusCode)} ${res.body}`);
+  return res.json<{ candidates: Candidate[] }>().candidates;
+}
+
+export function familyOf(world: TeamWorld, cookie: string, body: Record<string, unknown>) {
+  return post(world.app, '/patients/family', body, cookie);
+}
+
+export function doctorsOf(world: TeamWorld, cookie: string) {
+  return get(world.app, '/patients/doctors', cookie);
 }
 
 export function chartOf(world: TeamWorld, cookie: string, id: string) {
@@ -104,6 +166,9 @@ export interface SearchHit {
   matchedBy: string;
   matchedParts: number[];
   mergedFileNumber: number | null;
+  /** A-03-04: charts on the same contact phone, this one included; its relation. */
+  familySize: number;
+  relation: string | null;
 }
 
 export function search(world: TeamWorld, cookie: string, body: Record<string, unknown>) {

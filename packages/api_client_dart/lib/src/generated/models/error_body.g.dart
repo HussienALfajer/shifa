@@ -9,6 +9,9 @@ part of 'error_body.dart';
 ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
   code: $enumDecode(_$ErrorCodeEnumMap, json['code']),
   message: json['message'] as String,
+  candidates: (json['candidates'] as List<dynamic>?)
+      ?.map((e) => DuplicateCandidate.fromJson(e as Map<String, dynamic>))
+      .toList(),
   details: (json['details'] as List<dynamic>?)
       ?.map((e) => ValidationIssue.fromJson(e as Map<String, dynamic>))
       .toList(),
@@ -27,6 +30,7 @@ ErrorBody _$ErrorBodyFromJson(Map<String, dynamic> json) => ErrorBody(
 );
 
 Map<String, dynamic> _$ErrorBodyToJson(ErrorBody instance) => <String, dynamic>{
+  'candidates': ?instance.candidates,
   'code': instance.code,
   'details': ?instance.details,
   'limitReached': ?instance.limitReached,
@@ -112,6 +116,8 @@ const _$ErrorCodeEnumMap = {
   ErrorCode.patientMerged: 'patient_merged',
   ErrorCode.stale: 'stale',
   ErrorCode.rateLimited: 'rate_limited',
+  ErrorCode.possibleDuplicate: 'possible_duplicate',
+  ErrorCode.doctorNotMember: 'doctor_not_member',
 };
 
 const _$PlaceKindEnumMap = {PlaceKind.city: 'city', PlaceKind.area: 'area'};

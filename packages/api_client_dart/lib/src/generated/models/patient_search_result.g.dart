@@ -16,6 +16,7 @@ PatientSearchResult _$PatientSearchResultFromJson(Map<String, dynamic> json) =>
       contactPhone: json['contactPhone'] as String,
       displayName: json['displayName'] as String,
       familyName: json['familyName'] as String?,
+      familySize: (json['familySize'] as num).toInt(),
       fatherName: json['fatherName'] as String?,
       fileNumber: (json['fileNumber'] as num).toInt(),
       givenName: json['givenName'] as String,
@@ -25,6 +26,7 @@ PatientSearchResult _$PatientSearchResultFromJson(Map<String, dynamic> json) =>
           .map((e) => (e as num).toInt())
           .toList(),
       mergedFileNumber: (json['mergedFileNumber'] as num?)?.toInt(),
+      relation: $enumDecodeNullable(_$PatientRelationEnumMap, json['relation']),
       sex: $enumDecode(_$SexEnumMap, json['sex']),
       state: $enumDecode(_$PatientStateEnumMap, json['state']),
     );
@@ -38,6 +40,7 @@ Map<String, dynamic> _$PatientSearchResultToJson(
   'contactPhone': instance.contactPhone,
   'displayName': instance.displayName,
   'familyName': instance.familyName,
+  'familySize': instance.familySize,
   'fatherName': instance.fatherName,
   'fileNumber': instance.fileNumber,
   'givenName': instance.givenName,
@@ -45,6 +48,7 @@ Map<String, dynamic> _$PatientSearchResultToJson(
   'matchedBy': instance.matchedBy,
   'matchedParts': instance.matchedParts,
   'mergedFileNumber': instance.mergedFileNumber,
+  'relation': instance.relation,
   'sex': instance.sex,
   'state': instance.state,
 };
@@ -58,6 +62,19 @@ const _$PatientMatchKindEnumMap = {
   PatientMatchKind.fileNumber: 'file_number',
   PatientMatchKind.previousFileNumber: 'previous_file_number',
   PatientMatchKind.customField: 'custom_field',
+};
+
+const _$PatientRelationEnumMap = {
+  PatientRelation.holder: 'holder',
+  PatientRelation.son: 'son',
+  PatientRelation.daughter: 'daughter',
+  PatientRelation.husband: 'husband',
+  PatientRelation.wife: 'wife',
+  PatientRelation.father: 'father',
+  PatientRelation.mother: 'mother',
+  PatientRelation.brother: 'brother',
+  PatientRelation.sister: 'sister',
+  PatientRelation.other: 'other',
 };
 
 const _$SexEnumMap = {Sex.male: 'male', Sex.female: 'female'};

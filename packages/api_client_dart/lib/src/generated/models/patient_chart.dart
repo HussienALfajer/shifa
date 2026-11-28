@@ -4,10 +4,13 @@
 
 import 'package:json_annotation/json_annotation.dart';
 
+import 'family_member.dart';
 import 'patient_branch.dart';
 import 'patient_merged_into.dart';
+import 'patient_relation.dart';
 import 'patient_state.dart';
 import 'sex.dart';
+import 'treating_doctor.dart';
 
 part 'patient_chart.g.dart';
 
@@ -22,6 +25,7 @@ class PatientChart {
     required this.createdAt,
     required this.createdByName,
     required this.displayName,
+    required this.family,
     required this.familyName,
     required this.fatherName,
     required this.fileNumber,
@@ -31,9 +35,11 @@ class PatientChart {
     required this.motherName,
     required this.previousFileNumber,
     required this.registeredBranch,
+    required this.relation,
     required this.secondPhone,
     required this.sex,
     required this.state,
+    required this.treatingDoctors,
     required this.updatedAt,
     required this.updatedByName,
   });
@@ -52,6 +58,7 @@ class PatientChart {
   @JsonKey(includeIfNull: true)
   final String? createdByName;
   final String displayName;
+  final List<FamilyMember> family;
   @JsonKey(includeIfNull: true)
   final String? familyName;
   @JsonKey(includeIfNull: true)
@@ -68,9 +75,12 @@ class PatientChart {
   @JsonKey(includeIfNull: true)
   final PatientBranch? registeredBranch;
   @JsonKey(includeIfNull: true)
+  final PatientRelation? relation;
+  @JsonKey(includeIfNull: true)
   final String? secondPhone;
   final Sex sex;
   final PatientState state;
+  final List<TreatingDoctor> treatingDoctors;
   final DateTime updatedAt;
   @JsonKey(includeIfNull: true)
   final String? updatedByName;

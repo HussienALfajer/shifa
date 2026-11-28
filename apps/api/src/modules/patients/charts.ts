@@ -1,12 +1,15 @@
 // The chart rows of one clinic (spec A-03 criteria 1–3, 12, 32), read and written in the
 // transaction TenantDb opened for the guard's scope. This module is the only writer of `patient`
-// and `patient_file_counter` (A-03-03 adds the name tokens to the same write path).
+// and `patient_file_counter` (A-03-03 adds the name tokens to the same write path; A-03-04 the
+// family and treating doctors to the summary).
 import { createHash } from 'node:crypto';
 import type { PatientChart, StaleChange } from '@shifa/contracts';
 import { patientDisplayName } from '@shifa/contracts';
 import { branch, membership, patient, patientFileCounter, type Tx } from '@shifa/db';
 import { and, eq, inArray, isNull, sql } from 'drizzle-orm';
 import { ApiError } from '../../platform/errors.ts';
+import { treatingDoctorsOf } from './doctors.ts';
+import { familyOf } from './family.ts';
 
 export type ChartRow = typeof patient.$inferSelect;
 
@@ -131,6 +134,9 @@ export async function chartView(tx: Tx, row: ChartRow): Promise<PatientChart> {
     archivedAt: row.archivedAt?.toISOString() ?? null,
     archivedByName: row.archivedBy ? (names.get(row.archivedBy) ?? null) : null,
     mergedInto: merged ?? null,
+    relation: row.relation,
+    family: await familyOf(tx, row),
+    treatingDoctors: await treatingDoctorsOf(tx, row.id),
   };
 }
 

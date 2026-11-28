@@ -51,7 +51,13 @@ const OWNED: Readonly<Record<string, readonly string[]>> = {
   announcements: ['announcement', 'announcementTarget', 'announcementDismissal'],
   usage: ['usageDaily'],
   // A-03-02: a clinic's charts and its file-number counter (audited per chart event)
-  patients: ['patient', 'patientFileCounter', 'patientNameToken', 'auditEvent'],
+  patients: [
+    'patient',
+    'patientFileCounter',
+    'patientNameToken',
+    'patientTreatingDoctor',
+    'auditEvent',
+  ],
 };
 
 /** Tables a module reaches outside what it owns, each with its reason. */
@@ -106,7 +112,9 @@ const EXCEPTIONS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
     branch:
       'read: a chart keeps the branch it was registered in, named on its summary (A-03 criteria 1, 32)',
     membership:
-      'read: the summary names who registered, last saved and archived the chart (A-03 criterion 32)',
+      'read: the summary names who registered, last saved and archived the chart (A-03 criterion 32); treating doctors are doctor members, active or not (A-03 criterion 10)',
+    roleAssignment:
+      'read: only members holding the doctor role are treating doctors, and a doctor who registers a chart is added (A-03 criterion 10)',
   },
   places: {
     branch:

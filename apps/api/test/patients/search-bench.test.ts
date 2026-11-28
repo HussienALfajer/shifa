@@ -7,7 +7,13 @@
 // The charts are written in bulk as the superuser (names, keys and tokens computed by the same
 // TypeScript functions the chart repository uses), then analysed.
 import { performance } from 'node:perf_hooks';
-import { NAME_KEY_VERSION, nameTokens, normaliseName, patientDisplayName } from '@shifa/contracts';
+import {
+  type DuplicateCheckRequest,
+  NAME_KEY_VERSION,
+  nameTokens,
+  normaliseName,
+  patientDisplayName,
+} from '@shifa/contracts';
 import {
   createTestTenants,
   fixtureId,
@@ -18,6 +24,7 @@ import {
 import { createRandom, generatePatientCharts } from '@shifa/testing';
 import { type SQL, sql } from 'drizzle-orm';
 import { beforeAll, describe, expect, it } from 'vitest';
+import { duplicateQuery, findCandidates } from '../../src/modules/patients/duplicates.ts';
 import { nameQuery } from '../../src/modules/patients/name-search.ts';
 import { findHits, parseSearch } from '../../src/modules/patients/search.service.ts';
 
@@ -140,6 +147,68 @@ describe('search at 50,000 charts in each of two clinics, behind PgBouncer (crit
     // A typo sometimes lands on the first letters every candidate is read by: most, not all.
     const least = name.startsWith('a typo') ? RUNS * CLINICS.length * 0.9 : RUNS * CLINICS.length;
     expect(result.found).toBeGreaterThanOrEqual(least);
+    expect(result.foreign).toBe(0);
+    expect(result.p95).toBeLessThanOrEqual(P95_MS);
+  });
+});
+
+/** p95 of RUNS duplicate checks (A-03-04) in each clinic; each chart's own fields find it. */
+async function measureDuplicates(input: (chart: Chart) => DuplicateCheckRequest) {
+  const db = pooledTestDb();
+  const random = createRandom(2026_12_08);
+  const times: number[] = [];
+  let found = 0;
+  let foreign = 0;
+  for (const tenantId of CLINICS) {
+    const list = charts.get(tenantId) ?? [];
+    for (let i = 0; i < RUNS; i += 1) {
+      const chart = list[random.int(0, list.length - 1)];
+      if (!chart) continue;
+      const query = duplicateQuery(input(chart), '2026-11-27');
+      const at = performance.now();
+      const hits = await db.withTenant(scopeOf(tenantId), (tx) => findCandidates(tx, query));
+      times.push(performance.now() - at);
+      if (hits.length > 0) found += 1;
+      foreign += hits.filter((h) => h.row.tenantId !== tenantId).length;
+    }
+  }
+  times.sort((a, b) => a - b);
+  const at = (q: number) => Math.round((times[Math.ceil(times.length * q) - 1] ?? 0) * 10) / 10;
+  return { p50: at(0.5), p95: at(0.95), found, foreign };
+}
+
+describe('the duplicate check at 50,000 charts in each of two clinics (criteria 5, 7)', () => {
+  it.each([
+    [
+      'same phone, similar given name',
+      (c: Chart) => ({ givenName: c.givenName, contactPhone: c.contactPhone }),
+    ],
+    [
+      'similar full name, birth year within 2',
+      (c: Chart) => ({
+        givenName: c.givenName,
+        fatherName: c.fatherName,
+        familyName: c.familyName,
+        birthDate: c.birthDate,
+      }),
+    ],
+    [
+      'every field at once (the form settled)',
+      (c: Chart) => ({
+        givenName: c.givenName,
+        fatherName: c.fatherName,
+        familyName: c.familyName,
+        contactPhone: c.contactPhone,
+        birthDate: c.birthDate,
+      }),
+    ],
+  ] as const)('%s: p95 within 150 ms', async (name, input) => {
+    const result = await measureDuplicates(input);
+    process.stdout.write(
+      `duplicate bench: ${name}: p50 ${String(result.p50)} ms, p95 ${String(result.p95)} ms, ` +
+        `found ${String(result.found)} of ${String(RUNS * CLINICS.length)}\n`,
+    );
+    expect(result.found).toBe(RUNS * CLINICS.length);
     expect(result.foreign).toBe(0);
     expect(result.p95).toBeLessThanOrEqual(P95_MS);
   });
