@@ -100,6 +100,8 @@ export const ErrorCode = z
     // custom field definitions (A-03-05)
     'searchable_limit',
     'type_fixed',
+    // custom field values (A-03-06)
+    'field_not_editable',
   ])
   .meta({ id: 'ErrorCode', description: 'Stable machine-readable error code.' });
 export type ErrorCode = z.infer<typeof ErrorCode>;
@@ -206,6 +208,8 @@ export const ErrorBody = z
     stale: StaleChange.optional(),
     /** The charts not acknowledged: only with `possible_duplicate` (A-03-04). */
     candidates: z.array(DuplicateCandidate).optional(),
+    /** The field keys (`cf_…`) the member may not edit: only with `field_not_editable` (A-03-06). */
+    fieldKeys: z.array(z.string()).optional(),
   })
   .meta({ id: 'ErrorBody' });
 export type ErrorBody = z.infer<typeof ErrorBody>;
@@ -294,6 +298,7 @@ export const CODE_MESSAGES: Readonly<Partial<Record<ErrorCode, string>>> = {
   rate_limited: 'Too many searches in a short time',
   possible_duplicate: 'Charts like this one exist; acknowledge them to register anyway',
   doctor_not_member: 'A treating doctor must be a doctor member of this clinic',
+  field_not_editable: 'Your roles may not edit one of these clinic fields',
 };
 
 /** Message of a `validation_failed` error (same text as a plain 400). */

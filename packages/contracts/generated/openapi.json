@@ -1309,6 +1309,9 @@
               }
             ]
           },
+          "fields": {
+            "$ref": "#/components/schemas/PatientFieldValues"
+          },
           "givenName": {
             "maxLength": 40,
             "minLength": 1,
@@ -1666,6 +1669,12 @@
             },
             "type": "array"
           },
+          "fieldKeys": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "limitReached": {
             "$ref": "#/components/schemas/LimitReached"
           },
@@ -1775,7 +1784,8 @@
           "possible_duplicate",
           "doctor_not_member",
           "searchable_limit",
-          "type_fixed"
+          "type_fixed",
+          "field_not_editable"
         ],
         "type": "string"
       },
@@ -2966,6 +2976,12 @@
               "null"
             ]
           },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PatientChartField"
+            },
+            "type": "array"
+          },
           "fileNumber": {
             "maximum": 9007199254740991,
             "minimum": 1,
@@ -3076,7 +3092,99 @@
           "mergedInto",
           "relation",
           "family",
-          "treatingDoctors"
+          "treatingDoctors",
+          "fields"
+        ],
+        "type": "object"
+      },
+      "PatientChartField": {
+        "properties": {
+          "key": {
+            "$ref": "#/components/schemas/PatientFieldKey"
+          },
+          "label": {
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "$ref": "#/components/schemas/PatientChartFieldOption"
+            },
+            "type": "array"
+          },
+          "order": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
+          "section": {
+            "type": "string"
+          },
+          "sensitive": {
+            "type": "boolean"
+          },
+          "type": {
+            "$ref": "#/components/schemas/PatientFieldType"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "anyOf": [
+                  {
+                    "maxLength": 2000,
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "items": {
+                      "maxLength": 64,
+                      "type": "string"
+                    },
+                    "maxItems": 250,
+                    "type": "array"
+                  }
+                ]
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "label",
+          "section",
+          "order",
+          "type",
+          "value",
+          "sensitive",
+          "options"
+        ],
+        "type": "object"
+      },
+      "PatientChartFieldOption": {
+        "properties": {
+          "archived": {
+            "type": "boolean"
+          },
+          "id": {
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
+            "type": "string"
+          },
+          "label": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "label",
+          "archived"
         ],
         "type": "object"
       },
@@ -3176,6 +3284,11 @@
                 "type": "null"
               }
             ]
+          },
+          "chartCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
           },
           "createdAt": {
             "format": "date-time",
@@ -3304,6 +3417,7 @@
           "sensitive",
           "searchable",
           "print",
+          "chartCount",
           "state",
           "archivedAt",
           "purgeAt",
@@ -3383,6 +3497,11 @@
           "archived": {
             "type": "boolean"
           },
+          "chartCount": {
+            "maximum": 9007199254740991,
+            "minimum": -9007199254740991,
+            "type": "integer"
+          },
           "id": {
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$",
@@ -3401,7 +3520,8 @@
           "id",
           "label",
           "archived",
-          "order"
+          "order",
+          "chartCount"
         ],
         "type": "object"
       },
@@ -3645,6 +3765,41 @@
               }
             ]
           }
+        },
+        "type": "object"
+      },
+      "PatientFieldValues": {
+        "additionalProperties": {
+          "anyOf": [
+            {
+              "anyOf": [
+                {
+                  "maxLength": 2000,
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "maxLength": 64,
+                    "type": "string"
+                  },
+                  "maxItems": 250,
+                  "type": "array"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "propertyNames": {
+          "$ref": "#/components/schemas/PatientFieldKey"
         },
         "type": "object"
       },
@@ -5363,6 +5518,9 @@
                 "type": "null"
               }
             ]
+          },
+          "fields": {
+            "$ref": "#/components/schemas/PatientFieldValues"
           },
           "givenName": {
             "maxLength": 40,

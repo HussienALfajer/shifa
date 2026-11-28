@@ -1,6 +1,6 @@
 # A-03-06 Custom field values on charts
 
-Status: Planned · Tier: T0 · Branch: `feat/A-03-06-custom-field-values`
+Status: Built, in review · Tier: T0 · Branch: `claude/tender-cori-m6r1rd` (the cloud session's branch; the plan named `feat/A-03-06-custom-field-values`)
 Spec: [A-03](../specs/patients/A-03-patients.md) criteria 4 (searchable values), 16, 17 (archived field not required, archived option kept, values purged), 40 (from A-03-01) · Requirements: PLT-30 to PLT-36 (values) · Decisions: ADR-0008, ADR-0047, OD-144
 
 Fifth API slice of A-03, after A-03-05 (merged, #203). One slice, one PR: the work fits the ~4,000-line budget (ADR-0032), so it is not split.
@@ -58,12 +58,29 @@ Reception fills the clinic's fields on registration and edit; each member sees a
 Estimated hand-written lines: ~3,200 (contracts ~270, database ~250, values and stripping ~950, search ~350, chart counts ~100, tests ~1,280). Under the budget; checkpoint after the database and writes (~1,500) if the session runs long.
 
 ## Stopped at
-Planned; plan refined after A-03-05 and approved by the owner 2026-11-28 (OD-146; second-session critique waived).
+Built (contracts, database, API), reviewed (reviewer, security-reviewer) and their findings fixed; PR open.
+
+## Changes forced during the build (reported to the owner)
+- **Summary row:** each field in `fields[]` also carries `options[]` (`id`, `label`, `archived`): a choice field's active choices plus any archived one the chart holds. Without it the screen cannot name a held archived choice (the form's `GET /patients/fields` lists active choices only). Contract row updated.
+- **403 `field_not_editable`:** the keys refused travel in a new envelope field `fieldKeys[]` (the envelope's `details` are for `validation_failed` only). Contract row updated.
+- **Order of answers:** the field values are checked before the duplicate check, so a misfit field answers 400 (or 403) before a 409 `possible_duplicate`; they are written after the chart row.
+- **Search key length:** a key longer than a search term can be (100) is not stored: such a value could never be typed whole.
+- **Counts:** two grouped queries (per field, per choice) instead of one.
+- **Audit:** the registration's event is `patient.created` (as A-03-02 named it), with `fields: [keys]`; `patient.edited` adds `fields: [keys]` beside the identity keys.
+- **Replay (security review M1, owner 2026-11-28):** only the member who registered a chart replays it; another member's resend of that id answers 409 `patient_id_taken` whatever it sends, so `fields` guesses learn nothing. A-05's offline sync replays as the same member. One locked test line changed with the owner's consent.
+- **Purge on every edit (review N4):** an edit purges expired fields first, whether or not it sends `fields`.
+
+## Database
+- `20261128122049_a03_patient_field_values` (expand): `patient_field_value` (uuid key; unique `(tenant_id, patient_id, field_id)`; FKs to `patient` and `patient_field` on `tenant_id`; partial search index; counts index; value ≤ 16 kB, above anything the validator accepts (review B1); key 1–100). Rollback: drop the table (no reader outside this slice).
+- `20261128122051_a03_patient_field_value_policies` (expand, one migrate step): ENABLE + FORCE RLS, the tenant policy, `SELECT, INSERT, UPDATE, DELETE` for `shifa_app`; choice and yes/no fields saved as searchable under A-03-05 are turned off (review N1; FORCE lifted for that update only). Rollback: drop the policy, revoke; the flags stay off.
+- Classification (tenant), isolation case, privileges pin. The chart FK is listed for A-03-08's merge registry.
 
 ## Evidence
-- `verify` (full): <summary line>
-- Benchmark p95 with searchable fields: <figures>
-- Reviewer and security-reviewer findings fixed: <list>
+- `pnpm verify`: see the PR (green on the final tree before the push).
+- `apps/api` patients and leak suites: 20 files, 194 tests passed (benchmark included); contracts 482 tests; `@shifa/db` isolation, architecture, privileges, schema keys 135 tests.
+- Benchmark at 50,000 charts × two clinics, 5 searchable fields filled on every chart, behind PgBouncer (p95, limit 150 ms): searchable text value 11.1 ms, number 6.7 ms, phone 9 ms; the earlier paths unchanged (name 20.7 ms, «ال» with a given name 78.2 ms, file number 6.5 ms). The plan of a field search uses `patient_field_value_tenant_id_search_idx`.
+- Reviewer: B1 (4 kB CHECK below the validator's maximum → 500) fixed with the 16 kB bound and a boundary test; B2 (this section) filled; N1 migrated; N2 (field key order in the replay hash) fixed; N3 one field counted alone; N4 fixed; N7 tests added (`field-values-review.test.ts`); N5, N6 and the counts at scale in `docs/backlog.md`.
+- Security reviewer: M1 fixed (creator-only replay, tested); L1 as B1; informational notes 1 and 4 handed to A-03-07's slice file; retention stays with backlog "Purge without a worker".
 
 ## Notes for the next session
 - From A-03-05 (reviews N8, L3): archived fields are purged only inside the clinic's own requests (`purgeExpired` in `modules/patients/fields/field-store.ts`); a suspended or idle clinic never purges. Every value read must apply the cutoff (`isLive`), `purgeExpired` must also delete the purged fields' values, and chart writes should call it; criterion 17 ("values are removed") needs a worker or another purge path before values are stored for long (backlog "Purge without a worker").

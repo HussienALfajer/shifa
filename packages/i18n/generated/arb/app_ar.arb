@@ -5915,6 +5915,10 @@
   "@errorsFeatureUnavailable": {
     "description": "errors.feature_unavailable"
   },
+  "errorsFieldNotEditable": "لا تسمح أدوارك بتعديل هذا الحقل. أعد تحميل الحقول.",
+  "@errorsFieldNotEditable": {
+    "description": "errors.field_not_editable"
+  },
   "errorsForbidden": "ليست لديك صلاحية لتنفيذ هذا الإجراء.",
   "@errorsForbidden": {
     "description": "errors.forbidden"

@@ -13,7 +13,7 @@ The owner merges two charts of the same person: one file number remains, the oth
 1. **Contracts** — `MergePreview` (both charts side by side, per identity field both values, custom fields to fill, doctors to join), `MergeRequest` (kept id, other id, chosen value per identity field, the other's file number typed back as confirmation), `PatientChart.mergedInto`; codes 409 `patient_not_active`, `merge_confirmation_mismatch`.
 2. **Database** (`/db-migration`; expand only) — no new table; `patient.merged_into_id` checked to point at an active chart of the same tenant (constraint or trigger); a merged chart refused for writes in the database as well as the API.
 3. **API**
-   - Merge step registry: every table with a `(tenant_id, patient_id)` foreign key registers a merge step (A-03 tables: name tokens, treating doctors, field values, search values; later specs add theirs). A start-up and test check reads the catalog and refuses a chart foreign key without a step.
+   - Merge step registry: every table with a `(tenant_id, patient_id)` foreign key registers a merge step (A-03 tables: name tokens, treating doctors, field values; later specs add theirs). A start-up and test check reads the catalog and refuses a chart foreign key without a step.
    - `GET /patients/:id/merge-preview?other=` and `POST /patients/merge` (`patients.merge`, owner): one transaction locking both charts in id order; the kept chart takes the chosen identity values; empty custom fields filled from the other; doctors joined; tokens rebuilt; the other becomes `merged` with `merged_into_id`, read-only, never deleted.
    - Search and `GET /patients/:id` of a merged chart lead to the kept one (A-03-03's fixture becomes real); its file number keeps finding the kept chart. If the phones differ, the kept phone decides the family.
    - Audit `patient.merged` (both ids, chosen field keys). Cannot be undone.
@@ -39,4 +39,5 @@ Planned.
 
 ## Notes for the next session
 - From A-03-03: `patient_name_token_patient_fk` is a chart foreign key: register its merge step (the merged chart's tokens are deleted; the kept chart's are rewritten with `writeNameKey` when the chosen name parts change). Search already answers a merged chart's file or previous number with the kept chart and `mergedFileNumber`; add `excludeId` and `forMerge` to `PatientSearchRequest`.
+- From A-03-06: `patient_field_value_patient_fk` is a chart foreign key (there is no separate search table: the search key is a column of the value row). Its merge step: for each field, keep the kept chart's value, else move the other's row (`patient_id` to the kept chart; its `search_key` stays valid); delete the rest of the other's rows. Values are read through `chartFieldsOf` only; a merged chart's `fields` follow its kept chart's summary.
 - Later specs (A-04 appointments, A-05 queue, A-06 invoices, A-07 visits) each register a merge step for their chart foreign key; the start-up check enforces it.

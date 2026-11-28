@@ -9,6 +9,7 @@ import { tenantAddonCase, tenantOverrideCase, tenantOverrideEventCase } from './
 import { featureFlagTenantCase } from './feature-flags.ts';
 import { membershipCase } from './membership.ts';
 import { organizationCase } from './organization.ts';
+import { patientFieldValueCase } from './patient-field-values.ts';
 import { patientFieldCase, patientFieldOptionCase } from './patient-fields.ts';
 import {
   patientCase,
@@ -45,4 +46,5 @@ export const ISOLATION_CASES: readonly IsolationCase[] = [
   patientTreatingDoctorCase,
   patientFieldCase,
   patientFieldOptionCase,
+  patientFieldValueCase,
 ];

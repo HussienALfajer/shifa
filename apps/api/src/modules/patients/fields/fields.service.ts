@@ -23,6 +23,7 @@ import { RequestValidationError } from '../../../platform/contract/index.ts';
 import { ApiError } from '../../../platform/errors.ts';
 import { ClinicLimits } from '../../entitlements/index.ts';
 import { nextStamp, staleChange } from '../charts.ts';
+import { chartCounts } from './field-counts.ts';
 import {
   changedKeys,
   checkedDraft,
@@ -256,7 +257,7 @@ export class PatientFieldsService {
     const fields = await loadFields(tx, now);
     const stamp = listStamp(fields);
     return {
-      fields: definitionViews(fields),
+      fields: definitionViews(fields, await chartCounts(tx)),
       limits: {
         used: (await this.limits.usage(tx))[LIMIT_KEY] ?? 0,
         max: await this.limits.limitOf(tx, tenantId, LIMIT_KEY),

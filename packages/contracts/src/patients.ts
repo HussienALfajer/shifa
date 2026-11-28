@@ -15,6 +15,7 @@ import {
   Sex,
   TreatingDoctor,
 } from './patient-card.ts';
+import { PatientChartField, PatientFieldValues } from './patient-fields.ts';
 import {
   BirthDateInput,
   CalendarDate,
@@ -82,6 +83,11 @@ export const PatientChart = z
     family: z.array(FamilyMember),
     /** By name (A-03-04; criterion 10); inactive ones marked. */
     treatingDoctors: z.array(TreatingDoctor),
+    /**
+     * A-03-06 (criterion 16): the clinic's active fields this member's roles may view, by section
+     * and order, empty ones with `value: null`. Only the summary carries values; a card never.
+     */
+    fields: z.array(PatientChartField),
   })
   .meta({ id: 'PatientChart' });
 export type PatientChart = z.infer<typeof PatientChart>;
@@ -111,6 +117,12 @@ const identityFields = {
    * row "Edit").
    */
   acknowledgedCandidateIds: z.array(z.uuid()).max(5).optional(),
+  /**
+   * A-03-06 (criteria 16, 17): custom field values by key. On a registration, defaults fill the
+   * editable fields not sent; on an edit, keys sent are written, `null` clears, keys left out are
+   * kept. 403 `field_not_editable` (with `fieldKeys`).
+   */
+  fields: PatientFieldValues.optional(),
 };
 
 /** Registration (criteria 1–3; contract `POST /patients`): a date of birth or an age, not both. */
@@ -263,8 +275,8 @@ export const patientsCreate = defineContract({
   path: '/patients',
   summary: 'Register a chart; the same id and body again returns the stored chart',
   request: { body: CreatePatientRequest },
-  // 400 `validation_failed` (a name part, a phone, the birth, the relation) or
-  // `doctor_not_member`; 409 `previous_file_number_taken`, `patient_id_taken` (the id holds another
+  // 400 `validation_failed` (a name part, a phone, the birth, the relation, `body.fields.<key>`)
+  // or `doctor_not_member`; 403 `field_not_editable` (with `fieldKeys`); 409 `previous_file_number_taken`, `patient_id_taken` (the id holds another
   // chart of this clinic) or `possible_duplicate` (with `candidates`; nothing saved).
   responses: { 201: PatientChart, 400: ErrorEnvelope, 409: ErrorEnvelope },
 });
@@ -284,7 +296,7 @@ export const patientsUpdate = defineContract({
   path: '/patients/:id',
   summary: 'Edit a chart’s identity',
   request: { params: PatientIdParams, body: UpdatePatientRequest },
-  // 400 as for the create; 409 `stale` (with `stale`), `patient_archived`, `patient_merged`,
+  // 400 as for the create; 403 `field_not_editable` (with `fieldKeys`); 409 `stale` (with `stale`), `patient_archived`, `patient_merged`,
   // `previous_file_number_taken`, `possible_duplicate` (a name part or the phone changed).
   responses: { 200: PatientChart, 400: ErrorEnvelope, 404: ErrorEnvelope, 409: ErrorEnvelope },
 });

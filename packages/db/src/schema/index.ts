@@ -39,6 +39,7 @@ export {
   PATIENT_FIELD_TYPES,
   patientField,
   patientFieldOption,
+  patientFieldValue,
   type StoredFieldRules,
 } from './patient-fields.ts';
 export {

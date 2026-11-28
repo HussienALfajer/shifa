@@ -13,6 +13,7 @@ import {
   nameTokens,
   normaliseName,
   patientDisplayName,
+  searchKeyOfPatientFieldValue,
 } from '@shifa/contracts';
 import {
   createTestTenants,
@@ -71,6 +72,56 @@ async function seed(tenantId: string, list: readonly Chart[]): Promise<void> {
       select ${tenantId}::uuid, t.p, t.part, t.word, t.token, t.whole, ${NAME_KEY_VERSION}
       from json_to_recordset(${JSON.stringify(tokens)}::json) as t(p uuid, part int, word int,
         token text, whole boolean)`);
+    const values = rows.flatMap((r) =>
+      FIELDS.map((field, n) => {
+        const value = field.valueOf(r.file);
+        return {
+          p: r.id,
+          f: fieldIdOf(tenantId, n),
+          v: JSON.stringify(value),
+          k: searchKeyOfPatientFieldValue(field, value),
+        };
+      }),
+    );
+    await su().execute(sql`
+      insert into patient_field_value (tenant_id, patient_id, field_id, value, search_key,
+        updated_by)
+      select ${tenantId}::uuid, v.p, v.f, v.v::jsonb, v.k, ${ACTOR}::uuid
+      from json_to_recordset(${JSON.stringify(values)}::json) as v(p uuid, f uuid, v text, k text)`);
+  }
+}
+
+/**
+ * A-03-06: five searchable fields (the most a clinic may have), every chart holding a value of
+ * each; the owner views them all.
+ */
+const FIELDS = [
+  { type: 'text', valueOf: (file: number) => `بطاقة ${String(file)}` },
+  { type: 'long_text', valueOf: (file: number) => `ملاحظة إدارية ${String(file)}` },
+  { type: 'number', valueOf: (file: number) => 100_000 + file },
+  {
+    type: 'date',
+    valueOf: (file: number) =>
+      `20${String(10 + (file % 15))}-0${String(1 + (file % 9))}-1${String(file % 10)}`,
+  },
+  { type: 'phone', valueOf: (file: number) => `+9639${String(file).padStart(8, '0')}` },
+] as const;
+const ROLES = ['owner'];
+const fieldIdOf = (tenantId: string, n: number) =>
+  fixtureId(`bench field ${tenantId} ${String(n)}`);
+
+async function seedFields(tenantId: string): Promise<void> {
+  const rules = JSON.stringify({
+    validation: { minLength: null, maxLength: null, min: null, max: null, pattern: null },
+    default: null,
+  });
+  for (const [n, field] of FIELDS.entries()) {
+    await su().execute(sql`
+      insert into patient_field (tenant_id, id, number, key, label, type, rules, section,
+        position, view_roles, edit_roles, searchable, created_by, updated_by)
+      values (${tenantId}::uuid, ${fieldIdOf(tenantId, n)}::uuid, ${n + 1}, ${`cf_${String(n + 1)}`},
+        ${`حقل ${String(n + 1)}`}, ${field.type}, ${rules}::jsonb, 'إداري', ${n},
+        array['owner']::text[], array['owner']::text[], true, ${ACTOR}::uuid, ${ACTOR}::uuid)`);
   }
 }
 
@@ -83,10 +134,12 @@ beforeAll(async () => {
       today: '2026-11-27',
     });
     charts.set(tenantId, list);
+    await seedFields(tenantId);
     await seed(tenantId, list);
   }
   await su().execute(sql`analyze patient`);
   await su().execute(sql`analyze patient_name_token`);
+  await su().execute(sql`analyze patient_field_value`);
 }, 900_000);
 
 const scopeOf = (tenantId: string) => ({ tenantId, userId: ACTOR });
@@ -106,7 +159,7 @@ async function measure(term: (chart: Chart, file: number) => string) {
       if (!chart) continue;
       const query = parseSearch({ term: term(chart, index + 1) });
       const at = performance.now();
-      const { hits } = await db.withTenant(scopeOf(tenantId), (tx) => findHits(tx, query));
+      const { hits } = await db.withTenant(scopeOf(tenantId), (tx) => findHits(tx, query, ROLES));
       times.push(performance.now() - at);
       if (hits.length > 0) found += 1;
       // RLS: every hit is a chart of the clinic searched.
@@ -138,6 +191,12 @@ describe('search at 50,000 charts in each of two clinics, behind PgBouncer (crit
     ['contact phone (duplicate check)', (c: Chart) => c.contactPhone],
     ['phone tail', (c: Chart) => c.contactPhone.slice(-7)],
     ['file number', (_c: Chart, file: number) => String(file)],
+    ['a searchable text value (A-03-06)', (_c: Chart, file: number) => `بطاقه ${String(file)}`],
+    ['a searchable number value (A-03-06)', (_c: Chart, file: number) => String(100_000 + file)],
+    [
+      'a searchable phone value (A-03-06)',
+      (_c: Chart, file: number) => `09${String(file).padStart(8, '0')}`,
+    ],
   ] as const)('%s: p95 within 150 ms', async (name, term) => {
     const result = await measure(term);
     process.stdout.write(
@@ -229,6 +288,14 @@ describe('the plans under RLS (criterion 5; OD-42)', () => {
     expect(text).not.toMatch(
       /"Node Type":"Seq Scan","Parent Relationship":"[^"]*",[^}]*"Relation Name":"patient_name_token"/,
     );
+  });
+
+  it('looks a custom field value up on its search index (A-03-06)', async () => {
+    const field = fieldIdOf(CLINICS[0], 0);
+    const text = await plan(
+      sql`select patient_id from patient_field_value where field_id = ${field}::uuid and search_key = ${'بطاقه 7'}`,
+    );
+    expect(text).toContain('patient_field_value_tenant_id_search_idx');
   });
 
   it('looks a phone tail up on its index', async () => {

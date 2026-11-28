@@ -66,6 +66,7 @@ const EXPECTED: Readonly<Record<string, Readonly<Record<string, readonly Priv[]>
     // A-03-05: field definitions and choices, never deleted (tombstones, archived choices)
     patient_field: ['SELECT', 'INSERT', 'UPDATE'],
     patient_field_option: ['SELECT', 'INSERT', 'UPDATE'],
+    patient_field_value: ['SELECT', 'INSERT', 'UPDATE', 'DELETE'],
     // session, account and two_factor: column privileges only (below)
   },
   shifa_auth: {

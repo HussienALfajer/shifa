@@ -46,8 +46,18 @@ export class ApiError extends HttpException {
     readonly stale?: StaleChange,
     /** The charts not acknowledged: only with `possible_duplicate` (A-03-04). */
     readonly candidates?: readonly DuplicateCandidate[],
+    /** The field keys the member may not edit: only with `field_not_editable` (A-03-06). */
+    readonly fieldKeys?: readonly string[],
   ) {
     super(CODE_MESSAGES[code] ?? code, status);
+  }
+
+  /** 403 `field_not_editable` with the keys (`cf_…`) the member's roles may not edit (A-03-06). */
+  static fieldNotEditable(keys: readonly string[]): ApiError {
+    const none = undefined;
+    return new ApiError(403, 'field_not_editable', none, none, none, none, none, none, none, none, [
+      ...keys,
+    ]);
   }
 
   /** 409 `stale`: someone saved the record since `expectedUpdatedAt` (A-03 criterion 28). */
@@ -90,6 +100,7 @@ function bodyFor(exception: unknown, status: number): ErrorEnvelope {
         ...(exception.candidates
           ? { candidates: exception.candidates.map((c) => ({ ...c })) }
           : {}),
+        ...(exception.fieldKeys ? { fieldKeys: [...exception.fieldKeys] } : {}),
       },
     };
   }

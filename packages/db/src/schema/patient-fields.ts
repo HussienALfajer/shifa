@@ -19,6 +19,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from './columns.ts';
+import { patient } from './patients.ts';
 import { tenant } from './platform.ts';
 
 export const PATIENT_FIELD_TYPES = [
@@ -133,6 +134,60 @@ export const patientField = pgTable(
       sql`(${t.state} = 'active') = (${t.archivedAt} is null) and (${t.state} = 'purged') = (${t.purgedAt} is not null)`,
     ),
     check('patient_field_updated_at_check', sql`${t.updatedAt} >= ${t.createdAt}`),
+  ],
+);
+
+/**
+ * One chart's value of one custom field (spec A-03 criteria 4, 16, 17; slice A-03-06): personal
+ * data. The value as stored (text, number, `YYYY-MM-DD`, option id or ids, yes/no, E.164), at
+ * most 16 kB (above anything the shared validator accepts: 250 choice ids, 2,000 characters of
+ * 4 bytes; review B1); `search_key` the shared key of it (`searchKeyOfPatientFieldValue` in
+ * @shifa/contracts) for every type that has one, searchable or not: search filters on the field
+ * being searchable when it runs, so turning search on or off rewrites nothing. An empty value is
+ * no row; a purged field's rows are deleted. A chart foreign key: A-03-08's merge moves them.
+ */
+export const patientFieldValue = pgTable(
+  'patient_field_value',
+  {
+    /** Row key (every table's primary key is a uuid; schema-keys test). */
+    id: uuid('id').primaryKey().defaultRandom(),
+    tenantId: uuid('tenant_id')
+      .notNull()
+      .references(() => tenant.id),
+    patientId: uuid('patient_id').notNull(),
+    fieldId: uuid('field_id').notNull(),
+    value: jsonb('value').$type<string | number | boolean | string[]>().notNull(),
+    searchKey: text('search_key'),
+    /** The user who saved it last (an audit actor; no foreign key). */
+    updatedBy: uuid('updated_by').notNull(),
+    updatedAt: updatedAt(),
+  },
+  (t) => [
+    unique('patient_field_value_chart_field_key').on(t.tenantId, t.patientId, t.fieldId),
+    foreignKey({
+      name: 'patient_field_value_patient_fk',
+      columns: [t.tenantId, t.patientId],
+      foreignColumns: [patient.tenantId, patient.id],
+    }),
+    foreignKey({
+      name: 'patient_field_value_field_fk',
+      columns: [t.tenantId, t.fieldId],
+      foreignColumns: [patientField.tenantId, patientField.id],
+    }),
+    // Search: equality on the key within the field (criterion 4).
+    index('patient_field_value_tenant_id_search_idx')
+      .on(t.tenantId, t.fieldId, t.searchKey)
+      .where(sql`${t.searchKey} is not null`),
+    // Chart counts per field and choice, and the purge.
+    index('patient_field_value_tenant_id_field_id_idx').on(t.tenantId, t.fieldId),
+    check(
+      'patient_field_value_value_check',
+      sql`jsonb_typeof(${t.value}) in ('string', 'number', 'boolean', 'array') and pg_column_size(${t.value}) <= 16384`,
+    ),
+    check(
+      'patient_field_value_search_key_check',
+      sql`char_length(${t.searchKey}) between 1 and 100`,
+    ),
   ],
 );
 

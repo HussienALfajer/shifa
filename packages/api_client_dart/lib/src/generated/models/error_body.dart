@@ -22,6 +22,7 @@ class ErrorBody {
     required this.message,
     this.candidates,
     this.details,
+    this.fieldKeys,
     this.limitReached,
     this.place,
     this.reason,
@@ -38,6 +39,8 @@ class ErrorBody {
   final ErrorCode code;
   @JsonKey(includeIfNull: false)
   final List<ValidationIssue>? details;
+  @JsonKey(includeIfNull: false)
+  final List<String>? fieldKeys;
   @JsonKey(includeIfNull: false)
   final LimitReached? limitReached;
   final String message;

@@ -2,11 +2,13 @@
 // create's body, or the field as stored with an edit's body over it, checked as a whole. Every
 // misfit is a 400 `validation_failed` on its body path (never the value): rules that do not fit
 // the type, a default its rules refuse, choices (2 to 250 active, unique after folding, never
-// deleted), edit roles outside the view roles, a sensitive field that is searchable.
+// deleted), edit roles outside the view roles, a sensitive field that is searchable, a choice or
+// yes/no field that is searchable (OD-146 point 3, A-03-06).
 import {
   type CreatePatientFieldRequest,
   checkPatientFieldValue,
   PATIENT_FIELD_RULES,
+  PATIENT_FIELD_SEARCHABLE_TYPES,
   type PatientFieldType,
   patientFieldRuleProblems,
   storedPatientFieldValue,
@@ -207,6 +209,10 @@ export function checkedDraft(
   }
   // Criterion 15: a sensitive field is never searchable.
   if (draft.sensitive && draft.searchable) issues.push({ path: 'body.searchable', code: 'custom' });
+  // OD-146 point 3 (A-03-06): choices and yes/no have no search key.
+  else if (draft.searchable && !PATIENT_FIELD_SEARCHABLE_TYPES.includes(type)) {
+    issues.push({ path: 'body.searchable', code: 'custom' });
+  }
   const ruleProblems = patientFieldRuleProblems(type, draft.rules.validation);
   for (const p of ruleProblems) issues.push({ path: `body.${p.path}`, code: p.code });
   issues.push(...optionIssues(type, draft.options));

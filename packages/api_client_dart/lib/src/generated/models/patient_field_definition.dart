@@ -17,6 +17,7 @@ part 'patient_field_definition.g.dart';
 class PatientFieldDefinition {
   const PatientFieldDefinition({
     required this.archivedAt,
+    required this.chartCount,
     required this.createdAt,
     required this.defaultValue,
     required this.editRoles,
@@ -43,6 +44,7 @@ class PatientFieldDefinition {
 
   @JsonKey(includeIfNull: true)
   final DateTime? archivedAt;
+  final int chartCount;
   final DateTime createdAt;
 
   /// The name has been replaced because it contains a keyword. Original name: `default`.
